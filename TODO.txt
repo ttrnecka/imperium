@@ -1,0 +1,36 @@
+Autoprocess cards
+Loose Change!
+Banking Error!
+Lottery Win!
+And remove from collection
+
+Assing identifier to the generated cards so they can be easily removed (and added to deck eventually)
+
+adminlist - to show transactions
+make list off all transactions (bank)
+test code
+
+disable private commands at the end
+
+
+DONE
+pack list sorting
+adminlist - separate coaches
+long message sending
+generator - remove budget from player and training - updated help
+starter pack is u=included
+card summary
+pack cost
+transaction
+adminbank command
+add cards to transaction info
+pack generator/transaction error handling - dry it up and finish for adm bank
+new generator logic
+keep sheet in memory
+newcoach command - generate coach and sends link to rules
+export coaches to sheet - masterlsit has duplicate coach info - commented the coach export in the end as the master list was enough
+rarity() put quality as optional
+document command channel - clears it up at start
+genpack better help
+genpack training - if quality provided do not do anything
+Exapand genpack help with cost and rarities info
