@@ -2,3 +2,4 @@ discord.py
 gspread
 oauth2client
 pyyaml
+flask_sqlalchemy
