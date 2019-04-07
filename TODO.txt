@@ -6,8 +6,11 @@ Lottery Win!
 Add/remove from collection
 
 Ability to generate pack but not assign it to coach
+Ability to hand out a free packs
 
 Assing identifier to the generated cards so they can be easily removed (and added to deck eventually)
+
+ability to display starter pack
 
 adminlist - to show transactions
 make list off all transactions (bank)
