@@ -1,3 +1,4 @@
+import os
 from flask import Flask, render_template
 from misc.helpers import CardHelper
 #from imperiumbase import Coach, Pack
@@ -11,6 +12,8 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data/db/imperium.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ECHO'] = True
+    if os.environ['FLASK_ENV']=="production":
+        app.config.from_envvar('YOURAPPLICATION_SETTINGS')
     db.init_app(app)
     return app
 
