@@ -1,6 +1,7 @@
 from web import db, create_app
-from models.models import Coach, Account, Card, Pack, Transaction
+from models.data_models import Coach, Account,Transaction, Pack, Card
 import imperiumbase as ib
+from datetime import datetime
 
 app = create_app()
 app.app_context().push()
@@ -11,10 +12,16 @@ for coach_data in ib.Coach.all():
     acc = Account(amount=coach_data.account.cash, coach=coach)
     for transaction in coach_data.account.transactions:
         tr = Transaction(confirmed = transaction.confirmed,price = transaction.price)
+        tr.date_created = datetime.utcfromtimestamp(transaction.created_at)
+        tr.date_confirmed = datetime.utcfromtimestamp(transaction.confirmed_at)
         if isinstance(transaction.comodity, ib.Pack):
             tr.description = transaction.comodity.description()
             p = transaction.comodity
-            pack = Pack(pack_type=p.pack_type,price=p.price)
+            if hasattr(p,'team'):
+                team = p.team
+            else:
+                team = None
+            pack = Pack(pack_type=p.pack_type,price=p.price,team=team)
             pack.coach=coach
             pack.transaction=tr
             for card in p.cards:
@@ -29,7 +36,7 @@ for coach_data in ib.Coach.all():
                 pack.cards.append(cc)
         else:
             tr.description = transaction.comodity
-
+    
         acc.transactions.append(tr)
     db.session.add(coach)
 db.session.commit()

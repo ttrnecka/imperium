@@ -2,7 +2,10 @@ Autoprocess cards
 Loose Change!
 Banking Error!
 Lottery Win!
-And remove from collection
+
+Add/remove from collection
+
+Ability to generate pack but not assign it to coach
 
 Assing identifier to the generated cards so they can be easily removed (and added to deck eventually)
 

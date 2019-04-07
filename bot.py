@@ -1,13 +1,17 @@
 # Works with Python 3.6
-
 import logging
 import discord
-import random
 import os
-import time
 
-from imperiumbase import ImperiumSheet, Pack, PACK_PRICES
-from coach import Coach, Transaction, TransactionError
+from imperiumbase import ImperiumSheet
+from web import db, create_app
+from models.data_models import Coach, Account, Card, Pack, Transaction, TransactionError
+from misc.helpers import CardHelper
+from services import PackService, SheetService
+
+
+app = create_app()
+app.app_context().push()
 
 ROOT = os.path.dirname(__file__)
 RULES_LINK = "https://goo.gl/GqWRwD"
@@ -29,9 +33,8 @@ GEN_PACKS = ["player","training","booster"]
 
 @client.event
 async def on_message(message):
-    # we do not want the bot to reply to itself
     logger.info(f"{message.author}: {message.content}")
-
+    # we do not want the bot to reply to itself
     if message.author == client.user:
         return
 
@@ -84,17 +87,13 @@ class DiscordCommand:
         return False
 
     @classmethod
-    def format_pack(cls,pack,is_sorted=True):
-        if is_sorted:
-            pack = Pack.sort_by_rarity(pack)
-        msg = ""
-        for card in pack:
-            if ImperiumSheet.QTY in card:
-                for c in str(card[ImperiumSheet.QTY]):
-                    msg+=cls.number_emoji(c)
-                msg+=" x "
-            msg+=cls.rarity_emoji(card["Rarity"])
-            msg+=f' **{card["Card Name"]}** ({card["Rarity"]} {card["Race"]} {card["Type"]} Card)\n'
+    def format_pack(cls,cards):
+        msg=""
+        for card,quantity in cards:
+            msg+=cls.number_emoji(quantity)
+            msg+=" x "
+            msg+=cls.rarity_emoji(card.rarity)
+            msg+=f' **{card.name}** ({card.rarity} {card.race} {card.card_type} Card)\n'
         return msg.strip("\n")
 
     @classmethod
@@ -103,29 +102,29 @@ class DiscordCommand:
         msg+="!genpack command generates new pack and assigns it to coach. The coach needs to have enough coins to buy the pack.\n \n"
         msg+="= Booster budget pack =\n"
         msg+="Content: 5 cards of any type\n"
-        msg+=f"Price: {PACK_PRICES['booster_budget']} coins\n"
+        msg+=f"Price: {PackService.PACK_PRICES['booster_budget']} coins\n"
         msg+="Rarity: 1 Rare and higher rarity, 4 Common and higher rarity\n"
         msg+="Command: !genpack booster\n \n"
 
         msg+="= Booster budget pack PREMIUM =\n"
         msg+="Content: 5 cards any type\n"
-        msg+=f"Price: {PACK_PRICES['booster_premium']} coins\n"
+        msg+=f"Price: {PackService.PACK_PRICES['booster_premium']} coins\n"
         msg+="Rarity: Rare and higher\n"
         msg+="Command: !genpack booster premium\n \n"
 
         msg+="= Training pack =\n"
         msg+="Content: 3 training type cards\n"
-        msg+=f"Price: {PACK_PRICES['training']} coins\n"
+        msg+=f"Price: {PackService.PACK_PRICES['training']} coins\n"
         msg+="Rarity: Commom or higher\n"
         msg+="Command: !genpack training\n \n"
 
         msg+="= Player pack =\n"
         msg+="Content: 3 player type cards\n"
-        msg+=f"Price: {PACK_PRICES['player']} coins\n"
+        msg+=f"Price: {PackService.PACK_PRICES['player']} coins\n"
         msg+="Rarity: Rare or higher\n"
         msg+="Command: !genpack player <team>\n"
         msg+="where <team> is one of following:\n"
-        for team in ImperiumSheet.MIXED_TEAMS:
+        for team in PackService.MIXED_TEAMS:
             msg+="\t"+team["code"] +" - "+ team["name"] +"\n"
 
         msg+="```"
@@ -161,7 +160,7 @@ class DiscordCommand:
         if length == 3 and args[1]=="booster" and args[2] not in GEN_QUALITY:
             return False
         # player with teams
-        if length == 3 and args[1]=="player" and args[2] not in ImperiumSheet.team_codes():
+        if length == 3 and args[1]=="player" and args[2] not in PackService.team_codes():
             return False
         return True
 
@@ -178,16 +177,16 @@ class DiscordCommand:
     @classmethod
     def number_emoji(cls,number):
         switcher = {
-            "0": ":zero:",
-            "1": ":one:",
-            "2": ":two:",
-            "3": ":three:",
-            "4": ":four:",
-            "5": ":five:",
-            "6": ":six:",
-            "7": ":seven:",
-            "8": ":eight:",
-            "9": ":nine:",
+            0: ":zero:",
+            1: ":one:",
+            2: ":two:",
+            3: ":three:",
+            4: ":four:",
+            5: ":five:",
+            6: ":six:",
+            7: ":seven:",
+            8: ":eight:",
+            9: ":nine:",
 
         }
         return switcher.get(number, "")
@@ -219,22 +218,20 @@ class DiscordCommand:
             await self.transaction_error(e)
         except Exception as e:
             await self.transaction_error(e)
-            #raising will not kill the discrod bot but will cause it to log this to error.log as well
+            #raising will not kill the discord bot but will cause it to log this to error.log as well
             raise
 
     async def __run_newcoach(self):
         name = str(self.message.author)
-        if Coach.exists(name):
+        if Coach.get_by_name(name):
             msg = LongMessage(self.client,self.message.channel)
             msg.add(f"**{self.message.author.mention}** account exists already\n")
             await msg.send()
         else:
-            coach = Coach.load_coach(str(self.message.author))
-            coach.store_coach()
-            # transaction is ok and coach is saved
+            coach = Coach.create(str(self.message.author))
             msg = LongMessage(self.client,self.message.channel)
             msg.add(f"**{self.message.author.mention}** account created\n")
-            msg.add(f"**Bank:** {coach.account.cash} coins")
+            msg.add(f"**Bank:** {coach.account.amount} coins")
             msg.add(f"**Rules**: <{RULES_LINK}>")
             await msg.send()
 
@@ -254,7 +251,7 @@ class DiscordCommand:
                 await self.client.send_message(self.message.channel, emsg)
                 return
 
-            coaches = Coach.find_by_name(self.args[1])
+            coaches = Coach.find_all_by_name(self.args[1])
             msg = LongMessage(self.client,self.message.channel)
 
             if len(coaches)==0:
@@ -262,10 +259,10 @@ class DiscordCommand:
 
             for coach in coaches:
                 msg.add(f"Coach **{coach.name}**\n")
-                msg.add(f"**Bank:** {coach.account.cash} coins\n")
+                msg.add(f"**Bank:** {coach.account.amount} coins\n")
                 msg.add("**Collection**:")
                 msg.add("-" * 65 + "")
-                msg.add(f"{self.__class__.format_pack(coach.collection_with_count())}")
+                msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.cards))}")
                 msg.add("-" * 65 + "\n")
 
             await msg.send()
@@ -285,14 +282,14 @@ class DiscordCommand:
                 return
 
             # find coach
-            coaches = Coach.find_by_name(self.args[2])
+            coaches = Coach.find_all_by_name(self.args[2])
             if len(coaches)==0:
-                emsg=f"Coach __{self.args[2]}__ not found!!!\n"
+                emsg=f"<coach> __{self.args[2]}__ not found!!!\n"
                 await self.client.send_message(self.message.channel, emsg)
                 return
 
             if len(coaches)>1:
-                emsg=f"Coach __{self.args[2]}__ not **unique**!!!\n"
+                emsg=f"<coach> __{self.args[2]}__ not **unique**!!!\n"
                 emsg+="Select one: "
                 for coach in coaches:
                     emsg+=coach.name
@@ -304,7 +301,7 @@ class DiscordCommand:
             coach = coaches[0]
             reason = ' '.join(str(x) for x in self.message.content.split(" ")[3:]) + " - updated by " + str(self.message.author)
 
-            t = Transaction(reason,-1*amount)
+            t = Transaction(description=reason,price=-1*amount)
             try:
                 coach.make_transaction(t)
             except TransactionError as e:
@@ -312,42 +309,43 @@ class DiscordCommand:
                 return
             else:
                 msg = LongMessage(self.client,self.message.channel)
-                msg.add(f"Bank for {coach.name} updated to **{coach.account.cash}** coins:\n")
+                msg.add(f"Bank for {coach.name} updated to **{coach.account.amount}** coins:\n")
                 msg.add(f"Note: {reason}\n")
                 msg.add(f"Change: {amount} coins")
                 await msg.send()
 
     async def __run_list(self):
-        coach = Coach.load_coach(str(self.message.author))
-        order = False if "bydate" in self.message.content else True
+        coach = Coach.get_by_name(str(self.message.author))
+        if coach is not None:
 
-        msg = LongMessage(self.client,self.message.author)
-        msg.add(f"**Bank:** {coach.account.cash} coins\n")
-        msg.add("**Collection**:\n")
-        msg.add("-" * 65 + "")
-        msg.add(f"{self.__class__.format_pack(coach.collection_with_count(),order)}")
-        msg.add("-" * 65 + "\n")
-        await msg.send()
-        await self.client.send_message(self.message.channel, "Collection sent to PM")
+            msg = LongMessage(self.client,self.message.author)
+            msg.add(f"**Bank:** {coach.account.amount} coins\n")
+            msg.add("**Collection**:\n")
+            msg.add("-" * 65 + "")
+            msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.cards))}")
+            msg.add("-" * 65 + "\n")
+            await msg.send()
+            await self.client.send_message(self.message.channel, "Collection sent to PM")
+        else:
+            await self.client.send_message(self.message.channel, f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first.")
 
     async def __run_genpack(self):
         if self.__class__.check_gen_command(self.cmd):
             ptype = self.args[1]
             if ptype=="player":
                 team = self.args[2]
-                pack = Pack(ptype,team = team)
-                pack.generate()
+                pack = PackService.generate(ptype,team)
             elif ptype=="training":
-                pack = Pack(ptype)
-                pack.generate()
+                pack = PackService.generate(ptype)
             elif ptype=="booster":
                 ptype = "booster_budget" if len(self.args)<3 else f"booster_{self.args[2]}"
-                pack = Pack(ptype)
-                pack.generate()
+                pack = PackService.generate(ptype)
 
-            # add error handling eventually
-            coach = Coach.load_coach(str(self.message.author))
-            t = Transaction(pack,pack.price)
+            coach=Coach.get_by_name(str(self.message.author))
+            if coach is None:
+                self.client.send_message(self.message.channel, f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first.")
+                return
+            t = Transaction(pack = pack,price=pack.price,description=PackService.description(pack))
             try:
                 coach.make_transaction(t)
             except TransactionError as e:
@@ -356,12 +354,12 @@ class DiscordCommand:
             else:
                 # transaction is ok and coach is saved
                 msg = LongMessage(self.client,self.message.channel)
-                msg.add(f"**{pack.description()}** for **{self.message.author}** - **{pack.price}** coins:\n")
-                msg.add(f"{self.__class__.format_pack(pack.cards)}\n")
-                msg.add(f"**Bank:** {coach.account.cash} coins")
+                msg.add(f"**{PackService.description(pack)}** for **{self.message.author}** - **{pack.price}** coins:\n")
+                msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
+                msg.add(f"**Bank:** {coach.account.amount} coins")
                 await msg.send()
                 # export
-                ImperiumSheet.store_all_cards()
+                SheetService.export_cards()
         else:
             await self.client.send_message(self.message.channel, self.__class__.gen_help())
 

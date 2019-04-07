@@ -35,7 +35,7 @@
             <div class="col-4">
                 <div class="list-group" id="list-tab" role="tablist">
                     {% for coach in coaches %}
-                        <a class="list-group-item list-group-item-action {% if loop.index==1 %} active{%endif%}" id="list-home-list" data-toggle="list" href="#coach{{loop.index}}" role="tab" aria-controls="home">{{coach.name}}</a>
+                        <a class="list-group-item list-group-item-action {% if loop.index==1 %} active{%endif%}" id="list-home-list" data-toggle="list" href="#coach{{loop.index}}" role="tab" aria-controls="home">{{coach.short_name()}}</a>
                     {% endfor %}
                 </div>
             </div>
@@ -56,14 +56,14 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for card in coach.cards %}
+                                {% for card, quantity in ch.sort_cards_by_rarity_with_quatity(coach.cards) %}
                                 <tr {{ rarity_class(card.rarity) }}>
                                     <td><img class="rarity" src="static/images/{{ card.rarity }}.jpg" alt="{{ card.rarity }}" title="{{ card.rarity }}" width="23" height="32" /></td>
                                     <td title="{{ card.description}}">{{card.name}}</td>
                                     <td>{{card.race}}</td>
                                     <td>{{card.card_type}}</td>
                                     <td>{{card.subtype}}</td>
-                                    <td></td>
+                                    <td>{{quantity}}</td>
                                 </tr>
                                 {% endfor %}
                                 </tbody>
