@@ -18,22 +18,8 @@ class ImperiumSheet:
 
     with open(os.path.join(ROOT, 'config/MASTERSHEET_ID'), 'r') as file:
         MASTERSHEET_ID=file.read()
-    #MASTERSHEET_ID = "1wL-qA6yYxaYkpvzL7KfwxNzJOsj0E17AEwSndSp7vNY"
-    MASTER_NAME = "Master List"
 
-    MIXED_TEAMS = [
-        {"code":"aog",  "name":"Alliance of Goodness",   "races":['Bretonnian' , 'Human', 'Dwarf', 'Halfling', 'Wood Elf'] },
-        {"code":"au",   "name":'Afterlife United',       "races":['Undead','Necromantic','Khemri','Vampire']},
-        {"code":"afs",  "name":'Anti-Fur Society',       "races":['Kislev' , 'Norse', 'Amazon', 'Lizardman']},
-        {"code":"cgs",  "name":'Chaos Gods Selection',   "races":['Chaos' , 'Nurgle']},
-        {"code":"cpp",  "name":'Chaotic Player Pact',    "races":['Chaos' , 'Skaven', 'Dark Elf', 'Underworld Denizens']},
-        {"code":"egc",  "name":'Elfic Grand Coalition',  "races":['High Elf' , 'Dark Elf', 'Wood Elf', 'Pro Elf']},
-        {"code":"fea",  "name":'Far East Association',   "races":['Chaos Dwarf' , 'Orc', 'Goblin', 'Skaven', 'Ogre']},
-        {"code":"hl",   "name":'Human League',           "races":['Bretonnian' , 'Human', 'Kislev', 'Norse', 'Amazon']},
-        {"code":"sbr",  "name":'Superior Being Ring',    "races":['Bretonnian' , 'High Elf', 'Vampire', 'Chaos Dwarf']},
-        {"code":"uosp", "name":'Union of Small People',  "races":['Ogre' , 'Goblin','Halfling']},
-        {"code":"vt",   "name":'Violence Together',      "races":['Ogre' , 'Goblin','Halfling']}
-    ]
+    MASTER_NAME = "Master List"
 
     CARD_HEADER = [
         "Rarity",
@@ -80,6 +66,7 @@ class ImperiumSheet:
         return list(new_collection.values())
 
 
+    # TODO needs retesting when/if it will be needed again
     @classmethod
     def store_coach(cls,coach):
         client = gspread.authorize(creds)
@@ -119,10 +106,6 @@ class ImperiumSheet:
                 cell.value = cards[cell.row-1][COACH_CARD_HEADER[cell.col-1]]
         sheet.update_cells(cell_list)
 
-    @classmethod
-    def team_by_code(cls,code):
-        return next(t for t in cls.MIXED_TEAMS if t["code"] == code)
-
 
     @classmethod
     def store_cards(cls,cards):
@@ -148,39 +131,6 @@ class ImperiumSheet:
         sheet.update_cells(cell_list)
 
 
-PACK_PRICES = {
-    "booster_budget": 5,
-    "booster_premium": 20,
-    "player": 25,
-    "training": 10,
-    "starter": 0
-}
-class Pack:
-    rarityorder={"Common":100, "Rare":10, "Epic":5, "Legendary":1}
 
-    def __init__(self,ptype="booster_budget",team = None):
-        if ptype not in PACK_PRICES:
-            raise ValueError(f"Pack type {ptype} unknow")
-        self.pack_type = ptype
-        if self.pack_type == "player":
-            if not team:
-                raise  ValueError(f"Missing team value for {ptype} pack")
-            elif team.lower() not in ImperiumSheet.team_codes():
-                raise  ValueError(f"Team {team} unknow")
-            else:
-                self.team = team.lower()
-        self.price = PACK_PRICES[ptype]
+#if __name__ == "__main__":
 
-    def description(self):
-       desc = ' '.join(self.pack_type.split('_')).capitalize()
-       if hasattr(self,'team'):
-           desc+=" " + ImperiumSheet.team_by_code(self.team)["name"]
-       desc+=" pack"
-
-       return desc
-
-
-if __name__ == "__main__":
-    #p = Pack("starter")
-    #p.generate()
-    print(ImperiumSheet.genpack("starter"))
