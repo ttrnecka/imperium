@@ -1,5 +1,6 @@
 import os
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
+from flask_migrate import Migrate
 from misc.helpers import CardHelper
 #from imperiumbase import Coach, Pack
 from models.base_model import db
@@ -17,10 +18,16 @@ def create_app():
 
 app = create_app()
 
+migrate = Migrate(app, db)
+
 @app.route("/")
 def index():
     sorted_coached = Coach.query.order_by(Coach.name).all()
     return render_template("index.html", coaches = sorted_coached, ch=CardHelper)
+
+@app.route("/coaches.json")
+def coaches():
+    return jsonify([coach.to_json(max_nesting=3) for coach in Coach.query.all()])
 
 # run the application
 if __name__ == "__main__":

@@ -1,15 +1,5 @@
+{% import "macros.jinja" as macros %}
 <!doctype html>
-{% macro rarity_class(rarity) -%}
-    {% if rarity=="Common" %}
-        class="table-light"
-    {% elif rarity=="Rare" %}
-        class="table-info"
-    {% elif rarity=="Epic" %}
-        class="table-danger"
-    {% elif rarity=="Legendary" %}
-        class="table-warning"
-    {% endif %}
-{%- endmacro %}
 <html>
     <head>
         <meta charset="utf-8">
@@ -57,7 +47,7 @@
                                 </thead>
                                 <tbody>
                                 {% for card, quantity in ch.sort_cards_by_rarity_with_quatity(coach.cards) %}
-                                <tr {{ rarity_class(card.rarity) }}>
+                                <tr {{ macros.rarity_class(card.rarity) }}>
                                     <td><img class="rarity" src="static/images/{{ card.rarity }}.jpg" alt="{{ card.rarity }}" title="{{ card.rarity }}" width="23" height="32" /></td>
                                     <td title="{{ card.description}}">{{card.name}}</td>
                                     <td>{{card.race}}</td>

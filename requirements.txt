@@ -3,3 +3,5 @@ gspread
 oauth2client
 pyyaml
 flask_sqlalchemy
+Flask-Migrate
+sqlathanor
