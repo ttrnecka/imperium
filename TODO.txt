@@ -1,21 +1,19 @@
-Autoprocess cards
-Loose Change!
-Banking Error!
-Lottery Win!
+Remove/Reset coach's account(removes all cards, resets cash) 
+Autoprocess cards: Loose Change!, Banking Error!, Lottery Win!
+Add/remove card from coach collection - admin command
 
-Add/remove from collection
+Adminlist/list - show transactions(genpacks/adminbanks) for given coach
+Transaction view (web) - displays every transaction(genpacks/adminbanks)
+Ability to display starter pack (discord) - option to !list/!adminlist like full (!list full)
+Ability to display starter pack (web) (display starter pack flag)
 
-Ability to generate pack but not assign it to coach
-Ability to hand out a free packs
+Ability to hand out a free packs - admin assigns pack to coach which then can generate when they want (!freepack)
+Ability to generate pack but do not assign it to coach's collection, just deck (special card that generates training pack to be used only in deck, not to be assigned to coach's collection)
+Add manage deck capability (web)
+Add list deck capability (bot)
 
-Assing identifier to the generated cards so they can be easily removed (and added to deck eventually)
 
-ability to display starter pack
-
-adminlist - to show transactions
-make list off all transactions (bank)
 test code
-
 disable private commands at the end
 
 
