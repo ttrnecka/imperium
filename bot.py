@@ -38,8 +38,13 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    dc = DiscordCommand(message,client)
-    await dc.process()
+    try:
+        dc = DiscordCommand(message,client)
+        await dc.process()
+    except:
+        raise
+    finally:
+        db.session.close()
 
 @client.event
 async def on_ready():

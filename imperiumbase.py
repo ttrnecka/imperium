@@ -1,8 +1,6 @@
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import os
-from coach import Coach
-from copy import deepcopy
 
 ROOT = os.path.dirname(__file__)
 

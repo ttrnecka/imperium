@@ -1,6 +1,7 @@
 from models.base_model import db
 from models.data_models import Pack, Card, Coach
 from imperiumbase import ImperiumSheet
+from sqlalchemy.orm import joinedload
 import random
 
 class PackService:
@@ -172,7 +173,7 @@ class SheetService:
     def export_cards(cls):
         cards = []
 
-        for coach in Coach.query.all():
+        for coach in Coach.query.options(joinedload('cards').joinedload('coach')).all():
             for card in coach.cards:
                 cards.append(CardService.turn_Card_to_card(card))
 
