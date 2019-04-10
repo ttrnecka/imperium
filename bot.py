@@ -7,7 +7,7 @@ from imperiumbase import ImperiumSheet
 from web import db, create_app
 from models.data_models import Coach, Account, Card, Pack, Transaction, TransactionError
 from misc.helpers import CardHelper
-from services import PackService, SheetService
+from services import PackService, SheetService, CoachService
 
 
 app = create_app()
@@ -143,6 +143,16 @@ class DiscordCommand:
         msg+="\t<amount>: number of coins to add to bank, if negative is used, it will be deducted from bank\n"
         msg+="\t<coach>: coach discord name, must be unique\n"
         msg+="\t<reason>: describe why you are changing the coach bank\n"
+        msg+="```"
+        return msg
+    
+    @classmethod
+    def adminrestore_help(cls):
+        msg="```"
+        msg+="Restore all cards and bank for a coach from removed coach instance\n"
+        msg+="USAGE:\n"
+        msg+="!adminreset <coach>\n"
+        msg+="\t<coach>: coach discord name, must be unique\n"
         msg+="```"
         return msg
 
@@ -286,24 +296,11 @@ class DiscordCommand:
                 await self.client.send_message(self.message.channel, emsg)
                 return
 
-            # find coach
-            coaches = Coach.find_all_by_name(self.args[2])
-            if len(coaches)==0:
-                emsg=f"<coach> __{self.args[2]}__ not found!!!\n"
-                await self.client.send_message(self.message.channel, emsg)
-                return
-
-            if len(coaches)>1:
-                emsg=f"<coach> __{self.args[2]}__ not **unique**!!!\n"
-                emsg+="Select one: "
-                for coach in coaches:
-                    emsg+=coach.name
-                    emsg+=" "
-                await self.client.send_message(self.message.channel, emsg)
+            coach = await self.coach_unique(self.args[2])
+            if coach is None:
                 return
 
             amount = int(self.args[1])
-            coach = coaches[0]
             reason = ' '.join(str(x) for x in self.message.content.split(" ")[3:]) + " - updated by " + str(self.message.author)
 
             t = Transaction(description=reason,price=-1*amount)
@@ -317,6 +314,28 @@ class DiscordCommand:
                 msg.add(f"Bank for {coach.name} updated to **{coach.account.amount}** coins:\n")
                 msg.add(f"Note: {reason}\n")
                 msg.add(f"Change: {amount} coins")
+                await msg.send()
+        
+        if self.message.content.startswith('!adminreset'):
+            # require username argument
+            if len(self.args)!=2:
+                emsg="Bad number of arguments!!!\n"
+                await self.client.send_message(self.message.channel, emsg)
+                await self.client.send_message(self.message.channel, self.__class__.adminreset_help())
+                return
+
+            coach = await self.coach_unique(self.args[1])
+            if coach is None:
+                return
+
+            try:
+                new_coach = coach.reset()
+            except TransactionError as e:
+                await self.transaction_error(e)
+                return
+            else:
+                msg = LongMessage(self.client,self.message.channel)
+                msg.add(f"Coach {new_coach.name} was reset")
                 await msg.send()
 
     async def __run_list(self):
@@ -348,7 +367,7 @@ class DiscordCommand:
 
             coach=Coach.get_by_name(str(self.message.author))
             if coach is None:
-                self.client.send_message(self.message.channel, f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first.")
+                await self.client.send_message(self.message.channel, f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first.")
                 return
             t = Transaction(pack = pack,price=pack.price,description=PackService.description(pack))
             try:
@@ -367,6 +386,24 @@ class DiscordCommand:
                 SheetService.export_cards()
         else:
             await self.client.send_message(self.message.channel, self.__class__.gen_help())
+
+    async def coach_unique(self,name):
+        # find coach
+            coaches = Coach.find_all_by_name(name)
+            if len(coaches)==0:
+                emsg=f"<coach> __{name}__ not found!!!\n"
+                await self.client.send_message(self.message.channel, emsg)
+                return None
+
+            if len(coaches)>1:
+                emsg=f"<coach> __{name}__ not **unique**!!!\n"
+                emsg+="Select one: "
+                for coach in coaches:
+                    emsg+=coach.name
+                    emsg+=" "
+                await self.client.send_message(self.message.channel, emsg)
+                return None
+            return coaches[0]
 
 def RepresentsInt(s):
     try:

@@ -1,4 +1,3 @@
-Remove/Reset coach's account(removes all cards, resets cash) 
 Autoprocess cards: Loose Change!, Banking Error!, Lottery Win!
 Add/remove card from coach collection - admin command
 
@@ -38,3 +37,4 @@ document command channel - clears it up at start
 genpack better help
 genpack training - if quality provided do not do anything
 Exapand genpack help with cost and rarities info
+Remove/Reset coach's account(removes all cards, resets cash) 

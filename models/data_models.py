@@ -1,4 +1,4 @@
-from .base_model import db, Base
+from .base_model import db, Base, QueryWithSoftDelete
 import datetime
 import logging
 import os
@@ -45,9 +45,13 @@ class Pack(Base):
 class Coach(Base):  
     __tablename__ = 'coaches'
     name = db.Column(db.String(80), unique=True, nullable=False,supports_json = True)
+    deleted_name = db.Column(db.String(80), unique=False, nullable=True)
     account = db.relationship('Account', uselist=False, backref=db.backref('coach', lazy=False), cascade="all, delete-orphan",supports_json = True)
     packs = db.relationship('Pack', backref=db.backref('coach', lazy=False),cascade="all, delete-orphan",supports_json = True,lazy=False)
     cards = db.relationship('Card', secondary="packs",backref=db.backref('coach', lazy=False, uselist=False), viewonly=True,lazy=False)
+    deleted = db.Column(db.Boolean(), default=False)
+
+    query_class = QueryWithSoftDelete
 
     def __init__(self,name):
         self.name = name
@@ -81,6 +85,44 @@ class Coach(Base):
 
         return transaction
 
+    # soft delete
+    def remove(self):
+        try:
+            self.deleted = True
+            self.deleted_name = self.name
+            self.name = f"{self.name}_{self.id}"
+            db.session.add(self)
+            db.session.commit()
+        except Exception as e:
+            raise TransactionError(str(e))
+        else:
+            logger.info(f"{self.deleted_name}: Coach soft deleted")
+
+    # restore data after the soft delete
+    def restore(self):
+        try:
+            self.deleted = False
+            self.name = self.deleted_name
+            self.deleted_name = None
+            db.session.add(self)
+            db.session.commit()
+        except Exception as e:
+            raise TransactionError(str(e))
+        else:
+            logger.info(f"{self.name}: Coach restored")
+
+    # soft deletes a coach adn reset its account to fresh one
+    def reset(self):
+        try:
+            name = self.name
+            self.remove()
+            new_coach=self.__class__.create(name)
+        except Exception as e:
+            raise TransactionError(str(e))
+        else:
+            logger.info(f"{new_coach.name}: Coach reset")
+        return new_coach
+
     @classmethod
     def get_by_name(cls,name):
         return cls.query.filter_by(name=name).one_or_none()
@@ -98,7 +140,7 @@ class Coach(Base):
         
 class Account(Base):
     __tablename__ = 'accounts'
-    INIT_CASH = 15 
+    INIT_CASH = 10
     amount = db.Column(db.Integer, default=INIT_CASH, nullable=False,supports_json = True)
     coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
 

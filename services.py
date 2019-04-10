@@ -22,8 +22,8 @@ class PackService:
 
     PACK_PRICES = {
         "booster_budget": 5,
-        "booster_premium": 20,
-        "player": 25,
+        "booster_premium": 15,
+        "player": 10,
         "training": 10,
         "starter": 0
     }
@@ -179,6 +179,12 @@ class SheetService:
 
         ImperiumSheet.store_cards(cards)
 
+class CoachService:
+    @classmethod
+    def remove_softdeletes(cls):
+        for coach in Coach.query.with_deleted().filter_by(deleted=True):
+            db.session.delete(coach)
+        db.session.commit()
             
 class InvalidTeam(Exception):
     pass
