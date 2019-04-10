@@ -119,9 +119,17 @@ class PackService:
                 fcards = cls.filter_cards(rarity)
                 cards.append(random.choice(fcards))
 
-        # TODO addd cards to pack
         for card in cards:
             pack.cards.append(CardService.init_Card_from_card(card))
+        return pack
+
+    @classmethod
+    def admin_pack(cls,price=0, card_names=[]):
+        pack = Pack(price=price,pack_type="admin")
+        for name in card_names:
+            card = CardService.get_card_from_sheet(name)
+            if card:
+                pack.cards.append(CardService.init_Card_from_card(card))
         return pack
 
     @classmethod
@@ -167,6 +175,26 @@ class CardService:
             "Subtype": card.subtype,
             "Notes": card.notes
         }
+
+    # return card from sheet in dict format, name must be exact match, case insensitive
+    @classmethod
+    def get_card_from_sheet(cls,name):
+        name_low = name.lower()
+        for card in ImperiumSheet.cards():
+            print(card)
+            if name_low == str(card["Card Name"]).lower():
+                return card 
+        return None
+
+    @classmethod
+    def get_Card_from_coach(cls,coach,name):
+        cards = list(filter(lambda card: card.name.lower() == name.lower(), coach.cards))
+
+        if len(cards)==0:
+            return None
+        else:
+            return cards[0]
+
         
 class SheetService:
     @classmethod

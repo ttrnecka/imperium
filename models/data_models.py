@@ -15,7 +15,7 @@ class Card(Base):
     __tablename__ = 'cards'
 
     name = db.Column(db.String(80), nullable=False,supports_json = True)
-    description = db.Column(db.String(255),supports_json = True)
+    description = db.Column(db.Text(),supports_json = True)
     race = db.Column(db.String(20), nullable=False,supports_json = True)
     rarity = db.Column(db.String(20), nullable=False,supports_json = True)
     card_type = db.Column(db.String(20), nullable=False,supports_json = True)
@@ -156,7 +156,7 @@ class Transaction(Base):
     pack_id = db.Column(db.Integer, db.ForeignKey('packs.id'))
     price = db.Column(db.Integer, default=0, nullable=False,supports_json = True)
     confirmed = db.Column(db.Boolean, default = False, nullable=False,supports_json = True)
-    description = db.Column(db.String(20), nullable=False,supports_json = True)
+    description = db.Column(db.String(255), nullable=False,supports_json = True)
     account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
 
     def confirm(self):

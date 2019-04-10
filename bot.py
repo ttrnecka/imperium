@@ -7,7 +7,7 @@ from imperiumbase import ImperiumSheet
 from web import db, create_app
 from models.data_models import Coach, Account, Card, Pack, Transaction, TransactionError
 from misc.helpers import CardHelper
-from services import PackService, SheetService, CoachService
+from services import PackService, SheetService, CoachService, CardService
 
 
 app = create_app()
@@ -141,18 +141,30 @@ class DiscordCommand:
         msg+="USAGE:\n"
         msg+="!adminbank <amount> <coach> <reason>\n"
         msg+="\t<amount>: number of coins to add to bank, if negative is used, it will be deducted from bank\n"
-        msg+="\t<coach>: coach discord name, must be unique\n"
+        msg+="\t<coach>: coach discord name or its part, must be unique\n"
         msg+="\t<reason>: describe why you are changing the coach bank\n"
+        msg+="```"
+        return msg
+
+    @classmethod
+    def admincard_help(cls):
+        msg="```"
+        msg+="USAGE:\n"
+        msg+="Adds or remove card or cards from the coach\n"
+        msg+="!admincard add|remove <coach> <card>;...;<card>\n"
+        msg+="\tadd|remove: select one based on desired operation\n"
+        msg+="\t<coach>: coach discord name or its part, must be unique\n"
+        msg+="\t<card>: Exact card name as is in the All Cards list, if mutliple cards are specified separate them by **;**\n"
         msg+="```"
         return msg
     
     @classmethod
-    def adminrestore_help(cls):
+    def adminreset_help(cls):
         msg="```"
-        msg+="Restore all cards and bank for a coach from removed coach instance\n"
+        msg+="Resets all cards and bank account for given coach to initial state\n"
         msg+="USAGE:\n"
         msg+="!adminreset <coach>\n"
-        msg+="\t<coach>: coach discord name, must be unique\n"
+        msg+="\t<coach>: coach discord name or its part, must be unique\n"
         msg+="```"
         return msg
 
@@ -316,6 +328,88 @@ class DiscordCommand:
                 msg.add(f"Change: {amount} coins")
                 await msg.send()
         
+        if self.message.content.startswith('!admincard'):
+            # !adminpack add/remove <coach> <card>;...;<card>
+            if len(self.args)<4:
+                emsg="Not enough arguments!!!\n"
+                await self.client.send_message(self.message.channel, emsg)
+                await self.client.send_message(self.message.channel, self.__class__.admincard_help())
+                return
+
+            # amount must be int
+            if self.args[1] not in ["add","remove"]:
+                emsg="specify **add** or **remove** operation!!!\n"
+                await self.client.send_message(self.message.channel, emsg)
+                return
+
+            coach = await self.coach_unique(self.args[2])
+            if coach is None:
+                return
+
+            card_names = [card.strip() for card in " ".join(self.args[3:]).split(";")]
+            if self.args[1]=="add":
+                pack = PackService.admin_pack(0,card_names)
+                # situation when som of the cards cound not be found
+                if len(card_names)!= len(pack.cards):
+                    msg = LongMessage(self.client,self.message.channel)
+                    msg.add(f"Not all cards were found, check the names!!!\n")
+                    for card in card_names:
+                        if card in [card.name.lower() for card in pack.cards]:
+                            found = True
+                        else:
+                            found = False
+                        found_msg = "**not found**" if not found else "found"
+                        msg.add(f"{card}: {found_msg}")
+                    await msg.send()
+                    return
+                reason = f"{self.args[1].capitalize()} {';'.join(card_names)} - by " + str(self.message.author)
+
+                t = Transaction(pack=pack, description=reason,price=0)
+                try:
+                    coach.make_transaction(t)
+                except TransactionError as e:
+                    await self.transaction_error(e)
+                    return
+                else:
+                    msg = LongMessage(self.client,self.message.channel)
+                    msg.add(f"**{PackService.description(pack)}** for @{coach.name} - **{pack.price}** coins:\n")
+                    msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
+                    msg.add(f"**Bank:** {coach.account.amount} coins")
+                    await msg.send()
+                    return
+
+            if self.args[1]=="remove":
+                cards = [CardService.get_Card_from_coach(coach,name) for name in card_names]
+                cards = [card for card in cards if card is not None]
+                # situation when som of the cards could not be found
+                if len(card_names)!= len(cards):
+                    msg = LongMessage(self.client,self.message.channel)
+                    msg.add(f"Not all cards were found, check the names!!!\n")
+                    for card in card_names:
+                        if card in [card.name.lower() for card in cards]:
+                            found = True
+                        else:
+                            found = False
+                        found_msg = "**not found**" if not found else "found"
+                        msg.add(f"{card}: {found_msg}")
+                    await msg.send()
+                    return
+
+                print(cards)
+                try:
+                    for card in cards:
+                        db.session.delete(card)
+                    db.session.commit()
+                except TransactionError as e:
+                    await self.transaction_error(e)
+                    return
+                else:
+                    msg = LongMessage(self.client,self.message.channel)
+                    msg.add(f"Cards removed frm @{coach.name} collection:\n")
+                    msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(cards))}\n")
+                    await msg.send()
+                    return
+                    
         if self.message.content.startswith('!adminreset'):
             # require username argument
             if len(self.args)!=2:
