@@ -87,7 +87,7 @@ class LongMessage:
 class DiscordCommand:
     @classmethod
     def is_private_admin_channel(cls,dchannel):
-        if "admin-channel" in dchannel.name:
+        if dchannel.name is not None and "admin-channel" in dchannel.name:
             return True
         return False
 
