@@ -273,6 +273,14 @@ class DiscordCommand:
             await self.client.send_message(self.message.channel, emsg)
             return
 
+        #adminexport cmd
+        if self.message.content.startswith('!adminexport'):
+            msg = LongMessage(self.client,self.message.channel)
+            msg.add(f"Cards have been exported to master sheet!!! {self.message.author.mention}")
+            await msg.send()
+            # export
+            SheetService.export_cards()
+
         #adminlist cmd
         if self.message.content.startswith('!adminlist'):
             # require username argument
@@ -316,7 +324,7 @@ class DiscordCommand:
                 return
 
             amount = int(self.args[1])
-            reason = ' '.join(str(x) for x in self.message.content.split(" ")[3:]) + " - updated by " + str(self.message.author)
+            reason = ' '.join(str(x) for x in self.message.content.split(" ")[3:]) + " - updated by " + str(self.message.author.name)
 
             t = Transaction(description=reason,price=-1*amount)
             try:
@@ -330,6 +338,7 @@ class DiscordCommand:
                 msg.add(f"Note: {reason}\n")
                 msg.add(f"Change: {amount} coins")
                 await msg.send()
+                await  self.bank_notification(f"Your bank has been updated by **{amount}** coins due to {reason}",coach)
         
         if self.message.content.startswith('!admincard'):
             # !adminpack add/remove <coach> <card>;...;<card>
@@ -365,7 +374,7 @@ class DiscordCommand:
                         msg.add(f"{card}: {found_msg}")
                     await msg.send()
                     return
-                reason = f"{self.args[1].capitalize()} {';'.join(card_names)} - by " + str(self.message.author)
+                reason = f"{self.args[1].capitalize()} {';'.join(card_names)} - by " + str(self.message.author.name)
 
                 t = Transaction(pack=pack, description=reason,price=0)
                 try:
@@ -379,6 +388,7 @@ class DiscordCommand:
                     msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
                     msg.add(f"**Bank:** {coach.account.amount} coins")
                     await msg.send()
+                    await  self.bank_notification(f"Card(s) **{' ,'.join([card.name for card in pack.cards])}** added to your collection by {str(self.message.author.name)}",coach)
                     return
 
             if self.args[1]=="remove":
@@ -408,9 +418,10 @@ class DiscordCommand:
                     return
                 else:
                     msg = LongMessage(self.client,self.message.channel)
-                    msg.add(f"Cards removed frm @{coach.name} collection:\n")
+                    msg.add(f"Cards removed from @{coach.name} collection:\n")
                     msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(cards))}\n")
                     await msg.send()
+                    await  self.bank_notification(f"Card(s) **{' ,'.join([card.name for card in cards])}** removed from your collection by {str(self.message.author.name)}",coach)
                     return
                     
         if self.message.content.startswith('!adminreset'):
@@ -434,6 +445,7 @@ class DiscordCommand:
                 msg = LongMessage(self.client,self.message.channel)
                 msg.add(f"Coach {new_coach.name} was reset")
                 await msg.send()
+                await  self.bank_notification(f"Your account was reset",new_coach)
 
     async def __run_list(self):
         coach = Coach.get_by_name(str(self.message.author))
@@ -479,8 +491,7 @@ class DiscordCommand:
                 msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
                 msg.add(f"**Bank:** {coach.account.amount} coins")
                 await msg.send()
-                # export
-                SheetService.export_cards()
+                return
         else:
             await self.client.send_message(self.message.channel, self.__class__.gen_help())
 
@@ -501,6 +512,15 @@ class DiscordCommand:
                 await self.client.send_message(self.message.channel, emsg)
                 return None
             return coaches[0]
+
+    #must me under 2000 chars
+    async def bank_notification(self,msg,coach):
+        print(coach.discord_id())
+
+        member = discord.utils.get(self.client.get_all_members(), name=coach.short_name(), discriminator=coach.discord_id())
+        channel = discord.utils.get(self.client.get_all_channels(), name='bank-notifications')
+        await self.client.send_message(channel, f"{member.mention}: "+msg)
+        return 
 
 def RepresentsInt(s):
     try:

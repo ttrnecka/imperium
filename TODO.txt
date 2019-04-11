@@ -1,6 +1,9 @@
-
-Autoprocess cards: Loose Change!, Banking Error!, Lottery Win!
+Autoprocess cards: Loose Change!, Banking Error!, Lottery Win! and notify coach
 check wha sql is bank command using
+
+genpacks - first ever purchase should redeemm 5 coins
+
+player packs positional limits (not duplicate cards?)
 
 Adminlist/list - show transactions(genpacks/adminbanks) for given coach
 Transaction view (web) - displays every transaction(genpacks/adminbanks)
@@ -12,7 +15,7 @@ Ability to generate pack but do not assign it to coach's collection, just deck (
 Add manage deck capability (web)
 Add list deck capability (bot)
 
-
+Collect data from cyaniude API and upload ot excel
 test code
 disable private commands at the end
 
@@ -41,4 +44,8 @@ Exapand genpack help with cost and rarities info
 Remove/Reset coach's account(removes all cards, resets cash) 
 Add/remove card from coach collection - admin command
 Transaction description size
+change discord  rarity icons
 Card description size
+admincard remove -typo Cards removed frm @Steakmittens#3583 collection:
+turn xls export to command
+notify coach when their bank is updated or card is added/removed

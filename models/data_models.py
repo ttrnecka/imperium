@@ -64,6 +64,9 @@ class Coach(Base):
     def short_name(self):
         return self.name[:-5]
 
+    def discord_id(self):
+        return self.name[-4:]
+
     def make_transaction(self,transaction):
         # do nothing
         if self.account.amount < transaction.price:
