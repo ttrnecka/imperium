@@ -52,6 +52,8 @@ async def on_ready():
     logger.info(client.user.name)
     logger.info(client.user.id)
     logger.info('------')
+    for emoji in client.get_all_emojis():
+        DiscordCommand.emojis[emoji.name]=str(emoji)
 
 
 class LongMessage:
@@ -85,6 +87,13 @@ class LongMessage:
             yield msg
 
 class DiscordCommand:
+    emojis = {
+        "Common": "",
+        "Rare": ":diamonds:",
+        "Epic": ":large_blue_diamond:",
+        "Legendary": ":large_orange_diamond: ",
+    }
+
     @classmethod
     def is_private_admin_channel(cls,dchannel):
         if dchannel.name is not None and "admin-channel" in dchannel.name:
@@ -193,13 +202,7 @@ class DiscordCommand:
 
     @classmethod
     def rarity_emoji(cls,rarity):
-        switcher = {
-            "Common": "",
-            "Rare": ":diamonds:",
-            "Epic": ":large_blue_diamond:",
-            "Legendary": ":large_orange_diamond: ",
-        }
-        return switcher.get(rarity, "")
+        return cls.emojis.get(rarity, "")
 
     @classmethod
     def number_emoji(cls,number):
