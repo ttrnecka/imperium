@@ -34,6 +34,17 @@ Create a DB
 py -3.6 dbcreate.py
 ```
 
+Set migration revision. When you create db all the migration are skipped. So it is required to set the current revision on DB manually
+
+```
+py -3.6 flask db head
+```
+
+Use the revision from previous step
+
+```
+py -3.6 flask stamp <revison>
+```
 Run bot
 
 ```

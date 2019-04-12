@@ -111,6 +111,23 @@ class DiscordCommand:
         return msg.strip("\n")
 
     @classmethod
+    def commands(cls):
+        msg="```asciidoc\n"
+        msg+="__**Coach Commands**__\n"
+        msg+="!list           - sends details of coach's own account by PM\n"
+        msg+="!newcoach       - creates coach's account\n"
+        msg+="!genpack        - generates pack and assigns it to coach\n"
+        msg+="!genpackspecial - generates special play pack, does not assign it to coach, costs nothing\n"
+        msg+=" \n__**Admin Commands**__\n"
+        msg+="!adminlist      - lists coach's account \n"
+        msg+="!adminbank      - updates to coach's bank, sends notification to the coach \n"
+        msg+="!admincard      - updates to coach's collection, sends notification to the coach \n"
+        msg+="!adminreset     - resets coach's account, sends notification to the coach \n"
+        msg+="!adminexport    - exports all card collections to the master sheet\n"
+        msg+="```"
+        return msg
+
+    @classmethod
     def gen_help(cls):
         msg="```asciidoc\n"
         msg+="!genpack command generates new pack and assigns it to coach. The coach needs to have enough coins to buy the pack.\n \n"
@@ -139,7 +156,7 @@ class DiscordCommand:
         msg+="Command: !genpack player <team>\n"
         msg+="where <team> is one of following:\n"
         for team in PackService.MIXED_TEAMS:
-            msg+="\t"+team["code"] +" - "+ team["name"] +"\n"
+            msg+="\t"+team["code"] +" - "+ team["name"] +f" ({', '.join(team['races'])})\n"
 
         msg+="```"
         return msg
@@ -273,6 +290,11 @@ class DiscordCommand:
             await self.client.send_message(self.message.channel, emsg)
             return
 
+        #adminhelp cmd
+        if self.message.content.startswith('!adminhelp'):
+            await self.client.send_message(self.message.channel, self.__class__.commands())
+            return
+
         #adminexport cmd
         if self.message.content.startswith('!adminexport'):
             msg = LongMessage(self.client,self.message.channel)
@@ -280,6 +302,7 @@ class DiscordCommand:
             await msg.send()
             # export
             SheetService.export_cards()
+            return
 
         #adminlist cmd
         if self.message.content.startswith('!adminlist'):
@@ -408,11 +431,14 @@ class DiscordCommand:
                     await msg.send()
                     return
 
-                print(cards)
+                reason = f"{self.args[1].capitalize()} {';'.join(card_names)} - by " + str(self.message.author.name)
+                t = Transaction(description=reason,price=0)
+
                 try:
                     for card in cards:
                         db.session.delete(card)
-                    db.session.commit()
+                       # db.session.commit()
+                    coach.make_transaction(t)
                 except TransactionError as e:
                     await self.transaction_error(e)
                     return
@@ -474,24 +500,53 @@ class DiscordCommand:
                 ptype = "booster_budget" if len(self.args)<3 else f"booster_{self.args[2]}"
                 pack = PackService.generate(ptype)
 
-            coach=Coach.get_by_name(str(self.message.author))
-            if coach is None:
-                await self.client.send_message(self.message.channel, f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first.")
-                return
-            t = Transaction(pack = pack,price=pack.price,description=PackService.description(pack))
-            try:
-                coach.make_transaction(t)
-            except TransactionError as e:
-                await self.transaction_error(e)
-                return
-            else:
-                # transaction is ok and coach is saved
+            #free pack
+            if self.cmd.startswith('!genpackspecial'):
+                #just send message, no processing
                 msg = LongMessage(self.client,self.message.channel)
-                msg.add(f"**{PackService.description(pack)}** for **{self.message.author}** - **{pack.price}** coins:\n")
+                msg.add(f"**Special Play {PackService.description(pack)}**:\n")
                 msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
-                msg.add(f"**Bank:** {coach.account.amount} coins")
+                msg.add("**Note**: This is used for Special Play purposes only!!!")
                 await msg.send()
-                return
+            #standard pack
+            else:
+                coach=Coach.get_by_name(str(self.message.author))
+                
+                just_joined = True if len(coach.packs)==0 else False
+
+                if coach is None:
+                    await self.client.send_message(self.message.channel, f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first.")
+                    return
+                t = Transaction(pack = pack,price=pack.price,description=PackService.description(pack))
+                try:
+                    coach.make_transaction(t)
+                except TransactionError as e:
+                    await self.transaction_error(e)
+                    return
+                else:
+                    # transaction is ok and coach is saved
+                    msg = LongMessage(self.client,self.message.channel)
+                    msg.add(f"**{PackService.description(pack)}** for **{self.message.author}** - **{pack.price}** coins:\n")
+                    msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
+                    msg.add(f"**Bank:** {coach.account.amount} coins")
+                    await msg.send()
+
+                    #if just joined
+                    if just_joined:
+                        amount = 5
+                        reason = 'Joining bonus'
+
+                        t = Transaction(description=reason,price=-1*amount)
+                        try:
+                            coach.make_transaction(t)
+                        except TransactionError as e:
+                            await self.transaction_error(e)
+                            return
+                        else:
+                            await  self.bank_notification(f"Your bank has been updated by **{amount}** coins due to {reason}",coach)
+                            return
+                    
+                    return
         else:
             await self.client.send_message(self.message.channel, self.__class__.gen_help())
 

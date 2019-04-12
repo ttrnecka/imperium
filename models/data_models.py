@@ -75,12 +75,11 @@ class Coach(Base):
             raise TransactionError("Double processing of transaction")
 
         try:
-            self.account.amount = self.account.amount - transaction.price
+            self.account.amount = Account.amount - transaction.price
             transaction.confirm()
             self.account.transactions.append(transaction)
             if transaction.pack is not None:
                 transaction.pack.coach = self
-            db.session.add(self)
             db.session.commit()
         except Exception as e:
             raise TransactionError(str(e))

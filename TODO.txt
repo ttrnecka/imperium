@@ -1,7 +1,4 @@
 Autoprocess cards: Loose Change!, Banking Error!, Lottery Win! and notify coach
-check wha sql is bank command using
-
-genpacks - first ever purchase should redeemm 5 coins
 
 player packs positional limits (not duplicate cards?)
 
@@ -49,3 +46,8 @@ Card description size
 admincard remove -typo Cards removed frm @Steakmittens#3583 collection:
 turn xls export to command
 notify coach when their bank is updated or card is added/removed
+removing card should make an transaction record
+add teams in genpack help
+special play pack generator
+check wha sql is bank command using
+genpacks - first ever purchase should redeemm 5 coins
