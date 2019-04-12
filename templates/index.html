@@ -35,7 +35,7 @@
                     {% for coach in coaches %}
                     <div class="tab-pane fade show {% if loop.index==1 %} active{%endif%}" id="coach{{loop.index}}" role="tabpanel" aria-labelledby="coach{{loop.index}}-list">
                             <h5>Collection</h5>
-                            <span>Toggle starter pack    </span><input class="starter_pack" type="checkbox" onchange="$('.starter').toggleClass('d-none');">
+                            <span>Toggle starter pack    </span><input class="starter_pack" checked type="checkbox" onchange="$('.starter').toggleClass('d-none');">
                             <table class="table">
                                 <thead>
                                 <tr>
