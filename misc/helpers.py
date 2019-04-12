@@ -1,6 +1,6 @@
 
 class CardHelper:
-    rarityorder={"Common":4, "Rare":3, "Epic":2, "Legendary":1}
+    rarityorder={"Starter":5,"Common":4, "Rare":3, "Epic":2, "Legendary":1}
 
     @classmethod
     def sort_cards_by_rarity(cls,cards):

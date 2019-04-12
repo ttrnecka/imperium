@@ -481,13 +481,20 @@ class DiscordCommand:
 
     async def __run_list(self):
         coach = Coach.get_by_name(str(self.message.author))
+        show_starter = True if len(self.args)>1 and self.args[1]=="all" else False
         if coach is not None:
 
+            if show_starter:
+                all_cards = coach.cards + PackService.generate("starter").cards
+                sp_msg = " (with Starter Pack)"
+            else:
+                all_cards = coach.cards
+                sp_msg = ""
             msg = LongMessage(self.client,self.message.author)
             msg.add(f"**Bank:** {coach.account.amount} coins\n")
-            msg.add("**Collection**:\n")
+            msg.add(f"**Collection**{sp_msg}:\n")
             msg.add("-" * 65 + "")
-            msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.cards))}")
+            msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(all_cards))}")
             msg.add("-" * 65 + "\n")
             await msg.send()
             await self.client.send_message(self.message.channel, "Collection sent to PM")

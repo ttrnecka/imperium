@@ -160,7 +160,7 @@ class CardService:
             description = card["Description"],
             card_type = card["Type"],
             subtype = card["Subtype"],
-            notes = card["Notes"],
+            notes = card["Notes"] if hasattr(card, "Notes") else "",
         )
 
     @classmethod

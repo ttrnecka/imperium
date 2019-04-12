@@ -1,11 +1,13 @@
 {% macro rarity_class(rarity) -%}
     {% if rarity=="Common" %}
-        class="table-light"
+        table-light
+    {% elif rarity=="Starter" %}
+        table-light
     {% elif rarity=="Rare" %}
-        class="table-info"
+        table-info
     {% elif rarity=="Epic" %}
-        class="table-danger"
+        table-danger
     {% elif rarity=="Legendary" %}
-        class="table-warning"
+        table-warning
     {% endif %}
 {%- endmacro %}

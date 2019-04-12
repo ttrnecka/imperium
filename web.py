@@ -5,6 +5,7 @@ from misc.helpers import CardHelper
 #from imperiumbase import Coach, Pack
 from models.base_model import db
 from models.data_models import Coach
+from services import PackService
 
 os.environ["YOURAPPLICATION_SETTINGS"] = "config/config.py"
 
@@ -22,8 +23,9 @@ migrate = Migrate(app, db)
 
 @app.route("/")
 def index():
+    starter_cards = PackService.generate("starter").cards
     sorted_coached = Coach.query.order_by(Coach.name).all()
-    return render_template("index.html", coaches = sorted_coached, ch=CardHelper)
+    return render_template("index.html", coaches = sorted_coached, ch=CardHelper, starter_cards=starter_cards)
 
 @app.route("/coaches.json")
 def coaches():

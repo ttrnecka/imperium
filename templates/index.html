@@ -6,7 +6,8 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <link rel="stylesheet" href="/static/styles/main.css?1.0">
+        <link rel="stylesheet" href="/static/styles/main.css?1.5">
+        <script src="https://code.jquery.com/jquery-3.4.0.min.js" integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg="crossorigin="anonymous"></script>
         <title>REBBL Imperium</title>
     </head>
 
@@ -34,6 +35,7 @@
                     {% for coach in coaches %}
                     <div class="tab-pane fade show {% if loop.index==1 %} active{%endif%}" id="coach{{loop.index}}" role="tabpanel" aria-labelledby="coach{{loop.index}}-list">
                             <h5>Collection</h5>
+                            <span>Toggle starter pack    </span><input class="starter_pack" type="checkbox" onchange="$('.starter').toggleClass('d-none');">
                             <table class="table">
                                 <thead>
                                 <tr>
@@ -47,7 +49,17 @@
                                 </thead>
                                 <tbody>
                                 {% for card, quantity in ch.sort_cards_by_rarity_with_quatity(coach.cards) %}
-                                <tr {{ macros.rarity_class(card.rarity) }}>
+                                <tr class="{{ macros.rarity_class(card.rarity) }}">
+                                    <td><img class="rarity" src="static/images/{{ card.rarity }}.jpg" alt="{{ card.rarity }}" title="{{ card.rarity }}" width="23" height="32" /></td>
+                                    <td title="{{ card.description}}">{{card.name}}</td>
+                                    <td>{{card.race}}</td>
+                                    <td>{{card.card_type}}</td>
+                                    <td>{{card.subtype}}</td>
+                                    <td>{{quantity}}</td>
+                                </tr>
+                                {% endfor %}
+                                {% for card, quantity in ch.sort_cards_by_rarity_with_quatity(starter_cards) %}
+                                <tr class="starter {{ macros.rarity_class(card.rarity) }}">
                                     <td><img class="rarity" src="static/images/{{ card.rarity }}.jpg" alt="{{ card.rarity }}" title="{{ card.rarity }}" width="23" height="32" /></td>
                                     <td title="{{ card.description}}">{{card.name}}</td>
                                     <td>{{card.race}}</td>
