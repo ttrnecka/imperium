@@ -17,7 +17,7 @@ class PackService:
         {"code":"hl",   "name":'Human League',           "races":['Bretonnian' , 'Human', 'Kislev', 'Norse', 'Amazon']},
         {"code":"sbr",  "name":'Superior Being Ring',    "races":['Bretonnian' , 'High Elf', 'Vampire', 'Chaos Dwarf']},
         {"code":"uosp", "name":'Union of Small People',  "races":['Ogre' , 'Goblin','Halfling']},
-        {"code":"vt",   "name":'Violence Together',      "races":['Ogre' , 'Goblin','Halfling', 'Lizardman']}
+        {"code":"vt",   "name":'Violence Together',      "races":['Ogre' , 'Goblin','Orc', 'Lizardman']}
     ]
 
     PACK_PRICES = {
