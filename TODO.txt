@@ -1,5 +1,3 @@
-Autoprocess cards: Loose Change!, Banking Error!, Lottery Win! and notify coach
-
 player packs positional limits (not duplicate cards?)
 
 Adminlist/list - show transactions(genpacks/adminbanks) for given coach
@@ -51,3 +49,4 @@ add teams in genpack help
 special play pack generator
 check wha sql is bank command using
 genpacks - first ever purchase should redeemm 5 coins
+Autoprocess cards: Loose Change!, Banking Error!, Lottery Win! and notify coach

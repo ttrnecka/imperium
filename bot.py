@@ -30,6 +30,12 @@ client = discord.Client()
 GEN_QUALITY = ["premium","budget"]
 GEN_PACKS = ["player","training","booster"]
 
+AUTO_CARDS = {
+    'Loose Change!':5,
+    'Bank Error!':10,
+    'Lottery Win!':15
+}
+
 
 @client.event
 async def on_message(message):
@@ -411,7 +417,8 @@ class DiscordCommand:
                     msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
                     msg.add(f"**Bank:** {coach.account.amount} coins")
                     await msg.send()
-                    await  self.bank_notification(f"Card(s) **{' ,'.join([card.name for card in pack.cards])}** added to your collection by {str(self.message.author.name)}",coach)
+                    await self.bank_notification(f"Card(s) **{' ,'.join([card.name for card in pack.cards])}** added to your collection by {str(self.message.author.name)}",coach)
+                    await self.auto_cards(pack)
                     return
 
             if self.args[1]=="remove":
@@ -437,7 +444,6 @@ class DiscordCommand:
                 try:
                     for card in cards:
                         db.session.delete(card)
-                       # db.session.commit()
                     coach.make_transaction(t)
                 except TransactionError as e:
                     await self.transaction_error(e)
@@ -531,6 +537,8 @@ class DiscordCommand:
                     msg.add(f"**Bank:** {coach.account.amount} coins")
                     await msg.send()
 
+                    await self.auto_cards(pack)
+
                     #if just joined
                     if just_joined:
                         amount = 5
@@ -576,6 +584,24 @@ class DiscordCommand:
         channel = discord.utils.get(self.client.get_all_channels(), name='bank-notifications')
         await self.client.send_message(channel, f"{member.mention}: "+msg)
         return 
+
+    #checks pack for AUTO_CARDS and process them
+    async def auto_cards(self,pack):
+        for card in pack.cards:
+            if card.name in AUTO_CARDS.keys():
+                reason = "Autoprocessing "+card.name
+                amount = AUTO_CARDS[card.name]
+                msg=f"You card {card.name} has been processed. You were granted {amount} coins"
+                t = Transaction(description=reason,price=-1*amount)
+                try:
+                    db.session.delete(card)
+                    pack.coach.make_transaction(t)
+                except TransactionError as e:
+                    await self.transaction_error(e)
+                    return
+                else:
+                    await  self.bank_notification(msg,pack.coach)
+        return
 
 def RepresentsInt(s):
     try:

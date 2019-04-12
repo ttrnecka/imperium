@@ -169,25 +169,3 @@ class Transaction(Base):
 
 class TransactionError(Exception):
     pass
-
-AUTO_CARDS = {
-    'Loose Change!':5,
-    'Bank Error!':10,
-    'Lottery Win!':15
-}
-#checks the pack for cards that can be auto processed
-def pack_checker(session, flush_context, instances):
-    print(session.new)
-    #for card in pack.cards:
-    #    if card.name in AUTO_CARDS.keys():
-    #        amount = AUTO_CARDS[card.name]
-    #        reason = f'{card.name} autoprocessing'
-    #        t = Transaction(description=reason,price=-1*amount)
-    #        try:
-    #            coach.make_transaction(t)
-    #        except TransactionError as e:
-    #            await self.transaction_error(e)
-    #            return
-    #        else:
-
-event.listen(db.session, "before_flush", pack_checker)
