@@ -29,7 +29,7 @@ def index():
 
 @app.route("/coaches.json")
 def coaches():
-    return jsonify([coach.to_json(max_nesting=3) for coach in Coach.query.all()])
+    return jsonify([coach.to_json() for coach in Coach.query.all()])
 
 # run the application
 if __name__ == "__main__":
