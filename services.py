@@ -28,6 +28,22 @@ class PackService:
         "starter": 0
     }
 
+    BUDGET_COMBOS = [
+        {"roll":0.4, "rarities":["Rare","Common","Common","Common","Common"]},
+        {"roll":0.6, "rarities":["Rare","Rare","Common","Common","Common"]},
+        {"roll":0.7, "rarities":["Epic","Common","Common","Common","Common"]},
+        {"roll":0.8, "rarities":["Rare","Rare","Rare","Common","Common"]},
+        {"roll":0.85, "rarities":["Epic","Rare","Common","Common","Common"]},
+        {"roll":0.9, "rarities":["Rare","Rare","Rare","Rare","Common"]},
+        {"roll":0.925, "rarities":["Epic","Rare","Rare","Common","Common"]},
+        {"roll":0.95, "rarities":["Epic","Epic","Common","Common","Common"]},
+        {"roll":0.975, "rarities":["Legendary","Common","Common","Common","Common"]},
+        {"roll":0.98125, "rarities":["Rare","Rare","Rare","Rare","Rare"]},
+        {"roll":0.9875, "rarities":["Epic","Rare","Rare","Rare","Common"]},
+        {"roll":0.99375, "rarities":["Epic","Epic","Rare","Common","Common"]},
+        {"roll":1, "rarities":["Epic","Rare","Common","Common","Common"]},
+    ]
+
     @classmethod
     def filter_cards(cls,rarity,ctype=None,races=None):
         if races is not None:
@@ -109,7 +125,7 @@ class PackService:
                 rarity = cls.rarity(ptype)
                 fcards = cls.filter_cards(rarity,"Training")
                 cards.append(random.choice(fcards))
-        if ptype in ["booster_budget","booster_premium"] :
+        if ptype == "booster_premium":
             q = "budget" if "budget" in ptype else "premium"
             rarity = cls.rarity("booster","premium")
             fcards = cls.filter_cards(rarity)
@@ -118,7 +134,15 @@ class PackService:
                 rarity = cls.rarity("booster",q)
                 fcards = cls.filter_cards(rarity)
                 cards.append(random.choice(fcards))
-
+        if ptype == "booster_budget":
+            roll = random.random()
+            rarities = [combo for combo in cls.BUDGET_COMBOS if combo['roll']>=roll][0]['rarities']
+            print(rarities)
+            print("----------------------------------------------------------------")
+            for rarity in rarities:
+                fcards = cls.filter_cards(rarity)
+                cards.append(random.choice(fcards))
+        
         for card in cards:
             pack.cards.append(CardService.init_Card_from_card(card))
         return pack
