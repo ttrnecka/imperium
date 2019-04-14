@@ -1,5 +1,5 @@
 from models.base_model import db
-from models.data_models import Pack, Card, Coach
+from models.data_models import Pack, Card, Coach, Tournament
 from imperiumbase import ImperiumSheet
 from sqlalchemy.orm import joinedload
 import random
@@ -213,7 +213,30 @@ class CoachService:
         for coach in Coach.query.with_deleted().filter_by(deleted=True):
             db.session.delete(coach)
         db.session.commit()
-            
+
+class TournamentService:
+    @classmethod
+    def init_dict_from_tournament(cls,tournament):
+        return {
+            "tournament_id":int(tournament["Tournament ID"]),
+            "name":tournament["Tournament Name"],
+            "type":tournament["Tournament Type"],
+            "mode":tournament["Tournament Mode"],
+            "signup_close_date":tournament["Signup Close Date"].replace('\x92',' '),
+            "expected_start_date":tournament["Expected Start Date"].replace('\x92',' '),
+            "expected_end_date":tournament["Expected End Date"].replace('\x92',' '),
+            "fee":int(tournament["Entrance Fee"]),
+            "status":tournament["Signup Status"],
+            "coach_limit":int(tournament["Coach Count Limit"]),
+            "region":tournament["Region Bias"],
+            "deck_limit":int(tournament["Deck Size Limit"]),
+            "admin":tournament["Tournament Admin"],
+            "sponsor":tournament["Tournament Sponsor"],
+            "special_rules":tournament["Special Rules"],
+            "prizes":tournament["Prizes"],
+        }
+
+
 class InvalidTeam(Exception):
     pass
 

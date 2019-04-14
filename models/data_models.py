@@ -15,7 +15,7 @@ logger.addHandler(handler)
 class Card(Base):
     __tablename__ = 'cards'
 
-    name = db.Column(db.String(80), nullable=False,supports_json = True)
+    name = db.Column(db.String(80), nullable=False,supports_json = True,index=True)
     description = db.Column(db.Text(),supports_json = True)
     race = db.Column(db.String(20), nullable=False,supports_json = True)
     rarity = db.Column(db.String(20), nullable=False,supports_json = True)
@@ -45,7 +45,7 @@ class Pack(Base):
 
 class Coach(Base):  
     __tablename__ = 'coaches'
-    name = db.Column(db.String(80), unique=True, nullable=False,supports_json = True)
+    name = db.Column(db.String(80), unique=True, nullable=False,supports_json = True,index=True)
     deleted_name = db.Column(db.String(80), unique=False, nullable=True)
     account = db.relationship('Account', uselist=False, backref=db.backref('coach', lazy=False), cascade="all, delete-orphan",supports_json = True)
     packs = db.relationship('Pack', backref=db.backref('coach', lazy=False),cascade="all, delete-orphan",supports_json = True,lazy=False)
@@ -166,6 +166,38 @@ class Transaction(Base):
         self.confirmed = True
         self.date_confirmed = datetime.datetime.now()
 
+tournaments_signups_table = db.Table('tournaments_signups', Base.metadata,
+    db.Column('tournament_id', db.Integer, db.ForeignKey('tournaments.id'), nullable=False),
+    db.Column('coach_id', db.Integer, db.ForeignKey('coaches.id'), nullable=False)
+)
+
+class Tournament(Base):
+    __tablename__ = 'tournaments'
+
+    tournament_id = db.Column(db.Integer,nullable=False, index=True, unique=True)
+    name = db.Column(db.String(255),nullable=False, index=True)
+    discord_channel = db.Column(db.String(255),nullable=True)
+    type = db.Column(db.String(80),nullable=False)
+    mode = db.Column(db.String(80),nullable=False)
+    signup_close_date = db.Column(db.String(80),  nullable=True)
+    expected_start_date = db.Column(db.String(80),  nullable=True)
+    expected_end_date = db.Column(db.String(80),  nullable=True)
+    deadline_date = db.Column(db.String(80),  nullable=True)
+    fee = db.Column(db.Integer())
+    status = db.Column(db.String(80),nullable=False)
+    coach_limit = db.Column(db.Integer())
+    region = db.Column(db.String(80),nullable=False)
+    deck_limit =  db.Column(db.Integer())
+    admin =  db.Column(db.String(80))
+    sponsor = db.Column(db.String(80),nullable=True)
+    special_rules = db.Column(db.Text())
+    prizes = db.Column(db.Text())
+
+    coaches = db.relationship("Coach", secondary=tournaments_signups_table, backref="tournaments")
+
+    def update(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
 class TransactionError(Exception):
     pass

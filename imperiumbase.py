@@ -13,6 +13,7 @@ class ImperiumSheet:
     ALL_CARDS_SHEET = "All Cards"
     TRAINING_CARDS_SHEET = "Training Cards"
     STARTER_PACK_SHEET="Starter Pack"
+    TOURNAMENT_SHEET="Tournaments"
 
     with open(os.path.join(ROOT, 'config/MASTERSHEET_ID'), 'r') as file:
         MASTERSHEET_ID=file.read()
@@ -51,6 +52,12 @@ class ImperiumSheet:
         cls._starter_cards = sheet.get_all_records()
         return cls._starter_cards
 
+    @classmethod
+    def tournaments(cls):
+        client = gspread.authorize(creds)
+        # TODO change the sheet ID
+        sheet = client.open_by_key(cls.MASTERSHEET_ID).worksheet(cls.TOURNAMENT_SHEET)
+        return sheet.get_all_records()
     
     @classmethod
     def start_pack_with_count(cls):

@@ -2,6 +2,8 @@ VERY HIGH
 Change index to use Vue and api calls instead
 Add manage deck capability (web)
 Add authentication code to edit view
+genpack typo
+change generator rarity logic
 
 MEDIUM
 Adminlist/list - show transactions(genpacks/adminbanks) for given coach
