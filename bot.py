@@ -5,9 +5,9 @@ import os
 
 from imperiumbase import ImperiumSheet
 from web import db, create_app
-from models.data_models import Coach, Account, Card, Pack, Transaction, TransactionError
+from models.data_models import Coach, Account, Card, Pack, Transaction, TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
-from services import PackService, SheetService, CoachService, CardService
+from services import PackService, SheetService, CoachService, CardService, TournamentService
 
 
 app = create_app()
@@ -179,6 +179,19 @@ class DiscordCommand:
         return msg
 
     @classmethod
+    def tournament_help(cls):
+        msg="```"
+        msg+="USAGE:\n"
+        msg+="!tournament list\n"
+        msg+="\t- displays tournaments with open signups\n"
+        msg+="!tournament in <id>\n"
+        msg+="\- sign to tournament <id>\n"
+        msg+="!tournament out <id>\n"
+        msg+="\t- resign from tournament <id>\n"
+        msg+="```"
+        return msg
+
+    @classmethod
     def admincard_help(cls):
         msg="```"
         msg+="USAGE:\n"
@@ -244,11 +257,26 @@ class DiscordCommand:
         }
         return switcher.get(number, "")
 
+    @classmethod
+    def coach_collection_msg(cls,coach):
+        return [
+            f"Coach **{coach.name}**\n",
+            f"**Bank:** {coach.account.amount} coins\n",
+            "**Collection**:",
+            "-" * 65 + "",
+            f"{cls.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.cards))}",
+            "-" * 65 + "\n"
+        ]
+
+    async def send_message(self,channel,message_list):
+        msg = LongMessage(self.client,channel)
+        for message in message_list:
+            msg.add(message)
+        await msg.send()
+
     async def transaction_error(self,error):
         text = type(error).__name__ +": "+str(error)
-        msg = LongMessage(self.client,self.message.channel)
-        msg.add(text)
-        await msg.send()
+        await self.send_message(self.message.channel,[text])
         logger.error(text)
 
     def __init__(self,dmessage,dclient):
@@ -267,6 +295,8 @@ class DiscordCommand:
                 await self.__run_genpack()
             if self.cmd.startswith('!newcoach'):
                 await self.__run_newcoach()
+            if self.cmd.startswith('!tournament'):
+                await self.__run_tournament()
         except ValueError as e:
             await self.transaction_error(e)
         except Exception as e:
@@ -277,23 +307,59 @@ class DiscordCommand:
     async def __run_newcoach(self):
         name = str(self.message.author)
         if Coach.get_by_name(name):
-            msg = LongMessage(self.client,self.message.channel)
-            msg.add(f"**{self.message.author.mention}** account exists already\n")
-            await msg.send()
+            await self.send_message(self.message.channel,[f"**{self.message.author.mention}** account exists already\n"])
         else:
             coach = Coach.create(str(self.message.author))
+            msg = [
+                f"**{self.message.author.mention}** account created\n",
+                f"**Bank:** {coach.account.amount} coins",
+                f"**Rules**: <{RULES_LINK}>"
+            ]
+            await self.send_message(self.message.channel,msg)
+
+    async def __run_tournament(self):
+        async def error_and_help(msg):
+            await self.client.send_message(self.message.channel, msg)
+            await self.client.send_message(self.message.channel, self.__class__.tournament_help())
+
+        if len(self.args)<2 or len(self.args)>3:
+            await error_and_help("Incorrect number of arguments!!!\n")
+            return
+            
+        if self.args[1] not in ["in","out","list"]:
+            await error_and_help("Incorrect arguments!!!\n")
+            return
+
+        if self.args[1] in ["in","out"] and not RepresentsInt(self.args[2]):
+            await error_and_help(f"**{self.args[2]}** is not a number!!!\n")
+            return
+
+        coach = Coach.get_by_name(str(self.message.author))
+        if coach is None:
+            await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
+            return
+
+        # we should have proper formed command at this point
+        # list
+        if self.args[1]=="list":
+            ts = Tournament.query.filter_by(status="OPEN").all()
             msg = LongMessage(self.client,self.message.channel)
-            msg.add(f"**{self.message.author.mention}** account created\n")
-            msg.add(f"**Bank:** {coach.account.amount} coins")
-            msg.add(f"**Rules**: <{RULES_LINK}>")
+            
+            for tournament in ts:
+                coaches = tournament.coaches.filter(TournamentSignups.mode!="reserve").all()
+                reserves = tournament.coaches.filter(TournamentSignups.mode=="reserve").all()
+                count = len(coaches)
+                count_res = len(reserves)
+                reserve_message = f" ({count_res}/{tournament.reserve_limit}) " if tournament.reserve_limit!=0 else "" 
+                msg.add(f"{tournament.id}. {tournament.name}{' (Imperium)' if tournament.type=='Imperium' else ''} - Signups: {count}/{tournament.coach_limit}{reserve_message}, Closes: {tournament.signup_close_date}")
             await msg.send()
+            return
+
 
     async def __run_admin(self):
         # if not started from admin-channel
         if not self.__class__.is_private_admin_channel(self.message.channel):
-            emsg="Insuficient rights"
-            logger.error(emsg)
-            await self.client.send_message(self.message.channel, emsg)
+            await self.send_message(self.message.channel, [f"Insuficient rights"])
             return
 
         #adminhelp cmd
@@ -303,19 +369,15 @@ class DiscordCommand:
 
         #adminexport cmd
         if self.message.content.startswith('!adminexport'):
-            msg = LongMessage(self.client,self.message.channel)
-            msg.add(f"Cards have been exported to master sheet!!! {self.message.author.mention}")
-            await msg.send()
-            # export
             SheetService.export_cards()
+            await self.send_message(self.message.channel, [f"Cards have been exported to master sheet!!! {self.message.author.mention}"])
             return
 
         #adminlist cmd
         if self.message.content.startswith('!adminlist'):
             # require username argument
             if len(self.args)==1:
-                emsg="Username missing"
-                await self.client.send_message(self.message.channel, emsg)
+                await self.send_message(self.message.channel, ["Username missing"])
                 return
 
             coaches = Coach.find_all_by_name(self.args[1])
@@ -325,27 +387,21 @@ class DiscordCommand:
                 msg.add("No coaches found")
 
             for coach in coaches:
-                msg.add(f"Coach **{coach.name}**\n")
-                msg.add(f"**Bank:** {coach.account.amount} coins\n")
-                msg.add("**Collection**:")
-                msg.add("-" * 65 + "")
-                msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.cards))}")
-                msg.add("-" * 65 + "\n")
-
+                for messg in self.__class__.coach_collection_msg(coach):
+                    msg.add(messg)
             await msg.send()
             return
+
         if self.message.content.startswith('!adminbank'):
             # require username argument
             if len(self.args)<4:
-                emsg="Not enough arguments!!!\n"
-                await self.client.send_message(self.message.channel, emsg)
+                await self.send_message(self.message.channel, ["Not enough arguments!!!\n"])
                 await self.client.send_message(self.message.channel, self.__class__.adminbank_help())
                 return
 
             # amount must be int
             if not RepresentsInt(self.args[1]):
-                emsg="<amount> is not whole number!!!\n"
-                await self.client.send_message(self.message.channel, emsg)
+                await self.send_message(self.message.channel, ["<amount> is not whole number!!!\n"])
                 return
 
             coach = await self.coach_unique(self.args[2])
@@ -362,25 +418,24 @@ class DiscordCommand:
                 await self.transaction_error(e)
                 return
             else:
-                msg = LongMessage(self.client,self.message.channel)
-                msg.add(f"Bank for {coach.name} updated to **{coach.account.amount}** coins:\n")
-                msg.add(f"Note: {reason}\n")
-                msg.add(f"Change: {amount} coins")
-                await msg.send()
-                await  self.bank_notification(f"Your bank has been updated by **{amount}** coins due to {reason}",coach)
+                msg = [
+                    f"Bank for {coach.name} updated to **{coach.account.amount}** coins:\n",
+                    f"Note: {reason}\n",
+                    f"Change: {amount} coins"
+                ]
+                await self.send_message(self.message.channel, msg)
+                await self.bank_notification(f"Your bank has been updated by **{amount}** coins - {reason}",coach)
         
         if self.message.content.startswith('!admincard'):
             # !adminpack add/remove <coach> <card>;...;<card>
             if len(self.args)<4:
-                emsg="Not enough arguments!!!\n"
-                await self.client.send_message(self.message.channel, emsg)
+                await self.send_message(self.message.channel, ["Not enough arguments!!!\n"])
                 await self.client.send_message(self.message.channel, self.__class__.admincard_help())
                 return
 
             # amount must be int
             if self.args[1] not in ["add","remove"]:
-                emsg="specify **add** or **remove** operation!!!\n"
-                await self.client.send_message(self.message.channel, emsg)
+                await self.send_message(self.message.channel, ["specify **add** or **remove** operation!!!\n"])
                 return
 
             coach = await self.coach_unique(self.args[2])
@@ -390,18 +445,18 @@ class DiscordCommand:
             card_names = [card.strip() for card in " ".join(self.args[3:]).split(";")]
             if self.args[1]=="add":
                 pack = PackService.admin_pack(0,card_names)
-                # situation when som of the cards cound not be found
+                # situation when some of the cards could not be found
                 if len(card_names)!= len(pack.cards):
-                    msg = LongMessage(self.client,self.message.channel)
-                    msg.add(f"Not all cards were found, check the names!!!\n")
+                    msg = []
+                    msg.append(f"Not all cards were found, check the names!!!\n")
                     for card in card_names:
                         if card in [card.name.lower() for card in pack.cards]:
                             found = True
                         else:
                             found = False
                         found_msg = "**not found**" if not found else "found"
-                        msg.add(f"{card}: {found_msg}")
-                    await msg.send()
+                        msg.append(f"{card}: {found_msg}")
+                    await self.send_message(self.message.channel, msg)
                     return
                 reason = f"{self.args[1].capitalize()} {';'.join(card_names)} - by " + str(self.message.author.name)
 
@@ -412,11 +467,11 @@ class DiscordCommand:
                     await self.transaction_error(e)
                     return
                 else:
-                    msg = LongMessage(self.client,self.message.channel)
-                    msg.add(f"**{PackService.description(pack)}** for @{coach.name} - **{pack.price}** coins:\n")
-                    msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
-                    msg.add(f"**Bank:** {coach.account.amount} coins")
-                    await msg.send()
+                    msg = []
+                    msg.append(f"**{PackService.description(pack)}** for @{coach.name} - **{pack.price}** coins:\n")
+                    msg.append(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
+                    msg.append(f"**Bank:** {coach.account.amount} coins")
+                    await self.send_message(self.message.channel, msg)
                     await self.bank_notification(f"Card(s) **{' ,'.join([card.name for card in pack.cards])}** added to your collection by {str(self.message.author.name)}",coach)
                     await self.auto_cards(pack)
                     return
@@ -426,21 +481,20 @@ class DiscordCommand:
                 cards = [card for card in cards if card is not None]
                 # situation when som of the cards could not be found
                 if len(card_names)!= len(cards):
-                    msg = LongMessage(self.client,self.message.channel)
-                    msg.add(f"Not all cards were found, check the names!!!\n")
+                    msg = []
+                    msg.append(f"Not all cards were found, check the names!!!\n")
                     for card in card_names:
                         if card in [card.name.lower() for card in cards]:
                             found = True
                         else:
                             found = False
                         found_msg = "**not found**" if not found else "found"
-                        msg.add(f"{card}: {found_msg}")
-                    await msg.send()
+                        msg.append(f"{card}: {found_msg}")
+                    await self.send_message(self.message.channel, msg)
                     return
 
                 reason = f"{self.args[1].capitalize()} {';'.join(card_names)} - by " + str(self.message.author.name)
                 t = Transaction(description=reason,price=0)
-
                 try:
                     for card in cards:
                         db.session.delete(card)
@@ -449,18 +503,17 @@ class DiscordCommand:
                     await self.transaction_error(e)
                     return
                 else:
-                    msg = LongMessage(self.client,self.message.channel)
-                    msg.add(f"Cards removed from @{coach.name} collection:\n")
-                    msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(cards))}\n")
-                    await msg.send()
-                    await  self.bank_notification(f"Card(s) **{' ,'.join([card.name for card in cards])}** removed from your collection by {str(self.message.author.name)}",coach)
+                    msg = []
+                    msg.append(f"Cards removed from @{coach.name} collection:\n")
+                    msg.append(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(cards))}\n")
+                    await self.send_message(self.message.channel, msg)
+                    await self.bank_notification(f"Card(s) **{' ,'.join([card.name for card in cards])}** removed from your collection by {str(self.message.author.name)}",coach)
                     return
                     
         if self.message.content.startswith('!adminreset'):
             # require username argument
             if len(self.args)!=2:
-                emsg="Bad number of arguments!!!\n"
-                await self.client.send_message(self.message.channel, emsg)
+                await self.send_message(self.message.channel, ["Bad number of arguments!!!\n"])
                 await self.client.send_message(self.message.channel, self.__class__.adminreset_help())
                 return
 
@@ -474,33 +527,34 @@ class DiscordCommand:
                 await self.transaction_error(e)
                 return
             else:
-                msg = LongMessage(self.client,self.message.channel)
-                msg.add(f"Coach {new_coach.name} was reset")
-                await msg.send()
-                await  self.bank_notification(f"Your account was reset",new_coach)
+                await self.send_message(self.message.channel, [f"Coach {new_coach.name} was reset"])
+                await self.bank_notification(f"Your account was reset",new_coach)
 
     async def __run_list(self):
         coach = Coach.get_by_name(str(self.message.author))
         show_starter = True if len(self.args)>1 and self.args[1]=="all" else False
-        if coach is not None:
-
-            if show_starter:
-                all_cards = coach.cards + PackService.generate("starter").cards
-                sp_msg = " (with Starter Pack)"
-            else:
-                all_cards = coach.cards
-                sp_msg = ""
-            msg = LongMessage(self.client,self.message.author)
-            msg.add(f"**Bank:** {coach.account.amount} coins\n")
-            msg.add(f"**Collection**{sp_msg}:\n")
-            msg.add("-" * 65 + "")
-            msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(all_cards))}")
-            msg.add("-" * 65 + "\n")
-            await msg.send()
-            await self.client.send_message(self.message.channel, "Collection sent to PM")
+        
+        if coach is None:
+            await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
+            return
+        
+        if show_starter:
+            all_cards = coach.cards + PackService.generate("starter").cards
+            sp_msg = " (with Starter Pack)"
         else:
-            await self.client.send_message(self.message.channel, f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first.")
+            all_cards = coach.cards
+            sp_msg = ""
 
+        msg = [
+            f"**Bank:** {coach.account.amount} coins\n",
+            f"**Collection**{sp_msg}:\n",
+            "-" * 65 + "",
+            f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(all_cards))}",
+            "-" * 65 + "\n"
+        ]
+        await self.send_message(self.message.channel, msg)
+        await self.client.send_message(self.message.channel, "Collection sent to PM")
+    
     async def __run_genpack(self):
         if self.__class__.check_gen_command(self.cmd):
             ptype = self.args[1]
@@ -515,11 +569,12 @@ class DiscordCommand:
             #free pack
             if self.cmd.startswith('!genpackspecial'):
                 #just send message, no processing
-                msg = LongMessage(self.client,self.message.channel)
-                msg.add(f"**Special Play {PackService.description(pack)}**:\n")
-                msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
-                msg.add("**Note**: This is used for Special Play purposes only!!!")
-                await msg.send()
+                msg = [
+                    f"**Special Play {PackService.description(pack)}**:\n",
+                    f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n",
+                    "**Note**: This is used for Special Play purposes only!!!"
+                ]
+                await self.send_message(self.message.channel, msg)
             #standard pack
             else:
                 coach=Coach.get_by_name(str(self.message.author))
@@ -527,8 +582,9 @@ class DiscordCommand:
                 just_joined = True if len(coach.packs)==0 else False
 
                 if coach is None:
-                    await self.client.send_message(self.message.channel, f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first.")
+                    await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
                     return
+
                 t = Transaction(pack = pack,price=pack.price,description=PackService.description(pack))
                 try:
                     coach.make_transaction(t)
@@ -537,12 +593,12 @@ class DiscordCommand:
                     return
                 else:
                     # transaction is ok and coach is saved
-                    msg = LongMessage(self.client,self.message.channel)
-                    msg.add(f"**{PackService.description(pack)}** for **{self.message.author}** - **{pack.price}** coins:\n")
-                    msg.add(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
-                    msg.add(f"**Bank:** {coach.account.amount} coins")
-                    await msg.send()
-
+                    msg = [
+                        f"**{PackService.description(pack)}** for **{self.message.author}** - **{pack.price}** coins:\n",
+                        f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n",
+                        f"**Bank:** {coach.account.amount} coins"
+                    ]
+                    await self.send_message(self.message.channel, msg)
                     await self.auto_cards(pack)
 
                     #if just joined
@@ -568,8 +624,7 @@ class DiscordCommand:
         # find coach
             coaches = Coach.find_all_by_name(name)
             if len(coaches)==0:
-                emsg=f"<coach> __{name}__ not found!!!\n"
-                await self.client.send_message(self.message.channel, emsg)
+                await self.send_message(self.message.channel,[f"<coach> __{name}__ not found!!!\n"])
                 return None
 
             if len(coaches)>1:
@@ -584,8 +639,6 @@ class DiscordCommand:
 
     #must me under 2000 chars
     async def bank_notification(self,msg,coach):
-        print(coach.discord_id())
-
         member = discord.utils.get(self.client.get_all_members(), name=coach.short_name(), discriminator=coach.discord_id())
         channel = discord.utils.get(self.client.get_all_channels(), name='bank-notifications')
         await self.client.send_message(channel, f"{member.mention}: "+msg)

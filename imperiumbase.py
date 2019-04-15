@@ -56,7 +56,7 @@ class ImperiumSheet:
     def tournaments(cls):
         client = gspread.authorize(creds)
         # TODO change the sheet ID
-        sheet = client.open_by_key(cls.MASTERSHEET_ID).worksheet(cls.TOURNAMENT_SHEET)
+        sheet = client.open_by_key(cls.SPREADSHEET_ID).worksheet(cls.TOURNAMENT_SHEET)
         return sheet.get_all_records()
     
     @classmethod

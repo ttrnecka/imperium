@@ -2,7 +2,7 @@ from .base_model import db, Base, QueryWithSoftDelete
 import datetime
 import logging
 import os
-from sqlalchemy import event
+from sqlalchemy import event, UniqueConstraint
 
 ROOT = os.path.dirname(__file__)
 
@@ -45,7 +45,7 @@ class Pack(Base):
 
 class Coach(Base):  
     __tablename__ = 'coaches'
-    name = db.Column(db.String(80), unique=True, nullable=False,supports_json = True,index=True)
+    name = db.Column(db.String(80), unique=True, nullable=False,supports_json = True, index=True)
     deleted_name = db.Column(db.String(80), unique=False, nullable=True)
     account = db.relationship('Account', uselist=False, backref=db.backref('coach', lazy=True), cascade="all, delete-orphan",supports_json = True)
     packs = db.relationship('Pack', backref=db.backref('coach', lazy=True),cascade="all, delete-orphan",supports_json = True,lazy="subquery")
@@ -147,7 +147,7 @@ class Account(Base):
     amount = db.Column(db.Integer, default=INIT_CASH, nullable=False,supports_json = True)
     coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
 
-    transactions = db.relationship('Transaction', backref=db.backref('Account', lazy=False), cascade="all, delete-orphan",supports_json = True,lazy=False)
+    transactions = db.relationship('Transaction', backref=db.backref('account', lazy=False), cascade="all, delete-orphan",supports_json = True,lazy=False)
 
     def __repr__(self):
         return '<Account %r>' % self.amount
@@ -166,10 +166,21 @@ class Transaction(Base):
         self.confirmed = True
         self.date_confirmed = datetime.datetime.now()
 
-tournaments_signups_table = db.Table('tournaments_signups', Base.metadata,
-    db.Column('tournament_id', db.Integer, db.ForeignKey('tournaments.id'), nullable=False),
-    db.Column('coach_id', db.Integer, db.ForeignKey('coaches.id'), nullable=False)
-)
+
+class TournamentSignups(Base):
+    __tablename__ = 'tournaments_signups'
+
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), nullable=False)
+    coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
+    # mode used to separate reserve signups
+    mode = db.Column(db.String(20),nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint('tournament_id', 'coach_id', name='uix_tournament_id_coach_id'),
+    )
+
+    tournament = db.relationship("Tournament", backref="tournament_signups")
+    coach = db.relationship("Coach", backref="tournament_signups")
 
 class Tournament(Base):
     __tablename__ = 'tournaments'
@@ -183,21 +194,18 @@ class Tournament(Base):
     expected_start_date = db.Column(db.String(80),  nullable=True)
     expected_end_date = db.Column(db.String(80),  nullable=True)
     deadline_date = db.Column(db.String(80),  nullable=True)
-    fee = db.Column(db.Integer())
+    fee = db.Column(db.Integer(),default=0,nullable=False)
     status = db.Column(db.String(80),nullable=False)
-    coach_limit = db.Column(db.Integer())
+    coach_limit = db.Column(db.Integer(),default=4, nullable=False)
+    reserve_limit = db.Column(db.Integer(),default=0, nullable=False)
     region = db.Column(db.String(80),nullable=False)
-    deck_limit =  db.Column(db.Integer())
-    admin =  db.Column(db.String(80))
+    deck_limit =  db.Column(db.Integer(), default=18, nullable=False)
+    admin =  db.Column(db.String(80),nullable=True)
     sponsor = db.Column(db.String(80),nullable=True)
-    special_rules = db.Column(db.Text())
-    prizes = db.Column(db.Text())
+    special_rules = db.Column(db.Text(),nullable=True)
+    prizes = db.Column(db.Text(),nullable=True)
 
-    coaches = db.relationship("Coach", secondary=tournaments_signups_table, backref="tournaments")
-
-    def update(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+    coaches = db.relationship("Coach", secondary="tournaments_signups", backref=db.backref('tournaments', lazy="dynamic"), lazy="dynamic")
 
 class TransactionError(Exception):
     pass
