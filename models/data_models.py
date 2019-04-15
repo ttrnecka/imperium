@@ -47,9 +47,9 @@ class Coach(Base):
     __tablename__ = 'coaches'
     name = db.Column(db.String(80), unique=True, nullable=False,supports_json = True,index=True)
     deleted_name = db.Column(db.String(80), unique=False, nullable=True)
-    account = db.relationship('Account', uselist=False, backref=db.backref('coach', lazy=False), cascade="all, delete-orphan",supports_json = True)
-    packs = db.relationship('Pack', backref=db.backref('coach', lazy=False),cascade="all, delete-orphan",supports_json = True,lazy=False)
-    cards = db.relationship('Card', secondary="packs",backref=db.backref('coach', lazy=False, uselist=False), viewonly=True,lazy=False)
+    account = db.relationship('Account', uselist=False, backref=db.backref('coach', lazy=True), cascade="all, delete-orphan",supports_json = True)
+    packs = db.relationship('Pack', backref=db.backref('coach', lazy=True),cascade="all, delete-orphan",supports_json = True,lazy="subquery")
+    cards = db.relationship('Card', secondary="packs",backref=db.backref('coach', lazy=True, uselist=False), viewonly=True,lazy="subquery")
     deleted = db.Column(db.Boolean(), default=False)
 
     query_class = QueryWithSoftDelete

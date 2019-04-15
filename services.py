@@ -28,6 +28,54 @@ class PackService:
         "starter": 0
     }
 
+    BUDGET_COMBOS = [
+        {"roll":0.4, "rarities":["Rare","Common","Common","Common","Common"]},
+        {"roll":0.6, "rarities":["Rare","Rare","Common","Common","Common"]},
+        {"roll":0.7, "rarities":["Epic","Common","Common","Common","Common"]},
+        {"roll":0.8, "rarities":["Rare","Rare","Rare","Common","Common"]},
+        {"roll":0.85, "rarities":["Epic","Rare","Common","Common","Common"]},
+        {"roll":0.9, "rarities":["Rare","Rare","Rare","Rare","Common"]},
+        {"roll":0.925, "rarities":["Epic","Rare","Rare","Common","Common"]},
+        {"roll":0.95, "rarities":["Epic","Epic","Common","Common","Common"]},
+        {"roll":0.975, "rarities":["Legendary","Common","Common","Common","Common"]},
+        {"roll":0.98125, "rarities":["Rare","Rare","Rare","Rare","Rare"]},
+        {"roll":0.9875, "rarities":["Epic","Rare","Rare","Rare","Common"]},
+        {"roll":0.99375, "rarities":["Epic","Epic","Rare","Common","Common"]},
+        {"roll":1, "rarities":["Epic","Rare","Common","Common","Common"]},
+    ]
+
+    PREMIUM_COMBOS = [
+        {"roll":0.25, "rarities":["Rare","Rare","Rare","Rare","Rare"]},
+        {"roll":0.5, "rarities":["Epic","Rare","Rare","Rare","Rare"]},
+        {"roll":0.65, "rarities":["Epic","Epic","Rare","Rare","Rare"]},
+        {"roll":0.75, "rarities":["Epic","Epic","Epic","Rare","Rare"]},
+        {"roll":0.85, "rarities":["Legendary","Rare","Rare","Rare","Rare"]},
+        {"roll":0.9, "rarities":["Epic","Epic","Epic","Epic","Rare"]},
+        {"roll":0.95, "rarities":["Legendary","Epic","Rare","Rare","Rare"]},
+        {"roll":0.97, "rarities":["Epic","Epic","Epic","Epic","Epic"]},
+        {"roll":0.99, "rarities":["Legendary","Epic","Epic","Rare","Rare"]},
+        {"roll":1, "rarities":["Legendary","Epic","Epic","Epic","Rare"]},
+    ]
+
+    TRAINING_COMBOS = [
+        {"roll":0.4, "rarities":["Rare","Common","Common"]},
+        {"roll":0.6, "rarities":["Rare","Rare","Common"]},
+        {"roll":0.8, "rarities":["Epic","Common","Common"]},
+        {"roll":0.89, "rarities":["Rare","Rare","Rare"]},
+        {"roll":0.98, "rarities":["Epic","Rare","Common"]},
+        {"roll":1, "rarities":["Epic","Rare","Rare"]},
+    ]
+
+    PLAYER_COMBOS = [
+        {"roll":0.35, "rarities":["Rare","Rare","Rare"]},
+        {"roll":0.6, "rarities":["Epic","Rare","Rare"]},
+        {"roll":0.8, "rarities":["Epic","Epic","Rare"]},
+        {"roll":0.875, "rarities":["Epic","Epic","Epic"]},
+        {"roll":0.95, "rarities":["Legendary","Rare","Rare"]},
+        {"roll":0.99, "rarities":["Legendary","Epic","Rare"]},
+        {"roll":1, "rarities":["Legendary","Epic","Epic"]},
+    ]
+
     @classmethod
     def filter_cards(cls,rarity,ctype=None,races=None):
         if races is not None:
@@ -98,27 +146,28 @@ class PackService:
         cards = []
         if ptype == "starter":
             cards.extend(ImperiumSheet.starter_cards())
-        if ptype == "player":
-            races = cls.team_by_code(team)["races"]
-            for _ in range(3):
-                rarity = cls.rarity(ptype)
-                fcards = cls.filter_cards(rarity,"Player",races)
-                cards.append(random.choice(fcards))
-        if ptype == "training":
-            for _ in range(3):
-                rarity = cls.rarity(ptype)
-                fcards = cls.filter_cards(rarity,"Training")
-                cards.append(random.choice(fcards))
-        if ptype in ["booster_budget","booster_premium"] :
-            q = "budget" if "budget" in ptype else "premium"
-            rarity = cls.rarity("booster","premium")
-            fcards = cls.filter_cards(rarity)
-            cards.append(random.choice(fcards))
-            for _ in range(4):
-                rarity = cls.rarity("booster",q)
-                fcards = cls.filter_cards(rarity)
-                cards.append(random.choice(fcards))
+        else:
+            if ptype == "player":
+                combos = cls.PLAYER_COMBOS
+            elif ptype == "training":
+                combos = cls.TRAINING_COMBOS
+            elif ptype == "booster_premium":
+                combos = cls.PREMIUM_COMBOS
+            else:
+                combos = cls.BUDGET_COMBOS
 
+            roll = random.random()
+            rarities = [combo for combo in combos if combo['roll']>=roll][0]['rarities']
+            for rarity in rarities:
+                if ptype == "player":
+                    races = cls.team_by_code(team)["races"]
+                    fcards = cls.filter_cards(rarity,"Player",races)
+                elif ptype == "training":
+                    fcards = cls.filter_cards(rarity,"Training")
+                else:
+                    fcards = cls.filter_cards(rarity)
+                cards.append(random.choice(fcards))
+        
         for card in cards:
             pack.cards.append(CardService.init_Card_from_card(card))
         return pack
@@ -162,6 +211,18 @@ class CardService:
             subtype = card["Subtype"],
             notes = card["Notes"] if hasattr(card, "Notes") else "",
         )
+
+    @classmethod
+    def init_dict_from_card(cls,card):
+        return {
+            "name":card["Card Name"],
+            "rarity":card["Rarity"],
+            "race":card["Race"],
+            "description":card["Description"],
+            "card_type":card["Type"],
+            "subtype":card["Subtype"],
+            "notes":card["Notes"] if hasattr(card, "Notes") else "",
+        }
 
     @classmethod
     def turn_Card_to_card(cls,card):

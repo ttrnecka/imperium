@@ -512,7 +512,6 @@ class DiscordCommand:
             elif ptype=="booster":
                 ptype = "booster_budget" if len(self.args)<3 else f"booster_{self.args[2]}"
                 pack = PackService.generate(ptype)
-
             #free pack
             if self.cmd.startswith('!genpackspecial'):
                 #just send message, no processing
