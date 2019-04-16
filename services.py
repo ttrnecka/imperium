@@ -301,9 +301,23 @@ class TournamentService:
         }
 
     @classmethod
-    def register(cls,tournament,coach):
+    def update(cls):
+        for tournament in ImperiumSheet.tournaments():
+            t_dict = cls.init_dict_from_tournament(tournament)
+            t = Tournament.query.filter_by(tournament_id = t_dict['tournament_id']).all()
+            if len(t)==0:
+                T = Tournament()
+                db.session.add(T)
+            else:
+                T = t[0]
+            T.update(**t_dict)
+
+        db.session.commit()
+        
+    @classmethod
+    def register(cls,tournament,coach,admin=False):
         # check for status
-        if tournament.status != "OPEN":
+        if tournament.status != "OPEN" and not admin:
             raise RegistrationError(f"Tournamnent {tournament.name} signups are not open!!!")
         # check if coach is not registered
         ts = TournamentSignups.query.filter_by(tournament_id= tournament.id, coach_id = coach.id).all()
@@ -315,18 +329,18 @@ class TournamentService:
         if tournament.type=="Imperium":
             ts = coach.tournaments.filter_by(type="Imperium").all()
             if len(ts)>0:
-                raise RegistrationError(f"You cannot be registered to more than 1 Imperium tournament!!!")
+                raise RegistrationError(f"Coach cannot be registered to more than 1 Imperium tournament!!!")
         else:
             ts = coach.tournaments.filter(Tournament.type!="Imperium").all()
             if len(ts)>1:
-                raise RegistrationError(f"You cannot be registered to more than 2 Development tournaments!!!")
+                raise RegistrationError(f"Coach cannot be registered to more than 2 Development tournaments!!!")
             if len(ts)==1:
                 etour = ts[0]
                 if etour.type == "Development" and tournament.type == "Development":
                     if not ((etour.mode=="Boot Camp" or etour.mode=="Regular") and tournament.mode=="Fast-Track") and not ((tournament.mode=="Boot Camp" or tournament.mode=="Regular") and etour.mode=="Fast-Track"):
-                        raise RegistrationError(f"You cannot be registered to {tournament.mode} tournament and {etour.mode} tournament at the same time!!!")    
+                        raise RegistrationError(f"Coach cannot be registered to {tournament.mode} tournament and {etour.mode} tournament at the same time!!!")    
                 else:
-                    raise RegistrationError(f"You cannot be registered to {tournament.type} tournament and {etour.type} tournament at the same time!!!")
+                    raise RegistrationError(f"Coach cannot be registered to {tournament.type} tournament and {etour.type} tournament at the same time!!!")
         
         # check for free slots
         signups = tournament.coaches.filter(TournamentSignups.mode != 'reserve').all()
@@ -337,7 +351,7 @@ class TournamentService:
             else:
                 register_as = "reserve"
         else:
-            register_as = None
+            register_as = "active"
 
         # tournament is open, has free slot and coach is not signed to it yet
         try:
@@ -345,6 +359,11 @@ class TournamentService:
             signup.coach = coach
             signup.tournament = tournament
             db.session.add(signup)
+
+            reason = f"{tournament.name} signup - cost {tournament.fee} coins"
+            t = Transaction(description=reason,price=tournament.fee)
+            coach.make_transaction(t)
+
             db.session.commit()
         except Exception as e:
             raise RegistrationError(str(e))
@@ -352,10 +371,10 @@ class TournamentService:
         return signup
 
     @classmethod
-    def unregister(cls,tournament,coach):
+    def unregister(cls,tournament,coach,admin=False,refund=True):
         # check for status
-        if tournament.status not in ["OPEN","FINISHED"]:
-            raise RegistrationError(f"You cannot resign from running tournament!!!")
+        if tournament.status not in ["OPEN","FINISHED"] and not admin:
+            raise RegistrationError(f"Coach resign from running tournament!!!")
         # check if coach is registered
         ts = TournamentSignups.query.filter_by(tournament_id= tournament.id, coach_id = coach.id).all()
         if len(ts)<1:
@@ -363,6 +382,12 @@ class TournamentService:
 
         try:
             db.session.delete(ts[0])
+
+            if refund:
+                reason = f"{tournament.name} resignation - refund {tournament.fee} coins"
+                t = Transaction(description=reason,price=-1*tournament.fee)
+                coach.make_transaction(t)
+
             db.session.commit()
         except Exception as e:
             raise RegistrationError(str(e))

@@ -7,7 +7,7 @@ from imperiumbase import ImperiumSheet
 from web import db, create_app
 from models.data_models import Coach, Account, Card, Pack, Transaction, TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
-from services import PackService, SheetService, CoachService, CardService, TournamentService
+from services import PackService, SheetService, CoachService, CardService, TournamentService, RegistrationError
 
 
 app = create_app()
@@ -121,6 +121,9 @@ class DiscordCommand:
         msg="```asciidoc\n"
         msg+="__**Coach Commands**__\n"
         msg+="!list           - sends details of coach's own account by PM\n"
+        msg+="!complist       - displays all tournaments open for signup\n"
+        msg+="!sign           - sign to tournament\n"
+        msg+="!resign         - resign from tournament\n"
         msg+="!newcoach       - creates coach's account\n"
         msg+="!genpack        - generates pack and assigns it to coach\n"
         msg+="!genpackspecial - generates special play pack, does not assign it to coach, costs nothing\n"
@@ -130,6 +133,8 @@ class DiscordCommand:
         msg+="!admincard      - updates to coach's collection, sends notification to the coach \n"
         msg+="!adminreset     - resets coach's account, sends notification to the coach \n"
         msg+="!adminexport    - exports all card collections to the master sheet\n"
+        msg+="!adminsign      - sign specified coach to tournament\n"
+        msg+="!adminresign    - resign specified coach from tournament\n"
         msg+="```"
         return msg
 
@@ -179,19 +184,6 @@ class DiscordCommand:
         return msg
 
     @classmethod
-    def tournament_help(cls):
-        msg="```"
-        msg+="USAGE:\n"
-        msg+="!tournament list\n"
-        msg+="\t- displays tournaments with open signups\n"
-        msg+="!tournament in <id>\n"
-        msg+="\- sign to tournament <id>\n"
-        msg+="!tournament out <id>\n"
-        msg+="\t- resign from tournament <id>\n"
-        msg+="```"
-        return msg
-
-    @classmethod
     def admincard_help(cls):
         msg="```"
         msg+="USAGE:\n"
@@ -210,6 +202,61 @@ class DiscordCommand:
         msg+="USAGE:\n"
         msg+="!adminreset <coach>\n"
         msg+="\t<coach>: coach discord name or its part, must be unique\n"
+        msg+="```"
+        return msg
+
+    @classmethod
+    def sign_help(cls):
+        msg="```"
+        msg+="Signs coach to tournament\n"
+        msg+="USAGE:\n"
+        msg+="!sign <id>\n"
+        msg+="\t<id>: id of tournament from !complist\n"
+        msg+="```"
+        return msg
+
+    @classmethod
+    def resign_help(cls):
+        msg="```"
+        msg+="Resigns coach from tournament\n"
+        msg+="USAGE:\n"
+        msg+="!resign <id>\n"
+        msg+="\t<id>: id of tournament from !complist\n"
+        msg+="```"
+        return msg
+
+    @classmethod
+    def adminsign_help(cls):
+        msg="```"
+        msg+="Signs coach to tournament\n"
+        msg+="USAGE:\n"
+        msg+="!adminsign <id> <coach>\n"
+        msg+="\t<id>: id of tournament from !complist\n"
+        msg+="\t<coach>: coach discord name or its part, must be unique\n"
+        msg+="```"
+        return msg
+
+    @classmethod
+    def adminresign_help(cls):
+        msg="```"
+        msg+="Resigns coach from tournament\n"
+        msg+="USAGE:\n"
+        msg+="!adminresign <id> <coach>\n"
+        msg+="\t<id>: id of tournament from !complist\n"
+        msg+="\t<coach>: coach discord name or its part, must be unique\n"
+        msg+="```"
+        return msg
+
+    @classmethod
+    def admincomp_help(cls):
+        msg="```"
+        msg+="Tournament helper\n"
+        msg+="USAGE:\n"
+        msg+="!admincomp start|stop|update <id>\n"
+        msg+="\tstart: Notifies all registered coaches that tournament started in the tournament channel and links the ledger\n"
+        msg+="\tstop: Resigns all coaches from the tournament\n"
+        msg+="\tupdate: Updates data from Tournament sheet\n"
+        msg+="\t<id>: id of tournament from Tournamet master sheet\n"
         msg+="```"
         return msg
 
@@ -262,11 +309,64 @@ class DiscordCommand:
         return [
             f"Coach **{coach.name}**\n",
             f"**Bank:** {coach.account.amount} coins\n",
-            "**Collection**:",
+            f"**Tournaments:**",
+            *[f'{t.id}. {t.name}, status: {t.status}, expected start: {t.expected_start_date}' for t in coach.tournaments],
+            "\n**Collection**:",
             "-" * 65 + "",
             f"{cls.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.cards))}",
             "-" * 65 + "\n"
         ]
+
+    async def sign(self,args,coach,admin=False):
+        if len(args)!=2:
+            await self.send_message(self.message.channel, ["Incorrect number of arguments!!!\n"])
+            return False
+
+        if not RepresentsInt(args[1]):
+            await self.send_message(self.message.channel, [f"**{args[1]}** is not a number!!!\n"])
+            return False
+
+        if admin:
+            tourn = Tournament.query.filter_by(tournament_id=int(args[1])).one_or_none()
+        else:
+            tourn = Tournament.query.filter_by(status="OPEN",tournament_id=int(args[1])).one_or_none()
+        if not tourn:
+            await self.send_message(self.message.channel,[f"Incorrect tournament **id** specified\n"])
+            return False
+
+        signup = TournamentService.register(tourn,coach,admin)
+        await self.send_message(self.message.channel,[f"Signup succeded!!!\n"])
+        if tourn.fee > 0:
+            reason = coach.account.transactions[-1].description
+            await self.bank_notification(f"Your bank has been updated by -**{tourn.fee}** coins - {reason}",coach)
+        
+        return True
+
+    async def resign(self,args,coach,admin=False):
+        if len(args)!=2:
+            await self.send_message(self.message.channel, ["Incorrect number of arguments!!!\n"])
+            return False
+
+        if not RepresentsInt(args[1]):
+            await self.send_message(self.message.channel, [f"**{args[1]}** is not a number!!!\n"])
+            return False
+        
+        if admin:
+            tourn = Tournament.query.filter_by(tournament_id=int(args[1])).one_or_none()
+        else:
+            tourn = Tournament.query.filter_by(status="OPEN",tournament_id=int(args[1])).one_or_none()
+
+        if not tourn:
+            await self.send_message(self.message.channel,[f"Incorrect tournament **id** specified\n"])
+            return False
+        
+        if TournamentService.unregister(tourn,coach,admin):
+            await self.send_message(self.message.channel,[f"Resignation succeded!!!\n"])
+            if tourn.fee > 0:
+                reason = coach.account.transactions[-1].description
+                await self.bank_notification(f"Your bank has been updated by **{tourn.fee}** coins - {reason}",coach)
+        
+        return True
 
     async def send_message(self,channel,message_list):
         msg = LongMessage(self.client,channel)
@@ -295,9 +395,13 @@ class DiscordCommand:
                 await self.__run_genpack()
             if self.cmd.startswith('!newcoach'):
                 await self.__run_newcoach()
-            if self.cmd.startswith('!tournament'):
-                await self.__run_tournament()
-        except ValueError as e:
+            if self.cmd.startswith('!complist'):
+                await self.__run_complist()
+            if self.cmd.startswith('!sign'):
+                await self.__run_sign()
+            if self.cmd.startswith('!resign'):
+                await self.__run_resign()
+        except (ValueError, TransactionError, RegistrationError) as e:
             await self.transaction_error(e)
         except Exception as e:
             await self.transaction_error(e)
@@ -317,44 +421,72 @@ class DiscordCommand:
             ]
             await self.send_message(self.message.channel,msg)
 
-    async def __run_tournament(self):
-        async def error_and_help(msg):
-            await self.client.send_message(self.message.channel, msg)
-            await self.client.send_message(self.message.channel, self.__class__.tournament_help())
-
-        if len(self.args)<2 or len(self.args)>3:
-            await error_and_help("Incorrect number of arguments!!!\n")
-            return
-            
-        if self.args[1] not in ["in","out","list"]:
-            await error_and_help("Incorrect arguments!!!\n")
+    async def __run_complist(self):
+        if len(self.args)==2 and not RepresentsInt(self.args[1]):
+            await self.send_message(self.message.channel,[f"**{self.args[1]}** is not a number!!!\n"])
             return
 
-        if self.args[1] in ["in","out"] and not RepresentsInt(self.args[2]):
-            await error_and_help(f"**{self.args[2]}** is not a number!!!\n")
-            return
+        #detail
+        if len(self.args)==2:
+            tourn = Tournament.query.filter_by(status="OPEN",tournament_id=int(self.args[1])).one_or_none()
+            if not tourn:
+                await self.send_message(self.message.channel,[f"Incorrect tournament **id** specified\n"])
+                return
+            coaches = tourn.coaches.filter(TournamentSignups.mode=="active").all()
+            count = len(coaches)
 
-        coach = Coach.get_by_name(str(self.message.author))
-        if coach is None:
-            await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
-            return
+            msg = [
+                f"__**{tourn.name}**__\n",
+                f"**Type**: {tourn.region} - {tourn.type} - {tourn.mode}",
+                f"**Entrance Fee**: {tourn.fee}",
+                f"**Deck Size**: {tourn.deck_limit}",
+                f"**Sponsor**: {tourn.sponsor}",
+                f"**Special Rules**: {tourn.special_rules}",
+                f"**Prizes**: {tourn.prizes}",
+                f"**Signups**: {count}/{tourn.coach_limit} {' ,'.join([coach.short_name() for coach in coaches])}",
+            ]
+            if tourn.reserve_limit>0:
+                reserves = tourn.coaches.filter(TournamentSignups.mode=="reserve").all()
+                count_res = len(reserves)
+                msg.append(f"**Reserves**: {count_res}/{tourn.reserve_limit} {' ,'.join([coach.short_name() for coach in reserves])}")
 
-        # we should have proper formed command at this point
-        # list
-        if self.args[1]=="list":
+            await self.send_message(self.message.channel, msg)
+            return
+        #list
+        else:
             ts = Tournament.query.filter_by(status="OPEN").all()
-            msg = LongMessage(self.client,self.message.channel)
-            
+            msg = []
             for tournament in ts:
-                coaches = tournament.coaches.filter(TournamentSignups.mode!="reserve").all()
+                coaches = tournament.coaches.filter(TournamentSignups.mode=="active").all()
                 reserves = tournament.coaches.filter(TournamentSignups.mode=="reserve").all()
                 count = len(coaches)
                 count_res = len(reserves)
                 reserve_message = f" ({count_res}/{tournament.reserve_limit}) " if tournament.reserve_limit!=0 else "" 
-                msg.add(f"{tournament.id}. {tournament.name}{' (Imperium)' if tournament.type=='Imperium' else ''} - Signups: {count}/{tournament.coach_limit}{reserve_message}, Closes: {tournament.signup_close_date}")
-            await msg.send()
+                msg.append(f"**{tournament.id}.** {tournament.name}{' (Imperium)' if tournament.type=='Imperium' else ''} - Signups: {count}/{tournament.coach_limit}{reserve_message}, Closes: {tournament.signup_close_date}")
+
+            msg.append(" \nUse **!complist <id>** to display details of the tournament")
+            msg.append("Use **!sign <id>** to register for tournament")
+            msg.append("Use **!resign <id>** to resign from tournament")
+            await self.send_message(self.message.channel, msg)
             return
 
+    async def __run_sign(self):
+        coach = Coach.get_by_name(str(self.message.author))
+        if coach is None:
+            await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
+            return
+        if not await self.sign(self.args,coach):
+            await self.client.send_message(self.message.channel, self.__class__.sign_help())
+        return
+
+    async def __run_resign(self):
+        coach = Coach.get_by_name(str(self.message.author))
+        if coach is None:
+            await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
+            return
+        if not await self.resign(self.args,coach):
+            await self.client.send_message(self.message.channel, self.__class__.resign_help())
+        return
 
     async def __run_admin(self):
         # if not started from admin-channel
@@ -530,6 +662,89 @@ class DiscordCommand:
                 await self.send_message(self.message.channel, [f"Coach {new_coach.name} was reset"])
                 await self.bank_notification(f"Your account was reset",new_coach)
 
+        if self.message.content.startswith("!adminsign"):
+            if len(self.args)!=3:
+                await self.send_message(self.message.channel, ["Incorrect number of arguments!!!\n"])
+                await self.client.send_message(self.message.channel, self.__class__.adminsign_help())
+                return
+            coach = await self.coach_unique(self.args[-1])
+            if coach is None:
+                return
+            if not await self.sign(self.args[:-1],coach,admin=True):
+                await self.client.send_message(self.message.channel, self.__class__.adminsign_help())
+            return
+
+        if self.message.content.startswith("!adminresign"):
+            if len(self.args)!=3:
+                await self.send_message(self.message.channel, ["Incorrect number of arguments!!!\n"])
+                await self.client.send_message(self.message.channel, self.__class__.adminresign_help())
+                return
+            coach = await self.coach_unique(self.args[-1])
+            if coach is None:
+                return
+            if not await self.resign(self.args[:-1],coach,admin=True):
+                await self.client.send_message(self.message.channel, self.__class__.adminresign_help())
+            return
+
+        if self.message.content.startswith("!admincomp"):
+            if len(self.args) not in [2,3]:
+                await self.send_message(self.message.channel, ["Incorrect number of arguments!!!\n"])
+                await self.client.send_message(self.message.channel, self.__class__.admincomp_help())
+                return
+            
+            if self.args[1] not in ["start", "stop", "update"]:
+                await self.send_message(self.message.channel, ["Incorrect arguments!!!\n"])
+                await self.client.send_message(self.message.channel, self.__class__.admincomp_help())
+
+            if self.args[1] in ["start", "stop"]:
+                if not RepresentsInt(self.args[2]):
+                    await self.send_message(self.message.channel, [f"**{self.args[2]}** is not a number!!!\n"])
+                    return
+
+                    tourn = Tournament.query.filter_by(tournament_id=int(self.args[2])).one_or_none()
+                    if not tourn:
+                        await self.send_message(self.message.channel,[f"Incorrect tournament **id** specified\n"])
+                        return
+
+            if self.args[1]=="update":
+                TournamentService.update()
+                await self.send_message(self.message.channel, [f"Tournaments updated!!!\n"])
+            if self.args[1]=="stop":
+                for coach in tourn.coaches:
+                    TournamentService.unregister(tourn,coach,admin=True,refund=False)    
+                await self.send_message(self.message.channel, [f"Coaches have been resigned from {tourn.name}!!!\n"])
+                return
+
+            if self.args[1]=="start":
+                if not tourn.discord_channel:
+                    await self.send_message(self.message.channel, [f"Discord channel is not defined, please update it in Tournament sheet and run **!admincomp update**\n"])
+                    return
+
+                channel = discord.utils.get(self.client.get_all_channels(), name=tourn.discord_channel.lower())
+                if not channel:
+                    await self.send_message(self.message.channel, [f"Discord channel {tourn.discord_channel.lower()} does not exists, please create it and rerun\n"])
+                    return
+
+                if not tourn.admin:
+                    await self.send_message(self.message.channel, [f"Tournament admin is not defined, please update it in Tournament sheet and run **!admincomp update**\n"])
+                    return
+                    
+                admin = discord.utils.get(self.client.get_all_members(), name=tourn.admin)
+                if not admin:
+                    await self.send_message(self.message.channel, [f"Tournament admin {tourn.admin} was not found on the discord server, check name in the Tournament sheet and run **!admincomp update**\n"])
+                    return
+
+                submit_deck_channel = discord.utils.get(self.client.get_all_channels(), name='submit-a-deck')
+
+                msg = [discord.utils.get(self.client.get_all_members(), name=coach.short_name(), discriminator=coach.discord_id()).mention for coach in tourn.coaches.filter(TournamentSignups.mode=="active")]
+                msg.append(f"This will be your scheduling channel for your {tourn.name}")
+                if submit_deck_channel:
+                    msg.append(f"Please submit a decks as instructed in {submit_deck_channel.mention}")
+                msg.append("We can start as soon as they're all in!")
+                msg.append(f"Your tournament admin is {admin.mention}")
+                await self.send_message(channel, msg)
+            return
+
     async def __run_list(self):
         coach = Coach.get_by_name(str(self.message.author))
         show_starter = True if len(self.args)>1 and self.args[1]=="all" else False
@@ -547,12 +762,14 @@ class DiscordCommand:
 
         msg = [
             f"**Bank:** {coach.account.amount} coins\n",
-            f"**Collection**{sp_msg}:\n",
+            f"**Tournaments:**",
+            *[f'{t.id}. {t.name}, status: {t.status}, expected start: {t.expected_start_date}' for t in coach.tournaments],
+            f"\n**Collection**{sp_msg}:",
             "-" * 65 + "",
             f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(all_cards))}",
             "-" * 65 + "\n"
         ]
-        await self.send_message(self.message.channel, msg)
+        await self.send_message(self.message.author, msg)
         await self.client.send_message(self.message.channel, "Collection sent to PM")
     
     async def __run_genpack(self):
