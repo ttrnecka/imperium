@@ -14,7 +14,7 @@ app = create_app()
 app.app_context().push()
 
 ROOT = os.path.dirname(__file__)
-RULES_LINK = "https://goo.gl/GqWRwD"
+RULES_LINK = "https://bit.ly/2P9Y07F"
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
