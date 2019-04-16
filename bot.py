@@ -708,10 +708,10 @@ class DiscordCommand:
                     await self.send_message(self.message.channel, [f"**{self.args[2]}** is not a number!!!\n"])
                     return
 
-                    tourn = Tournament.query.filter_by(tournament_id=int(self.args[2])).one_or_none()
-                    if not tourn:
-                        await self.send_message(self.message.channel,[f"Incorrect tournament **id** specified\n"])
-                        return
+                tourn = Tournament.query.filter_by(tournament_id=int(self.args[2])).one_or_none()
+                if not tourn:
+                    await self.send_message(self.message.channel,[f"Incorrect tournament **id** specified\n"])
+                    return
 
             if self.args[1]=="update":
                 TournamentService.update()
