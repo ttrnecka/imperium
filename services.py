@@ -1,5 +1,5 @@
 from models.base_model import db
-from models.data_models import Pack, Card, Coach
+from models.data_models import Pack, Card, Coach, Tournament, TournamentSignups, Transaction
 from imperiumbase import ImperiumSheet
 from sqlalchemy.orm import joinedload
 import random
@@ -274,7 +274,130 @@ class CoachService:
         for coach in Coach.query.with_deleted().filter_by(deleted=True):
             db.session.delete(coach)
         db.session.commit()
-            
+
+class TournamentService:
+    @classmethod
+    def init_dict_from_tournament(cls,tournament):
+        return {
+            "tournament_id":int(tournament["Tournament ID"]),
+            "name":tournament["Tournament Name"],
+            "discord_channel":tournament["Scheduling Room"],
+            "type":tournament["Tournament Type"],
+            "mode":tournament["Tournament Mode"],
+            "signup_close_date":tournament["Signup Close Date"].replace('\x92',' '),
+            "expected_start_date":tournament["Expected Start Date"].replace('\x92',' '),
+            "expected_end_date":tournament["Expected End Date"].replace('\x92',' '),
+            "deadline_date":tournament["Tournament Deadline"].replace('\x92',' '),
+            "fee":int(tournament["Entrance Fee"]),
+            "status":tournament["Status"],
+            "coach_limit":int(tournament["Coach Count Limit"]),
+            "reserve_limit":int(tournament["Reserve Count Limit"]),
+            "region":tournament["Region Bias"],
+            "deck_limit":int(tournament["Deck Size Limit"]),
+            "admin":tournament["Tournament Admin"],
+            "sponsor":tournament["Tournament Sponsor"],
+            "special_rules":tournament["Special Rules"],
+            "prizes":tournament["Prizes"],
+        }
+
+    @classmethod
+    def update(cls):
+        for tournament in ImperiumSheet.tournaments():
+            t_dict = cls.init_dict_from_tournament(tournament)
+            t = Tournament.query.filter_by(tournament_id = t_dict['tournament_id']).all()
+            if len(t)==0:
+                T = Tournament()
+                db.session.add(T)
+            else:
+                T = t[0]
+            T.update(**t_dict)
+
+        db.session.commit()
+        
+    @classmethod
+    def register(cls,tournament,coach,admin=False):
+        # check for status
+        if tournament.status != "OPEN" and not admin:
+            raise RegistrationError(f"Tournamnent {tournament.name} signups are not open!!!")
+        # check if coach is not registered
+        ts = TournamentSignups.query.filter_by(tournament_id= tournament.id, coach_id = coach.id).all()
+        if len(ts)>0:
+            raise RegistrationError(f"Coach {coach.short_name()} is already registered to {tournament.name}!!!")
+        
+        # check if the coach is not signed to multiple tournaments,  only exception is FastTrack and Boot/Regular for Development
+
+        if tournament.type=="Imperium":
+            ts = coach.tournaments.filter_by(type="Imperium").all()
+            if len(ts)>0:
+                raise RegistrationError(f"Coach cannot be registered to more than 1 Imperium tournament!!!")
+        else:
+            ts = coach.tournaments.filter(Tournament.type!="Imperium").all()
+            if len(ts)>1:
+                raise RegistrationError(f"Coach cannot be registered to more than 2 Development tournaments!!!")
+            if len(ts)==1:
+                etour = ts[0]
+                if etour.type == "Development" and tournament.type == "Development":
+                    if not ((etour.mode=="Boot Camp" or etour.mode=="Regular") and tournament.mode=="Fast-Track") and not ((tournament.mode=="Boot Camp" or tournament.mode=="Regular") and etour.mode=="Fast-Track"):
+                        raise RegistrationError(f"Coach cannot be registered to {tournament.mode} tournament and {etour.mode} tournament at the same time!!!")    
+                else:
+                    raise RegistrationError(f"Coach cannot be registered to {tournament.type} tournament and {etour.type} tournament at the same time!!!")
+        
+        # check for free slots
+        signups = tournament.coaches.filter(TournamentSignups.mode != 'reserve').all()
+        reserves = tournament.coaches.filter(TournamentSignups.mode == 'reserve').all()
+        if len(signups) == tournament.coach_limit:
+            if len(reserves) == tournament.reserve_limit:
+                raise RegistrationError(f"{tournament.name} is full !!!")
+            else:
+                register_as = "reserve"
+        else:
+            register_as = "active"
+
+        # tournament is open, has free slot and coach is not signed to it yet
+        try:
+            signup = TournamentSignups(mode=register_as)
+            signup.coach = coach
+            signup.tournament = tournament
+            db.session.add(signup)
+
+            reason = f"{tournament.name} signup - cost {tournament.fee} coins"
+            t = Transaction(description=reason,price=tournament.fee)
+            coach.make_transaction(t)
+
+            db.session.commit()
+        except Exception as e:
+            raise RegistrationError(str(e))
+        
+        return signup
+
+    @classmethod
+    def unregister(cls,tournament,coach,admin=False,refund=True):
+        # check for status
+        if tournament.status not in ["OPEN","FINISHED"] and not admin:
+            raise RegistrationError(f"Coach resign from running tournament!!!")
+        # check if coach is registered
+        ts = TournamentSignups.query.filter_by(tournament_id= tournament.id, coach_id = coach.id).all()
+        if len(ts)<1:
+            raise RegistrationError(f"Coach {coach.short_name()} is not registered to {tournament.name}!!!")
+
+        try:
+            db.session.delete(ts[0])
+
+            if refund:
+                reason = f"{tournament.name} resignation - refund {tournament.fee} coins"
+                t = Transaction(description=reason,price=-1*tournament.fee)
+                coach.make_transaction(t)
+
+            db.session.commit()
+        except Exception as e:
+            raise RegistrationError(str(e))
+
+        return True
+        
+
+class RegistrationError(Exception):
+    pass
+
 class InvalidTeam(Exception):
     pass
 
