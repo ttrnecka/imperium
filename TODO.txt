@@ -1,4 +1,9 @@
 VERY HIGH
+torunaments
+    reserve management - move coach from reserve to active when active coach resigns
+    add sponzor bonus
+
+
 Change index to use Vue and api calls instead
 Add manage deck capability (web)
 Add authentication code to edit view
@@ -58,3 +63,9 @@ Autoprocess cards: Loose Change!, Banking Error!, Lottery Win! and notify coach
 Ability to display starter pack (discord) - option to !list all
 Ability to display starter pack (web) (display starter pack flag)
 Ability to generate pack but do not assign it to coach's collection, just deck (special card that generates training pack to be used only in deck, not to be assigned to coach's collection)
+tournament management in bot
+torunaments
+    display running
+    coma in coaches list needs moving
+    add status/admin/channel to view
+    add new Unique prize column

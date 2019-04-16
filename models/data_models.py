@@ -204,6 +204,7 @@ class Tournament(Base):
     sponsor = db.Column(db.String(80),nullable=True)
     special_rules = db.Column(db.Text(),nullable=True)
     prizes = db.Column(db.Text(),nullable=True)
+    unique_prize = db.Column(db.Text,nullable=True)
 
     coaches = db.relationship("Coach", secondary="tournaments_signups", backref=db.backref('tournaments', lazy="dynamic"), lazy="dynamic")
 

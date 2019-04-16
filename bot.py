@@ -422,39 +422,46 @@ class DiscordCommand:
             await self.send_message(self.message.channel,msg)
 
     async def __run_complist(self):
-        if len(self.args)==2 and not RepresentsInt(self.args[1]):
-            await self.send_message(self.message.channel,[f"**{self.args[1]}** is not a number!!!\n"])
+        if len(self.args)==2 and not (RepresentsInt(self.args[1]) or self.args[1]=="all"):
+            await self.send_message(self.message.channel,[f"**{self.args[1]}** is not a number or 'all'!!!\n"])
             return
 
         #detail
-        if len(self.args)==2:
-            tourn = Tournament.query.filter_by(status="OPEN",tournament_id=int(self.args[1])).one_or_none()
+        if len(self.args)==2 and RepresentsInt(self.args[1]):
+            tourn = Tournament.query.filter_by(tournament_id=int(self.args[1])).one_or_none()
             if not tourn:
-                await self.send_message(self.message.channel,[f"Incorrect tournament **id** specified\n"])
+                await self.send_message(self.message.channel,[f"Tournament **id** does not exist\n"])
                 return
             coaches = tourn.coaches.filter(TournamentSignups.mode=="active").all()
             count = len(coaches)
 
             msg = [
-                f"__**{tourn.name}**__\n",
+                f"__**{tourn.name}**__  - **{tourn.status}**\n",
                 f"**Type**: {tourn.region} - {tourn.type} - {tourn.mode}",
+                f"**Dates**: Signup By/Start By/End By/Deadline  - {tourn.signup_close_date}/{tourn.expected_start_date}/{tourn.expected_end_date}/{tourn.deadline_date}",
                 f"**Entrance Fee**: {tourn.fee}",
                 f"**Deck Size**: {tourn.deck_limit}",
                 f"**Sponsor**: {tourn.sponsor}",
                 f"**Special Rules**: {tourn.special_rules}",
                 f"**Prizes**: {tourn.prizes}",
-                f"**Signups**: {count}/{tourn.coach_limit} {' ,'.join([coach.short_name() for coach in coaches])}",
+                f"**Unique Prize**: {tourn.unique_prize}",
+                f"**Channel**: {tourn.discord_channel}",
+                f"**Admin**: {tourn.admin}",
+                f"**Signups**: {count}/{tourn.coach_limit} {', '.join([coach.short_name() for coach in coaches])}",
             ]
             if tourn.reserve_limit>0:
                 reserves = tourn.coaches.filter(TournamentSignups.mode=="reserve").all()
                 count_res = len(reserves)
-                msg.append(f"**Reserves**: {count_res}/{tourn.reserve_limit} {' ,'.join([coach.short_name() for coach in reserves])}")
+                msg.append(f"**Reserves**: {count_res}/{tourn.reserve_limit} {', '.join([coach.short_name() for coach in reserves])}")
 
             await self.send_message(self.message.channel, msg)
             return
         #list
         else:
-            ts = Tournament.query.filter_by(status="OPEN").all()
+            if len(self.args)==2 and self.args[1]=="all":
+                ts = Tournament.query.all()
+            else:
+                ts = Tournament.query.filter_by(status="OPEN").all()
             msg = []
             for tournament in ts:
                 coaches = tournament.coaches.filter(TournamentSignups.mode=="active").all()
