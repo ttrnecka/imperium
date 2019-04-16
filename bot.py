@@ -442,6 +442,7 @@ class DiscordCommand:
                 f"**Entrance Fee**: {tourn.fee}",
                 f"**Deck Size**: {tourn.deck_limit}",
                 f"**Sponsor**: {tourn.sponsor}",
+                f"**Sponsor Description**: {tourn.sponsor_description}",
                 f"**Special Rules**: {tourn.special_rules}",
                 f"**Prizes**: {tourn.prizes}",
                 f"**Unique Prize**: {tourn.unique_prize}",
@@ -460,9 +461,12 @@ class DiscordCommand:
         else:
             if len(self.args)==2 and self.args[1]=="all":
                 ts = Tournament.query.all()
+                tmsg = "All"
             else:
                 ts = Tournament.query.filter_by(status="OPEN").all()
-            msg = []
+                tmsg = "Open"
+            
+            msg = [f"__**{tmsg} Tournaments:**__"]
             for tournament in ts:
                 coaches = tournament.coaches.filter(TournamentSignups.mode=="active").all()
                 reserves = tournament.coaches.filter(TournamentSignups.mode=="reserve").all()
@@ -472,6 +476,7 @@ class DiscordCommand:
                 msg.append(f"**{tournament.id}.** {tournament.name}{' (Imperium)' if tournament.type=='Imperium' else ''} - Signups: {count}/{tournament.coach_limit}{reserve_message}, Closes: {tournament.signup_close_date}")
 
             msg.append(" \nUse **!complist <id>** to display details of the tournament")
+            msg.append("Use **!complist all** to display ALL tournaments")
             msg.append("Use **!sign <id>** to register for tournament")
             msg.append("Use **!resign <id>** to resign from tournament")
             await self.send_message(self.message.channel, msg)

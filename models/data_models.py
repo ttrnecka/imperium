@@ -202,6 +202,7 @@ class Tournament(Base):
     deck_limit =  db.Column(db.Integer(), default=18, nullable=False)
     admin =  db.Column(db.String(80),nullable=True)
     sponsor = db.Column(db.String(80),nullable=True)
+    sponsor_description = db.Column(db.Text,nullable=True)
     special_rules = db.Column(db.Text(),nullable=True)
     prizes = db.Column(db.Text(),nullable=True)
     unique_prize = db.Column(db.Text,nullable=True)

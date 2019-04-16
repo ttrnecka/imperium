@@ -299,6 +299,7 @@ class TournamentService:
             "special_rules":tournament["Special Rules"],
             "prizes":tournament["Prizes"],
             "unique_prize":tournament["Unique Prize"],
+            "sponsor_description":tournament["Sponsor Description"],
         }
 
     @classmethod
