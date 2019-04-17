@@ -4,7 +4,9 @@ torunaments
     add sponzor bonus
     document complist all
     show full comps
-    upda
+    updated cards - same process as tournaments
+    +AG cards renamed to AG+
+    randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is not bound to a Session; lazy load operation of attribute 'cards' cannot proceed (Background on this error at: http://sqlalche.me/e/bhk3)
 
 
 Change index to use Vue and api calls instead
