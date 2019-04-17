@@ -256,6 +256,18 @@ class CardService:
         else:
             return cards[0]
 
+    @classmethod
+    def update(cls):
+        for card in ImperiumSheet.cards():
+            c_dict = cls.init_dict_from_card(card)
+            cards = Card.query.filter_by(name = c_dict['name']).all()
+    
+            for scard in cards:
+                scard.update(**c_dict)
+
+        db.session.commit()
+    
+
         
 class SheetService:
     @classmethod

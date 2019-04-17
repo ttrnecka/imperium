@@ -187,12 +187,15 @@ class DiscordCommand:
     @classmethod
     def admincard_help(cls):
         msg="```"
-        msg+="USAGE:\n"
-        msg+="Adds or remove card or cards from the coach\n"
+        msg+="USAGE 1:\n"
+        msg+="Adds or removes card or cards from the coach\n"
         msg+="!admincard add|remove <coach> <card>;...;<card>\n"
         msg+="\tadd|remove: select one based on desired operation\n"
         msg+="\t<coach>: coach discord name or its part, must be unique\n"
         msg+="\t<card>: Exact card name as is in the All Cards list, if mutliple cards are specified separate them by **;**\n"
+        msg+=" \nUSAGE 2:\n"
+        msg+="Updates card database from the master sheet\n"
+        msg+="!admincard update\n"
         msg+="```"
         return msg
     
@@ -317,6 +320,12 @@ class DiscordCommand:
             f"{cls.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.cards))}",
             "-" * 65 + "\n"
         ]
+
+        admin_in = Tournament.query.filter(Tournament.admin==coach.short_name(),Tournament.status.in_(("OPEN","RUNNING"))).all()
+
+        if len(admin_in)>0:
+            msg.append(f"**Tournament Admin:**")
+            msg.extend([f'{t.id}. {t.name}, status: {t.status}, channel: {t.discord_channel}' for t in admin_in])
 
     async def sign(self,args,coach,admin=False):
         if len(args)!=2:
@@ -578,22 +587,30 @@ class DiscordCommand:
                 await self.bank_notification(f"Your bank has been updated by **{amount}** coins - {reason}",coach)
         
         if self.message.content.startswith('!admincard'):
-            # !adminpack add/remove <coach> <card>;...;<card>
-            if len(self.args)<4:
+            if len(self.args)==1:
+                await self.client.send_message(self.message.channel, self.__class__.admincard_help())
+                return
+
+            if len(self.args)>1 and self.args[1] not in ["add","remove","update"]:
+                await self.send_message(self.message.channel, ["specify **add**, **remove** or **update** operation!!!\n"])
+                return
+            
+            if len(self.args)<4 and self.args[1] in ["add","remove"]:
                 await self.send_message(self.message.channel, ["Not enough arguments!!!\n"])
                 await self.client.send_message(self.message.channel, self.__class__.admincard_help())
                 return
 
-            # amount must be int
-            if self.args[1] not in ["add","remove"]:
-                await self.send_message(self.message.channel, ["specify **add** or **remove** operation!!!\n"])
+            if self.args[1]=="update":
+                await self.send_message(self.message.channel, [f"Updating...\n"])
+                CardService.update()
+                await self.send_message(self.message.channel, [f"Cards updated!!!\n"])
                 return
-
-            coach = await self.coach_unique(self.args[2])
-            if coach is None:
-                return
-
-            card_names = [card.strip() for card in " ".join(self.args[3:]).split(";")]
+            else:
+                coach = await self.coach_unique(self.args[2])
+                if coach is None:
+                    return
+                card_names = [card.strip() for card in " ".join(self.args[3:]).split(";")]
+                
             if self.args[1]=="add":
                 pack = PackService.admin_pack(0,card_names)
                 # situation when some of the cards could not be found
@@ -726,6 +743,7 @@ class DiscordCommand:
                     return
 
             if self.args[1]=="update":
+                await self.send_message(self.message.channel, [f"Updating...\n"])
                 TournamentService.update()
                 await self.send_message(self.message.channel, [f"Tournaments updated!!!\n"])
             if self.args[1]=="stop":
@@ -792,8 +810,15 @@ class DiscordCommand:
             f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(all_cards))}",
             "-" * 65 + "\n"
         ]
+
+        admin_in = Tournament.query.filter(Tournament.admin==coach.short_name(),Tournament.status.in_(("OPEN","RUNNING"))).all()
+
+        if len(admin_in)>0:
+            msg.append(f"**Tournament Admin:**")
+            msg.extend([f'{t.id}. {t.name}, status: {t.status}, channel: {t.discord_channel}' for t in admin_in])
+
         await self.send_message(self.message.author, msg)
-        await self.client.send_message(self.message.channel, "Collection sent to PM")
+        await self.client.send_message(self.message.channel, "Info sent to PM")
     
     async def __run_genpack(self):
         if self.__class__.check_gen_command(self.cmd):
