@@ -310,7 +310,7 @@ class DiscordCommand:
 
     @classmethod
     def coach_collection_msg(cls,coach):
-        return [
+        msg = [
             f"Coach **{coach.name}**\n",
             f"**Bank:** {coach.account.amount} coins\n",
             f"**Tournaments:**",
@@ -326,6 +326,8 @@ class DiscordCommand:
         if len(admin_in)>0:
             msg.append(f"**Tournament Admin:**")
             msg.extend([f'{t.id}. {t.name}, status: {t.status}, channel: {t.discord_channel}' for t in admin_in])
+
+        return msg
 
     async def sign(self,args,coach,admin=False):
         if len(args)!=2:
