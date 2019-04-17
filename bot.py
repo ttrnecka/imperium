@@ -5,6 +5,7 @@ import os
 
 from imperiumbase import ImperiumSheet
 from web import db, create_app
+from sqlalchemy import func
 from models.data_models import Coach, Account, Card, Pack, Transaction, TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
 from services import PackService, SheetService, CoachService, CardService, TournamentService, RegistrationError
@@ -422,7 +423,7 @@ class DiscordCommand:
             await self.send_message(self.message.channel,msg)
 
     async def __run_complist(self):
-        if len(self.args)==2 and not (RepresentsInt(self.args[1]) or self.args[1]=="all"):
+        if len(self.args)==2 and not (RepresentsInt(self.args[1]) or self.args[1] in ["all","full","free"]):
             await self.send_message(self.message.channel,[f"**{self.args[1]}** is not a number or 'all'!!!\n"])
             return
 
@@ -462,9 +463,15 @@ class DiscordCommand:
             if len(self.args)==2 and self.args[1]=="all":
                 ts = Tournament.query.all()
                 tmsg = "All"
+            elif len(self.args)==2 and self.args[1]=="full":
+                ts= Tournament.query.outerjoin(Tournament.tournament_signups).filter(Tournament.status=="OPEN").group_by(Tournament).having(func.count_(Tournament.tournament_signups) == Tournament.coach_limit+Tournament.reserve_limit).all()
+                tmsg = "Full"
+            elif len(self.args)==2 and self.args[1]=="free":
+                ts= Tournament.query.outerjoin(Tournament.tournament_signups).filter(Tournament.status=="OPEN").group_by(Tournament).having(func.count_(Tournament.tournament_signups) < Tournament.coach_limit+Tournament.reserve_limit).all()
+                tmsg = "Free"
             else:
                 ts = Tournament.query.filter_by(status="OPEN").all()
-                tmsg = "Open"
+                tmsg = "Open"    
             
             msg = [f"__**{tmsg} Tournaments:**__"]
             for tournament in ts:
@@ -475,8 +482,8 @@ class DiscordCommand:
                 reserve_message = f" ({count_res}/{tournament.reserve_limit}) " if tournament.reserve_limit!=0 else "" 
                 msg.append(f"**{tournament.id}.** {tournament.name}{' (Imperium)' if tournament.type=='Imperium' else ''} - Signups: {count}/{tournament.coach_limit}{reserve_message}, Closes: {tournament.signup_close_date}")
 
-            msg.append(" \nUse **!complist <id>** to display details of the tournament")
-            msg.append("Use **!complist all** to display ALL tournaments")
+            msg.append(" \nUse **!complist all|full|free** to display tournaments")
+            msg.append("Use **!complist <id>** to display details of the tournament")
             msg.append("Use **!sign <id>** to register for tournament")
             msg.append("Use **!resign <id>** to resign from tournament")
             await self.send_message(self.message.channel, msg)
@@ -729,21 +736,21 @@ class DiscordCommand:
 
             if self.args[1]=="start":
                 if not tourn.discord_channel:
-                    await self.send_message(self.message.channel, [f"Discord channel is not defined, please update it in Tournament sheet and run **!admincomp update**\n"])
+                    await self.send_message(self.message.channel, [f"Discord channel is not defined, please update it in Tournament sheet and run **!admincomp update**!\n"])
                     return
 
                 channel = discord.utils.get(self.client.get_all_channels(), name=tourn.discord_channel.lower())
                 if not channel:
-                    await self.send_message(self.message.channel, [f"Discord channel {tourn.discord_channel.lower()} does not exists, please create it and rerun\n"])
+                    await self.send_message(self.message.channel, [f"Discord channel {tourn.discord_channel.lower()} does not exists, please create it and rerun this command!\n"])
                     return
 
                 if not tourn.admin:
-                    await self.send_message(self.message.channel, [f"Tournament admin is not defined, please update it in Tournament sheet and run **!admincomp update**\n"])
+                    await self.send_message(self.message.channel, [f"Tournament admin is not defined, please update it in Tournament sheet and run **!admincomp update**!\n"])
                     return
                     
                 admin = discord.utils.get(self.client.get_all_members(), name=tourn.admin)
                 if not admin:
-                    await self.send_message(self.message.channel, [f"Tournament admin {tourn.admin} was not found on the discord server, check name in the Tournament sheet and run **!admincomp update**\n"])
+                    await self.send_message(self.message.channel, [f"Tournament admin {tourn.admin} was not found on the discord server, check name in the Tournament sheet and run **!admincomp update**!\n"])
                     return
 
                 submit_deck_channel = discord.utils.get(self.client.get_all_channels(), name='submit-a-deck')
@@ -754,6 +761,10 @@ class DiscordCommand:
                     msg.append(f"Please submit a decks as instructed in {submit_deck_channel.mention}")
                 msg.append("We can start as soon as they're all in!")
                 msg.append(f"Your tournament admin is {admin.mention}")
+                msg.append(f"Tournament Sponsor: **{tourn.sponsor}**")
+                msg.append(f"{tourn.sponsor_description}")
+                msg.append(f"**Special Rules:**")
+                msg.append(f"{tourn.special_rules}")
                 await self.send_message(channel, msg)
             return
 

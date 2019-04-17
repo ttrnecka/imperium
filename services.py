@@ -326,7 +326,7 @@ class TournamentService:
         if len(ts)>0:
             raise RegistrationError(f"Coach {coach.short_name()} is already registered to {tournament.name}!!!")
         
-        # check if the coach is not signed to multiple tournaments,  only exception is FastTrack and Boot/Regular for Development
+        # check if the coach is not signed to multiple tournaments,  only exception is FastTrack Dev and Boot/Regular Development/Beginner
 
         if tournament.type=="Imperium":
             ts = coach.tournaments.filter_by(type="Imperium").all()
@@ -340,7 +340,10 @@ class TournamentService:
                 etour = ts[0]
                 if etour.type == "Development" and tournament.type == "Development":
                     if not ((etour.mode=="Boot Camp" or etour.mode=="Regular") and tournament.mode=="Fast-Track") and not ((tournament.mode=="Boot Camp" or tournament.mode=="Regular") and etour.mode=="Fast-Track"):
-                        raise RegistrationError(f"Coach cannot be registered to {tournament.mode} tournament and {etour.mode} tournament at the same time!!!")    
+                        raise RegistrationError(f"Coach cannot be registered to {tournament.type} {tournament.mode} tournament and {etour.type} {etour.mode} tournament at the same time!!!")    
+                elif (etour.type == "Beginner" and tournament.type == "Development") or (etour.type == "Development" and tournament.type == "Beginner"):
+                    if not ((etour.mode=="Boot Camp" or etour.mode=="Regular") and tournament.mode=="Fast-Track") and not ((tournament.mode=="Boot Camp" or tournament.mode=="Regular") and etour.mode=="Fast-Track"):
+                        raise RegistrationError(f"Coach cannot be registered to {tournament.type} {tournament.mode} tournament and {etour.type} {etour.mode} tournament at the same time!!!")    
                 else:
                     raise RegistrationError(f"Coach cannot be registered to {tournament.type} tournament and {etour.type} tournament at the same time!!!")
         
