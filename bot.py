@@ -45,6 +45,10 @@ async def on_message(message):
     if message.author == client.user:
         return
 
+    #ignore DM
+    if message.channel.is_private:
+        await client.send_message(message.channel, "PM commands are not allowed. Please use the Imperium discord server.")
+        return
     try:
         dc = DiscordCommand(message,client)
         await dc.process()
@@ -347,7 +351,8 @@ class DiscordCommand:
             return False
 
         signup = TournamentService.register(tourn,coach,admin)
-        await self.send_message(self.message.channel,[f"Signup succeded!!!\n"])
+        add_msg = "" if signup.mode=="active" else " as RESERVE"
+        await self.send_message(self.message.channel,[f"Signup succeded{add_msg}!!!\n"])
         if tourn.fee > 0:
             reason = coach.account.transactions[-1].description
             await self.bank_notification(f"Your bank has been updated by -**{tourn.fee}** coins - {reason}",coach)
@@ -377,7 +382,17 @@ class DiscordCommand:
             if tourn.fee > 0:
                 reason = coach.account.transactions[-1].description
                 await self.bank_notification(f"Your bank has been updated by **{tourn.fee}** coins - {reason}",coach)
-        
+            
+            coaches = [discord.utils.get(self.client.get_all_members(), name=signup.coach.short_name(), discriminator=signup.coach.discord_id()) for signup in TournamentService.update_signups(tourn)]
+            msg = [coach.mention for coach in coaches if coach]
+            msg.append(f"Your signup to {tourn.name} has been updated from RESERVE to ACTIVE")
+
+            if len(msg)>1:
+                tourn_channel = discord.utils.get(self.client.get_all_channels(), name='tournament-notice-board')
+                if tourn_channel:
+                    await self.send_message(tourn_channel,msg)
+                else:
+                    await self.send_message(self.message.channel,msg)
         return True
 
     async def send_message(self,channel,message_list):
@@ -395,7 +410,7 @@ class DiscordCommand:
         self.message = dmessage
         self.client = dclient
         self.cmd = dmessage.content.lower()
-        self.args = self.cmd.split(" ")
+        self.args = self.cmd.split()
 
     async def process(self):
         try:
@@ -781,10 +796,15 @@ class DiscordCommand:
                     msg.append(f"Please submit a decks as instructed in {submit_deck_channel.mention}")
                 msg.append("We can start as soon as they're all in!")
                 msg.append(f"Your tournament admin is {admin.mention}")
-                msg.append(f"Tournament Sponsor: **{tourn.sponsor}**")
+                msg.append(f"**Deck Limit:** {tourn.deck_limit}")
+                msg.append(f"**Tournament Sponsor:** {tourn.sponsor}")
                 msg.append(f"{tourn.sponsor_description}")
                 msg.append(f"**Special Rules:**")
                 msg.append(f"{tourn.special_rules}")
+                msg.append(f"**Prizes:**")
+                msg.append(f"{tourn.prizes}")
+                msg.append(f"**Unique Prize:**")
+                msg.append(f"{tourn.unique_prize}")
                 await self.send_message(channel, msg)
             return
 

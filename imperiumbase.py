@@ -10,6 +10,8 @@ creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(ROOT, 'con
 
 class ImperiumSheet:
     SPREADSHEET_ID = "1t5IoiIjPAS2CD63P6xI4hWwx9c1SEzW9AL1LJ4LK6og"
+    # dev spreadsheet below
+    # SPREADSHEET_ID = "1z59ftfIYxsSZ_OwQs2KaFGzSuYizSMdSCdW6DGAj4Ms"
     ALL_CARDS_SHEET = "All Cards"
     TRAINING_CARDS_SHEET = "Training Cards"
     STARTER_PACK_SHEET="Starter Pack"

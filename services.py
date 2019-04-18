@@ -2,6 +2,7 @@ from models.base_model import db
 from models.data_models import Pack, Card, Coach, Tournament, TournamentSignups, Transaction
 from imperiumbase import ImperiumSheet
 from sqlalchemy.orm import joinedload
+from sqlalchemy import asc
 import random
 
 class PackService:
@@ -327,7 +328,31 @@ class TournamentService:
             T.update(**t_dict)
 
         db.session.commit()
+
+    @classmethod
+    def update_signups(cls,tournament):
+        updated = []
+        signups = tournament.coaches.filter(TournamentSignups.mode != 'reserve').all()
+        reserves = tournament.coaches.filter(TournamentSignups.mode == 'reserve').order_by(asc(TournamentSignups.date_created)).all()
+
+        while len(signups) < tournament.coach_limit and len(reserves) > 0:
+            updated.append(cls.move_from_reserve_to_active(tournament,reserves[0]))
+            signups = tournament.coaches.filter(TournamentSignups.mode != 'reserve').all()
+            reserves = tournament.coaches.filter(TournamentSignups.mode == 'reserve').order_by(asc(TournamentSignups.date_created)).all()
+        return updated
+
+    @classmethod
+    def move_from_reserve_to_active(cls,tournament,coach):
+        ts = TournamentSignups.query.filter_by(tournament_id= tournament.id, coach_id = coach.id).all()
+        if len(ts)==0:
+            raise RegistrationError(f"Coach {coach.short_name()} is not RESERVE in {tournament.name}!!!")
+        if ts[0].mode!="reserve":
+            raise RegistrationError(f"Coach {coach.short_name()} is not RESERVE in {tournament.name}!!!")
         
+        ts[0].mode = "active"
+        db.session.commit()
+        return ts[0]
+
     @classmethod
     def register(cls,tournament,coach,admin=False):
         # check for status
