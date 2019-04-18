@@ -40,7 +40,6 @@ AUTO_CARDS = {
 
 @client.event
 async def on_message(message):
-    logger.info(f"{message.author}: {message.content}")
     # we do not want the bot to reply to itself
     if message.author == client.user:
         return
@@ -49,6 +48,12 @@ async def on_message(message):
     if message.channel.is_private:
         await client.send_message(message.channel, "PM commands are not allowed. Please use the Imperium discord server.")
         return
+
+        #ignore command not starting with !
+    if not message.content.startswith("!"):
+        return
+
+    logger.info(f"{message.author}: {message.content}")
     try:
         dc = DiscordCommand(message,client)
         await dc.process()
