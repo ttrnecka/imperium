@@ -798,7 +798,7 @@ class DiscordCommand:
                 msg = [discord.utils.get(self.client.get_all_members(), name=coach.short_name(), discriminator=coach.discord_id()).mention for coach in tourn.coaches.filter(TournamentSignups.mode=="active")]
                 msg.append(f"This will be your scheduling channel for your {tourn.name}")
                 if submit_deck_channel:
-                    msg.append(f"Please submit a decks as instructed in {submit_deck_channel.mention}")
+                    msg.append(f"Please submit decks as instructed in {submit_deck_channel.mention}")
                 msg.append("We can start as soon as they're all in!")
                 msg.append(f"Your tournament admin is {admin.mention}")
                 msg.append(f"**Deck Limit:** {tourn.deck_limit}")
