@@ -15,13 +15,13 @@ logger.addHandler(handler)
 class Card(Base):
     __tablename__ = 'cards'
 
-    name = db.Column(db.String(80), nullable=False,supports_json = True,index=True)
-    description = db.Column(db.Text(),supports_json = True)
-    race = db.Column(db.String(20), nullable=False,supports_json = True)
-    rarity = db.Column(db.String(20), nullable=False,supports_json = True)
-    card_type = db.Column(db.String(20), nullable=False,supports_json = True)
-    subtype = db.Column(db.String(30), nullable=False,supports_json = True)
-    notes = db.Column(db.String(255),supports_json = True)
+    name = db.Column(db.String(80), nullable=False, index=True)
+    description = db.Column(db.Text())
+    race = db.Column(db.String(20), nullable=False)
+    rarity = db.Column(db.String(20), nullable=False)
+    card_type = db.Column(db.String(20), nullable=False)
+    subtype = db.Column(db.String(30), nullable=False)
+    notes = db.Column(db.String(255))
 
     pack_id = db.Column(db.Integer, db.ForeignKey('packs.id'), nullable=False)
 
@@ -31,24 +31,24 @@ class Card(Base):
 class Pack(Base):
     __tablename__ = 'packs'
 
-    pack_type = db.Column(db.String(20), nullable=False,supports_json = True)
-    price = db.Column(db.Integer, default=0, nullable=False,supports_json = True)
-    team = db.Column(db.String(20),supports_json = True)
+    pack_type = db.Column(db.String(20), nullable=False)
+    price = db.Column(db.Integer, default=0, nullable=False)
+    team = db.Column(db.String(20))
 
     coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
 
-    transaction = db.relationship('Transaction',uselist=False, backref=db.backref('pack', lazy=True), cascade="all, delete-orphan",supports_json = True,lazy=False)
-    cards = db.relationship('Card', backref=db.backref('pack', lazy=False), cascade="all, delete-orphan",supports_json = True,lazy=False)
+    transaction = db.relationship('Transaction',uselist=False, backref=db.backref('pack', lazy=True), cascade="all, delete-orphan",lazy=False)
+    cards = db.relationship('Card', backref=db.backref('pack', lazy=False), cascade="all, delete-orphan",lazy=False)
 
     def __repr__(self):
         return '<Pack %r>' % self.pack_type
 
 class Coach(Base):  
     __tablename__ = 'coaches'
-    name = db.Column(db.String(80), unique=True, nullable=False,supports_json = True, index=True)
+    name = db.Column(db.String(80), unique=True, nullable=False, index=True)
     deleted_name = db.Column(db.String(80), unique=False, nullable=True)
-    account = db.relationship('Account', uselist=False, backref=db.backref('coach', lazy=True), cascade="all, delete-orphan",supports_json = True)
-    packs = db.relationship('Pack', backref=db.backref('coach', lazy=True),cascade="all, delete-orphan",supports_json = True,lazy="subquery")
+    account = db.relationship('Account', uselist=False, backref=db.backref('coach', lazy=True), cascade="all, delete-orphan")
+    packs = db.relationship('Pack', backref=db.backref('coach', lazy=True),cascade="all, delete-orphan",lazy="subquery")
     cards = db.relationship('Card', secondary="packs",backref=db.backref('coach', lazy=True, uselist=False), viewonly=True,lazy="subquery")
     deleted = db.Column(db.Boolean(), default=False)
 
@@ -144,10 +144,10 @@ class Coach(Base):
 class Account(Base):
     __tablename__ = 'accounts'
     INIT_CASH = 10
-    amount = db.Column(db.Integer, default=INIT_CASH, nullable=False,supports_json = True)
+    amount = db.Column(db.Integer, default=INIT_CASH, nullable=False)
     coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
 
-    transactions = db.relationship('Transaction', backref=db.backref('account', lazy=False), cascade="all, delete-orphan",supports_json = True,lazy=False)
+    transactions = db.relationship('Transaction', backref=db.backref('account', lazy=False), cascade="all, delete-orphan",lazy=False)
 
     def __repr__(self):
         return '<Account %r>' % self.amount
@@ -155,11 +155,11 @@ class Account(Base):
 class Transaction(Base):
     __tablename__ = 'transactions'
 
-    date_confirmed = db.Column(db.DateTime,  nullable=True,supports_json = True)
+    date_confirmed = db.Column(db.DateTime,  nullable=True)
     pack_id = db.Column(db.Integer, db.ForeignKey('packs.id'))
-    price = db.Column(db.Integer, default=0, nullable=False,supports_json = True)
-    confirmed = db.Column(db.Boolean, default = False, nullable=False,supports_json = True)
-    description = db.Column(db.String(255), nullable=False,supports_json = True)
+    price = db.Column(db.Integer, default=0, nullable=False)
+    confirmed = db.Column(db.Boolean, default = False, nullable=False)
+    description = db.Column(db.String(255), nullable=False)
     account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
 
     def confirm(self):

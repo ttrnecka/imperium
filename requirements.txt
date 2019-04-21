@@ -4,4 +4,4 @@ oauth2client
 pyyaml
 flask_sqlalchemy
 Flask-Migrate
-sqlathanor
+flask_marshmallow 

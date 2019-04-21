@@ -1,8 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy, BaseQuery
-from sqlathanor import FlaskBaseModel, initialize_flask_sqlathanor
 
-db = SQLAlchemy(model_class = FlaskBaseModel)
-db = initialize_flask_sqlathanor(db)
+db = SQLAlchemy()
 
 class Base(db.Model):
 
