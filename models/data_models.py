@@ -24,6 +24,7 @@ class Card(Base):
     notes = db.Column(db.String(255),supports_json = True)
 
     pack_id = db.Column(db.Integer, db.ForeignKey('packs.id'), nullable=False)
+    duster_id = db.Column(db.Integer, db.ForeignKey('dusters.id'))
 
     def __repr__(self):
         return '<Card %r>' % self.name
@@ -51,6 +52,7 @@ class Coach(Base):
     packs = db.relationship('Pack', backref=db.backref('coach', lazy=True),cascade="all, delete-orphan",supports_json = True,lazy="subquery")
     cards = db.relationship('Card', secondary="packs",backref=db.backref('coach', lazy=True, uselist=False), viewonly=True,lazy="subquery")
     deleted = db.Column(db.Boolean(), default=False)
+    duster = db.relationship("Duster", backref=db.backref('coach'), cascade="all, delete-orphan",uselist=False)
 
     query_class = QueryWithSoftDelete
 
@@ -211,3 +213,14 @@ class Tournament(Base):
 
 class TransactionError(Exception):
     pass
+
+class Duster(Base):
+    __tablename__ = 'dusters'
+
+    coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False, unique=True) 
+    cards = db.relationship('Card', backref=db.backref('duster', lazy=True),lazy=False)
+    status = db.Column(db.String(80),nullable=False)
+    type = db.Column(db.String(80),nullable=True)
+
+    def __init__(self,status="OPEN"):
+        self.status = status

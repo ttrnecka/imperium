@@ -8,7 +8,7 @@ from web import db, create_app
 from sqlalchemy import func
 from models.data_models import Coach, Account, Card, Pack, Transaction, TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
-from services import PackService, SheetService, CoachService, CardService, TournamentService, RegistrationError
+from services import PackService, SheetService, CoachService, CardService, TournamentService, DusterService, RegistrationError
 
 
 app = create_app()
@@ -274,6 +274,24 @@ class DiscordCommand:
         return msg
 
     @classmethod
+    def dust_help(cls):
+        msg="```"
+        msg+="Dusts cards. When Player type card is added first the Tryouts dusting will take place, otherwise Drills is initiated.\n \n"
+        msg+="USAGE:\n"
+        msg+="!dust show\n"
+        msg+="\tshows the duster content\n"
+        msg+="!dust add <card name>;...;<card_name>\n"
+        msg+="\tadds card(s) to duster. Card is flagged for dusting but not deleted yet.\n"
+        msg+="!dust remove <card name>;...;<card_name>\n"
+        msg+="\tremoves card(s) from duster\n"
+        msg+="!dust cancel\n"
+        msg+="\tdiscards duster, all cards in it will be released\n"
+        msg+="!dust commit\n"
+        msg+="\tduster is submitted, the cards are deleted and appropriated pack will be free of charge next time !genpack is issued\n"
+        msg+="```"
+        return msg
+
+    @classmethod
     def check_gen_command(cls,command):
         args = command.split()
         length = len(args)
@@ -357,7 +375,7 @@ class DiscordCommand:
 
         signup = TournamentService.register(tourn,coach,admin)
         add_msg = "" if signup.mode=="active" else " as RESERVE"
-        await self.send_message(self.message.channel,[f"Signup succeded{add_msg}!!!\n"])
+        await self.send_message(self.message.channel,[f"Signup succeeded{add_msg}!!!\n"])
         if tourn.fee > 0:
             reason = coach.account.transactions[-1].description
             await self.bank_notification(f"Your bank has been updated by -**{tourn.fee}** coins - {reason}",coach)
@@ -383,7 +401,7 @@ class DiscordCommand:
             return False
         
         if TournamentService.unregister(tourn,coach,admin):
-            await self.send_message(self.message.channel,[f"Resignation succeded!!!\n"])
+            await self.send_message(self.message.channel,[f"Resignation succeeded!!!\n"])
             if tourn.fee > 0:
                 reason = coach.account.transactions[-1].description
                 await self.bank_notification(f"Your bank has been updated by **{tourn.fee}** coins - {reason}",coach)
@@ -433,6 +451,8 @@ class DiscordCommand:
                 await self.__run_sign()
             if self.cmd.startswith('!resign'):
                 await self.__run_resign()
+            if self.cmd.startswith('!dust'):
+                await self.__run_dust()
         except (ValueError, TransactionError, RegistrationError) as e:
             await self.transaction_error(e)
         except Exception as e:
@@ -453,6 +473,109 @@ class DiscordCommand:
             ]
             await self.send_message(self.message.channel,msg)
 
+    async def __run_dust(self):
+        if  len(self.args)<2 or \
+            (self.args[1] not in ["show","add","remove","cancel","commit"]) or \
+            self.args[1] in ["show","cancel","commit"] and len(self.args)!=2 or \
+            self.args[1] in ["add","remove"] and len(self.args)<3    :
+                await self.client.send_message(self.message.channel, self.__class__.dust_help())
+                return
+
+        name = str(self.message.author)
+        coach = Coach.get_by_name(name)
+        if coach is None:
+            await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
+
+        duster = DusterService.get_duster(coach)
+
+        if duster.status!="OPEN":
+            await self.send_message(self.message.channel,[f"Dusting has been already committed, please generate the pack before dusting again"])
+            return
+            
+        if self.args[1] in ["add","remove"]:
+            card_names = [card.strip() for card in " ".join(self.args[2:]).split(";")]
+        
+        #show
+        if self.args[1]=="show":
+            count = len(duster.cards)
+            msg = [f"**{duster.type}** ({count}/10):"]
+            for card in duster.cards:
+                msg.append(card.name)
+            if count == 10:
+                msg.append(" \nList full. You can commit the dusting now!!!")
+            await self.send_message(self.message.channel,msg)
+            return
+        
+        #cancel
+        if self.args[1]=="cancel":
+            db.session.delete(duster)
+            db.session.commit()
+            await self.send_message(self.message.channel,["Dusting canceled!!!"])
+            return
+        
+        #commit
+        if self.args[1]=="commit":
+            reason = f"{duster.type}: {';'.join([card.name for card in duster.cards])}"
+            free_cmd = "!genpack player <type>" if duster.type=="Tryouts" else "!genpack training"
+            t = Transaction(description=reason,price=0)
+            cards = duster.cards
+            try:
+                for card in cards:
+                    db.session.delete(card)
+                duster.status="COMMITTED"
+                coach.make_transaction(t)
+            except TransactionError as e:
+                await self.transaction_error(e)
+                return
+            else:
+                msg = []
+                msg.append(f"Dusting committed! Use **{free_cmd}** to generate a free pack.\n")
+                await self.send_message(self.message.channel, msg)
+                await self.bank_notification(f"Card(s) **{' ,'.join([card.name for card in cards])}** removed from your collection by {duster.type}",coach)
+                return
+
+        #add
+        if self.args[1]=="add":
+            msg = []
+            for name in card_names:
+                card=CardService.get_undusted_Card_from_coach(coach,name)
+                if card is None:
+                    msg.append(f"Card **{name}** - not found, check spelling, or maybe it is already dusted")
+                    continue
+                if len(duster.cards)==10:
+                    msg.append(f"Card **{card.name}** - cannot dust, duster is full")
+                    continue
+                if duster.type=="Tryouts" and card.card_type!="Player":
+                    msg.append(f"Card **{card.name}** - cannot be used in {duster.type}")
+                    continue
+                if duster.type=="Drills" and card.card_type=="Player":
+                    msg.append(f"Card **{card.name}** - cannot be used in {duster.type}")
+                    continue
+
+                DusterService.dust_card(duster,card)
+                msg.append(f"Card **{card.name}** - flagged for dusting")
+            
+            if len(duster.cards)>0:
+                db.session.commit()
+            await self.send_message(self.message.channel,msg)
+            return
+
+        #add
+        if self.args[1]=="remove":
+            msg = []
+            for name in card_names:
+                card=CardService.get_dusted_Card_from_coach(coach,name)
+                
+                if card is None:
+                    msg.append(f"Card **{name}** - not flagged for dusting")
+                    continue
+
+                card.duster_id = None
+                msg.append(f"Card **{card.name}** - dusting flag removed")
+            db.session.commit()
+            await self.send_message(self.message.channel,msg)
+            return
+            
     async def __run_complist(self):
         if len(self.args)==2 and not (RepresentsInt(self.args[1]) or self.args[1] in ["all","full","free"]):
             await self.send_message(self.message.channel,[f"**{self.args[1]}** is not a number or 'all'!!!\n"])
@@ -838,6 +961,9 @@ class DiscordCommand:
             "-" * 65 + "\n"
         ]
 
+        if coach.duster:
+            msg.append(f"**Dusting** - {coach.duster.type} - {coach.duster.status}")
+
         admin_in = Tournament.query.filter(Tournament.admin==coach.short_name(),Tournament.status.in_(("OPEN","RUNNING"))).all()
 
         if len(admin_in)>0:
@@ -850,6 +976,8 @@ class DiscordCommand:
     async def __run_genpack(self):
         if self.__class__.check_gen_command(self.cmd):
             ptype = self.args[1]
+            coach=Coach.get_by_name(str(self.message.author))
+
             if ptype=="player":
                 team = self.args[2]
                 pack = PackService.generate(ptype,team)
@@ -869,16 +997,26 @@ class DiscordCommand:
                 await self.send_message(self.message.channel, msg)
             #standard pack
             else:
-                coach=Coach.get_by_name(str(self.message.author))
-                
                 just_joined = True if len(coach.packs)==0 else False
 
                 if coach is None:
                     await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
                     return
 
-                t = Transaction(pack = pack,price=pack.price,description=PackService.description(pack))
                 try:
+                    duster = coach.duster
+                    duster_on = False
+                    duster_txt = ""
+                    if duster and duster.status=="COMMITTED":
+                        if  ptype=="player" and duster.type == "Tryouts" or \
+                            ptype=="training" and duster.type == "Drills":
+                             duster_on = True
+                             duster_txt = f" ({duster.type})"
+                             db.session.delete(duster)
+
+                    price = 0 if duster_on else pack.price
+                         
+                    t = Transaction(pack = pack,price=price,description=PackService.description(pack))
                     coach.make_transaction(t)
                 except TransactionError as e:
                     await self.transaction_error(e)
@@ -886,7 +1024,7 @@ class DiscordCommand:
                 else:
                     # transaction is ok and coach is saved
                     msg = [
-                        f"**{PackService.description(pack)}** for **{self.message.author}** - **{pack.price}** coins:\n",
+                        f"**{PackService.description(pack)}** for **{self.message.author}** - **{price}** coins{duster_txt}:\n",
                         f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n",
                         f"**Bank:** {coach.account.amount} coins"
                     ]
