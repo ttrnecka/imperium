@@ -771,7 +771,7 @@ class DiscordCommand:
                         msg.append(f"{card}: {found_msg}")
                     await self.send_message(self.message.channel, msg)
                     return
-                reason = f"{self.args[1].capitalize()} {';'.join(card_names)} - by " + str(self.message.author.name)
+                reason = f"{self.args[1].capitalize()} {';'.join([card.name for card in pack.cards])} - by " + str(self.message.author.name)
 
                 t = Transaction(pack=pack, description=reason,price=0)
                 try:
@@ -785,42 +785,42 @@ class DiscordCommand:
                     msg.append(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
                     msg.append(f"**Bank:** {coach.account.amount} coins")
                     await self.send_message(self.message.channel, msg)
-                    await self.bank_notification(f"Card(s) **{' ,'.join([card.name for card in pack.cards])}** added to your collection by {str(self.message.author.name)}",coach)
+                    await self.bank_notification(f"Card(s) **{', '.join([card.name for card in pack.cards])}** added to your collection by {str(self.message.author.name)}",coach)
                     await self.auto_cards(pack)
                     return
 
             if self.args[1]=="remove":
-                cards = [CardService.get_Card_from_coach(coach,name) for name in card_names]
-                cards = [card for card in cards if card is not None]
-                # situation when som of the cards could not be found
-                if len(card_names)!= len(cards):
-                    msg = []
-                    msg.append(f"Not all cards were found, check the names!!!\n")
-                    for card in card_names:
-                        if card in [card.name.lower() for card in cards]:
-                            found = True
-                        else:
-                            found = False
-                        found_msg = "**not found**" if not found else "found"
-                        msg.append(f"{card}: {found_msg}")
-                    await self.send_message(self.message.channel, msg)
-                    return
-
-                reason = f"{self.args[1].capitalize()} {';'.join(card_names)} - by " + str(self.message.author.name)
-                t = Transaction(description=reason,price=0)
                 try:
-                    for card in cards:
-                        db.session.delete(card)
+                    removed_cards = []
+                    unknown_cards = []
+
+                    for name in card_names:
+                        card = CardService.get_Card_from_coach(coach,name)
+                        if card:
+                            removed_cards.append(card)
+                            db.session.delete(card)
+                            db.session.expire(coach,['cards'])
+                        else:
+                            unknown_cards.append(name)
+                    reason = f"{self.args[1].capitalize()} {';'.join([card.name for card in removed_cards])} - by " + str(self.message.author.name)
+                    t = Transaction(description=reason,price=0)
                     coach.make_transaction(t)
                 except TransactionError as e:
                     await self.transaction_error(e)
                     return
                 else:
-                    msg = []
-                    msg.append(f"Cards removed from @{coach.name} collection:\n")
-                    msg.append(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(cards))}\n")
-                    await self.send_message(self.message.channel, msg)
-                    await self.bank_notification(f"Card(s) **{' ,'.join([card.name for card in cards])}** removed from your collection by {str(self.message.author.name)}",coach)
+                    if len(removed_cards)>0:
+                        msg = []
+                        msg.append(f"Cards removed from @{coach.name} collection:\n")
+                        msg.append(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(removed_cards))}\n")
+                        await self.send_message(self.message.channel, msg)
+                        await self.bank_notification(f"Card(s) **{', '.join([card.name for card in removed_cards])}** removed from your collection by {str(self.message.author.name)}",coach)
+                    
+                    if len(unknown_cards)>0:
+                        msg = ["**Warning** - these cards have been skipped:"]
+                        for name in unknown_cards:
+                            msg.append(f"{name}: **not found**")
+                        await self.send_message(self.message.channel, msg)
                     return
                     
         if self.message.content.startswith('!adminreset'):
