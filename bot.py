@@ -515,6 +515,10 @@ class DiscordCommand:
         
         #commit
         if self.args[1]=="commit":
+            if len(duster.cards)<10:
+                await self.send_message(self.message.channel,["Not enough cards flagged for dusting. Need 10!!!"])
+                return
+
             reason = f"{duster.type}: {';'.join([card.name for card in duster.cards])}"
             free_cmd = "!genpack player <type>" if duster.type=="Tryouts" else "!genpack training"
             t = Transaction(description=reason,price=0)
@@ -542,6 +546,8 @@ class DiscordCommand:
                 if card is None:
                     msg.append(f"Card **{name}** - not found, check spelling, or maybe it is already dusted")
                     continue
+                if card.coach.id != coach.id:
+                    raise "Coach ID mismatch!!!"
                 if len(duster.cards)==10:
                     msg.append(f"Card **{card.name}** - cannot dust, duster is full")
                     continue
@@ -560,7 +566,7 @@ class DiscordCommand:
             await self.send_message(self.message.channel,msg)
             return
 
-        #add
+        #remove
         if self.args[1]=="remove":
             msg = []
             for name in card_names:
@@ -569,6 +575,9 @@ class DiscordCommand:
                 if card is None:
                     msg.append(f"Card **{name}** - not flagged for dusting")
                     continue
+
+                if card.coach.id != coach.id:
+                    raise "Coach ID mismatch!!!"
 
                 card.duster_id = None
                 msg.append(f"Card **{card.name}** - dusting flag removed")

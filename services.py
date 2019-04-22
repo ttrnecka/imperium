@@ -258,7 +258,7 @@ class CardService:
 
     @classmethod
     def get_undusted_Card_from_coach(cls,coach,name):
-        cards = Card.query.options(joinedload('pack').joinedload('coach')).filter(Coach.id == coach.id, Card.name == name, Card.duster_id == None).all()
+        cards = Card.query.join(Card.coach).filter(Coach.id == coach.id, Card.name == name, Card.duster_id == None).all()
 
         if len(cards)==0:
             return None
@@ -267,7 +267,7 @@ class CardService:
     
     @classmethod
     def get_dusted_Card_from_coach(cls,coach,name):
-        cards = Card.query.options(joinedload('pack').joinedload('coach')).filter(Coach.id == coach.id, Card.name == name, Card.duster_id != None).all()
+        cards = Card.query.join(Card.coach).filter(Coach.id == coach.id, Card.name == name, Card.duster_id != None).all()
 
         if len(cards)==0:
             return None
