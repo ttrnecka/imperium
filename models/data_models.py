@@ -1,6 +1,7 @@
 from .base_model import db, Base, QueryWithSoftDelete
 import datetime
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 from sqlalchemy import event, UniqueConstraint
 
@@ -11,6 +12,12 @@ logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename=os.path.join(ROOT, '../logs/transaction.log'), encoding='utf-8', mode='a')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
+
+db_logger = logging.getLogger("DB logging")
+db_logger.setLevel(logging.INFO)
+handler = RotatingFileHandler(os.path.join(ROOT, '../logs/db.log'), maxBytes=10000000, backupCount=5, encoding='utf-8', mode='a')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+db_logger.addHandler(handler)
 
 class Card(Base):
     __tablename__ = 'cards'
@@ -27,7 +34,7 @@ class Card(Base):
     duster_id = db.Column(db.Integer, db.ForeignKey('dusters.id'))
 
     def __repr__(self):
-        return '<Card %r>' % self.name
+        return f'<Card {self.name}, coach: {self.coach.short_name()}>'
 
 class Pack(Base):
     __tablename__ = 'packs'
@@ -42,7 +49,7 @@ class Pack(Base):
     cards = db.relationship('Card', backref=db.backref('pack', lazy=False), cascade="all, delete-orphan",supports_json = True,lazy=False)
 
     def __repr__(self):
-        return '<Pack %r>' % self.pack_type
+        return f'<Pack {self.pack_type}>'
 
 class Coach(Base):  
     __tablename__ = 'coaches'
@@ -224,3 +231,14 @@ class Duster(Base):
 
     def __init__(self,status="OPEN"):
         self.status = status
+
+
+@event.listens_for(Card, 'after_delete')
+@event.listens_for(Duster, 'after_delete')
+def receive_after_delete(mapper, connection, target):
+    db_logger.info(f"Deleted {target.__dict__}")
+
+@event.listens_for(Card, 'after_insert')
+@event.listens_for(Duster, 'after_insert')
+def receive_after_insert(mapper, connection, target):
+    db_logger.info(f"Created {target.__dict__}")

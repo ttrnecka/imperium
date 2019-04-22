@@ -1,5 +1,6 @@
 # Works with Python 3.6
 import logging
+from logging.handlers import RotatingFileHandler
 import discord
 import os
 
@@ -10,23 +11,14 @@ from models.data_models import Coach, Account, Card, Pack, Transaction, Transact
 from misc.helpers import CardHelper
 from services import PackService, SheetService, CoachService, CardService, TournamentService, DusterService, RegistrationError
 
-
 app = create_app()
 app.app_context().push()
 
 ROOT = os.path.dirname(__file__)
 RULES_LINK = "https://bit.ly/2P9Y07F"
 
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename=os.path.join(ROOT, 'logs/discord.log'), encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
-
 with open(os.path.join(ROOT, 'config/TOKEN'), 'r') as token_file:
     TOKEN=token_file.read()
-
-client = discord.Client()
 
 GEN_QUALITY = ["premium","budget"]
 GEN_PACKS = ["player","training","booster"]
@@ -37,6 +29,15 @@ AUTO_CARDS = {
     'Lottery Win!':15
 }
 
+logger = logging.getLogger('discord')
+logger.setLevel(logging.INFO)
+handler = RotatingFileHandler(os.path.join(ROOT, 'logs/discord.log'), maxBytes=10000000, backupCount=5, encoding='utf-8', mode='a')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
+
+client = discord.Client()
+def log_response(response):
+    logger.info(f"Response: \n{response}")
 
 @client.event
 async def on_message(message):
@@ -85,6 +86,7 @@ class LongMessage:
     async def send(self):
         for chunk in self.chunks():
             await self.client.send_message(self.channel, chunk)
+        log_response('\n'.join(self.lines()))
 
     def lines(self):
         lines = []
@@ -111,7 +113,7 @@ class DiscordCommand:
     }
 
     @classmethod
-    def is_private_admin_channel(cls,dchannel):
+    def is_admin_channel(cls,dchannel):
         if dchannel.name is not None and "admin-channel" in dchannel.name:
             return True
         return False
@@ -356,6 +358,70 @@ class DiscordCommand:
 
         return msg
 
+    def __init__(self,dmessage,dclient):
+        self.message = dmessage
+        self.client = dclient
+        self.cmd = dmessage.content.lower()
+        self.args = self.cmd.split()
+
+    async def send_message(self,channel,message_list):
+        msg = LongMessage(self.client,channel)
+        for message in message_list:
+            msg.add(message)
+        await msg.send()
+
+    async def send_short_message(self,channel,message):
+        await self.client.send_message(channel, message)
+        log_response(message)
+
+    async def transaction_error(self,error):
+        text = type(error).__name__ +": "+str(error)
+        await self.send_message(self.message.channel,[text])
+        logger.error(text)
+
+    async def coach_unique(self,name):
+    # find coach
+        coaches = Coach.find_all_by_name(name)
+        if len(coaches)==0:
+            await self.send_message(self.message.channel,[f"<coach> __{name}__ not found!!!\n"])
+            return None
+
+        if len(coaches)>1:
+            emsg=f"<coach> __{name}__ not **unique**!!!\n"
+            emsg+="Select one: "
+            for coach in coaches:
+                emsg+=coach.name
+                emsg+=" "
+            await self.send_short_message(self.message.channel, emsg)
+            return None
+        return coaches[0]
+
+    # must me under 2000 chars
+    async def bank_notification(self,msg,coach):
+        member = discord.utils.get(self.client.get_all_members(), name=coach.short_name(), discriminator=coach.discord_id())
+        channel = discord.utils.get(self.client.get_all_channels(), name='bank-notifications')
+        await self.send_short_message(channel, f"{member.mention}: "+msg)
+        return 
+
+    #checks pack for AUTO_CARDS and process them
+    async def auto_cards(self,pack):
+        for card in pack.cards:
+            if card.name in AUTO_CARDS.keys():
+                reason = "Autoprocessing "+card.name
+                amount = AUTO_CARDS[card.name]
+                msg=f"You card {card.name} has been processed. You were granted {amount} coins"
+                t = Transaction(description=reason,price=-1*amount)
+                try:
+                    db.session.delete(card)
+                    pack.coach.make_transaction(t)
+                except TransactionError as e:
+                    await self.transaction_error(e)
+                    return
+                else:
+                    await  self.bank_notification(msg,pack.coach)
+        return
+
+    # routine to sign a coach to tournament
     async def sign(self,args,coach,admin=False):
         if len(args)!=2:
             await self.send_message(self.message.channel, ["Incorrect number of arguments!!!\n"])
@@ -382,6 +448,7 @@ class DiscordCommand:
         
         return True
 
+    # routine to resign a coach to tournament
     async def resign(self,args,coach,admin=False):
         if len(args)!=2:
             await self.send_message(self.message.channel, ["Incorrect number of arguments!!!\n"])
@@ -417,23 +484,6 @@ class DiscordCommand:
                 else:
                     await self.send_message(self.message.channel,msg)
         return True
-
-    async def send_message(self,channel,message_list):
-        msg = LongMessage(self.client,channel)
-        for message in message_list:
-            msg.add(message)
-        await msg.send()
-
-    async def transaction_error(self,error):
-        text = type(error).__name__ +": "+str(error)
-        await self.send_message(self.message.channel,[text])
-        logger.error(text)
-
-    def __init__(self,dmessage,dclient):
-        self.message = dmessage
-        self.client = dclient
-        self.cmd = dmessage.content.lower()
-        self.args = self.cmd.split()
 
     async def process(self):
         try:
@@ -478,7 +528,7 @@ class DiscordCommand:
             (self.args[1] not in ["show","add","remove","cancel","commit"]) or \
             self.args[1] in ["show","cancel","commit"] and len(self.args)!=2 or \
             self.args[1] in ["add","remove"] and len(self.args)<3    :
-                await self.client.send_message(self.message.channel, self.__class__.dust_help())
+                await self.send_short_message(self.message.channel, self.__class__.dust_help())
                 return
 
         name = str(self.message.author)
@@ -658,7 +708,7 @@ class DiscordCommand:
             await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
             return
         if not await self.sign(self.args,coach):
-            await self.client.send_message(self.message.channel, self.__class__.sign_help())
+            await self.send_short_message(self.message.channel, self.__class__.sign_help())
         return
 
     async def __run_resign(self):
@@ -667,18 +717,18 @@ class DiscordCommand:
             await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
             return
         if not await self.resign(self.args,coach):
-            await self.client.send_message(self.message.channel, self.__class__.resign_help())
+            await self.send_short_message(self.message.channel, self.__class__.resign_help())
         return
 
     async def __run_admin(self):
         # if not started from admin-channel
-        if not self.__class__.is_private_admin_channel(self.message.channel):
+        if not self.__class__.is_admin_channel(self.message.channel):
             await self.send_message(self.message.channel, [f"Insuficient rights"])
             return
 
         #adminhelp cmd
         if self.message.content.startswith('!adminhelp'):
-            await self.client.send_message(self.message.channel, self.__class__.commands())
+            await self.send_short_message(self.message.channel, self.__class__.commands())
             return
 
         #adminexport cmd
@@ -980,7 +1030,7 @@ class DiscordCommand:
             msg.extend([f'{t.id}. {t.name}, status: {t.status}, channel: {t.discord_channel}' for t in admin_in])
 
         await self.send_message(self.message.author, msg)
-        await self.client.send_message(self.message.channel, "Info sent to PM")
+        await self.send_short_message(self.message.channel, "Info sent to PM")
     
     async def __run_genpack(self):
         if self.__class__.check_gen_command(self.cmd):
@@ -1057,49 +1107,7 @@ class DiscordCommand:
                     
                     return
         else:
-            await self.client.send_message(self.message.channel, self.__class__.gen_help())
-
-    async def coach_unique(self,name):
-        # find coach
-            coaches = Coach.find_all_by_name(name)
-            if len(coaches)==0:
-                await self.send_message(self.message.channel,[f"<coach> __{name}__ not found!!!\n"])
-                return None
-
-            if len(coaches)>1:
-                emsg=f"<coach> __{name}__ not **unique**!!!\n"
-                emsg+="Select one: "
-                for coach in coaches:
-                    emsg+=coach.name
-                    emsg+=" "
-                await self.client.send_message(self.message.channel, emsg)
-                return None
-            return coaches[0]
-
-    #must me under 2000 chars
-    async def bank_notification(self,msg,coach):
-        member = discord.utils.get(self.client.get_all_members(), name=coach.short_name(), discriminator=coach.discord_id())
-        channel = discord.utils.get(self.client.get_all_channels(), name='bank-notifications')
-        await self.client.send_message(channel, f"{member.mention}: "+msg)
-        return 
-
-    #checks pack for AUTO_CARDS and process them
-    async def auto_cards(self,pack):
-        for card in pack.cards:
-            if card.name in AUTO_CARDS.keys():
-                reason = "Autoprocessing "+card.name
-                amount = AUTO_CARDS[card.name]
-                msg=f"You card {card.name} has been processed. You were granted {amount} coins"
-                t = Transaction(description=reason,price=-1*amount)
-                try:
-                    db.session.delete(card)
-                    pack.coach.make_transaction(t)
-                except TransactionError as e:
-                    await self.transaction_error(e)
-                    return
-                else:
-                    await  self.bank_notification(msg,pack.coach)
-        return
+            await self.send_short_message(self.message.channel, self.__class__.gen_help())
 
 def RepresentsInt(s):
     try:
