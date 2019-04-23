@@ -41,18 +41,18 @@
                         <div class="tab-content" :id="'coachTabContent'+coach.id">
                             <div class="tab-pane fade show active" :id="'coach_info'+coach.id" role="tabpanel" aria-labelledby="info-tab">
                                 <div class="col-12">Bank: [[ coach.account.amount]] coins</div>
-                                <table class="table table-striped w-auto">
+                                <table class="table table-striped">
                                     <thead>
                                         <tr>
                                             <th class="th-lg">Date</th>
-                                            <th class="th-lg">Change</th>
+                                            <th class="th-lg">Bank Change</th>
                                             <th class="th-lg">Description</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="transaction in coach.account.transactions.slice().reverse()" :key="transaction.id">
                                             <td>[[ transaction.date_confirmed ]]</td>
-                                            <td>[[ transaction.price ]]</td>
+                                            <td>[[ transaction.price*-1 ]]</td>
                                             <td>[[ transaction.description ]]</td>
                                         </tr>
                                     </tbody>
