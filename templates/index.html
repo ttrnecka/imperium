@@ -1,4 +1,3 @@
-{% import "macros.jinja" as macros %}
 <!doctype html>
 <html>
     <head>
@@ -8,73 +7,95 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <link rel="stylesheet" href="/static/styles/main.css?1.5">
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         <title>REBBL Imperium</title>
     </head>
 
     <body>
     <nav class="navbar navbar-dark bg-dark">
-        <div class="container">
+        <div class="container-fluid">
             <a class="navbar-brand" href="#">
                 REBBL Imperium
             </a>
         </div>
     </nav>
 
-    <div id="app" class="container pt-2">
+    <div id="app" class="container-fluid pt-2" v-cloak>
         <div class="row">
-            <div class="col-4">
-                <div class="list-group" id="list-tab" role="tablist">
-                    {% for coach in coaches %}
-                        <a class="list-group-item list-group-item-action {% if loop.index==1 %} active{%endif%}" id="list-home-list" data-toggle="list" href="#coach{{loop.index}}" role="tab" aria-controls="home">{{coach.short_name()}}</a>
-                    {% endfor %}
+            <div class="col-2" >
+                <div class="list-group" id="coach-list" role="tablist">
+                    <a data-toggle="list" v-for="(coach,index) in coaches" :key="coach.id" class="list-group-item list-group-item-action" :href="'#coach'+ coach.id" role="tab" aria-controls="home">[[ coach.short_name ]]</a>
                 </div>
             </div>
-            <div class="col-8">
+            <div class="col-10">
                 <div class="tab-content" id="nav-tabContent">
-                    {% for coach in coaches %}
-                    <div class="tab-pane fade show {% if loop.index==1 %} active{%endif%}" id="coach{{loop.index}}" role="tabpanel" aria-labelledby="coach{{loop.index}}-list">
-                            <h5>Collection</h5>
-                            <span>Toggle starter pack    </span><input class="starter_pack" checked type="checkbox" onchange="$('.starter').toggleClass('d-none');">
-                            <table class="table">
-                                <thead>
-                                <tr>
-                                    <th>Rarity</th>
-                                    <th>Card name</th>
-                                    <th>Race</th>
-                                    <th>Type</th>
-                                    <th>Subtype</th>
-                                    <th>Quantity</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {% for card, quantity in ch.sort_cards_by_rarity_with_quatity(coach.cards) %}
-                                <tr class="{{ macros.rarity_class(card.rarity) }}">
-                                    <td><img class="rarity" src="static/images/{{ card.rarity }}.jpg" alt="{{ card.rarity }}" title="{{ card.rarity }}" width="23" height="32" /></td>
-                                    <td title="{{ card.description}}">{{card.name}}</td>
-                                    <td>{{card.race}}</td>
-                                    <td>{{card.card_type}}</td>
-                                    <td>{{card.subtype}}</td>
-                                    <td>{{quantity}}</td>
-                                </tr>
-                                {% endfor %}
-                                {% for card, quantity in ch.sort_cards_by_rarity_with_quatity(starter_cards) %}
-                                <tr class="starter {{ macros.rarity_class(card.rarity) }}">
-                                    <td><img class="rarity" src="static/images/{{ card.rarity }}.jpg" alt="{{ card.rarity }}" title="{{ card.rarity }}" width="23" height="32" /></td>
-                                    <td title="{{ card.description}}">{{card.name}}</td>
-                                    <td>{{card.race}}</td>
-                                    <td>{{card.card_type}}</td>
-                                    <td>{{card.subtype}}</td>
-                                    <td>{{quantity}}</td>
-                                </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
+                    <div class="tab-pane fade show" v-for="(coach,index) in coaches" :key="coach.id" :id="'coach'+coach.id" role="tabpanel" aria-labelledby="coach">
+                        <ul class="nav nav-tabs" :id="'coachTab'+coach.id" role="tablist">
+                            <li class="nav-item">
+                              <a class="nav-link active" :id="'info-tab'+coach.id" data-toggle="tab" :href="'#coach_info'+coach.id" role="tab" aria-controls="coach_info" aria-selected="true">Info</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link" :id="'cards-tab'+coach.id" data-toggle="tab" :href="'#coach_cards'+coach.id" role="tab" aria-controls="coach_cards">Cards</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content" :id="'coachTabContent'+coach.id">
+                            <div class="tab-pane fade show active" :id="'coach_info'+coach.id" role="tabpanel" aria-labelledby="info-tab">
+                                <div class="col-12">Bank: [[ coach.account.amount]] coins</div>
+                                <table class="table table-striped w-auto">
+                                    <thead>
+                                        <tr>
+                                            <th class="th-lg">Date</th>
+                                            <th class="th-lg">Change</th>
+                                            <th class="th-lg">Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="transaction in coach.account.transactions.slice().reverse()" :key="transaction.id">
+                                            <td>[[ transaction.date_confirmed ]]</td>
+                                            <td>[[ transaction.price ]]</td>
+                                            <td>[[ transaction.description ]]</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="tab-pane fade" :id="'coach_cards'+coach.id" role="tabpanel" aria-labelledby="cards-tab">
+                                    <div class="col-auto my-1">
+                                        <div class="custom-control custom-checkbox mr-sm-2">
+                                          <input type="checkbox" class="custom-control-input" :id="'sptoggle'+coach.id" v-model="show_starter">
+                                          <label class="custom-control-label" :for="'sptoggle'+coach.id">Toggle Starter Pack</label>
+                                        </div>
+                                    </div>
+                                    <table class="table">
+                                        <thead>
+                                        <tr>
+                                            <th>Rarity</th>
+                                            <th>Card name</th>
+                                            <th>Race</th>
+                                            <th>Type</th>
+                                            <th>Subtype</th>
+                                            <th>Quantity</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr v-for="card in sortedCardsWithQuantity(coach.cards.concat(starter_cards))" :key="card.card.id" :class="rarityclass(card.card.rarity)">
+                                            <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="23" height="32" /></td>
+                                            <td :title="card.card.description">[[ card.card.name ]]</td>
+                                            <td>[[ card.card.race ]]</td>
+                                            <td>[[ card.card.card_type ]]</td>
+                                            <td>[[ card.card.subtype ]]</td>
+                                            <td>[[ card.quantity ]]</td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                            </div>
+                      </div>           
                     </div>
-                    {% endfor %}
                 </div>
             </div>
         </div>
+        
     </div><!-- /.container -->
+
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>

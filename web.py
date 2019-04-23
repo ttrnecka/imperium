@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from misc.helpers import CardHelper
 #from imperiumbase import Coach, Pack
 from models.base_model import db
-from models.data_models import Coach
+from models.data_models import Coach, Card, Account, Transaction
 from services import PackService
 from flask_marshmallow import Marshmallow
 
@@ -22,12 +22,29 @@ app = create_app()
 migrate = Migrate(app, db)
 ma = Marshmallow(app)
 
-
-class CoachSchema(ma.Schema):
+class TransactionSchema(ma.ModelSchema):
     class Meta:
-        # Fields to expose
-        fields = ('name', 'short_name')
+        model = Transaction
 
+class AccountSchema(ma.ModelSchema):
+    class Meta:
+        model = Account
+    transactions = ma.Nested(TransactionSchema, many=True)
+
+class CardSchema(ma.ModelSchema):
+    class Meta:
+        model = Card
+
+card_schema = CardSchema()
+cards_schema = CardSchema(many=True)
+
+class CoachSchema(ma.ModelSchema):
+    class Meta:
+        model = Coach
+    
+    cards = ma.Nested(CardSchema, many=True)
+    account = ma.Nested(AccountSchema)
+    short_name = ma.String()
 
 coach_schema = CoachSchema()
 coaches_schema = CoachSchema(many=True)
@@ -35,13 +52,18 @@ coaches_schema = CoachSchema(many=True)
 @app.route("/")
 def index():
     starter_cards = PackService.generate("starter").cards
-    sorted_coached = Coach.query.order_by(Coach.name).all()
-    return render_template("index.html", coaches = sorted_coached, ch=CardHelper, starter_cards=starter_cards)
+    return render_template("index.html",starter_cards=starter_cards)
 
-@app.route("/coach", methods=["GET"])
-def get_coach():
+@app.route("/coaches", methods=["GET"])
+def get_coaches():
     all_coaches = Coach.query.all()
     result = coaches_schema.dump(all_coaches)
+    return jsonify(result.data)
+
+@app.route("/cards/starter", methods=["GET"])
+def get_starter_cards():
+    starter_cards = PackService.generate("starter").cards
+    result = cards_schema.dump(starter_cards)
     return jsonify(result.data)
 
 # run the application
