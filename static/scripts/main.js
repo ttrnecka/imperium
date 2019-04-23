@@ -101,6 +101,13 @@ var app = new Vue({
       },
 
     },
+    computed: {
+      orderedCoaches() {
+        return this.coaches.slice().sort(function(a,b) {
+          return a.name.localeCompare(b.name);
+        });
+      }
+    },
     mounted() {
       this.getCoaches();
       this.getStarterCards();

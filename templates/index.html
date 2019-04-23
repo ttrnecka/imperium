@@ -24,7 +24,7 @@
         <div class="row">
             <div class="col-2" >
                 <div class="list-group" id="coach-list" role="tablist">
-                    <a data-toggle="list" v-for="(coach,index) in coaches" :key="coach.id" class="list-group-item list-group-item-action" :href="'#coach'+ coach.id" role="tab" aria-controls="home">[[ coach.short_name ]]</a>
+                    <a data-toggle="list" v-for="(coach,index) in orderedCoaches" :key="coach.id" class="list-group-item list-group-item-action" :href="'#coach'+ coach.id" role="tab" aria-controls="home">[[ coach.short_name ]]</a>
                 </div>
             </div>
             <div class="col-10">
