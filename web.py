@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, abort
 from flask_migrate import Migrate
 from misc.helpers import CardHelper
 #from imperiumbase import Coach, Pack
@@ -46,8 +46,14 @@ class CoachSchema(ma.ModelSchema):
     account = ma.Nested(AccountSchema)
     short_name = ma.String()
 
+class SimpleCoachSchema(ma.ModelSchema):
+    class Meta:
+        model = Coach
+    short_name = ma.String()
+
+
 coach_schema = CoachSchema()
-coaches_schema = CoachSchema(many=True)
+coaches_schema = SimpleCoachSchema(many=True)
 
 @app.route("/")
 def index():
@@ -58,6 +64,14 @@ def index():
 def get_coaches():
     all_coaches = Coach.query.all()
     result = coaches_schema.dump(all_coaches)
+    return jsonify(result.data)
+
+@app.route("/coaches/<int:coach_id>", methods=["GET"])
+def get_coach(coach_id):
+    coach = Coach.query.get(coach_id)
+    if coach is None:
+        abort(404)
+    result = coach_schema.dump(coach)
     return jsonify(result.data)
 
 @app.route("/cards/starter", methods=["GET"])

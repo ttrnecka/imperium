@@ -46,14 +46,32 @@ var app = new Vue({
           return "OFF";
         }
       },
-      getCoaches() {
-        const path = "coaches";
+      getCoach(id) {
+        const path = "/coaches/"+id;
         axios.get(path)
           .then((res) => {
+            idx = this.coaches.findIndex(x => x.id === parseInt(id));
+            Vue.set(this.coaches, idx, res.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      },
+      getCoaches() {
+        const path = "/coaches";
+        axios.get(path)
+          .then((res) => {
+            for(i=0,len=res.data.length;i<len;i++) {
+              res.data[i].cards = [];
+              res.data[i].account = {};
+              res.data[i].account.transactions = [];
+            }
             this.coaches = res.data;
-            console.log(this.coaches);
             this.$nextTick(function () {
-              $('#coach-list a:first-child').tab('show') // Select first tab
+              $('#coach-list a').on("show.bs.tab", (e) => {
+                this.getCoach(e.currentTarget.getAttribute("coach_id"));
+              });
+              $('#coach-list a:first-child').tab("show");
             })
           })
           .catch((error) => {
