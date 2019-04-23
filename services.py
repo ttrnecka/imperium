@@ -1,5 +1,5 @@
 from models.base_model import db
-from models.data_models import Pack, Card, Coach, Tournament, TournamentSignups, Transaction
+from models.data_models import Pack, Card, Coach, Tournament, TournamentSignups, Transaction, Duster
 from imperiumbase import ImperiumSheet
 from sqlalchemy.orm import joinedload
 from sqlalchemy import asc
@@ -243,7 +243,6 @@ class CardService:
     def get_card_from_sheet(cls,name):
         name_low = name.lower()
         for card in ImperiumSheet.cards():
-            print(card)
             if name_low == str(card["Card Name"]).lower():
                 return card 
         return None
@@ -251,6 +250,24 @@ class CardService:
     @classmethod
     def get_Card_from_coach(cls,coach,name):
         cards = list(filter(lambda card: card.name.lower() == name.lower(), coach.cards))
+
+        if len(cards)==0:
+            return None
+        else:
+            return cards[0]
+
+    @classmethod
+    def get_undusted_Card_from_coach(cls,coach,name):
+        cards = Card.query.join(Card.coach).filter(Coach.id == coach.id, Card.name == name, Card.duster_id == None).all()
+
+        if len(cards)==0:
+            return None
+        else:
+            return cards[0]
+    
+    @classmethod
+    def get_dusted_Card_from_coach(cls,coach,name):
+        cards = Card.query.join(Card.coach).filter(Coach.id == coach.id, Card.name == name, Card.duster_id != None).all()
 
         if len(cards)==0:
             return None
@@ -436,7 +453,24 @@ class TournamentService:
 
         return True
         
+class DusterService:
+    @classmethod
+    def get_duster(cls,coach):
+        duster = coach.duster
+        if not duster:
+            duster = Duster()
+            coach.duster=duster
+        return duster
 
+    @classmethod
+    def dust_card(cls,duster,card):
+        if len(duster.cards)==0:
+            if card.card_type=="Player":
+                duster.type = "Tryouts"
+            else:
+                duster.type = "Drills"
+        duster.cards.append(card)
+        
 class RegistrationError(Exception):
     pass
 

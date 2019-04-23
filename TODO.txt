@@ -1,14 +1,12 @@
 VERY HIGH
-torunaments
-    randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is not bound to a Session; lazy load operation of attribute 'cards' cannot proceed (Background on this error at: http://sqlalche.me/e/bhk3)
-    
-    deleting torunament should deleted singups/refund (or cannot be possible while they exist)
+add region to complist command
+randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is not bound to a Session; lazy load operation of attribute 'cards' cannot proceed (Background on this error at: http://sqlalche.me/e/bhk3)
+
+add discord id to coaches and use it as lookup
 
 Change index to use Vue and api calls instead
 Add manage deck capability (web)
 Add authentication code to edit view
-genpack typo
-change generator rarity logic
 
 MEDIUM
 Adminlist/list - show transactions(genpacks/adminbanks) for given coach
@@ -21,7 +19,6 @@ Add list deck capability (bot)
 Collect data from cyanide API and upload to excel
 
 VERY LOW:
-Generator - review probability, limit to one Epic/Legendary in pack?
 test code
 
 
@@ -77,4 +74,10 @@ torunaments
     updated cards - same process as tournaments
     A command for tournament admins to see a list of which tournaments they're assigned to
     reserve management - move coach from reserve to active when active coach resigns (update doc to resign reseves before starting)
+<<<<<<< HEAD
     
+=======
+
+ dusting
+ card remove - if same card name is used only 1 instance is removed
+>>>>>>> master
