@@ -65,28 +65,151 @@
                                           <label class="custom-control-label" :for="'sptoggle'+coach.id">Toggle Starter Pack</label>
                                         </div>
                                     </div>
-                                    <table class="table  table-striped">
-                                        <thead>
-                                        <tr>
-                                            <th class="th-lg">Rarity</th>
-                                            <th class="th-lg">Card name</th>
-                                            <th class="th-lg">Race</th>
-                                            <th class="th-lg">Type</th>
-                                            <th class="th-lg">Subtype</th>
-                                            <th class="th-lg">Quantity</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr v-for="card in sortedCardsWithQuantity(coach.cards.concat(starter_cards))" :key="card.card.id" :class="rarityclass(card.card.rarity)">
-                                            <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="23" height="32" /></td>
-                                            <td :title="card.card.description">[[ card.card.name ]]</td>
-                                            <td>[[ card.card.race ]]</td>
-                                            <td>[[ card.card.card_type ]]</td>
-                                            <td>[[ card.card.subtype ]]</td>
-                                            <td>[[ card.quantity ]]</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
+                                    <div :id="'accordion'+coach.id">
+                                        <div class="card">
+                                            <div class="card-header" :id="'PlayerCards'+coach.id">
+                                              <h5 class="mb-0">
+                                                <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapsePlayer'+coach.id" aria-expanded="true" aria-controls="collapsePlayer">
+                                                  Player Cards
+                                                </button>
+                                              </h5>
+                                            </div>
+                                        
+                                            <div :id="'collapsePlayer'+coach.id" class="collapse show" :aria-labelledby="'PlayerCards'+coach.id" :data-parent="'#accordion'+coach.id">
+                                              <div class="card-body">
+                                                <table class="table  table-striped">
+                                                    <thead>
+                                                    <tr>
+                                                        <th class="th-lg">Rarity</th>
+                                                        <th class="th-lg">Card name</th>
+                                                        <th class="th-lg">Race</th>
+                                                        <th class="th-lg">Type</th>
+                                                        <th class="th-lg">Subtype</th>
+                                                        <th class="th-lg">Quantity</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr v-for="card in sortedCardsWithQuantity(coach.cards.concat(starter_cards),'Player')" :key="card.card.id" :class="rarityclass(card.card.rarity)">
+                                                        <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="23" height="32" /></td>
+                                                        <td :title="card.card.description">[[ card.card.name ]]</td>
+                                                        <td>[[ card.card.race ]]</td>
+                                                        <td>[[ card.card.card_type ]]</td>
+                                                        <td>[[ card.card.subtype ]]</td>
+                                                        <td>[[ card.quantity ]]</td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                              </div>
+                                            </div>
+                                        </div>
+                                        <div class="card">
+                                            <div class="card-header" :id="'TraningCards'+coach.id">
+                                              <h5 class="mb-0">
+                                                <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseTraning'+coach.id" aria-expanded="true" aria-controls="collapseTraning">
+                                                  Traning Cards
+                                                </button>
+                                              </h5>
+                                            </div>
+                                        
+                                            <div :id="'collapseTraning'+coach.id" class="collapse show" :aria-labelledby="'TraningCards'+coach.id" :data-parent="'#accordion'+coach.id">
+                                              <div class="card-body">
+                                                <table class="table  table-striped">
+                                                    <thead>
+                                                    <tr>
+                                                        <th class="th-lg">Rarity</th>
+                                                        <th class="th-lg">Card name</th>
+                                                        <th class="th-lg">Race</th>
+                                                        <th class="th-lg">Type</th>
+                                                        <th class="th-lg">Subtype</th>
+                                                        <th class="th-lg">Quantity</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr v-for="card in sortedCardsWithQuantity(coach.cards.concat(starter_cards),'Traning')" :key="card.card.id" :class="rarityclass(card.card.rarity)">
+                                                        <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="23" height="32" /></td>
+                                                        <td :title="card.card.description">[[ card.card.name ]]</td>
+                                                        <td>[[ card.card.race ]]</td>
+                                                        <td>[[ card.card.card_type ]]</td>
+                                                        <td>[[ card.card.subtype ]]</td>
+                                                        <td>[[ card.quantity ]]</td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                              </div>
+                                            </div>
+                                        </div>
+                                        <div class="card">
+                                            <div class="card-header" :id="'SpecialPlayCards'+coach.id">
+                                              <h5 class="mb-0">
+                                                <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseSpecialPlay'+coach.id" aria-expanded="true" aria-controls="collapseSpecialPlay">
+                                                    Special Play Cards
+                                                </button>
+                                              </h5>
+                                            </div>
+                                        
+                                            <div :id="'collapseSpecialPlay'+coach.id" class="collapse show" :aria-labelledby="'SpecialPlay'+coach.id" :data-parent="'#accordion'+coach.id">
+                                              <div class="card-body">
+                                                <table class="table  table-striped">
+                                                    <thead>
+                                                    <tr>
+                                                        <th class="th-lg">Rarity</th>
+                                                        <th class="th-lg">Card name</th>
+                                                        <th class="th-lg">Race</th>
+                                                        <th class="th-lg">Type</th>
+                                                        <th class="th-lg">Subtype</th>
+                                                        <th class="th-lg">Quantity</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr v-for="card in sortedCardsWithQuantity(coach.cards.concat(starter_cards),'Special Play')" :key="card.card.id" :class="rarityclass(card.card.rarity)">
+                                                        <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="23" height="32" /></td>
+                                                        <td :title="card.card.description">[[ card.card.name ]]</td>
+                                                        <td>[[ card.card.race ]]</td>
+                                                        <td>[[ card.card.card_type ]]</td>
+                                                        <td>[[ card.card.subtype ]]</td>
+                                                        <td>[[ card.quantity ]]</td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                              </div>
+                                            </div>
+                                        </div>
+                                        <div class="card">
+                                            <div class="card-header" :id="'UtilityCards'+coach.id">
+                                              <h5 class="mb-0">
+                                                <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseUtility'+coach.id" aria-expanded="true" aria-controls="collapseUtility">
+                                                    Utility Cards
+                                                </button>
+                                              </h5>
+                                            </div>
+                                        
+                                            <div :id="'collapseUtility'+coach.id" class="collapse show" :aria-labelledby="'UtilityCards'+coach.id" :data-parent="'#accordion'+coach.id">
+                                              <div class="card-body">
+                                                <table class="table  table-striped">
+                                                    <thead>
+                                                    <tr>
+                                                        <th class="th-lg">Rarity</th>
+                                                        <th class="th-lg">Card name</th>
+                                                        <th class="th-lg">Race</th>
+                                                        <th class="th-lg">Subtype</th>
+                                                        <th class="th-lg">Quantity</th>
+                                                    </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                    <tr v-for="card in sortedCardsWithQuantity(coach.cards.concat(starter_cards),'Utility')" :key="card.card.id" :class="rarityclass(card.card.rarity)">
+                                                        <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="23" height="32" /></td>
+                                                        <td :title="card.card.description">[[ card.card.name ]]</td>
+                                                        <td>[[ card.card.race ]]</td>
+                                                        <td>[[ card.card.card_type ]]</td>
+                                                        <td>[[ card.card.subtype ]]</td>
+                                                        <td>[[ card.quantity ]]</td>
+                                                    </tr>
+                                                    </tbody>
+                                                </table>
+                                              </div>
+                                            </div>
+                                        </div>
+                                    </div>
                             </div>
                       </div>           
                     </div>

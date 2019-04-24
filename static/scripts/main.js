@@ -96,12 +96,15 @@ var app = new Vue({
         return cards.slice().sort(compare);
       },
 
-      sortedCardsWithQuantity(cards) {
+      sortedCardsWithQuantity(cards,filter="") {
         if (!this.show_starter) {
           tmp_cards =  cards.filter(function(i) { return i.id != null});
         }
         else {
           tmp_cards =  cards
+        }
+        if (filter!="") {
+          tmp_cards =  tmp_cards.filter(function(i) { return i.card_type == filter});
         }
         var new_collection = {}
         const sorted = this.sortedCards(tmp_cards);
