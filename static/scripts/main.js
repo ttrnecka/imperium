@@ -3,6 +3,19 @@ Vue.mixin({
   data () {
     return {
       rarityorder: {"Starter":5,"Common":4, "Rare":3, "Epic":2, "Legendary":1},
+      mixed_teams: [
+        {"code":"aog",  "name":"Alliance of Goodness",   "races":['Bretonnian' , 'Human', 'Dwarf', 'Halfling', 'Wood Elf'] },
+        {"code":"au",   "name":'Afterlife United',       "races":['Undead','Necromantic','Khemri','Vampire']},
+        {"code":"afs",  "name":'Anti-Fur Society',       "races":['Kislev' , 'Norse', 'Amazon', 'Lizardman']},
+        {"code":"cgs",  "name":'Chaos Gods Selection',   "races":['Chaos' , 'Nurgle']},
+        {"code":"cpp",  "name":'Chaotic Player Pact',    "races":['Chaos' , 'Skaven', 'Dark Elf', 'Underworld']},
+        {"code":"egc",  "name":'Elfic Grand Coalition',  "races":['High Elf' , 'Dark Elf', 'Wood Elf', 'Pro Elf']},
+        {"code":"fea",  "name":'Far East Association',   "races":['Chaos Dwarf' , 'Orc', 'Goblin', 'Skaven', 'Ogre']},
+        {"code":"hl",   "name":'Human League',           "races":['Bretonnian' , 'Human', 'Kislev', 'Norse', 'Amazon']},
+        {"code":"sbr",  "name":'Superior Being Ring',    "races":['Bretonnian' , 'High Elf', 'Vampire', 'Chaos Dwarf']},
+        {"code":"uosp", "name":'Union of Small People',  "races":['Ogre' , 'Goblin','Halfling']},
+        {"code":"vt",   "name":'Violence Together',      "races":['Ogre' , 'Goblin','Orc', 'Lizardman']}
+      ],
     }
   },
   methods: { 
@@ -34,6 +47,7 @@ var app = new Vue({
         show_starter: 1,
         coaches: [],
         starter_cards: [],
+        selected_team:"All",
       }
     },
     delimiters: ['[[',']]'],
@@ -105,6 +119,11 @@ var app = new Vue({
         }
         if (filter!="") {
           tmp_cards =  tmp_cards.filter(function(i) { return i.card_type == filter});
+        }
+
+        if (this.selected_team!="All" && filter=="Player") {
+          races = this.mixed_teams.find((e) => { return e.name == this.selected_team }).races;
+          tmp_cards =  tmp_cards.filter(function(i) { return races.includes(i.race)});
         }
         var new_collection = {}
         const sorted = this.sortedCards(tmp_cards);
