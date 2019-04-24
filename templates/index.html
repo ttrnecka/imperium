@@ -103,15 +103,15 @@
                                             </div>
                                         </div>
                                         <div class="card">
-                                            <div class="card-header" :id="'TraningCards'+coach.id">
+                                            <div class="card-header" :id="'TrainingCards'+coach.id">
                                               <h5 class="mb-0">
-                                                <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseTraning'+coach.id" aria-expanded="true" aria-controls="collapseTraning">
-                                                  Traning Cards
+                                                <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseTraining'+coach.id" aria-expanded="true" aria-controls="collapseTraining">
+                                                  Training Cards
                                                 </button>
                                               </h5>
                                             </div>
                                         
-                                            <div :id="'collapseTraning'+coach.id" class="collapse show" :aria-labelledby="'TraningCards'+coach.id" :data-parent="'#accordion'+coach.id">
+                                            <div :id="'collapseTraining'+coach.id" class="collapse show" :aria-labelledby="'TrainingCards'+coach.id" :data-parent="'#accordion'+coach.id">
                                               <div class="card-body">
                                                 <table class="table  table-striped">
                                                     <thead>
@@ -125,7 +125,7 @@
                                                     </tr>
                                                     </thead>
                                                     <tbody>
-                                                    <tr v-for="card in sortedCardsWithQuantity(coach.cards.concat(starter_cards),'Traning')" :key="card.card.id" :class="rarityclass(card.card.rarity)">
+                                                    <tr v-for="card in sortedCardsWithQuantity(coach.cards.concat(starter_cards),'Training')" :key="card.card.id" :class="rarityclass(card.card.rarity)">
                                                         <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="23" height="32" /></td>
                                                         <td :title="card.card.description">[[ card.card.name ]]</td>
                                                         <td>[[ card.card.race ]]</td>
