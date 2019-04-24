@@ -22,12 +22,12 @@
 
     <div id="app" class="container-fluid pt-2" v-cloak>
         <div class="row">
-            <div class="col-2" >
+            <div class="col-md-auto" >
                 <div class="list-group" id="coach-list" role="tablist">
                     <a data-toggle="list" v-for="(coach,index) in orderedCoaches" :coach_id="coach.id" :key="coach.id" class="list-group-item list-group-item-action" :href="'#coach'+ coach.id" role="tab" aria-controls="home">[[ coach.short_name ]]</a>
                 </div>
             </div>
-            <div class="col-10">
+            <div class="col-md">
                 <div class="tab-content" id="nav-tabContent">
                     <div class="tab-pane fade show" v-for="(coach,index) in orderedCoaches" :key="coach.id" :id="'coach'+coach.id" role="tabpanel" aria-labelledby="coach">
                         <ul class="nav nav-tabs" :id="'coachTab'+coach.id" role="tablist">
@@ -65,15 +65,15 @@
                                           <label class="custom-control-label" :for="'sptoggle'+coach.id">Toggle Starter Pack</label>
                                         </div>
                                     </div>
-                                    <table class="table">
+                                    <table class="table  table-striped">
                                         <thead>
                                         <tr>
-                                            <th>Rarity</th>
-                                            <th>Card name</th>
-                                            <th>Race</th>
-                                            <th>Type</th>
-                                            <th>Subtype</th>
-                                            <th>Quantity</th>
+                                            <th class="th-lg">Rarity</th>
+                                            <th class="th-lg">Card name</th>
+                                            <th class="th-lg">Race</th>
+                                            <th class="th-lg">Type</th>
+                                            <th class="th-lg">Subtype</th>
+                                            <th class="th-lg">Quantity</th>
                                         </tr>
                                         </thead>
                                         <tbody>
