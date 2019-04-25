@@ -35,13 +35,17 @@ class ImperiumSheet:
 
 
     @classmethod
-    def cards(cls):
-        if hasattr(cls,"_cards"):
+    def cards(cls,reload=False):
+        if not reload and hasattr(cls,"_cards"):
             return cls._cards
         # if they are not leaded yet do it
         client = gspread.authorize(creds)
         sheet = client.open_by_key(cls.SPREADSHEET_ID).worksheet(cls.ALL_CARDS_SHEET)
-        cls._cards = sheet.get_all_records()
+        tmp_cards = sheet.get_all_records()
+        cls._cards =  [] 
+        for card in tmp_cards:
+            for _ in range(int(card['Multiplier'])):
+                cls._cards.append(card)
         return cls._cards
 
     @classmethod

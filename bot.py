@@ -21,7 +21,7 @@ with open(os.path.join(ROOT, 'config/TOKEN'), 'r') as token_file:
     TOKEN=token_file.read()
 
 GEN_QUALITY = ["premium","budget"]
-GEN_PACKS = ["player","training","booster"]
+GEN_PACKS = ["player","training","booster","special"]
 
 AUTO_CARDS = {
     'Loose Change!':5,
@@ -138,7 +138,7 @@ class DiscordCommand:
         msg+="!resign         - resign from tournament\n"
         msg+="!newcoach       - creates coach's account\n"
         msg+="!genpack        - generates pack and assigns it to coach\n"
-        msg+="!genpackspecial - generates special play pack, does not assign it to coach, costs nothing\n"
+        msg+="!genpacktemp    - generates temporary pack, does not assign it to coach, costs nothing\n"
         msg+=" \n__**Admin Commands**__\n"
         msg+="!adminlist      - lists coach's account \n"
         msg+="!adminbank      - updates to coach's bank, sends notification to the coach \n"
@@ -160,7 +160,7 @@ class DiscordCommand:
         msg+="Rarity: 1 Rare and higher rarity, 4 Common and higher rarity\n"
         msg+="Command: !genpack booster\n \n"
 
-        msg+="= Booster budget pack PREMIUM =\n"
+        msg+="= Booster premium pack =\n"
         msg+="Content: 5 cards any type\n"
         msg+=f"Price: {PackService.PACK_PRICES['booster_premium']} coins\n"
         msg+="Rarity: Rare and higher\n"
@@ -168,13 +168,19 @@ class DiscordCommand:
 
         msg+="= Training pack =\n"
         msg+="Content: 3 training type cards\n"
-        msg+=f"Price: {PackService.PACK_PRICES['training']} coins\n"
+        msg+=f"Price: {PackService.PACK_PRICES['training']} coins. Available only by using Drills\n"
         msg+="Rarity: Commom or higher\n"
         msg+="Command: !genpack training\n \n"
 
+        msg+="= Special play pack =\n"
+        msg+="Content: 3 special play type cards\n"
+        msg+=f"Price: {PackService.PACK_PRICES['training']} coins. Available only by using Drills\n"
+        msg+="Rarity: Commom or higher\n"
+        msg+="Command: !genpack special\n \n"
+
         msg+="= Player pack =\n"
         msg+="Content: 3 player type cards\n"
-        msg+=f"Price: {PackService.PACK_PRICES['player']} coins\n"
+        msg+=f"Price: {PackService.PACK_PRICES['player']} coins. First player pack free of charge. Next available only by using Tryouts.\n"
         msg+="Rarity: Rare or higher\n"
         msg+="Command: !genpack player <team>\n"
         msg+="where <team> is one of following:\n"
@@ -302,11 +308,11 @@ class DiscordCommand:
 
         if args[1] not in GEN_PACKS:
             return False
-        # training/booster without quality
-        if length == 2 and args[1] not in ["training","booster"]:
+        # training/booster/special without quality
+        if length == 2 and args[1] not in ["training","booster","special"]:
             return False
-        # training takes not other parameter
-        if length > 2 and args[1]=="training":
+        # training/special takes not other parameter
+        if length > 2 and args[1] in ["training","special"]:
             return False
         # booster with allowed quality
         if length == 3 and args[1]=="booster" and args[2] not in GEN_QUALITY:
@@ -570,7 +576,7 @@ class DiscordCommand:
                 return
 
             reason = f"{duster.type}: {';'.join([card.name for card in duster.cards])}"
-            free_cmd = "!genpack player <type>" if duster.type=="Tryouts" else "!genpack training"
+            free_cmd = "!genpack player <type>" if duster.type=="Tryouts" else "!genpack training or !genpack special"
             t = Transaction(description=reason,price=0)
             cards = duster.cards
             try:
@@ -978,10 +984,10 @@ class DiscordCommand:
                 submit_deck_channel = discord.utils.get(self.client.get_all_channels(), name='submit-a-deck')
 
                 msg = [discord.utils.get(self.client.get_all_members(), name=coach.short_name(), discriminator=coach.discord_id()).mention for coach in tourn.coaches.filter(TournamentSignups.mode=="active")]
-                msg.append(f"This will be your scheduling channel for your {tourn.name}")
+                msg.append(f"This will be scheduling channel for your {tourn.name}")
                 if submit_deck_channel:
                     msg.append(f"Please submit decks as instructed in {submit_deck_channel.mention}")
-                msg.append("We can start as soon as they're all in!")
+                msg.append(f"We start on {tourn.expected_start_date}!")
                 msg.append(f"Your tournament admin is {admin.mention}")
                 msg.append(f"**Deck Limit:** {tourn.deck_limit}")
                 msg.append(f"**Tournament Sponsor:** {tourn.sponsor}")
@@ -1040,27 +1046,27 @@ class DiscordCommand:
             if ptype=="player":
                 team = self.args[2]
                 pack = PackService.generate(ptype,team)
-            elif ptype=="training":
+            elif ptype=="training" or ptype=="special":
                 pack = PackService.generate(ptype)
             elif ptype=="booster":
                 ptype = "booster_budget" if len(self.args)<3 else f"booster_{self.args[2]}"
                 pack = PackService.generate(ptype)
             #free pack
-            if self.cmd.startswith('!genpackspecial'):
+            if self.cmd.startswith('!genpacktemp'):
                 #just send message, no processing
                 msg = [
-                    f"**Special Play {PackService.description(pack)}**:\n",
+                    f"**Temporary {PackService.description(pack)}**:\n",
                     f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n",
                     "**Note**: This is used for Special Play purposes only!!!"
                 ]
                 await self.send_message(self.message.channel, msg)
             #standard pack
             else:
-                just_joined = True if len(coach.packs)==0 else False
-
                 if coach is None:
                     await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
                     return
+
+                pp_count = db.session.query(Pack.id).filter_by(coach_id=5,pack_type="player").count()
 
                 try:
                     duster = coach.duster
@@ -1068,14 +1074,20 @@ class DiscordCommand:
                     duster_txt = ""
                     if duster and duster.status=="COMMITTED":
                         if  ptype=="player" and duster.type == "Tryouts" or \
-                            ptype=="training" and duster.type == "Drills":
+                            ptype=="training" and duster.type == "Drills" or \
+                            ptype=="special" and duster.type == "Drills":
                              duster_on = True
                              duster_txt = f" ({duster.type})"
                              db.session.delete(duster)
 
-                    price = 0 if duster_on else pack.price
-                         
-                    t = Transaction(pack = pack,price=price,description=PackService.description(pack))
+                    if ptype in ["player"]:
+                        if pp_count!=0 and not duster_on:
+                            raise TransactionError("You need to have commited Tryouts to be able to generate this pack!")
+
+                    if ptype in ["training","special"] and not duster_on:
+                        raise TransactionError("You need to have commited Drills to be able to generate this pack!")
+     
+                    t = Transaction(pack = pack,price=pack.price,description=PackService.description(pack))
                     coach.make_transaction(t)
                 except TransactionError as e:
                     await self.transaction_error(e)
@@ -1083,28 +1095,16 @@ class DiscordCommand:
                 else:
                     # transaction is ok and coach is saved
                     msg = [
-                        f"**{PackService.description(pack)}** for **{self.message.author}** - **{price}** coins{duster_txt}:\n",
+                        f"**{PackService.description(pack)}** for **{self.message.author}** - **{pack.price}** coins{duster_txt}:\n",
                         f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n",
                         f"**Bank:** {coach.account.amount} coins"
                     ]
                     await self.send_message(self.message.channel, msg)
                     await self.auto_cards(pack)
 
-                    #if just joined
-                    if just_joined:
-                        amount = 5
-                        reason = 'Joining bonus'
+                    if pp_count==0 and ptype!="player":
+                        await self.send_message(self.message.channel, ["You are eligible for free player pack. Run **!genpack player <team>** to generate it!"])
 
-                        t = Transaction(description=reason,price=-1*amount)
-                        try:
-                            coach.make_transaction(t)
-                        except TransactionError as e:
-                            await self.transaction_error(e)
-                            return
-                        else:
-                            await  self.bank_notification(f"Your bank has been updated by **{amount}** coins due to {reason}",coach)
-                            return
-                    
                     return
         else:
             await self.send_short_message(self.message.channel, self.__class__.gen_help())
