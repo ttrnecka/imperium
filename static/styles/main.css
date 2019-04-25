@@ -12,7 +12,7 @@
     outline: 0;
     box-shadow: 0 0 0 4px rgba(52,144,220,.5);
   }
-  
+
   .toggle-background {
     display: inline-block;
     border-radius: 9999px;
@@ -21,7 +21,7 @@
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
     transition: background-color .2s ease;
   }
-  
+
   .toggle-indicator {
     position: absolute;
     top: .25rem;
@@ -32,4 +32,8 @@
     border-radius: 9999px;
     box-shadow:  0 2px 4px rgba(0,0,0,0.1);
     transition: transform .2s ease;
+  }
+
+  #coach-list{
+    overflow-y: scroll;
   }
