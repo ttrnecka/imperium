@@ -36,4 +36,5 @@
 
   #coach-list{
     overflow-y: scroll;
+    height: 100vh;
   }
