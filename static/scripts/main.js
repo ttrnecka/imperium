@@ -47,9 +47,12 @@ var app = new Vue({
       return {
         show_starter: 1,
         coaches: [],
+        tournaments: [], 
         starter_cards: [],
         selected_team:"All",
-        coach_filter:""
+        coach_filter:"",
+        menu: "Coaches",
+        search_timeout: null
       }
     },
     delimiters: ['[[',']]'],
@@ -143,7 +146,13 @@ var app = new Vue({
         }
         return new_collection;
       },
-
+      debounceCoachSearch(val){
+        if(this.search_timeout) clearTimeout(this.search_timeout);
+        var that=this;
+        this.search_timeout = setTimeout(function() {
+          that.coach_filter = val; 
+        }, 300);
+      },
     },
     computed: {
       orderedCoaches() {
