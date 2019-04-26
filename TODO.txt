@@ -1,16 +1,34 @@
+PATCH1
+
+
+PATCH1 DONE
+Load all  cards with multiplier
+admincard update now refreshes the live pool and updates all cards
+Check cards update
+change price for boosters 10/20
+Update genpack help
+rename genapackspecial to genpacktemp
+Add special pack
+Make special pack, player pack and training pack part of dusting only
+Exception is very first player pack which is free of charge
+Update text in admincomp start to reflext the comp will not start immediately after legders are provided
+Utility cards have been renamed to Staff cards (web filter)
+switch cards to first place in web
+Remove beginer tournament from checks
+reset script that removes cards and reset accounts to default
+
 VERY HIGH
 add region to complist command
 randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is not bound to a Session; lazy load operation of attribute 'cards' cannot proceed (Background on this error at: http://sqlalche.me/e/bhk3)
 
 add discord id to coaches and use it as lookup
 
-Change index to use Vue and api calls instead
+
 Add manage deck capability (web)
 Add authentication code to edit view
 
 MEDIUM
 Adminlist/list - show transactions(genpacks/adminbanks) for given coach
-Transaction view (web) - displays every transaction(genpacks/adminbanks)
 
 
 LOW:
@@ -74,10 +92,8 @@ torunaments
     updated cards - same process as tournaments
     A command for tournament admins to see a list of which tournaments they're assigned to
     reserve management - move coach from reserve to active when active coach resigns (update doc to resign reseves before starting)
-<<<<<<< HEAD
-    
-=======
 
  dusting
  card remove - if same card name is used only 1 instance is removed
->>>>>>> master
+ Change index to use Vue and api calls instead
+ Transaction view (web) - displays every transaction(genpacks/adminbanks)

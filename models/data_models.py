@@ -34,7 +34,7 @@ class Card(Base):
     duster_id = db.Column(db.Integer, db.ForeignKey('dusters.id'))
 
     def __repr__(self):
-        return f'<Card {self.name}, coach: {self.coach.short_name()}>'
+        return f'<Card {self.name}, rarity: {self.rarity}, pack_id: {self.pack_id}>'
 
 class Pack(Base):
     __tablename__ = 'packs'

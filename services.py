@@ -22,11 +22,12 @@ class PackService:
     ]
 
     PACK_PRICES = {
-        "booster_budget": 5,
-        "booster_premium": 15,
-        "player": 10,
-        "training": 10,
-        "starter": 0
+        "booster_budget": 10,
+        "booster_premium": 20,
+        "player": 0,
+        "training": 0,
+        "starter": 0,
+        "special":0,
     }
 
     BUDGET_COMBOS = [
@@ -150,7 +151,7 @@ class PackService:
         else:
             if ptype == "player":
                 combos = cls.PLAYER_COMBOS
-            elif ptype == "training":
+            elif ptype == "training" or ptype == "special":
                 combos = cls.TRAINING_COMBOS
             elif ptype == "booster_premium":
                 combos = cls.PREMIUM_COMBOS
@@ -165,6 +166,8 @@ class PackService:
                     fcards = cls.filter_cards(rarity,"Player",races)
                 elif ptype == "training":
                     fcards = cls.filter_cards(rarity,"Training")
+                elif ptype == "special":
+                    fcards = cls.filter_cards(rarity,"Special Play")
                 else:
                     fcards = cls.filter_cards(rarity)
                 cards.append(random.choice(fcards))
@@ -276,7 +279,7 @@ class CardService:
 
     @classmethod
     def update(cls):
-        for card in ImperiumSheet.cards():
+        for card in ImperiumSheet.cards(True):
             c_dict = cls.init_dict_from_card(card)
             cards = Card.query.filter_by(name = c_dict['name']).all()
     
@@ -380,7 +383,7 @@ class TournamentService:
         if len(ts)>0:
             raise RegistrationError(f"Coach {coach.short_name()} is already registered to {tournament.name}!!!")
         
-        # check if the coach is not signed to multiple tournaments,  only exception is FastTrack Dev and Boot/Regular Development/Beginner
+        # check if the coach is not signed to multiple tournaments,  only exception is FastTrack Dev and Boot/Regular Development
 
         if tournament.type=="Imperium":
             ts = coach.tournaments.filter_by(type="Imperium").all()
@@ -392,15 +395,9 @@ class TournamentService:
                 raise RegistrationError(f"Coach cannot be registered to more than 2 Development tournaments!!!")
             if len(ts)==1:
                 etour = ts[0]
-                if etour.type == "Development" and tournament.type == "Development":
-                    if not ((etour.mode=="Boot Camp" or etour.mode=="Regular") and tournament.mode=="Fast-Track") and not ((tournament.mode=="Boot Camp" or tournament.mode=="Regular") and etour.mode=="Fast-Track"):
-                        raise RegistrationError(f"Coach cannot be registered to {tournament.type} {tournament.mode} tournament and {etour.type} {etour.mode} tournament at the same time!!!")    
-                elif (etour.type == "Beginner" and tournament.type == "Development") or (etour.type == "Development" and tournament.type == "Beginner"):
-                    if not ((etour.mode=="Boot Camp" or etour.mode=="Regular") and tournament.mode=="Fast-Track") and not ((tournament.mode=="Boot Camp" or tournament.mode=="Regular") and etour.mode=="Fast-Track"):
-                        raise RegistrationError(f"Coach cannot be registered to {tournament.type} {tournament.mode} tournament and {etour.type} {etour.mode} tournament at the same time!!!")    
-                else:
-                    raise RegistrationError(f"Coach cannot be registered to {tournament.type} tournament and {etour.type} tournament at the same time!!!")
-        
+                if not ((etour.mode=="Boot Camp" or etour.mode=="Regular") and tournament.mode=="Fast-Track") and not ((tournament.mode=="Boot Camp" or tournament.mode=="Regular") and etour.mode=="Fast-Track"):
+                    raise RegistrationError(f"Coach cannot be registered to {tournament.type} {tournament.mode} tournament and {etour.type} {etour.mode} tournament at the same time!!!")    
+            
         # check for free slots
         signups = tournament.coaches.filter(TournamentSignups.mode != 'reserve').all()
         reserves = tournament.coaches.filter(TournamentSignups.mode == 'reserve').all()

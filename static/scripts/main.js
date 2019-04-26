@@ -16,6 +16,7 @@ Vue.mixin({
         {"code":"uosp", "name":'Union of Small People',  "races":['Ogre' , 'Goblin','Halfling']},
         {"code":"vt",   "name":'Violence Together',      "races":['Ogre' , 'Goblin','Orc', 'Lizardman']}
       ],
+      card_types: ["Player","Training","Special Play","Staff"]
     }
   },
   methods: { 
@@ -46,8 +47,12 @@ var app = new Vue({
       return {
         show_starter: 1,
         coaches: [],
+        tournaments: [], 
         starter_cards: [],
         selected_team:"All",
+        coach_filter:"",
+        menu: "Coaches",
+        search_timeout: null
       }
     },
     delimiters: ['[[',']]'],
@@ -82,8 +87,10 @@ var app = new Vue({
             }
             this.coaches = res.data;
             this.$nextTick(function () {
-              $('#coach-list a').on("show.bs.tab", (e) => {
+              // register one time event to load the first coach, then show it
+              $('#coach-list a:first-child').on("show.bs.tab", (e) => {
                 this.getCoach(e.currentTarget.getAttribute("coach_id"));
+                $('#coach-list a:first-child').off("show.bs.tab");
               });
               $('#coach-list a:first-child').tab("show");
             })
@@ -139,13 +146,24 @@ var app = new Vue({
         }
         return new_collection;
       },
-
+      debounceCoachSearch(val){
+        if(this.search_timeout) clearTimeout(this.search_timeout);
+        var that=this;
+        this.search_timeout = setTimeout(function() {
+          that.coach_filter = val; 
+        }, 300);
+      },
     },
     computed: {
       orderedCoaches() {
         return this.coaches.slice().sort(function(a,b) {
           return a.name.localeCompare(b.name);
         });
+      },
+      filteredCoaches() {
+        return this.orderedCoaches.filter((coach) => {
+          return coach.name.toLowerCase().includes(this.coach_filter.toLowerCase())
+        })
       }
     },
     mounted() {
