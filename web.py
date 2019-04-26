@@ -7,6 +7,7 @@ from models.base_model import db
 from models.data_models import Coach, Card, Account, Transaction
 from services import PackService
 from flask_marshmallow import Marshmallow
+from sqlalchemy.orm import raiseload
 
 os.environ["YOURAPPLICATION_SETTINGS"] = "config/config.py"
 
@@ -46,10 +47,9 @@ class CoachSchema(ma.ModelSchema):
     account = ma.Nested(AccountSchema)
     short_name = ma.String()
 
-class SimpleCoachSchema(ma.ModelSchema):
+class SimpleCoachSchema(ma.Schema):
     class Meta:
-        model = Coach
-    short_name = ma.String()
+        fields = ("id", "name", "short_name")
 
 
 coach_schema = CoachSchema()
@@ -62,7 +62,7 @@ def index():
 
 @app.route("/coaches", methods=["GET"])
 def get_coaches():
-    all_coaches = Coach.query.all()
+    all_coaches = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).all()
     result = coaches_schema.dump(all_coaches)
     return jsonify(result.data)
 
