@@ -169,13 +169,13 @@ class DiscordCommand:
         msg+="= Training pack =\n"
         msg+="Content: 3 training type cards\n"
         msg+=f"Price: {PackService.PACK_PRICES['training']} coins. Available only by using Drills\n"
-        msg+="Rarity: Commom or higher\n"
+        msg+="Rarity: Common or higher\n"
         msg+="Command: !genpack training\n \n"
 
         msg+="= Special play pack =\n"
         msg+="Content: 3 special play type cards\n"
         msg+=f"Price: {PackService.PACK_PRICES['training']} coins. Available only by using Drills\n"
-        msg+="Rarity: Commom or higher\n"
+        msg+="Rarity: Common or higher\n"
         msg+="Command: !genpack special\n \n"
 
         msg+="= Player pack =\n"
