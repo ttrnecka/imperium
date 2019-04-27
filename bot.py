@@ -1066,7 +1066,7 @@ class DiscordCommand:
                     await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
                     return
 
-                pp_count = db.session.query(Pack.id).filter_by(coach_id=5,pack_type="player").count()
+                pp_count = db.session.query(Pack.id).filter_by(coach_id=coach.id,pack_type="player").count()
 
                 try:
                     duster = coach.duster
