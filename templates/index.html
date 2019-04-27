@@ -27,6 +27,14 @@
                         <a class="nav-link" href="#" @click="menu='Coaches'">Coaches</a>
                     </li>
                 </ul>
+                <ul class="navbar-nav" v-cloak>
+                    <li v-if="user.username" class="nav-item">
+                        <span class="navbar-text">Welcome [[ user.username ]]</span> 
+                    </li>
+                    <li v-if="user.code==0" class="nav-item">
+                        <a class="nav-link" href="/signin">Signin</a>
+                    </li>
+                </ul>
             </div>
         </div>
     </nav>
@@ -38,7 +46,7 @@
                     <input type="text" class="form-control" id="coach_filter" placeholder="Search..." v-bind:value="coach_filter" v-on:input="debounceCoachSearch($event.target.value)">
                 </div>
                 <div class="list-group" id="coach-list" role="tablist">
-                    <a data-toggle="list" v-for="(coach,index) in filteredCoaches" @click="getCoach(coach.id)" :coach_id="coach.id" :key="coach.id" class="list-group-item list-group-item-action" :href="'#coach'+ coach.id" role="tab" aria-controls="home">[[ coach.short_name ]]</a>
+                    <a data-toggle="list" v-for="(coach,index) in filteredCoaches" :coach_id="coach.id" :key="coach.id" class="list-group-item list-group-item-action" :href="'#coach'+ coach.id" role="tab" aria-controls="home">[[ coach.short_name ]]</a>
                 </div>
             </div>
             <div class="col-md">
@@ -46,10 +54,10 @@
                     <div class="tab-pane fade show" v-for="(coach,index) in orderedCoaches" :key="coach.id" :id="'coach'+coach.id" role="tabpanel" aria-labelledby="coach">
                         <ul class="nav nav-tabs" :id="'coachTab'+coach.id" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" :id="'cards-tab'+coach.id" data-toggle="tab" :href="'#coach_cards'+coach.id" role="tab" aria-controls="coach_cards">Cards</a>
+                                <a class="nav-link active" :id="'cards-tab'+coach.id" data-toggle="tab" :href="'#coach_cards'+coach.id" role="tab" aria-controls="coach_cards">[[coach.short_name]]'s Cards</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link" :id="'info-tab'+coach.id" data-toggle="tab" :href="'#coach_info'+coach.id" role="tab" aria-controls="coach_info" aria-selected="true">Info</a>
+                              <a class="nav-link" :id="'info-tab'+coach.id" data-toggle="tab" :href="'#coach_info'+coach.id" role="tab" aria-controls="coach_info" aria-selected="true">[[coach.short_name]]'s Info</a>
                             </li>
                         </ul>
                         <div class="tab-content" :id="'coachTabContent'+coach.id">

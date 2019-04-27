@@ -52,25 +52,29 @@ var app = new Vue({
         selected_team:"All",
         coach_filter:"",
         menu: "Coaches",
-        search_timeout: null
+        search_timeout: null,
+        user:{},
       }
     },
     delimiters: ['[[',']]'],
     methods: {
-      starter_state() {
-        if (this.show_starter) {
-          return "ON";
-        }
-        else {
-          return "OFF";
-        }
-      },
       getCoach(id) {
         const path = "/coaches/"+id;
         axios.get(path)
           .then((res) => {
             idx = this.coaches.findIndex(x => x.id === parseInt(id));
             Vue.set(this.coaches, idx, res.data);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      },
+      getUser(id) {
+        const path = "/me";
+        axios.get(path)
+          .then((res) => {
+            this.user = res.data.user;
+            this.$emit('loadedUser');
           })
           .catch((error) => {
             console.error(error);
@@ -86,13 +90,8 @@ var app = new Vue({
               res.data[i].account.transactions = [];
             }
             this.coaches = res.data;
-            this.$nextTick(function () {
-              // register one time event to load the first coach, then show it
-              $('#coach-list a:first-child').on("show.bs.tab", (e) => {
-                this.getCoach(e.currentTarget.getAttribute("coach_id"));
-                $('#coach-list a:first-child').off("show.bs.tab");
-              });
-              $('#coach-list a:first-child').tab("show");
+            this.$nextTick(function() {
+              this.$emit('loadedCoaches');
             })
           })
           .catch((error) => {
@@ -153,10 +152,19 @@ var app = new Vue({
           that.coach_filter = val; 
         }, 300);
       },
+      selectCoach() {
+        const c = this.loggedCoach
+        if(c) {
+          $('#coach-list a[coach_id='+c.id+']').tab("show");
+        }
+        else {
+          $('#coach-list a:first-child').tab("show");
+        }
+      }
     },
     computed: {
       orderedCoaches() {
-        return this.coaches.slice().sort(function(a,b) {
+        return this.coaches.sort(function(a,b) {
           return a.name.localeCompare(b.name);
         });
       },
@@ -164,9 +172,26 @@ var app = new Vue({
         return this.orderedCoaches.filter((coach) => {
           return coach.name.toLowerCase().includes(this.coach_filter.toLowerCase())
         })
+      },
+      loggedCoach() {
+        if (this.user.id) {
+          const coach = this.coaches.find((e) => {
+            return e.disc_id == this.user.id;
+          })
+          return coach;
+        }
+        else {
+          return undefined;
+        }
       }
     },
     mounted() {
+      this.$on('loadedUser', this.selectCoach);
+      this.$on('loadedCoaches', this.selectCoach);
+      $('#coach-list').on("shown.bs.tab", "a", (e) => {
+        this.getCoach(e.currentTarget.getAttribute("coach_id"));
+      })
+      this.getUser();
       this.getCoaches();
       this.getStarterCards();
     },

@@ -66,8 +66,9 @@ class Coach(Base):
 
     query_class = QueryWithSoftDelete
 
-    def __init__(self,name):
+    def __init__(self,name="",disc_id=0):
         self.name = name
+        self.disc_id = disc_id
         self.account = Account()
 
     def __repr__(self):
@@ -144,8 +145,8 @@ class Coach(Base):
         return cls.query.filter_by(disc_id=id).one_or_none()
 
     @classmethod
-    def create(cls,name):
-        coach = cls(name)
+    def create(cls,name,disc_id):
+        coach = cls(name,disc_id)
         db.session.add(coach)
         db.session.commit()
         return coach
