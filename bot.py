@@ -404,9 +404,14 @@ class DiscordCommand:
 
     # must me under 2000 chars
     async def bank_notification(self,msg,coach):
-        member = discord.utils.get(self.client.get_all_members(), name=coach.short_name(), discriminator=coach.discord_id())
+        member = discord.utils.get(self.client.get_all_members(), id = str(coach.disc_id))
+        if member is None:
+            mention = coach.name
+        else:
+            mention = member.mention
+
         channel = discord.utils.get(self.client.get_all_channels(), name='bank-notifications')
-        await self.send_short_message(channel, f"{member.mention}: "+msg)
+        await self.send_short_message(channel, f"{mention}: "+msg)
         return 
 
     #checks pack for AUTO_CARDS and process them
@@ -479,7 +484,7 @@ class DiscordCommand:
                 reason = coach.account.transactions[-1].description
                 await self.bank_notification(f"Your bank has been updated by **{tourn.fee}** coins - {reason}",coach)
             
-            coaches = [discord.utils.get(self.client.get_all_members(), name=signup.coach.short_name(), discriminator=signup.coach.discord_id()) for signup in TournamentService.update_signups(tourn)]
+            coaches = [discord.utils.get(self.client.get_all_members(), id=str(signup.coach.disc_id)) for signup in TournamentService.update_signups(tourn)]
             msg = [coach.mention for coach in coaches if coach]
             msg.append(f"Your signup to {tourn.name} has been updated from RESERVE to ACTIVE")
 
@@ -518,7 +523,7 @@ class DiscordCommand:
 
     async def __run_newcoach(self):
         name = str(self.message.author)
-        if Coach.get_by_name(name):
+        if Coach.get_by_discord_id(self.message.author.id):
             await self.send_message(self.message.channel,[f"**{self.message.author.mention}** account exists already\n"])
         else:
             coach = Coach.create(str(self.message.author))
@@ -538,7 +543,7 @@ class DiscordCommand:
                 return
 
         name = str(self.message.author)
-        coach = Coach.get_by_name(name)
+        coach = Coach.get_by_discord_id(self.message.author.id)
         if coach is None:
             await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
 
@@ -709,7 +714,7 @@ class DiscordCommand:
             return
 
     async def __run_sign(self):
-        coach = Coach.get_by_name(str(self.message.author))
+        coach = Coach.get_by_discord_id(self.message.author.id)
         if coach is None:
             await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
             return
@@ -718,7 +723,7 @@ class DiscordCommand:
         return
 
     async def __run_resign(self):
-        coach = Coach.get_by_name(str(self.message.author))
+        coach = Coach.get_by_discord_id(self.message.author.id)
         if coach is None:
             await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
             return
@@ -983,7 +988,8 @@ class DiscordCommand:
 
                 submit_deck_channel = discord.utils.get(self.client.get_all_channels(), name='submit-a-deck')
 
-                msg = [discord.utils.get(self.client.get_all_members(), name=coach.short_name(), discriminator=coach.discord_id()).mention for coach in tourn.coaches.filter(TournamentSignups.mode=="active")]
+                members = [discord.utils.get(self.client.get_all_members(), id=str(coach.disc_id)) for coach in tourn.coaches.filter(TournamentSignups.mode=="active")]
+                msg = [member.mention for member in members if member]
                 msg.append(f"This will be scheduling channel for your {tourn.name}")
                 if submit_deck_channel:
                     msg.append(f"Please submit decks as instructed in {submit_deck_channel.mention}")
@@ -1002,7 +1008,7 @@ class DiscordCommand:
             return
 
     async def __run_list(self):
-        coach = Coach.get_by_name(str(self.message.author))
+        coach = Coach.get_by_discord_id(self.message.author.id)
         show_starter = True if len(self.args)>1 and self.args[1]=="all" else False
         
         if coach is None:
@@ -1041,7 +1047,7 @@ class DiscordCommand:
     async def __run_genpack(self):
         if self.__class__.check_gen_command(self.cmd):
             ptype = self.args[1]
-            coach=Coach.get_by_name(str(self.message.author))
+            coach=Coach.get_by_discord_id(self.message.author.id)
 
             if ptype=="player":
                 team = self.args[2]

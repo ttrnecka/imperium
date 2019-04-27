@@ -4,6 +4,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 from sqlalchemy import event, UniqueConstraint
+from sqlalchemy.dialects import mysql 
 
 ROOT = os.path.dirname(__file__)
 
@@ -53,6 +54,8 @@ class Pack(Base):
 
 class Coach(Base):  
     __tablename__ = 'coaches'
+    # long discord id
+    disc_id = db.Column(db.BigInteger(),nullable=False,index=True)
     name = db.Column(db.String(80), unique=True, nullable=False, index=True)
     deleted_name = db.Column(db.String(80), unique=False, nullable=True)
     account = db.relationship('Account', uselist=False, backref=db.backref('coach', lazy=True), cascade="all, delete-orphan")
@@ -73,6 +76,7 @@ class Coach(Base):
     def short_name(self):
         return self.name[:-5]
 
+    # id behind #
     def discord_id(self):
         return self.name[-4:]
 
@@ -134,10 +138,10 @@ class Coach(Base):
         else:
             logger.info(f"{new_coach.name}: Coach reset")
         return new_coach
-
+    
     @classmethod
-    def get_by_name(cls,name):
-        return cls.query.filter_by(name=name).one_or_none()
+    def get_by_discord_id(cls,id):
+        return cls.query.filter_by(disc_id=id).one_or_none()
 
     @classmethod
     def create(cls,name):
@@ -188,8 +192,8 @@ class TournamentSignups(Base):
         UniqueConstraint('tournament_id', 'coach_id', name='uix_tournament_id_coach_id'),
     )
 
-    tournament = db.relationship("Tournament", backref="tournament_signups")
-    coach = db.relationship("Coach", backref="tournament_signups")
+    tournament = db.relationship("Tournament", backref=db.backref('tournament_signups', cascade="all, delete-orphan"))
+    coach = db.relationship("Coach", backref=db.backref('tournament_signups', cascade="all, delete-orphan"))
 
 class Tournament(Base):
     __tablename__ = 'tournaments'
