@@ -522,11 +522,10 @@ class DiscordCommand:
             raise
 
     async def __run_newcoach(self):
-        name = str(self.message.author)
         if Coach.get_by_discord_id(self.message.author.id):
             await self.send_message(self.message.channel,[f"**{self.message.author.mention}** account exists already\n"])
         else:
-            coach = Coach.create(str(self.message.author))
+            coach = Coach.create(str(self.message.author),self.message.author.id)
             msg = [
                 f"**{self.message.author.mention}** account created\n",
                 f"**Bank:** {coach.account.amount} coins",
