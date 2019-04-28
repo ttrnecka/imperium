@@ -1,31 +1,8 @@
-PATCH1
-
-
-PATCH1 DONE
-Load all  cards with multiplier
-admincard update now refreshes the live pool and updates all cards
-Check cards update
-change price for boosters 10/20
-Update genpack help
-rename genapackspecial to genpacktemp
-Add special pack
-Make special pack, player pack and training pack part of dusting only
-Exception is very first player pack which is free of charge
-Update text in admincomp start to reflext the comp will not start immediately after legders are provided
-Utility cards have been renamed to Staff cards (web filter)
-switch cards to first place in web
-Remove beginer tournament from checks
-reset script that removes cards and reset accounts to default
 
 VERY HIGH
 add region to complist command
-randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is not bound to a Session; lazy load operation of attribute 'cards' cannot proceed (Background on this error at: http://sqlalche.me/e/bhk3)
-
-add discord id to coaches and use it as lookup
-
-
+add tournaments on web
 Add manage deck capability (web)
-Add authentication code to edit view
 
 MEDIUM
 Adminlist/list - show transactions(genpacks/adminbanks) for given coach
@@ -34,7 +11,8 @@ Adminlist/list - show transactions(genpacks/adminbanks) for given coach
 LOW:
 Ability to hand out a free packs - admin assigns pack to coach which then can generate when they want (!freepack)
 Add list deck capability (bot)
-Collect data from cyanide API and upload to excel
+Collect data from cyanide API and display on page
+randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is not bound to a Session; lazy load operation of attribute 'cards' cannot proceed (Background on this error at: http://sqlalche.me/e/bhk3)
 
 VERY LOW:
 test code
@@ -97,3 +75,20 @@ torunaments
  card remove - if same card name is used only 1 instance is removed
  Change index to use Vue and api calls instead
  Transaction view (web) - displays every transaction(genpacks/adminbanks)
+
+ PATCH1 DONE
+Load all cards with multiplier
+Admincard update now refreshes the live pool and updates all existing cards
+Changed price for boosters to 10/20
+Updated genpack help with special play pack and new requirements for Training/Player packs
+Renamed genapackspecial to genpacktemp
+Added special play pack
+Very first player pack is free of charge
+Special play pack, training pack and any but first player pack can be generated only by dusting
+Updated text in "admincomp start" that the competinion will not start asap but at the Expected Start Date
+Utility cards have been renamed to Staff cards in web filter
+Switched Cards tab to first place in web
+Removed beginner tournament from "!sign" checks
+Reset script that removes cards and reset accounts to default
+add discord id to coaches and use it as lookup
+Add authentication code to edit view

@@ -133,7 +133,7 @@ class DiscordCommand:
         msg="```asciidoc\n"
         msg+="__**Coach Commands**__\n"
         msg+="!list           - sends details of coach's own account by PM\n"
-        msg+="!complist       - displays all tournaments open for signup\n"
+        msg+="!complist       - displays tournaments\n"
         msg+="!sign           - sign to tournament\n"
         msg+="!resign         - resign from tournament\n"
         msg+="!newcoach       - creates coach's account\n"
@@ -647,9 +647,18 @@ class DiscordCommand:
             
     async def __run_complist(self):
         if len(self.args)==2 and not (RepresentsInt(self.args[1]) or self.args[1] in ["all","full","free"]):
-            await self.send_message(self.message.channel,[f"**{self.args[1]}** is not a number or 'all'!!!\n"])
+            await self.send_message(self.message.channel,[f"**{self.args[1]}** is not a number or 'all', 'full' or 'free'!!!\n"])
             return
 
+        if len(self.args)>2:
+            if self.args[1] not in ["all","full","free"]:
+                await self.send_message(self.message.channel,[f"**{self.args[1]}** is not 'all', 'full' or 'free'!!!\n"])
+                return
+            
+            if self.args[2] not in ["bigo","gman","rel"]:
+                await self.send_message(self.message.channel,[f"**{self.args[2]}** is not 'bigo', 'gman' or 'rel'!!!\n"])
+                return
+            
         #detail
         if len(self.args)==2 and RepresentsInt(self.args[1]):
             tourn = Tournament.query.filter_by(tournament_id=int(self.args[1])).one_or_none()
@@ -681,21 +690,25 @@ class DiscordCommand:
 
             await self.send_message(self.message.channel, msg)
             return
+        
         #list
         else:
-            if len(self.args)==2 and self.args[1]=="all":
+            if len(self.args)>=2 and self.args[1]=="all":
                 ts = Tournament.query.all()
                 tmsg = "All"
-            elif len(self.args)==2 and self.args[1]=="full":
+            elif len(self.args)>=2 and self.args[1]=="full":
                 ts= Tournament.query.outerjoin(Tournament.tournament_signups).filter(Tournament.status=="OPEN").group_by(Tournament).having(func.count_(Tournament.tournament_signups) == Tournament.coach_limit+Tournament.reserve_limit).all()
                 tmsg = "Full"
-            elif len(self.args)==2 and self.args[1]=="free":
+            elif len(self.args)>=2 and self.args[1]=="free":
                 ts= Tournament.query.outerjoin(Tournament.tournament_signups).filter(Tournament.status=="OPEN").group_by(Tournament).having(func.count_(Tournament.tournament_signups) < Tournament.coach_limit+Tournament.reserve_limit).all()
                 tmsg = "Free"
             else:
                 ts = Tournament.query.filter_by(status="OPEN").all()
                 tmsg = "Open"    
             
+            if len(self.args)>2:
+                ts = [tourn for tourn in ts if tourn.region.lower().replace(" ", "")==self.args[2] or tourn.region.lower()=="all" ]
+
             msg = [f"__**{tmsg} Tournaments:**__"]
             for tournament in ts:
                 coaches = tournament.coaches.filter(TournamentSignups.mode=="active").all()
@@ -705,7 +718,7 @@ class DiscordCommand:
                 reserve_message = f" ({count_res}/{tournament.reserve_limit}) " if tournament.reserve_limit!=0 else "" 
                 msg.append(f"**{tournament.id}.** {tournament.name}{' (Imperium)' if tournament.type=='Imperium' else ''} - Signups: {count}/{tournament.coach_limit}{reserve_message}, Closes: {tournament.signup_close_date}")
 
-            msg.append(" \nUse **!complist all|full|free** to display tournaments")
+            msg.append(" \nUse **!complist all|full|free <bigo|gman|rel>** to display tournaments")
             msg.append("Use **!complist <id>** to display details of the tournament")
             msg.append("Use **!sign <id>** to register for tournament")
             msg.append("Use **!resign <id>** to resign from tournament")
