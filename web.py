@@ -1,12 +1,13 @@
 import os
+from datetime import timedelta
 from flask import Flask, render_template, jsonify, abort, session, redirect, request, url_for
 from flask_migrate import Migrate
 from misc.helpers import CardHelper
 #from imperiumbase import Coach, Pack
 from models.base_model import db
-from models.data_models import Coach, Card, Account, Transaction
+from models.data_models import Coach, Card, Account, Transaction, Tournament
 from services import PackService
-from flask_marshmallow import Marshmallow
+from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema
 from sqlalchemy.orm import raiseload
 from requests_oauthlib import OAuth2Session
 
@@ -18,11 +19,11 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config.from_envvar('YOURAPPLICATION_SETTINGS')
     db.init_app(app)
+    ma.init_app(app)
     return app
 
 app = create_app()
 migrate = Migrate(app, db)
-ma = Marshmallow(app)
 
 API_BASE_URL = os.environ.get('API_BASE_URL', 'https://discordapp.com/api')
 AUTHORIZATION_BASE_URL = API_BASE_URL + '/oauth2/authorize'
@@ -48,38 +49,6 @@ def make_session(token=None, state=None, scope=None):
         auto_refresh_url=TOKEN_URL,
         token_updater=token_updater)
 
-class TransactionSchema(ma.ModelSchema):
-    class Meta:
-        model = Transaction
-
-class AccountSchema(ma.ModelSchema):
-    class Meta:
-        model = Account
-    transactions = ma.Nested(TransactionSchema, many=True)
-
-class CardSchema(ma.ModelSchema):
-    class Meta:
-        model = Card
-
-card_schema = CardSchema()
-cards_schema = CardSchema(many=True)
-
-class CoachSchema(ma.ModelSchema):
-    class Meta:
-        model = Coach
-    
-    cards = ma.Nested(CardSchema, many=True)
-    account = ma.Nested(AccountSchema)
-    short_name = ma.String()
-
-class SimpleCoachSchema(ma.Schema):
-    class Meta:
-        fields = ("id", "name", "short_name","disc_id")
-
-
-coach_schema = CoachSchema()
-coaches_schema = SimpleCoachSchema(many=True)
-
 @app.route('/signin')
 def signin():
     scope = request.args.get(
@@ -100,13 +69,20 @@ def callback():
         client_secret=app.config["SECRET_KEY"],
         authorization_response=request.url)
     session['oauth2_token'] = token
+    discord = make_session(token=session.get('oauth2_token'))
+    user = discord.get(API_BASE_URL + '/users/@me').json()
+    # store it in session
+    session['discord_user'] = user
     return redirect(url_for('.index'))
+
+@app.before_request
+def before_request():
+    session.permanent = True
+    app.permanent_session_lifetime = timedelta(days=30)
 
 @app.route('/me')
 def me():
-    discord = make_session(token=session.get('oauth2_token'))
-    user = discord.get(API_BASE_URL + '/users/@me').json()
-    return jsonify(user=user)
+    return jsonify(user=session.get('discord_user',{'code':0}))
 
 @app.route("/")
 def index():
@@ -117,6 +93,12 @@ def index():
 def get_coaches():
     all_coaches = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).all()
     result = coaches_schema.dump(all_coaches)
+    return jsonify(result.data)
+
+@app.route("/tournaments", methods=["GET"])
+def get_tournaments():
+    all_tournaments = Tournament.query.options(raiseload(Tournament.coaches)).filter_by(status="OPEN").all()
+    result = tournaments_schema.dump(all_tournaments)
     return jsonify(result.data)
 
 @app.route("/coaches/<int:coach_id>", methods=["GET"])

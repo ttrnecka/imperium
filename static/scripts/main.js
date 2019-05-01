@@ -98,6 +98,16 @@ var app = new Vue({
             console.error(error);
           });
       },
+      getTournaments() {
+        const path = "/tournaments";
+        axios.get(path)
+          .then((res) => {
+            this.tournaments = res.data;
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      },
       getStarterCards() {
         const path = "/cards/starter";
         axios.get(path)
@@ -193,6 +203,7 @@ var app = new Vue({
       })
       this.getUser();
       this.getCoaches();
+      this.getTournaments();
       this.getStarterCards();
     },
 });
