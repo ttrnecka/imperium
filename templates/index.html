@@ -5,8 +5,10 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <link rel="stylesheet" href="/static/styles/main.css?1.8">
-        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <link rel="stylesheet" href="/static/styles/main.css?1.10">
+        <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/static/images//favicon-16x16.png">
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         <title>REBBL Imperium</title>
     </head>
@@ -26,35 +28,52 @@
                     <li class="nav-item" v-bind:class="{ active: menu=='Coaches' }">
                         <a class="nav-link" href="#" @click="menu='Coaches'">Coaches</a>
                     </li>
+                    <li class="nav-item" v-bind:class="{ active: menu=='Tournaments' }">
+                        <a class="nav-link" href="#" @click="menu='Tournaments'">Tournaments</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav" v-cloak>
+                    <li v-if="user.username" class="nav-item">
+                        <span class="navbar-text">Welcome [[ user.username ]]</span> 
+                    </li>
+                    <li v-if="user.code==0" class="nav-item">
+                        <a class="nav-link" href="/signin">Signin</a>
+                    </li>
                 </ul>
             </div>
         </div>
     </nav>
 
     <div class="container-fluid pt-2" v-cloak>
-        <div class="row">
+        <div v-if="menu=='Coaches'" class="row">
             <div class="col-md-auto" >
                 <div class="form-group">
                     <input type="text" class="form-control" id="coach_filter" placeholder="Search..." v-bind:value="coach_filter" v-on:input="debounceCoachSearch($event.target.value)">
                 </div>
                 <div class="list-group" id="coach-list" role="tablist">
-                    <a data-toggle="list" v-for="(coach,index) in filteredCoaches" @click="getCoach(coach.id)" :coach_id="coach.id" :key="coach.id" class="list-group-item list-group-item-action" :href="'#coach'+ coach.id" role="tab" aria-controls="home">[[ coach.short_name ]]</a>
+                    <a data-toggle="list" v-for="(coach,index) in filteredCoaches" @click="getCoach(coach.id)" :key="coach.id" class="list-group-item list-group-item-action" href="#coachDisplay" role="tab" aria-controls="home">[[ coach.short_name ]]</a>
                 </div>
             </div>
-            <div class="col-md">
-                <div class="tab-content" id="nav-tabContent">
-                    <div class="tab-pane fade show" v-for="(coach,index) in orderedCoaches" :key="coach.id" :id="'coach'+coach.id" role="tabpanel" aria-labelledby="coach">
-                        <ul class="nav nav-tabs" :id="'coachTab'+coach.id" role="tablist">
+            <div class="col-md-6">
+                <div class="tab-content show" id="nav-tabContent">
+                    <div class="tab-pane fade show active" id="coachDisplay" role="tabpanel" aria-labelledby="coach">
+                        <ul class="nav nav-tabs" id="coachTab" role="tablist">
                             <li class="nav-item">
-                                <a class="nav-link active" :id="'cards-tab'+coach.id" data-toggle="tab" :href="'#coach_cards'+coach.id" role="tab" aria-controls="coach_cards">Cards</a>
+                                <a class="nav-link active" id="cards-tab" data-toggle="tab" href="#coach_cards" role="tab" aria-controls="coach_cards">[[ selectedCoach.short_name ]]'s Cards</a>
                             </li>
                             <li class="nav-item">
-                              <a class="nav-link" :id="'info-tab'+coach.id" data-toggle="tab" :href="'#coach_info'+coach.id" role="tab" aria-controls="coach_info" aria-selected="true">Info</a>
+                              <a class="nav-link" id="info-tab" data-toggle="tab" href="#coach_info" role="tab" aria-controls="coach_info" aria-selected="true">[[ selectedCoach.short_name]]'s Info</a>
                             </li>
-                        </ul>
-                        <div class="tab-content" :id="'coachTabContent'+coach.id">
-                            <div class="tab-pane fade" :id="'coach_info'+coach.id" role="tabpanel" aria-labelledby="info-tab">
-                                <div class="col-12">Bank: [[ coach.account.amount]] coins</div>
+                        </ul> 
+                        <div class="tab-content" id="coachTabContent">
+                            <div class="tab-pane fade" id="coach_info" role="tabpanel" aria-labelledby="info-tab">
+                                <div class="col-12"><b>Bank:</b> [[ selectedCoach.account.amount]] coins</div>
+                                <div class="tab-content show col-12" id="accordionTournamentsCoach">
+                                    <b>Tournaments:</b>
+                                    <tournament v-for="tournament in tournamentsFor(selectedCoach)" :key="tournament.id" :id="'tourn'+tournament.id+'coach'" role="tabpanel" aria-labelledby="tournament" :tournament="tournament" :coaches="coaches" data-parent="#accordionTournamentsCoach"></tournament>
+                                </div>
+                                <div class="col-12">
+                                <b>Transactions:</b>
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
@@ -64,37 +83,38 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr v-for="transaction in coach.account.transactions.slice().reverse()" :key="transaction.id">
+                                        <tr v-for="transaction in selectedCoach.account.transactions.slice().reverse()" :key="transaction.id">
                                             <td>[[ transaction.date_confirmed ]]</td>
                                             <td>[[ transaction.price*-1 ]]</td>
                                             <td>[[ transaction.description ]]</td>
                                         </tr>
                                     </tbody>
                                 </table>
-                            </div>
-                            <div class="tab-pane fade show active" :id="'coach_cards'+coach.id" role="tabpanel" aria-labelledby="cards-tab">
+                                </div>
+                            </div>    
+                            <div class="tab-pane fade show active" id="coach_cards" role="tabpanel" aria-labelledby="cards-tab">
                                 <div class="col-auto my-1">
                                     <div class="form-group">
-                                        <label :for="'mixed_team_select'+coach.id">Select team:</label>
-                                        <select class="form-control" :id="'mixed_team'+coach.id" v-model="selected_team">
+                                        <label for="mixed_team_select">Select team:</label>
+                                        <select class="form-control" id="mixed_team" v-model="selected_team">
                                             <option selected value="All">All</option>
-                                            <option v-for="team in mixed_teams" :value="team.name" :key="team.code+coach.id">[[ team.name ]] ([[ team.races.join() ]])</option>
+                                            <option v-for="team in mixed_teams" :value="team.name" :key="team.code">[[ team.name ]] ([[ team.races.join() ]])</option>
                                         </select>
                                     </div>
                                     <div class="custom-control custom-checkbox mr-sm-2">
-                                        <input type="checkbox" class="custom-control-input" :id="'sptoggle'+coach.id" v-model="show_starter">
-                                        <label class="custom-control-label" :for="'sptoggle'+coach.id">Toggle Starter Pack</label>
+                                        <input type="checkbox" class="custom-control-input" id="sptoggle" v-model="show_starter">
+                                        <label class="custom-control-label" for="sptoggle">Toggle Starter Pack</label>
                                     </div>
-                                    <div :id="'accordion'+coach.id">
+                                    <div id="accordionCards">
                                         <div class="card" v-for="ctype in card_types">
-                                            <div class="card-header" :id="ctype.replace(/\s/g, '')+'Cards'+coach.id">
+                                            <div class="card-header" :id="ctype.replace(/\s/g, '')+'Cards'">
                                                 <h5 class="mb-0">
-                                                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapse'+ctype.replace(/\s/g, '')+coach.id" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\s/g, '')">
+                                                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapse'+ctype.replace(/\s/g, '')" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\s/g, '')">
                                                     [[ ctype ]] Cards
                                                     </button>
                                                 </h5>
                                             </div>
-                                            <div :id="'collapse'+ctype.replace(/\s/g, '')+coach.id" class="collapse show" :aria-labelledby="ctype.replace(/\s/g, '')+'Cards'+coach.id" :data-parent="'#accordion'+coach.id">
+                                            <div :id="'collapse'+ctype.replace(/\s/g, '')" class="collapse show" :aria-labelledby="ctype.replace(/\s/g, '')+'Cards'" data-parent="#accordionCards">
                                                 <div class="card-body">
                                                     <table class="table  table-striped">
                                                         <thead>
@@ -107,8 +127,8 @@
                                                         </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <tr v-for="card in sortedCardsWithQuantity(coach.cards.concat(starter_cards),ctype)" :key="card.card.id" :class="rarityclass(card.card.rarity)">
-                                                            <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="23" height="32" /></td>
+                                                        <tr v-for="card in sortedCardsWithQuantity(selectedCoach.cards.concat(starter_cards),ctype)" :key="card.card.id" :class="rarityclass(card.card.rarity)">
+                                                            <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="20" height="25" /></td>
                                                             <td :title="card.card.description">[[ card.card.name ]]</td>
                                                             <td>[[ card.card.race ]]</td>
                                                             <td>[[ card.card.subtype ]]</td>
@@ -122,8 +142,35 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>                      
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-if="menu=='Tournaments'" class="row">
+            <div class="col-md">
+                <div class="tab-content" id="accordionTournaments">
+                    <div class="row col-md-6">
+                        <div class="form-group col-md-6">
+                            <select class="form-control" id="tournament_region" v-model="selected_t_region">
+                                <option selected disabled value="">Region:</option>
+                                <option value="">Reset</option>
+                                <option value="all">Cross-region</option>
+                                <option value="bigo">Big O</option>
+                                <option value="gman">GMAN</option>
+                                <option value="rel">REL</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <select class="form-control" id="tournament_state" v-model="selected_t_state">
+                                <option selected disabled value="">Occupation:</option>
+                                <option value="">Reset</option>
+                                <option value="free">Free</option>
+                                <option value="full">Full</option>
+                            </select>
                         </div>
                     </div>
+                    <tournament class="show col-md-6" v-for="tournament in filteredTournaments" :key="tournament.id" :id="'tourn'+tournament.id" role="tabpanel" aria-labelledby="tournament" :tournament="tournament" :coaches="coaches" :data-parent="'#accordionTournaments'"></tournament>
                 </div>
             </div>
         </div>
@@ -134,6 +181,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="/static/scripts/main.js?1.5"></script>
+    <script src="/static/scripts/main.js?1.7" type="module"></script>
     </body>
 </html>

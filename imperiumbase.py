@@ -11,7 +11,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(ROOT, 'con
 class ImperiumSheet:
     SPREADSHEET_ID = "1t5IoiIjPAS2CD63P6xI4hWwx9c1SEzW9AL1LJ4LK6og"
     # dev spreadsheet below
-    # SPREADSHEET_ID = "1z59ftfIYxsSZ_OwQs2KaFGzSuYizSMdSCdW6DGAj4Ms"
+    #SPREADSHEET_ID = "1z59ftfIYxsSZ_OwQs2KaFGzSuYizSMdSCdW6DGAj4Ms"
     ALL_CARDS_SHEET = "All Cards"
     TRAINING_CARDS_SHEET = "Training Cards"
     STARTER_PACK_SHEET="Starter Pack"
@@ -64,59 +64,6 @@ class ImperiumSheet:
         # TODO change the sheet ID
         sheet = client.open_by_key(cls.SPREADSHEET_ID).worksheet(cls.TOURNAMENT_SHEET)
         return sheet.get_all_records()
-    
-    @classmethod
-    def start_pack_with_count(cls):
-        new_collection = {}
-        for card in cls.starter_cards():
-            if card["Card Name"] in new_collection:
-                new_collection[card["Card Name"]]["Quantity"] += 1
-            else:
-                new_collection[card["Card Name"]] = deepcopy(card)
-                new_collection[card["Card Name"]]["Quantity"] = 1
-        return list(new_collection.values())
-
-
-    # TODO needs retesting when/if it will be needed again
-    @classmethod
-    def store_coach(cls,coach):
-        client = gspread.authorize(creds)
-        ws = client.open_by_key(cls.MASTERSHEET_ID)
-
-        try:
-            sheet = ws.worksheet(coach.name)
-        except gspread.exceptions.WorksheetNotFound:
-            sheet = ws.add_worksheet(title=coach.name,rows=300, cols=7)
-
-        sheet.clear()
-
-        COACH_CARD_HEADER = [
-            "Rarity",
-            "Type",
-            "Subtype",
-            "Card Name",
-            "Race",
-            "Description",
-            "Quantity"
-        ]
-
-        cards = []
-        cards.append(COACH_CARD_HEADER)
-
-        for card in cls.start_pack_with_count() + coach.collection_with_count():
-            cards.append(card)
-
-        cards_amount, keys_amount = len(cards), len(COACH_CARD_HEADER)
-
-        cell_list = sheet.range(f"A1:{gspread.utils.rowcol_to_a1(cards_amount, keys_amount)}")
-
-        for cell in cell_list:
-            if cell.row==1:
-                cell.value = cards[cell.row-1][cell.col-1]
-            else:
-                cell.value = cards[cell.row-1][COACH_CARD_HEADER[cell.col-1]]
-        sheet.update_cells(cell_list)
-
 
     @classmethod
     def store_cards(cls,cards):

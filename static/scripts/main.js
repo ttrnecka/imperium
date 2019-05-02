@@ -1,3 +1,4 @@
+import tournament from './components/tournament.js';
 
 Vue.mixin({
   data () {
@@ -21,6 +22,7 @@ Vue.mixin({
   },
   methods: { 
     rarityclass(rarity) {
+      let klass;
       switch(rarity) {
         case "Common":
         case "Starter":
@@ -47,30 +49,50 @@ var app = new Vue({
       return {
         show_starter: 1,
         coaches: [],
-        tournaments: [], 
+        selectedCoach: {
+          short_name: "",
+          account: {
+            amount:0,
+            transactions: []
+          },
+          tournaments:[],
+          cards:[],
+          id:0,
+        },
+        tournaments: [],
+        selected_t_region:"",
+        selected_t_state:"",
         starter_cards: [],
         selected_team:"All",
         coach_filter:"",
         menu: "Coaches",
-        search_timeout: null
+        search_timeout: null,
+        user:{},
       }
+    },
+    components: {
+      tournament,
     },
     delimiters: ['[[',']]'],
     methods: {
-      starter_state() {
-        if (this.show_starter) {
-          return "ON";
-        }
-        else {
-          return "OFF";
-        }
-      },
       getCoach(id) {
         const path = "/coaches/"+id;
         axios.get(path)
           .then((res) => {
-            idx = this.coaches.findIndex(x => x.id === parseInt(id));
+            const idx = this.coaches.findIndex(x => x.id === parseInt(id));
             Vue.set(this.coaches, idx, res.data);
+            this.selectedCoach = this.coaches[idx];
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      },
+      getUser(id) {
+        const path = "/me";
+        axios.get(path)
+          .then((res) => {
+            this.user = res.data.user;
+            this.get('loadedUser');
           })
           .catch((error) => {
             console.error(error);
@@ -80,20 +102,26 @@ var app = new Vue({
         const path = "/coaches";
         axios.get(path)
           .then((res) => {
-            for(i=0,len=res.data.length;i<len;i++) {
+            for(let i=0,len=res.data.length;i<len;i++) {
               res.data[i].cards = [];
+              res.data[i].tournaments = [];
               res.data[i].account = {};
               res.data[i].account.transactions = [];
             }
             this.coaches = res.data;
-            this.$nextTick(function () {
-              // register one time event to load the first coach, then show it
-              $('#coach-list a:first-child').on("show.bs.tab", (e) => {
-                this.getCoach(e.currentTarget.getAttribute("coach_id"));
-                $('#coach-list a:first-child').off("show.bs.tab");
-              });
-              $('#coach-list a:first-child').tab("show");
+            this.$nextTick(function() {
+              this.$emit('loadedCoaches');
             })
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      },
+      getTournaments() {
+        const path = "/tournaments";
+        axios.get(path)
+          .then((res) => {
+            this.tournaments = res.data;
           })
           .catch((error) => {
             console.error(error);
@@ -118,6 +146,7 @@ var app = new Vue({
       },
 
       sortedCardsWithQuantity(cards,filter="") {
+        let tmp_cards;
         if (!this.show_starter) {
           tmp_cards =  cards.filter(function(i) { return i.id != null});
         }
@@ -134,7 +163,7 @@ var app = new Vue({
         }
         var new_collection = {}
         const sorted = this.sortedCards(tmp_cards);
-        for (i=0, len = sorted.length; i<len; i++) {
+        for (let i=0, len = sorted.length; i<len; i++) {
           if (new_collection.hasOwnProperty(sorted[i].name)) {
             new_collection[sorted[i].name]['quantity'] += 1
           }
@@ -153,10 +182,24 @@ var app = new Vue({
           that.coach_filter = val; 
         }, 300);
       },
+      selectCoach() {
+        const c = this.loggedCoach;
+        if(c) {
+          this.getCoach(this.loggedCoach.id);
+        }
+        else if(this.coaches.length>0){
+          this.getCoach(this.coaches[0].id);
+        }
+      },
+      tournamentsFor(coach) {
+        return this.tournaments.filter((e)=>{
+          return coach.tournaments.includes(e.id);
+        })
+      }
     },
     computed: {
       orderedCoaches() {
-        return this.coaches.slice().sort(function(a,b) {
+        return this.coaches.sort(function(a,b) {
           return a.name.localeCompare(b.name);
         });
       },
@@ -164,10 +207,46 @@ var app = new Vue({
         return this.orderedCoaches.filter((coach) => {
           return coach.name.toLowerCase().includes(this.coach_filter.toLowerCase())
         })
+      },
+      filteredTournaments() {
+        let filtered = this.tournaments;
+        if(this.selected_t_region!="") {
+          filtered = filtered.filter((e) => {
+            return e.region.toLowerCase().replace(/\s/g, '') == this.selected_t_region
+          })
+        }
+        if(this.selected_t_state=="full") {
+          filtered = filtered.filter((e) => {
+            return e.coach_limit == e.tournament_signups.filter((e) => { return e.mode=="active"}).length;
+          })
+        } else if (this.selected_t_state=="free") {
+          filtered = filtered.filter((e) => {
+            return e.coach_limit > e.tournament_signups.filter((e) => { return e.mode=="active"}).length;
+          })
+        }
+        
+        return filtered;
+      },
+      loggedCoach() {
+        if (this.user.id) {
+          const coach = this.coaches.find((e) => {
+            return e.disc_id == this.user.id;
+          })
+          return coach;
+        }
+        else {
+          return undefined;
+        }
       }
     },
     mounted() {
+      this.$on('loadedUser', this.selectCoach);
+      this.$on('loadedCoaches', this.selectCoach);
+    },
+    beforeMount() {
+      this.getUser();
       this.getCoaches();
+      this.getTournaments();
       this.getStarterCards();
     },
 });

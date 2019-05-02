@@ -1,4 +1,4 @@
-discord.py
+discord.py==0.16.12
 gspread
 oauth2client
 pyyaml
@@ -6,3 +6,4 @@ flask_sqlalchemy
 Flask-Migrate
 flask_marshmallow 
 marshmallow-sqlalchemy
+requests-oauthlib==1.2.0
