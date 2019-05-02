@@ -1,5 +1,5 @@
 from flask_marshmallow import Marshmallow
-from .data_models import Transaction, Account, Card, Coach, Tournament
+from .data_models import Transaction, Account, Card, Coach, Tournament, TournamentSignups
 
 ma = Marshmallow()
 
@@ -16,9 +16,15 @@ class CardSchema(ma.ModelSchema):
     class Meta:
         model = Card
 
+class TournamentSignupSchema(ma.ModelSchema):
+    class Meta:
+        model = TournamentSignups
+
 class TournamentSchema(ma.ModelSchema):
     class Meta:
         model = Tournament
+        exclude = ["coaches"]
+    tournament_signups = ma.Nested(TournamentSignupSchema, many=True)
 
 class CoachSchema(ma.ModelSchema):
     class Meta:

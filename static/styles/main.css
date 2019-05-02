@@ -56,3 +56,14 @@
 .card-header button {
   font-size: 0.8rem;
 }
+
+.card-body {
+  font-size: 0.8rem;
+}
+
+.tournament .card-body div[class^="col-"] {
+  padding-bottom: 0.1rem;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: rgba(0, 0, 0, 0.125);
+}

@@ -5,7 +5,7 @@ from flask_migrate import Migrate
 from misc.helpers import CardHelper
 #from imperiumbase import Coach, Pack
 from models.base_model import db
-from models.data_models import Coach, Card, Account, Transaction, Tournament
+from models.data_models import Coach, Card, Account, Transaction, Tournament, TournamentSignups
 from services import PackService
 from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema
 from sqlalchemy.orm import raiseload
@@ -97,7 +97,7 @@ def get_coaches():
 
 @app.route("/tournaments", methods=["GET"])
 def get_tournaments():
-    all_tournaments = Tournament.query.options(raiseload(Tournament.coaches)).filter_by(status="OPEN").all()
+    all_tournaments = Tournament.query.options(raiseload(Tournament.coaches)).filter(Tournament.status.in_(("OPEN","RUNNING"))).all()
     result = tournaments_schema.dump(all_tournaments)
     return jsonify(result.data)
 
