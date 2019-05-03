@@ -92,7 +92,7 @@ var app = new Vue({
         axios.get(path)
           .then((res) => {
             this.user = res.data.user;
-            this.get('loadedUser');
+            this.$emit('loadedUser');
           })
           .catch((error) => {
             console.error(error);
@@ -158,7 +158,7 @@ var app = new Vue({
         }
 
         if (this.selected_team!="All" && filter=="Player") {
-          races = this.mixed_teams.find((e) => { return e.name == this.selected_team }).races;
+          const races = this.mixed_teams.find((e) => { return e.name == this.selected_team }).races;
           tmp_cards =  tmp_cards.filter(function(i) { return races.includes(i.race)});
         }
         var new_collection = {}
