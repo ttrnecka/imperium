@@ -4,6 +4,7 @@ from imperiumbase import ImperiumSheet
 from sqlalchemy.orm import joinedload
 from sqlalchemy import asc
 import random
+import requests
 
 class PackService:
 
@@ -309,6 +310,17 @@ class CoachService:
         db.session.commit()
 
 class TournamentService:
+    notificators = []
+
+    @classmethod
+    def notify(cls,msg):
+        for notificator in cls.notificators:
+            notificator(msg)
+
+    @classmethod
+    def register_notifier(cls,func):
+        cls.notificators.append(func)
+
     @classmethod
     def init_dict_from_tournament(cls,tournament):
         return {
@@ -421,6 +433,12 @@ class TournamentService:
             coach.make_transaction(t)
 
             db.session.commit()
+            if tournament.fee>0:
+                coach_mention=f'<@{coach.disc_id}>'
+            else:
+                coach_mention=coach.short_name()
+
+            cls.notify(f'{coach_mention} successfuly signed to {tournament.id}. {tournament.name} - fee {tournament.fee} coins')
         except Exception as e:
             raise RegistrationError(str(e))
         
@@ -430,7 +448,7 @@ class TournamentService:
     def unregister(cls,tournament,coach,admin=False,refund=True):
         # check for status
         if tournament.status not in ["OPEN","FINISHED"] and not admin:
-            raise RegistrationError(f"Coach resign from running tournament!!!")
+            raise RegistrationError(f"Coach cannot resign from running tournament!!!")
         # check if coach is registered
         ts = TournamentSignups.query.filter_by(tournament_id= tournament.id, coach_id = coach.id).all()
         if len(ts)<1:
@@ -445,6 +463,15 @@ class TournamentService:
                 coach.make_transaction(t)
 
             db.session.commit()
+
+            if refund and tournament.fee>0:
+                coach_mention=f'<@{coach.disc_id}>'
+                fee_msg = f" - refund {tournament.fee} coins"
+            else:
+                coach_mention=coach.short_name()
+                fee_msg=""
+
+            cls.notify(f'{coach_mention} successfuly resigned from {tournament.id}. {tournament.name}{fee_msg}')
         except Exception as e:
             raise RegistrationError(str(e))
 
@@ -479,3 +506,10 @@ class InvalidQuality(Exception):
 
 class InvalidPackType(Exception):
     pass
+
+class WebHook:
+    def __init__(self,webhook):
+        self.webhook = webhook
+
+    def send(self,msg):
+        requests.post(self.webhook, json={'content': msg})

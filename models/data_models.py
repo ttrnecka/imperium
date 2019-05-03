@@ -3,7 +3,7 @@ import datetime
 import logging
 from logging.handlers import RotatingFileHandler
 import os
-from sqlalchemy import event, UniqueConstraint
+from sqlalchemy import UniqueConstraint, event
 from sqlalchemy.dialects import mysql 
 
 ROOT = os.path.dirname(__file__)
@@ -236,7 +236,7 @@ class Duster(Base):
 
     def __init__(self,status="OPEN"):
         self.status = status
-
+    
 
 @event.listens_for(Card, 'after_delete')
 @event.listens_for(Duster, 'after_delete')
