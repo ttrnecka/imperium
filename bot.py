@@ -5,13 +5,12 @@ import discord
 import os
 
 from imperiumbase import ImperiumSheet
-from web import db, create_app
+from web import db, app
 from sqlalchemy import func
 from models.data_models import Coach, Account, Card, Pack, Transaction, TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
 from services import PackService, SheetService, CoachService, CardService, TournamentService, DusterService, RegistrationError
 
-app = create_app()
 app.app_context().push()
 
 ROOT = os.path.dirname(__file__)
@@ -453,10 +452,6 @@ class DiscordCommand:
         signup = TournamentService.register(tourn,coach,admin)
         add_msg = "" if signup.mode=="active" else " as RESERVE"
         await self.send_message(self.message.channel,[f"Signup succeeded{add_msg}!!!\n"])
-        if tourn.fee > 0:
-            reason = coach.account.transactions[-1].description
-            await self.bank_notification(f"Your bank has been updated by -**{tourn.fee}** coins - {reason}",coach)
-        
         return True
 
     # routine to resign a coach to tournament
@@ -480,10 +475,7 @@ class DiscordCommand:
         
         if TournamentService.unregister(tourn,coach,admin):
             await self.send_message(self.message.channel,[f"Resignation succeeded!!!\n"])
-            if tourn.fee > 0:
-                reason = coach.account.transactions[-1].description
-                await self.bank_notification(f"Your bank has been updated by **{tourn.fee}** coins - {reason}",coach)
-            
+
             coaches = [discord.utils.get(self.client.get_all_members(), id=str(signup.coach.disc_id)) for signup in TournamentService.update_signups(tourn)]
             msg = [coach.mention for coach in coaches if coach]
             msg.append(f"Your signup to {tourn.name} has been updated from RESERVE to ACTIVE")

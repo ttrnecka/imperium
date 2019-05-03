@@ -1,4 +1,6 @@
 import tournament from './components/tournament.js';
+import VueFlashMessage from './components/VueFlashMessage/index.js';
+Vue.use(VueFlashMessage);
 
 Vue.mixin({
   data () {
@@ -75,6 +77,11 @@ var app = new Vue({
     },
     delimiters: ['[[',']]'],
     methods: {
+      updateTournament(tournament) {
+        const idx = this.tournaments.findIndex(x => x.id === parseInt(tournament.id));
+        Vue.set(this.tournaments, idx, tournament);
+        this.selectCoach();
+      },
       getCoach(id) {
         const path = "/coaches/"+id;
         axios.get(path)
@@ -92,7 +99,7 @@ var app = new Vue({
         axios.get(path)
           .then((res) => {
             this.user = res.data.user;
-            this.get('loadedUser');
+            this.$emit('loadedUser');
           })
           .catch((error) => {
             console.error(error);
@@ -242,6 +249,7 @@ var app = new Vue({
     mounted() {
       this.$on('loadedUser', this.selectCoach);
       this.$on('loadedCoaches', this.selectCoach);
+      this.$on('updateTournament', this.updateTournament);
     },
     beforeMount() {
       this.getUser();
