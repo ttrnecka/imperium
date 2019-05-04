@@ -5,7 +5,7 @@ Vue.use(VueFlashMessage);
 Vue.mixin({
   data () {
     return {
-      rarityorder: {"Starter":5,"Common":4, "Rare":3, "Epic":2, "Legendary":1},
+      rarityorder: {"Starter":10,"Common":5, "Rare":4, "Epic":3, "Legendary":2, "Unique":1},
       mixed_teams: [
         {"code":"aog",  "name":"Alliance of Goodness",   "races":['Bretonnian' , 'Human', 'Dwarf', 'Halfling', 'Wood Elf'] },
         {"code":"au",   "name":'Afterlife United',       "races":['Undead','Necromantic','Khemri','Vampire']},
@@ -38,6 +38,9 @@ Vue.mixin({
           break;
         case "Legendary":
           klass = "table-warning";
+          break;
+        case "Unique":
+          klass = "table-success";
           break;
       }
       return klass;
@@ -166,7 +169,7 @@ var app = new Vue({
 
         if (this.selected_team!="All" && filter=="Player") {
           const races = this.mixed_teams.find((e) => { return e.name == this.selected_team }).races;
-          tmp_cards =  tmp_cards.filter(function(i) { return races.includes(i.race)});
+          tmp_cards =  tmp_cards.filter(function(i) { return i.race.split("/").some((r) => races.includes(r))});
         }
         var new_collection = {}
         const sorted = this.sortedCards(tmp_cards);
