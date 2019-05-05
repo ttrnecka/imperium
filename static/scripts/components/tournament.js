@@ -29,20 +29,20 @@ export default {
                 } else {
                     msg = "Resignation from "+this.tournament.name+" succeded";
                 }
-                this.flash(msg, 'success',{timeout: 5000});
+                this.flash(msg, 'success',{timeout: 3000});
                 if(this.tournament.fee>0) {
                     if(method=="sign") {
                         msg = "Charged registration fee "+this.tournament.fee+" coins";
                     } else {
                         msg = "Refunded registration fee "+this.tournament.fee+" coins";
                     }
-                    this.flash(msg, 'info',{timeout: 5000});
+                    this.flash(msg, 'info',{timeout: 3000});
                 }
                 this.$parent.$emit('updateTournament', res.data);
             })
             .catch((error) => {
                 if (error.response) {
-                    this.flash(error.response.data.message, 'error',{timeout: 5000});
+                    this.flash(error.response.data.message, 'error',{timeout: 3000});
                 } else {
                     console.error(error);
                 }

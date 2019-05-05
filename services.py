@@ -309,7 +309,7 @@ class CoachService:
             db.session.delete(coach)
         db.session.commit()
 
-class TournamentService:
+class NotificationService:
     notificators = []
 
     @classmethod
@@ -321,6 +321,7 @@ class TournamentService:
     def register_notifier(cls,func):
         cls.notificators.append(func)
 
+class TournamentService:
     @classmethod
     def init_dict_from_tournament(cls,tournament):
         return {
@@ -438,7 +439,7 @@ class TournamentService:
             else:
                 coach_mention=coach.short_name()
 
-            cls.notify(f'{coach_mention} successfuly signed to {tournament.id}. {tournament.name} - fee {tournament.fee} coins')
+            NotificationService.notify(f'{coach_mention} successfuly signed to {tournament.id}. {tournament.name} - fee {tournament.fee} coins')
         except Exception as e:
             raise RegistrationError(str(e))
         
@@ -471,7 +472,7 @@ class TournamentService:
                 coach_mention=coach.short_name()
                 fee_msg=""
 
-            cls.notify(f'{coach_mention} successfuly resigned from {tournament.id}. {tournament.name}{fee_msg}')
+            NotificationService.notify(f'{coach_mention} successfuly resigned from {tournament.id}. {tournament.name}{fee_msg}')
         except Exception as e:
             raise RegistrationError(str(e))
 
@@ -494,7 +495,93 @@ class DusterService:
             else:
                 duster.type = "Drills"
         duster.cards.append(card)
-        
+        db.session.commit()
+    
+    @classmethod
+    def check_and_dust(cls,coach,card):
+        if card.coach.id != coach.id:
+            raise DustingError("Coach ID mismatch!!!")
+        duster = cls.get_duster(coach)
+        if duster.status!="OPEN":
+            raise DustingError(f"Dusting has been already committed, please generate the pack before dusting again")
+        if len(duster.cards)==10:
+            raise DustingError(f"Card **{card.name}** - cannot be dusted, duster is full")
+        if duster.type=="Tryouts" and card.card_type!="Player":
+            raise DustingError(f"Card **{card.name}** - cannot be used in {duster.type}")
+        if duster.type=="Drills" and card.card_type=="Player":
+            raise DustingError(f"Card **{card.name}** - cannot be used in {duster.type}")
+
+        cls.dust_card(duster,card)
+        return f"Card **{card.name}** - flagged for dusting"
+
+    @classmethod
+    def check_and_undust(cls,coach,card):
+        if card.coach.id != coach.id:
+            raise DustingError("Coach ID mismatch!!!")
+
+        card.duster_id = None
+        db.session.commit()
+        return f"Card **{card.name}** - dusting flag removed"
+
+    @classmethod
+    def dust_card_by_name(cls,coach,card_name):
+        card=CardService.get_undusted_Card_from_coach(coach,card_name)
+        if card is None:
+            raise DustingError(f"Card **{card_name}** - not found, check spelling, or maybe it is already dusted")
+        return cls.check_and_dust(coach,card)
+
+    @classmethod
+    def undust_card_by_name(cls,coach,card_name):
+        card=CardService.get_dusted_Card_from_coach(coach,card_name)
+        if card is None:
+            raise DustingError(f"Card **{card_name}** - not flagged for dusting")
+        return cls.check_and_undust(coach,card)
+
+    @classmethod
+    def dust_card_by_id(cls,coach,card_id):
+        card=Card.query.get(card_id)
+        if card is None:
+            raise DustingError(f"Card not found") 
+        if card.duster_id is not None:
+            raise DustingError(f"Card **{card.name}** is already flagged for dusting")     
+        return cls.check_and_dust(coach,card)
+
+    @classmethod
+    def undust_card_by_id(cls,coach,card_id):
+        card=Card.query.get(card_id)
+        if card is None:
+            raise DustingError(f"Card not found") 
+        if card.duster_id is None:
+            raise DustingError(f"Card **{card.name}** is not flagged for dusting")  
+        return cls.check_and_undust(coach,card)
+
+    @classmethod
+    def cancel_duster(cls,coach):
+        duster = cls.get_duster(coach)
+        if duster.status!="OPEN":
+            raise DustingError(f"Cannot cancel dusting. It has been already committed.")
+        db.session.delete(coach.duster)
+        db.session.commit()
+
+    @classmethod
+    def commit_duster(cls,coach):
+        duster = cls.get_duster(coach)
+        if len(duster.cards)<10:
+            raise DustingError("Not enough cards flagged for dusting. Need 10!!!")
+
+        reason = f"{duster.type}: {';'.join([card.name for card in duster.cards])}"
+        t = Transaction(description=reason,price=0)
+        cards = duster.cards
+        for card in cards:
+            db.session.delete(card)
+        duster.status="COMMITTED"
+        coach.make_transaction(t)
+        NotificationService.notify(f"<@{coach.disc_id}>: Card(s) **{' ,'.join([card.name for card in cards])}** removed from your collection by {duster.type}")
+        return True
+
+class DustingError(Exception):
+    pass
+
 class RegistrationError(Exception):
     pass
 

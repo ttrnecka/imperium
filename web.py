@@ -5,9 +5,9 @@ from flask import Flask, render_template, jsonify, abort, session, redirect, req
 from flask_migrate import Migrate
 from misc.helpers import CardHelper
 from models.base_model import db
-from models.data_models import Coach, Card, Account, Transaction, Tournament, TournamentSignups
-from services import PackService, TournamentService, RegistrationError, WebHook
-from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema, tournament_schema
+from models.data_models import Coach, Card, Account, Transaction, Tournament, TournamentSignups, Duster, TransactionError
+from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService
+from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema, tournament_schema, duster_schema
 from sqlalchemy.orm import raiseload
 from requests_oauthlib import OAuth2Session
 
@@ -22,7 +22,7 @@ def create_app():
     ma.init_app(app)
     
     # register wehook as Tournament service notifier
-    TournamentService.register_notifier(WebHook(app.config['DISCORD_WEBHOOK_BANK']).send)
+    NotificationService.register_notifier(WebHook(app.config['DISCORD_WEBHOOK_BANK']).send)
     return app
 
 app = create_app()
@@ -160,6 +160,43 @@ def tournament_resign(tournament_id):
     else:
         raise InvalidUsage('You are not authenticated', status_code=401)
 
+
+def dust_template(mode="add",card_id=None):
+    if current_user():
+        try:
+            coach = Coach.query.filter_by(disc_id=current_user()['id']).one_or_none()
+            if not coach:
+                raise InvalidUsage("Coach not found", status_code=403)
+            if mode=="add":
+                DusterService.dust_card_by_id(coach,card_id)
+            elif mode=="remove":
+                DusterService.undust_card_by_id(coach,card_id)
+            elif mode=="cancel":
+               DusterService.cancel_duster(coach)
+            elif mode=="commit":
+                DusterService.commit_duster(coach)
+            result = duster_schema.dump(coach.duster)
+            return jsonify(result.data)
+        except (DustingError,TransactionError) as e:
+            raise InvalidUsage(str(e), status_code=403)
+    else:
+        raise InvalidUsage('You are not authenticated', status_code=401)
+
+@app.route("/duster/cancel", methods=["GET"])
+def dust_cancel():
+    return dust_template("cancel")
+
+@app.route("/duster/commit", methods=["GET"])
+def dust_commit():
+    return dust_template("commit")
+
+@app.route("/duster/add/<int:card_id>", methods=["GET"])
+def card_dust_add(card_id):
+    return dust_template("add",card_id)
+
+@app.route("/duster/remove/<int:card_id>", methods=["GET"])
+def card_dust_remove(card_id):
+    return dust_template("remove",card_id)
 
 @app.route("/coaches/<int:coach_id>", methods=["GET"])
 def get_coach(coach_id):

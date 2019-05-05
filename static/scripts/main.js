@@ -73,6 +73,7 @@ var app = new Vue({
         menu: "Coaches",
         search_timeout: null,
         user:{},
+        processing: false,
       }
     },
     components: {
@@ -155,7 +156,7 @@ var app = new Vue({
         return cards.slice().sort(compare);
       },
 
-      sortedCardsWithQuantity(cards,filter="") {
+      sortedCardsWithoutQuantity(cards,filter="") {
         let tmp_cards;
         if (!this.show_starter) {
           tmp_cards =  cards.filter(function(i) { return i.id != null});
@@ -171,8 +172,12 @@ var app = new Vue({
           const races = this.mixed_teams.find((e) => { return e.name == this.selected_team }).races;
           tmp_cards =  tmp_cards.filter(function(i) { return i.race.split("/").some((r) => races.includes(r))});
         }
-        var new_collection = {}
-        const sorted = this.sortedCards(tmp_cards);
+        return this.sortedCards(tmp_cards);
+      },
+
+      sortedCardsWithQuantity(cards,filter="") {
+        let new_collection = {}
+        const sorted = this.sortedCardsWithoutQuantity(cards,filter);
         for (let i=0, len = sorted.length; i<len; i++) {
           if (new_collection.hasOwnProperty(sorted[i].name)) {
             new_collection[sorted[i].name]['quantity'] += 1
@@ -205,9 +210,78 @@ var app = new Vue({
         return this.tournaments.filter((e)=>{
           return coach.tournaments.includes(e.id);
         })
-      }
+      },
+      is_duster() {
+        return (this.loggedCoach.duster && this.loggedCoach.duster.type ? true : false);
+      },
+      is_in_duster(card) {
+        return (this.is_duster() ? this.loggedCoach.duster.cards.includes(card.id) : false);
+      },
+      is_duster_full() {
+        return (this.is_duster() ? this.loggedCoach.duster.cards.length==10 : false);
+      },
+      is_duster_open() {
+        return (this.is_duster() && this.loggedCoach.duster.status=="OPEN" ? true : false);
+      },
+      dust_add(card) {
+        this.dust("add",card);
+      },
+      dust_remove(card) {
+        this.dust("remove",card);
+      },
+      dust_cancel() {
+        this.dust("cancel");
+      },
+      dust_commit() {
+        this.dust("commit");
+      },
+      dust(method,card) {
+        let path;
+        if(card) {
+          path = "/duster/"+method+"/"+card.id;
+        } else {
+          path = "/duster/"+method;
+        }
+        let msg;
+        this.processing=true;
+        axios.get(path)
+        .then((res) => {
+            if(method=="add") {
+                msg = "Card "+card.name+" flagged for dusting";
+            } 
+            else if(method=="remove") {
+                msg = "Card "+card.name+" - dusting flag removed";
+            }
+            else if(method=="cancel") {
+              msg = "Dusting cancelled";
+            }
+            else if(method=="commit") {
+              const free_cmd = (res.data.type=="Tryouts" ? "!genpack player <type>" : "!genpack training or !genpack special");
+              msg = "Dusting committed! Use "+free_cmd+" to generate a free pack!";
+            }
+            this.loggedCoach.duster=res.data;
+            this.flash(msg, 'success',{timeout: 3000});
+        })
+        .catch((error) => {
+            if (error.response) {
+                this.flash(error.response.data.message, 'error',{timeout: 3000});
+            } else {
+                console.error(error);
+            }
+        })
+        .then(() => {
+            this.processing=false;
+        });
+    },
     },
     computed: {
+      duster_type() {
+        if(this.is_duster()) {
+          return this.loggedCoach.duster.type;
+        } else {
+          return "No dusting in progress";
+        }
+      },
       orderedCoaches() {
         return this.coaches.sort(function(a,b) {
           return a.name.localeCompare(b.name);

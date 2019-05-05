@@ -9,7 +9,7 @@ from web import db, app
 from sqlalchemy import func
 from models.data_models import Coach, Account, Card, Pack, Transaction, TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
-from services import PackService, SheetService, CoachService, CardService, TournamentService, DusterService, RegistrationError
+from services import PackService, SheetService, CoachService, CardService, TournamentService, DusterService, RegistrationError, DustingError
 
 app.app_context().push()
 
@@ -541,7 +541,8 @@ class DiscordCommand:
         duster = DusterService.get_duster(coach)
 
         if duster.status!="OPEN":
-            await self.send_message(self.message.channel,[f"Dusting has been already committed, please generate the pack before dusting again"])
+            free_cmd = "!genpack player <type>" if duster.type=="Tryouts" else "!genpack training or !genpack special"
+            await self.send_message(self.message.channel,[f"Dusting has been already committed, Use **{free_cmd}** to generate a free pack first!"])
             return
             
         if self.args[1] in ["add","remove"]:
@@ -560,80 +561,38 @@ class DiscordCommand:
         
         #cancel
         if self.args[1]=="cancel":
-            db.session.delete(duster)
-            db.session.commit()
+            DusterService.cancel_duster(coach)
             await self.send_message(self.message.channel,["Dusting canceled!!!"])
             return
         
         #commit
         if self.args[1]=="commit":
-            if len(duster.cards)<10:
-                await self.send_message(self.message.channel,["Not enough cards flagged for dusting. Need 10!!!"])
-                return
-
-            reason = f"{duster.type}: {';'.join([card.name for card in duster.cards])}"
-            free_cmd = "!genpack player <type>" if duster.type=="Tryouts" else "!genpack training or !genpack special"
-            t = Transaction(description=reason,price=0)
-            cards = duster.cards
             try:
-                for card in cards:
-                    db.session.delete(card)
-                duster.status="COMMITTED"
-                coach.make_transaction(t)
-            except TransactionError as e:
+               DusterService.commit_duster(coach)
+            except (TransactionError, DustingError) as e:
                 await self.transaction_error(e)
                 return
             else:
                 msg = []
+                free_cmd = "!genpack player <type>" if duster.type=="Tryouts" else "!genpack training or !genpack special"
                 msg.append(f"Dusting committed! Use **{free_cmd}** to generate a free pack.\n")
                 await self.send_message(self.message.channel, msg)
-                await self.bank_notification(f"Card(s) **{' ,'.join([card.name for card in cards])}** removed from your collection by {duster.type}",coach)
                 return
 
-        #add
-        if self.args[1]=="add":
+        #add/remove
+        if self.args[1] in ["add","remove"]:
             msg = []
             for name in card_names:
-                card=CardService.get_undusted_Card_from_coach(coach,name)
-                if card is None:
-                    msg.append(f"Card **{name}** - not found, check spelling, or maybe it is already dusted")
-                    continue
-                if card.coach.id != coach.id:
-                    raise "Coach ID mismatch!!!"
-                if len(duster.cards)==10:
-                    msg.append(f"Card **{card.name}** - cannot dust, duster is full")
-                    continue
-                if duster.type=="Tryouts" and card.card_type!="Player":
-                    msg.append(f"Card **{card.name}** - cannot be used in {duster.type}")
-                    continue
-                if duster.type=="Drills" and card.card_type=="Player":
-                    msg.append(f"Card **{card.name}** - cannot be used in {duster.type}")
-                    continue
-
-                DusterService.dust_card(duster,card)
-                msg.append(f"Card **{card.name}** - flagged for dusting")
-            
-            if len(duster.cards)>0:
-                db.session.commit()
-            await self.send_message(self.message.channel,msg)
-            return
-
-        #remove
-        if self.args[1]=="remove":
-            msg = []
-            for name in card_names:
-                card=CardService.get_dusted_Card_from_coach(coach,name)
+                try:
+                    if self.args[1]=="add":
+                        result = DusterService.dust_card_by_name(coach,name)
+                    if  self.args[1]=="remove":
+                        result = DusterService.undust_card_by_name(coach,name)
+                    if result is not None:
+                        msg.append(result)
+                except DustingError as e:
+                    msg.append(str(e))
                 
-                if card is None:
-                    msg.append(f"Card **{name}** - not flagged for dusting")
-                    continue
-
-                if card.coach.id != coach.id:
-                    raise "Coach ID mismatch!!!"
-
-                card.duster_id = None
-                msg.append(f"Card **{card.name}** - dusting flag removed")
-            db.session.commit()
             await self.send_message(self.message.channel,msg)
             return
             

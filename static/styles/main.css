@@ -53,14 +53,13 @@
   font-size: 0.8rem;
 }
 
-.card-header button {
+.card button {
   font-size: 0.8rem;
 }
 
-.card-body {
-  font-size: 0.8rem;
+.duster_info {
+  padding: 0.75rem;
 }
-
 .tournament .card-body div[class^="col-"] {
   padding-bottom: 0.1rem;
   border-bottom-width: 1px;

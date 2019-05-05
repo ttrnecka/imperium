@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <link rel="stylesheet" href="/static/styles/main.css?1.11">
+        <link rel="stylesheet" href="/static/styles/main.css?1.12">
         <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/static/images//favicon-16x16.png">
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
@@ -65,6 +65,9 @@
                             <li class="nav-item">
                               <a class="nav-link" id="info-tab" data-toggle="tab" href="#coach_info" role="tab" aria-controls="coach_info" aria-selected="true">[[ selectedCoach.short_name]]'s Info</a>
                             </li>
+                            <li v-if="loggedCoach==selectedCoach" class="nav-item">
+                                <a class="nav-link" id="dusting-tab" data-toggle="tab" href="#coach_dusting" role="tab" aria-controls="coach_dusting" aria-selected="true">Dusting</a>
+                              </li>
                         </ul> 
                         <div class="tab-content" id="coachTabContent">
                             <div class="tab-pane fade" id="coach_info" role="tabpanel" aria-labelledby="info-tab">
@@ -143,6 +146,55 @@
                                     </div>
                                 </div>
                             </div>
+                            <div v-if="loggedCoach==selectedCoach" class="tab-pane fade show active" id="coach_dusting" role="tabpanel" aria-labelledby="dusting-tab">
+                                <div class="col-auto my-1">
+                                    <div class="row duster_info">
+                                        <div class="col-6"><h4>[[duster_type]]</h4></div>
+                                        <div class="col-6 text-right">
+                                            <button v-if="is_duster_open()" type="button" :disabled="processing" class="btn btn-info" @click="dust_cancel()">Cancel</button>
+                                            <button v-if="is_duster_full()" :disabled="processing" type="button" class="btn btn-info" @click="dust_commit()">Commit</button>
+                                        </div>
+                                    </div>
+                                    <div id="accordionCardsDusting">
+                                        <div class="card" v-for="ctype in card_types">
+                                            <div class="card-header" :id="ctype.replace(/\s/g, '')+'CardsDusting'">
+                                                <h5 class="mb-0">
+                                                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapse'+ctype.replace(/\s/g, '')+'Dusting'" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\s/g, '')+'Dusting'">
+                                                    [[ ctype ]] Cards
+                                                    </button>
+                                                </h5>
+                                            </div>
+                                            <div :id="'collapse'+ctype.replace(/\s/g, '')+'Dusting'" class="collapse show" :aria-labelledby="ctype.replace(/\s/g, '')+'CardsDusting'" data-parent="#accordionCardsDusting">
+                                                <div class="card-body">
+                                                    <table class="table table-fixed table-striped">
+                                                        <thead>
+                                                        <tr>
+                                                            <th style="width: 10%">Rarity</th>
+                                                            <th style="width: 40%">Card name</th>
+                                                            <th style="width: 20%">Race</th>
+                                                            <th style="width: 15%">Subtype</th>
+                                                            <th style="width: 15%"></th>
+                                                        </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                        <tr v-for="card in sortedCardsWithoutQuantity(selectedCoach.cards,ctype)" :key="card.id" :class="rarityclass(card.rarity)">
+                                                            <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
+                                                            <td :title="card.description">[[ card.name ]]</td>
+                                                            <td>[[ card.race ]]</td>
+                                                            <td>[[ card.subtype ]]</td>
+                                                            <td class="text-right">
+                                                                <button v-if="is_in_duster(card)" :disabled="processing" type="button" class="col-12 btn btn-danger" @click="dust_remove(card)">Remove</button>
+                                                                <button v-else type="button" :disabled="processing" class="col-12 btn btn-success" @click="dust_add(card)">Add</button>
+                                                            </td>
+                                                        </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>                      
                     </div>
                 </div>
@@ -182,6 +234,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="/static/scripts/main.js?1.9" type="module"></script>
+    <script src="/static/scripts/main.js?1.10" type="module"></script>
     </body>
 </html>
