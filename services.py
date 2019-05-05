@@ -140,11 +140,11 @@ class PackService:
             if not team:
                 raise  ValueError(f"Missing team value for {ptype} pack")
             elif team.lower() not in cls.team_codes():
-                raise  ValueError(f"Team {team} unknow")
+                raise  ValueError(f"Team {team} unknown")
             else:
                 team = team.lower()
         price = cls.PACK_PRICES[ptype]
-        
+
         pack = Pack(price=price,pack_type=ptype, team=team)
         cards = []
         if ptype == "starter":
@@ -172,7 +172,7 @@ class PackService:
                 else:
                     fcards = cls.filter_cards(rarity)
                 cards.append(random.choice(fcards))
-        
+
         for card in cards:
             pack.cards.append(CardService.init_Card_from_card(card))
         return pack
@@ -193,7 +193,7 @@ class PackService:
     @classmethod
     def team_codes(cls):
         return [team["code"] for team in cls.MIXED_TEAMS]
-    
+
     @classmethod
     def description(cls,pack):
         desc = ' '.join(pack.pack_type.split('_')).capitalize()
@@ -248,7 +248,7 @@ class CardService:
         name_low = name.lower()
         for card in ImperiumSheet.cards():
             if name_low == str(card["Card Name"]).lower():
-                return card 
+                return card
         return None
 
     @classmethod
@@ -268,7 +268,7 @@ class CardService:
             return None
         else:
             return cards[0]
-    
+
     @classmethod
     def get_dusted_Card_from_coach(cls,coach,name):
         cards = Card.query.join(Card.coach).filter(Coach.id == coach.id, Card.name == name, Card.duster_id != None).all()
@@ -283,14 +283,14 @@ class CardService:
         for card in ImperiumSheet.cards(True):
             c_dict = cls.init_dict_from_card(card)
             cards = Card.query.filter_by(name = c_dict['name']).all()
-    
+
             for scard in cards:
                 scard.update(**c_dict)
 
         db.session.commit()
-    
 
-        
+
+
 class SheetService:
     @classmethod
     def export_cards(cls):
@@ -381,7 +381,7 @@ class TournamentService:
             raise RegistrationError(f"Coach {coach.short_name()} is not RESERVE in {tournament.name}!!!")
         if ts[0].mode!="reserve":
             raise RegistrationError(f"Coach {coach.short_name()} is not RESERVE in {tournament.name}!!!")
-        
+
         ts[0].mode = "active"
         db.session.commit()
         return ts[0]
@@ -395,7 +395,7 @@ class TournamentService:
         ts = TournamentSignups.query.filter_by(tournament_id= tournament.id, coach_id = coach.id).all()
         if len(ts)>0:
             raise RegistrationError(f"Coach {coach.short_name()} is already registered to {tournament.name}!!!")
-        
+
         # check if the coach is not signed to multiple tournaments,  only exception is FastTrack Dev and Boot/Regular Development
 
         if tournament.type=="Imperium":
@@ -409,8 +409,8 @@ class TournamentService:
             if len(ts)==1:
                 etour = ts[0]
                 if not ((etour.mode=="Boot Camp" or etour.mode=="Regular") and tournament.mode=="Fast-Track") and not ((tournament.mode=="Boot Camp" or tournament.mode=="Regular") and etour.mode=="Fast-Track"):
-                    raise RegistrationError(f"Coach cannot be registered to {tournament.type} {tournament.mode} tournament and {etour.type} {etour.mode} tournament at the same time!!!")    
-            
+                    raise RegistrationError(f"Coach cannot be registered to {tournament.type} {tournament.mode} tournament and {etour.type} {etour.mode} tournament at the same time!!!")
+
         # check for free slots
         signups = tournament.coaches.filter(TournamentSignups.mode != 'reserve').all()
         reserves = tournament.coaches.filter(TournamentSignups.mode == 'reserve').all()
@@ -442,7 +442,7 @@ class TournamentService:
             NotificationService.notify(f'{coach_mention} successfuly signed to {tournament.id}. {tournament.name} - fee {tournament.fee} coins')
         except Exception as e:
             raise RegistrationError(str(e))
-        
+
         return signup
 
     @classmethod
@@ -477,7 +477,7 @@ class TournamentService:
             raise RegistrationError(str(e))
 
         return True
-        
+
 class DusterService:
     @classmethod
     def get_duster(cls,coach):
@@ -600,3 +600,4 @@ class WebHook:
 
     def send(self,msg):
         requests.post(self.webhook, json={'content': msg})
+
