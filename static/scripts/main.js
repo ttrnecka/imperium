@@ -327,6 +327,7 @@ var app = new Vue({
       this.$on('loadedUser', this.selectCoach);
       this.$on('loadedCoaches', this.selectCoach);
       this.$on('updateTournament', this.updateTournament);
+      this.$on('updateTournaments', this.getTournaments);
     },
     beforeMount() {
       this.getUser();

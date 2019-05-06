@@ -146,6 +146,7 @@ class DiscordCommand:
         msg+="!adminexport    - exports all card collections to the master sheet\n"
         msg+="!adminsign      - sign specified coach to tournament\n"
         msg+="!adminresign    - resign specified coach from tournament\n"
+        msg+="!adminrole      - manage admin roles for web/bot\n"
         msg+="```"
         return msg
 
@@ -212,6 +213,18 @@ class DiscordCommand:
         msg+=" \nUSAGE 2:\n"
         msg+="Updates card database from the master sheet\n"
         msg+="!admincard update\n"
+        msg+="```"
+        return msg
+
+    @classmethod
+    def adminrole_help(cls):
+        msg="```"
+        msg+="USAGE:\n"
+        msg+="Adds or removes bot/web roles for coach\n"
+        msg+="!adminrole add|remove <coach> <role>\n"
+        msg+="\tadd|remove: select one based on desired operation\n"
+        msg+="\t<coach>: coach discord name or its part, must be unique\n"
+        msg+="\t<role>: webadmin - enables coach to do admin tasks on web\n"
         msg+="```"
         return msg
     
@@ -764,6 +777,31 @@ class DiscordCommand:
                 await self.send_message(self.message.channel, msg)
                 await self.bank_notification(f"Your bank has been updated by **{amount}** coins - {reason}",coach)
         
+        if self.message.content.startswith('!adminrole'):
+            if len(self.args)!=4:
+                await self.client.send_message(self.message.channel, self.__class__.adminrole_help())
+                return
+            
+            if self.args[1] not in ["add","remove"]:
+                await self.send_message(self.message.channel, ["Specify **add** or **remove** operation!!!\n"])
+                return
+            
+            if self.args[3] not in ["webadmin"]:
+                await self.send_message(self.message.channel, ["Specify **webadmin** role!!!\n"])
+                return
+
+            coach = await self.coach_unique(self.args[2])
+            if coach is None:
+                return
+
+            if self.args[1]=="add":
+                coach.web_admin = True
+            if self.args[1]=="remove":
+                coach.web_admin = False
+            db.session.commit()
+            await self.send_message(self.message.channel, [f"Role updated for {coach.short_name()}: {self.args[3]} - {coach.web_admin}"])
+            return
+
         if self.message.content.startswith('!admincard'):
             if len(self.args)==1:
                 await self.client.send_message(self.message.channel, self.__class__.admincard_help())

@@ -41,7 +41,7 @@ class CoachSchema(ma.ModelSchema):
 
 class SimpleCoachSchema(ma.Schema):
     class Meta:
-        fields = ("id", "name", "short_name","disc_id")
+        fields = ("id", "name", "short_name","disc_id","web_admin")
 
 cards_schema = CardSchema(many=True)
 coach_schema = CoachSchema()

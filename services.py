@@ -579,6 +579,14 @@ class DusterService:
         NotificationService.notify(f"<@{coach.disc_id}>: Card(s) **{' ,'.join([card.name for card in cards])}** removed from your collection by {duster.type}")
         return True
 
+class TransactionService:
+    @classmethod
+    def process(cls,coach,amount,reason):
+        t = Transaction(description=reason,price=amount)
+        coach.make_transaction(t)
+        NotificationService.notify(f"<@{coach.disc_id}>: Your bank has been updated by **{-1*amount}** coins - {reason}")
+        return True
+
 class DustingError(Exception):
     pass
 

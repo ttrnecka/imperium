@@ -1,7 +1,6 @@
 
 VERY HIGH
-add region to complist command
-add tournaments on web
+tournamnet stop/start/update on web
 Add manage deck capability (web)
 
 MEDIUM
@@ -92,3 +91,6 @@ Removed beginner tournament from "!sign" checks
 Reset script that removes cards and reset accounts to default
 add discord id to coaches and use it as lookup
 Add authentication code to edit view
+add region to complist command
+add tournaments on web
+add dusting on web

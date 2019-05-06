@@ -60,11 +60,26 @@
 .duster_info {
   padding: 0.75rem;
 }
-.tournament .card-body div[class^="col-"] {
+.tournament .tournament_info_line div[class^="col-"] {
   padding-bottom: 0.1rem;
   border-bottom-width: 1px;
   border-bottom-style: solid;
   border-bottom-color: rgba(0, 0, 0, 0.125);
+}
+
+.tournament .card-header h5 {
+  padding: 0.4rem 0.8rem;
+}
+
+.tournament_prizes_header {
+  padding: 16px 15px;
+}
+
+.tournament_prizes button {
+  width:6rem;
+}
+.tournament_webadmin button {
+  margin: 0.4rem 0.0rem;
 }
 
 .flashpool {

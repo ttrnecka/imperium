@@ -6,7 +6,7 @@ from flask_migrate import Migrate
 from misc.helpers import CardHelper
 from models.base_model import db
 from models.data_models import Coach, Card, Account, Transaction, Tournament, TournamentSignups, Duster, TransactionError
-from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService
+from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService, TransactionService
 from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema, tournament_schema, duster_schema
 from sqlalchemy.orm import raiseload
 from requests_oauthlib import OAuth2Session
@@ -128,12 +128,53 @@ def get_tournaments():
     result = tournaments_schema.dump(all_tournaments)
     return jsonify(result.data)
 
+@app.route("/tournaments/update", methods=["GET"])
+def tournaments_update():
+    if current_user():
+        try:
+            coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
+            if not coach:
+                raise InvalidUsage("Coach not found", status_code=403)
+            if not coach.web_admin:
+                raise InvalidUsage("Coach does not have webadmin role", status_code=403)    
+            TournamentService.update()
+            return jsonify(True)
+        except RegistrationError as e:
+            raise InvalidUsage(str(e), status_code=403)
+    else:
+        raise InvalidUsage('You are not authenticated', status_code=401)
+
+@app.route("/tournaments/<int:tournament_id>/close", methods=["POST"])
+def tournament_close(tournament_id):
+    if current_user():
+        try:
+            tourn = Tournament.query.get(tournament_id)
+            coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
+            if not coach:
+                raise InvalidUsage("Coach not found", status_code=403)    
+            if not coach.web_admin:
+                raise InvalidUsage("Coach does not have webadmin role", status_code=403)    
+            #prizes
+            for prize in request.get_json():
+                tmp_coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).get(prize['coach'])
+                reason = prize['reason']+" by "+coach.short_name()
+                TransactionService.process(tmp_coach,int(prize['amount'])*-1,reason)
+
+            for coach in tourn.coaches:
+                TournamentService.unregister(tourn,coach,admin=True,refund=False)
+            result = tournament_schema.dump(tourn)
+            return jsonify(result.data)
+        except (RegistrationError,TransactionError) as e:
+            raise InvalidUsage(str(e), status_code=403)
+    else:
+        raise InvalidUsage('You are not authenticated', status_code=401)
+
 @app.route("/tournaments/<int:tournament_id>/sign", methods=["GET"])
 def tournament_sign(tournament_id):
     if current_user():
         try:
             tourn = Tournament.query.get(tournament_id)
-            coach = Coach.query.filter_by(disc_id=current_user()['id']).one_or_none()
+            coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
             if not coach:
                 raise InvalidUsage("Coach not found", status_code=403)    
             TournamentService.register(tourn,coach)
@@ -149,7 +190,7 @@ def tournament_resign(tournament_id):
     if current_user():
         try:
             tourn = Tournament.query.get(tournament_id)
-            coach = Coach.query.filter_by(disc_id=current_user()['id']).one_or_none()
+            coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
             if not coach:
                 raise InvalidUsage("Coach not found", status_code=403)    
             TournamentService.unregister(tourn,coach)

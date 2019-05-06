@@ -63,6 +63,7 @@ class Coach(Base):
     cards = db.relationship('Card', secondary="packs",backref=db.backref('coach', lazy=True, uselist=False), viewonly=True,lazy="subquery")
     deleted = db.Column(db.Boolean(), default=False)
     duster = db.relationship("Duster", backref=db.backref('coach'), cascade="all, delete-orphan",uselist=False)
+    web_admin = db.Column(db.Boolean(), default=False)
 
     query_class = QueryWithSoftDelete
 
