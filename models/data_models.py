@@ -185,12 +185,27 @@ class Transaction(Base):
         self.confirmed = True
         self.date_confirmed = datetime.datetime.now()
 
+deck_card_table = db.Table('deck_cards', Base.metadata,
+    db.Column('deck_id', db.Integer, db.ForeignKey('decks.id')),
+    db.Column('card_id', db.Integer, db.ForeignKey('cards.id'))
+)
+
+class Deck(Base):
+    __tablename__ = 'decks'
+
+    tournament_signup_id = db.Column(db.Integer, db.ForeignKey('tournaments_signups.id'), nullable=False)
+    team_name = db.Column(db.String(255),nullable=False)
+    mixed_team = db.Column(db.String(255),nullable=False)
+
+    cards = db.relationship("Card", secondary=deck_card_table, backref=db.backref('decks', lazy="dynamic"), lazy="dynamic")
 
 class TournamentSignups(Base):
     __tablename__ = 'tournaments_signups'
 
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), nullable=False)
     coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
+    deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=True)
+
     # mode used to separate reserve signups
     mode = db.Column(db.String(20),nullable=True)
 
@@ -198,8 +213,9 @@ class TournamentSignups(Base):
         UniqueConstraint('tournament_id', 'coach_id', name='uix_tournament_id_coach_id'),
     )
 
-    tournament = db.relationship("Tournament", backref=db.backref('tournament_signups', cascade="all, delete-orphan"))
-    coach = db.relationship("Coach", backref=db.backref('tournament_signups', cascade="all, delete-orphan"))
+    tournament = db.relationship("Tournament", backref=db.backref('tournament_signups', cascade="all, delete-orphan"),foreign_keys=[tournament_id])
+    coach = db.relationship("Coach", backref=db.backref('tournament_signups', cascade="all, delete-orphan"), foreign_keys=[coach_id])
+    deck = db.relationship("Deck", backref=db.backref('tournament_signup',uselist=False), single_parent=True, cascade="all, delete-orphan", foreign_keys=[deck_id])
 
 class Tournament(Base):
     __tablename__ = 'tournaments'

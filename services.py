@@ -1,5 +1,5 @@
 from models.base_model import db
-from models.data_models import Pack, Card, Coach, Tournament, TournamentSignups, Transaction, Duster
+from models.data_models import Pack, Card, Coach, Tournament, TournamentSignups, Transaction, Duster, Deck
 from imperiumbase import ImperiumSheet
 from sqlalchemy.orm import joinedload
 from sqlalchemy import asc
@@ -590,6 +590,20 @@ class TransactionService:
         NotificationService.notify(f"<@{coach.disc_id}>: Your bank has been updated by **{-1*amount}** coins - {reason}")
         return True
 
+class DeckService:
+    @classmethod
+    def new_deck(cls,coach,tournament):
+        tournament_signup = TournamentSignups.query.filter_by(coach_id=coach.id,tournament_id=tournament.id).one_or_none()
+
+        if tournament_signup.deck:
+            raise DecksError("Deck already exists")
+        deck = Deck(team_name="",mixed_team="")
+        deck.tournament_signup = tournament_signup
+        db.session.add(deck)
+        db.session.commit()
+
+class DecksError(Exception):
+    pass     
 class DustingError(Exception):
     pass
 
