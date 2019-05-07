@@ -220,7 +220,6 @@ class CardService:
 
     @classmethod
     def init_dict_from_card(cls,card):
-        print(card)
         return {
             "name":card["Card Name"],
             "rarity":card["Rarity"],
@@ -286,7 +285,6 @@ class CardService:
     def update(cls):
         for card in ImperiumSheet.cards(True):
             c_dict = cls.init_dict_from_card(card)
-            print(c_dict)
             cards = Card.query.filter_by(name = c_dict['name']).all()
 
             for scard in cards:
