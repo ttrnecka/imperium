@@ -214,11 +214,13 @@ class CardService:
             description = card["Description"],
             card_type = card["Type"],
             subtype = card["Subtype"],
+            value = int(card["Card Value"]) if "Card Value" in card and RepresentsInt(card["Card Value"]) else 0,
             notes = card["Notes"] if hasattr(card, "Notes") else "",
         )
 
     @classmethod
     def init_dict_from_card(cls,card):
+        print(card)
         return {
             "name":card["Card Name"],
             "rarity":card["Rarity"],
@@ -226,6 +228,7 @@ class CardService:
             "description":card["Description"],
             "card_type":card["Type"],
             "subtype":card["Subtype"],
+            "value":int(card["Card Value"]) if "Card Value" in card and RepresentsInt(card["Card Value"]) else 0,
             "notes":card["Notes"] if hasattr(card, "Notes") else "",
         }
 
@@ -239,6 +242,7 @@ class CardService:
             "Description": card.description,
             "Type": card.card_type,
             "Subtype": card.subtype,
+            "Card Value": card.value,
             "Notes": card.notes
         }
 
@@ -282,6 +286,7 @@ class CardService:
     def update(cls):
         for card in ImperiumSheet.cards(True):
             c_dict = cls.init_dict_from_card(card)
+            print(c_dict)
             cards = Card.query.filter_by(name = c_dict['name']).all()
 
             for scard in cards:
@@ -609,3 +614,9 @@ class WebHook:
     def send(self,msg):
         requests.post(self.webhook, json={'content': msg})
 
+def RepresentsInt(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False

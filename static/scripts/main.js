@@ -74,6 +74,8 @@ var app = new Vue({
         search_timeout: null,
         user:{},
         processing: false,
+        leaderboard_loaded:false,
+        leaderboard:[],
       }
     },
     components: {
@@ -128,6 +130,16 @@ var app = new Vue({
             console.error(error);
           });
       },
+      getLeaderboard() {
+        const path = "/coaches/leaderboard";
+        axios.get(path)
+          .then((res) => {
+            this.leaderboard = res.data.sort((a,b) => b.collection_value - a.collection_value).slice(0,10);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      },
       getTournaments() {
         const path = "/tournaments";
         axios.get(path)
@@ -156,6 +168,9 @@ var app = new Vue({
         return cards.slice().sort(compare);
       },
 
+      cardsValue(cards) {
+        return cards.reduce((total, e)=> { return total+e.value},0);
+      },
       sortedCardsWithoutQuantity(cards,filter="") {
         let tmp_cards;
         if (!this.show_starter) {
@@ -320,6 +335,16 @@ var app = new Vue({
         }
         else {
           return undefined;
+        }
+      }
+    },
+    watch: {
+      menu: function(newMenu,oldMenu) {
+        if(newMenu == "Leaderboard") {
+          if(this.leaderboard_loaded==false) {
+            this.getLeaderboard();
+            this.leaderboard_loaded=true;
+          }
         }
       }
     },

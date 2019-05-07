@@ -7,7 +7,7 @@ from misc.helpers import CardHelper
 from models.base_model import db
 from models.data_models import Coach, Card, Account, Transaction, Tournament, TournamentSignups, Duster, TransactionError
 from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService, TransactionService
-from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema, tournament_schema, duster_schema
+from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema, tournament_schema, duster_schema, leaderboard_coach_schema
 from sqlalchemy.orm import raiseload
 from requests_oauthlib import OAuth2Session
 
@@ -120,6 +120,12 @@ def index():
 def get_coaches():
     all_coaches = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).all()
     result = coaches_schema.dump(all_coaches)
+    return jsonify(result.data)
+
+@app.route("/coaches/leaderboard", methods=["GET"])
+def get_coaches_leaderboard():
+    all_coaches = Coach.query.all()
+    result = leaderboard_coach_schema.dump(all_coaches)
     return jsonify(result.data)
 
 @app.route("/tournaments", methods=["GET"])

@@ -29,6 +29,7 @@ class ImperiumSheet:
         "Card Name",
         "Race",
         "Description",
+        "Card Value",
         "Notes"
     ]
     MASTER_LIST_HEADER = ["Coach"] + CARD_HEADER

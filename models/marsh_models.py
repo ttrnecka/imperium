@@ -39,12 +39,17 @@ class CoachSchema(ma.ModelSchema):
     duster = ma.Nested(DusterSchema)
     short_name = ma.String()
 
+class CoachLeaderboardSchema(ma.Schema):
+    class Meta:
+        fields = ("id", "name", "short_name","collection_value")
+
 class SimpleCoachSchema(ma.Schema):
     class Meta:
         fields = ("id", "name", "short_name","disc_id","web_admin")
 
 cards_schema = CardSchema(many=True)
 coach_schema = CoachSchema()
+leaderboard_coach_schema = CoachLeaderboardSchema(many=True)
 coaches_schema = SimpleCoachSchema(many=True)
 tournaments_schema = TournamentSchema(many=True)
 tournament_schema = TournamentSchema()

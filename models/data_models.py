@@ -30,6 +30,7 @@ class Card(Base):
     card_type = db.Column(db.String(20), nullable=False)
     subtype = db.Column(db.String(30), nullable=False)
     notes = db.Column(db.String(255))
+    value = db.Column(db.Integer, nullable=False, default=1)
 
     pack_id = db.Column(db.Integer, db.ForeignKey('packs.id'), nullable=False)
     duster_id = db.Column(db.Integer, db.ForeignKey('dusters.id'))
@@ -77,6 +78,9 @@ class Coach(Base):
 
     def short_name(self):
         return self.name[:-5]
+
+    def collection_value(self):
+        return sum([card.value for card in self.cards])
 
     # id behind #
     def discord_id(self):
