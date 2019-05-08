@@ -273,6 +273,7 @@ var app = new Vue({
             else if(method=="commit") {
               const free_cmd = (res.data.type=="Tryouts" ? "!genpack player <type>" : "!genpack training or !genpack special");
               msg = "Dusting committed! Use "+free_cmd+" to generate a free pack!";
+              this.getCoach(this.loggedCoach.id);
             }
             this.loggedCoach.duster=res.data;
             this.flash(msg, 'success',{timeout: 3000});
