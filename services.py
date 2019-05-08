@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import asc
 import random
 import requests
+import time
 
 class PackService:
 
@@ -29,6 +30,9 @@ class PackService:
         "training": 0,
         "starter": 0,
         "special":0,
+        "positional":0,
+        "coaching":0,
+        "skill":0,
     }
 
     BUDGET_COMBOS = [
@@ -44,7 +48,7 @@ class PackService:
         {"roll":0.98125, "rarities":["Rare","Rare","Rare","Rare","Rare"]},
         {"roll":0.9875, "rarities":["Epic","Rare","Rare","Rare","Common"]},
         {"roll":0.99375, "rarities":["Epic","Epic","Rare","Common","Common"]},
-        {"roll":1, "rarities":["Epic","Rare","Common","Common","Common"]},
+        {"roll":1, "rarities":["Legendary","Rare","Common","Common","Common"]},
     ]
 
     PREMIUM_COMBOS = [
@@ -69,6 +73,26 @@ class PackService:
         {"roll":1, "rarities":["Epic","Rare","Rare"]},
     ]
 
+    SKILL_COMBOS = [
+        {"roll":0.27, "rarities":["Rare","Rare","Common","Common","Common"]},
+        {"roll":0.54, "rarities":["Epic","Common","Common","Common","Common"]},
+        {"roll":0.68, "rarities":["Rare","Rare","Rare","Common","Common"]},
+        {"roll":0.82, "rarities":["Epic","Rare","Common","Common","Common"]},
+        {"roll":0.87, "rarities":["Rare","Rare","Rare","Rare","Common"]},
+        {"roll":0.92, "rarities":["Epic","Rare","Rare","Common","Common"]},
+        {"roll":0.97, "rarities":["Epic","Epic","Common","Common","Common"]},
+        {"roll":0.98, "rarities":["Rare","Rare","Rare","Rare","Rare"]},
+        {"roll":0.99, "rarities":["Epic","Rare","Rare","Rare","Common"]},
+        {"roll":1, "rarities":["Epic","Epic","Rare","Common","Common"]},
+    ]
+
+    COACHING_COMBOS = [
+        {"roll":0.55, "rarities":["Rare","Rare","Rare"]},
+        {"roll":0.8, "rarities":["Epic","Rare","Rare"]},
+        {"roll":0.95, "rarities":["Epic","Epic","Rare"]},
+        {"roll":1, "rarities":["Epic","Epic","Epic"]},
+    ]
+
     PLAYER_COMBOS = [
         {"roll":0.35, "rarities":["Rare","Rare","Rare"]},
         {"roll":0.6, "rarities":["Epic","Rare","Rare"]},
@@ -79,8 +103,19 @@ class PackService:
         {"roll":1, "rarities":["Legendary","Epic","Epic"]},
     ]
 
+    PLAYER_FIRST_COMBOS = [
+        {"roll":0.6, "rarities":["Epic","Rare","Rare"]},
+        {"roll":0.8, "rarities":["Epic","Epic","Rare"]},
+        {"roll":0.875, "rarities":["Epic","Epic","Epic"]},
+        {"roll":0.95, "rarities":["Legendary","Rare","Rare"]},
+        {"roll":0.99, "rarities":["Legendary","Epic","Rare"]},
+        {"roll":1, "rarities":["Legendary","Epic","Epic"]},
+    ]
+
     @classmethod
-    def filter_cards(cls,rarity,ctype=None,races=None):
+    def filter_cards(cls,rarity,ctype=None,races=None,subtype=None):
+        if subtype is not None:
+            return [card for card in ImperiumSheet.cards() if card["Rarity"]==rarity and card["Type"]==ctype and card["Race"] in races and card["Subtype"]==subtype]
         if races is not None:
             return [card for card in ImperiumSheet.cards() if card["Rarity"]==rarity and card["Type"]==ctype and card["Race"] in races]
         if ctype is not None:
@@ -129,14 +164,14 @@ class PackService:
         return rarity
 
     @classmethod
-    def generate(cls,ptype="booster_budget",team = None):
+    def generate(cls,ptype="booster_budget",team = None, first = False):
         if ptype not in cls.PACK_PRICES:
             raise InvalidPackType(ptype)
 
         if team is not None and team not in cls.team_codes():
             raise InvalidTeam(team)
 
-        if ptype == "player":
+        if ptype in ["player","positional"]:
             if not team:
                 raise  ValueError(f"Missing team value for {ptype} pack")
             elif team.lower() not in cls.team_codes():
@@ -150,10 +185,16 @@ class PackService:
         if ptype == "starter":
             cards.extend(ImperiumSheet.starter_cards())
         else:
-            if ptype == "player":
+            if ptype in ["player","positional"]:
                 combos = cls.PLAYER_COMBOS
-            elif ptype == "training" or ptype == "special":
+                if first:
+                    combos = cls.PLAYER_FIRST_COMBOS
+            elif ptype in ["training","special"]:
                 combos = cls.TRAINING_COMBOS
+            elif ptype == "coaching":
+                combos = cls.COACHING_COMBOS
+            elif ptype == "skill":
+                combos = cls.SKILL_COMBOS
             elif ptype == "booster_premium":
                 combos = cls.PREMIUM_COMBOS
             else:
@@ -162,10 +203,11 @@ class PackService:
             roll = random.random()
             rarities = [combo for combo in combos if combo['roll']>=roll][0]['rarities']
             for rarity in rarities:
-                if ptype == "player":
+                if ptype in ["player","positional"]:
                     races = cls.team_by_code(team)["races"]
-                    fcards = cls.filter_cards(rarity,"Player",races)
-                elif ptype == "training":
+                    subtype = "Positional" if ptype=="positional" else None
+                    fcards = cls.filter_cards(rarity,"Player",races,subtype)
+                elif ptype in ["training","skill","coaching"]:
                     fcards = cls.filter_cards(rarity,"Training")
                 elif ptype == "special":
                     fcards = cls.filter_cards(rarity,"Special Play")
@@ -442,7 +484,8 @@ class TournamentService:
             else:
                 coach_mention=coach.short_name()
 
-            NotificationService.notify(f'{coach_mention} successfuly signed to {tournament.id}. {tournament.name} - fee {tournament.fee} coins')
+            for i in range(15):
+                NotificationService.notify(f'{coach_mention} successfuly signed to {tournament.id}. {tournament.name} - fee {tournament.fee} coins')
         except Exception as e:
             raise RegistrationError(str(e))
 
@@ -624,7 +667,15 @@ class WebHook:
         self.webhook = webhook
 
     def send(self,msg):
-        requests.post(self.webhook, json={'content': msg})
+        status_code = 429
+        # 429 means rate limited
+        while status_code == 429:
+            r = requests.post(self.webhook, json={'content': msg})
+            status_code = r.status_code
+            # rate limited
+            if status_code==429:
+                wait_for_ms = int(r.json()['retry_after'])
+                time.sleep(wait_for_ms/1000)
 
 def RepresentsInt(s):
     try:

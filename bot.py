@@ -20,7 +20,7 @@ with open(os.path.join(ROOT, 'config/TOKEN'), 'r') as token_file:
     TOKEN=token_file.read()
 
 GEN_QUALITY = ["premium","budget"]
-GEN_PACKS = ["player","training","booster","special"]
+GEN_PACKS = ["player","training","booster","special","skill","coaching","positional"]
 
 AUTO_CARDS = {
     'Loose Change!':5,
@@ -137,7 +137,7 @@ class DiscordCommand:
         msg+="!resign         - resign from tournament\n"
         msg+="!newcoach       - creates coach's account\n"
         msg+="!genpack        - generates pack and assigns it to coach\n"
-        msg+="!genpacktemp    - generates temporary pack, does not assign it to coach, costs nothing\n"
+        msg+="!genpacktemp    - generates inducement or special play pack, does not assign it to coach, costs nothing\n"
         msg+=" \n__**Admin Commands**__\n"
         msg+="!adminlist      - lists coach's account \n"
         msg+="!adminbank      - updates to coach's bank, sends notification to the coach \n"
@@ -153,7 +153,7 @@ class DiscordCommand:
     @classmethod
     def gen_help(cls):
         msg="```asciidoc\n"
-        msg+="!genpack command generates new pack and assigns it to coach. The coach needs to have enough coins to buy the pack.\n \n"
+        msg+="!genpack command generates new pack and assigns it to coach. The coach needs to have enough coins to buy the pack or dust appropriate cards.\n \n"
         msg+="= Booster budget pack =\n"
         msg+="Content: 5 cards of any type\n"
         msg+=f"Price: {PackService.PACK_PRICES['booster_budget']} coins\n"
@@ -183,6 +183,57 @@ class DiscordCommand:
         msg+=f"Price: {PackService.PACK_PRICES['player']} coins. First player pack free of charge. Next available only by using Tryouts.\n"
         msg+="Rarity: Rare or higher\n"
         msg+="Command: !genpack player <team>\n"
+        msg+="where <team> is one of following:\n"
+        for team in PackService.MIXED_TEAMS:
+            msg+="\t"+team["code"] +" - "+ team["name"] +f" ({', '.join(team['races'])})\n"
+
+        msg+="```\n"
+        return msg
+
+    @classmethod
+    def gentemp_help(cls):
+        msg="```asciidoc\n"
+        msg+="!genpacktemp command generates special play or inducement packs. These packs are for one time use and are not assigned to coaches permanent collection.\n \n"
+        msg+="= Booster budget pack =\n"
+        msg+="Content: 5 cards of any type\n"
+        msg+="Rarity: 1 Rare and higher rarity, 4 Common and higher rarity\n"
+        msg+="Command: !genpacktemp booster\n \n"
+
+        msg+="= Booster premium pack =\n"
+        msg+="Content: 5 cards any type\n"
+        msg+="Rarity: Rare and higher\n"
+        msg+="Command: !genpacktemp booster premium\n \n"
+
+        msg+="= Training pack =\n"
+        msg+="Content: 3 training type cards\n"
+        msg+="Rarity: Common or higher\n"
+        msg+="Command: !genpacktemp training\n \n"
+
+        msg+="= Inducement Skill pack =\n"
+        msg+="Content: 5 training type cards\n"
+        msg+="Rarity: Common or higher\n"
+        msg+="Command: !genpacktemp skill\n \n"
+
+        msg+="= Inducement Coaching pack =\n"
+        msg+="Content: 3 training type cards\n"
+        msg+="Rarity: Rare or Epic\n"
+        msg+="Command: !genpacktemp coaching\n \n"
+
+        msg+="= Special Play pack (incl. Inducement) =\n"
+        msg+="Content: 3 special play type cards\n"
+        msg+="Rarity: Common or higher\n"
+        msg+="Command: !genpacktemp special\n \n"
+
+        msg+="= Player pack =\n"
+        msg+="Content: 3 player type cards\n"
+        msg+="Rarity: Rare or higher\n"
+        msg+="Command: !genpacktemp player <team>\n \n"
+
+        msg+="= Inducement Positional pack =\n"
+        msg+="Content: 3 positional player type cards\n"
+        msg+="Rarity: Rare or higher\n"
+        msg+="Command: !genpacktemp positional <team>\n \n"
+
         msg+="where <team> is one of following:\n"
         for team in PackService.MIXED_TEAMS:
             msg+="\t"+team["code"] +" - "+ team["name"] +f" ({', '.join(team['races'])})\n"
@@ -332,6 +383,35 @@ class DiscordCommand:
         # player with teams
         if length == 3 and args[1]=="player" and args[2] not in PackService.team_codes():
             return False
+        if length > 3:
+            return False
+
+        return True
+
+    @classmethod
+    def check_gentemp_command(cls,command):
+        args = command.split()
+        length = len(args)
+        if length not in [2,3]:
+            return False
+
+        if args[1] not in GEN_PACKS:
+            return False
+        # skill/coaching/special/booster without quality
+        if length == 2 and args[1] not in ["skill","coaching","special","booster","training"]:
+            return False
+        # skill/coaching/special takes not other parameter
+        if length > 2 and args[1] in ["skill","coaching","special","training"]:
+            return False
+        # booster with allowed quality
+        if length == 3 and args[1]=="booster" and args[2] not in GEN_QUALITY:
+            return False
+        # player with teams
+        if length == 3 and args[1] in ["player","positional"] and args[2] not in PackService.team_codes():
+            return False
+        if length > 3:
+            return False
+
         return True
 
     @classmethod
@@ -505,19 +585,21 @@ class DiscordCommand:
         try:
             if self.cmd.startswith('!admin'):
                 await self.__run_admin()
-            if self.cmd.startswith('!list'):
+            elif self.cmd.startswith('!list'):
                 await self.__run_list()
-            if self.cmd.startswith('!genpack'):
+            elif self.cmd.startswith('!genpacktemp'):
+                await self.__run_genpacktemp()
+            elif self.cmd.startswith('!genpack'):
                 await self.__run_genpack()
-            if self.cmd.startswith('!newcoach'):
+            elif self.cmd.startswith('!newcoach'):
                 await self.__run_newcoach()
-            if self.cmd.startswith('!complist'):
+            elif self.cmd.startswith('!complist'):
                 await self.__run_complist()
-            if self.cmd.startswith('!sign'):
+            elif self.cmd.startswith('!sign'):
                 await self.__run_sign()
-            if self.cmd.startswith('!resign'):
+            elif self.cmd.startswith('!resign'):
                 await self.__run_resign()
-            if self.cmd.startswith('!dust'):
+            elif self.cmd.startswith('!dust'):
                 await self.__run_dust()
         except (ValueError, TransactionError, RegistrationError) as e:
             await self.transaction_error(e)
@@ -1050,72 +1132,86 @@ class DiscordCommand:
             ptype = self.args[1]
             coach=Coach.get_by_discord_id(self.message.author.id)
 
+            if coach is None:
+                await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
+                return
+                
+            pp_count = db.session.query(Pack.id).filter_by(coach_id=coach.id,pack_type="player").count()
+
             if ptype=="player":
                 team = self.args[2]
-                pack = PackService.generate(ptype,team)
+                first = True if pp_count==0 else False
+                pack = PackService.generate(ptype,team,first)
             elif ptype=="training" or ptype=="special":
                 pack = PackService.generate(ptype)
             elif ptype=="booster":
                 ptype = "booster_budget" if len(self.args)<3 else f"booster_{self.args[2]}"
                 pack = PackService.generate(ptype)
-            #free pack
-            if self.cmd.startswith('!genpacktemp'):
-                #just send message, no processing
+
+            try:
+                duster = coach.duster
+                duster_on = False
+                duster_txt = ""
+                if pp_count>0 and duster and duster.status=="COMMITTED":
+                    if  ptype=="player" and duster.type == "Tryouts" or \
+                        ptype=="training" and duster.type == "Drills" or \
+                        ptype=="special" and duster.type == "Drills":
+                         duster_on = True
+                         duster_txt = f" ({duster.type})"
+                         db.session.delete(duster)
+
+                if ptype in ["player"] and pp_count!=0 and not duster_on:
+                        raise TransactionError("You need to commit Tryouts to be able to generate this pack!")
+
+                if ptype in ["training","special"] and not duster_on:
+                    raise TransactionError("You need to commit Drills to be able to generate this pack!")
+     
+                t = Transaction(pack = pack,price=pack.price,description=PackService.description(pack))
+                coach.make_transaction(t)
+            except TransactionError as e:
+                await self.transaction_error(e)
+                return
+            else:
+                # transaction is ok and coach is saved
                 msg = [
-                    f"**Temporary {PackService.description(pack)}**:\n",
+                    f"**{PackService.description(pack)}** for **{self.message.author}** - **{pack.price}** coins{duster_txt}:\n",
                     f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n",
-                    "**Note**: This is used for Special Play purposes only!!!"
+                    f"**Bank:** {coach.account.amount} coins"
                 ]
                 await self.send_message(self.message.channel, msg)
-            #standard pack
-            else:
-                if coach is None:
-                    await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
-                    return
+                await self.auto_cards(pack)
 
-                pp_count = db.session.query(Pack.id).filter_by(coach_id=coach.id,pack_type="player").count()
-
-                try:
-                    duster = coach.duster
-                    duster_on = False
-                    duster_txt = ""
-                    if duster and duster.status=="COMMITTED":
-                        if  ptype=="player" and duster.type == "Tryouts" or \
-                            ptype=="training" and duster.type == "Drills" or \
-                            ptype=="special" and duster.type == "Drills":
-                             duster_on = True
-                             duster_txt = f" ({duster.type})"
-                             db.session.delete(duster)
-
-                    if ptype in ["player"]:
-                        if pp_count!=0 and not duster_on:
-                            raise TransactionError("You need to have commited Tryouts to be able to generate this pack!")
-
-                    if ptype in ["training","special"] and not duster_on:
-                        raise TransactionError("You need to have commited Drills to be able to generate this pack!")
-     
-                    t = Transaction(pack = pack,price=pack.price,description=PackService.description(pack))
-                    coach.make_transaction(t)
-                except TransactionError as e:
-                    await self.transaction_error(e)
-                    return
-                else:
-                    # transaction is ok and coach is saved
-                    msg = [
-                        f"**{PackService.description(pack)}** for **{self.message.author}** - **{pack.price}** coins{duster_txt}:\n",
-                        f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n",
-                        f"**Bank:** {coach.account.amount} coins"
-                    ]
-                    await self.send_message(self.message.channel, msg)
-                    await self.auto_cards(pack)
-
-                    if pp_count==0 and ptype!="player":
-                        await self.send_message(self.message.channel, ["You are eligible for free player pack. Run **!genpack player <team>** to generate it!"])
-
-                    return
+                if pp_count==0 and ptype!="player":
+                    await self.send_message(self.message.channel, ["You are eligible for free player pack. Run **!genpack player <team>** to generate it!"])
+                return
         else:
             await self.send_short_message(self.message.channel, self.__class__.gen_help())
+    
+    async def __run_genpacktemp(self):
+        if self.__class__.check_gentemp_command(self.cmd):
+            ptype = self.args[1]
+            coach=Coach.get_by_discord_id(self.message.author.id)
 
+            if coach is None:
+                await self.send_message(self.message.channel, [f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
+                return
+
+            if ptype in ["player","positional"]:
+                team = self.args[2]
+                pack = PackService.generate(ptype,team)
+            elif ptype in ["training","special","skill","coaching"]:
+                pack = PackService.generate(ptype)
+            elif ptype=="booster":
+                ptype = "booster_budget" if len(self.args)<3 else f"booster_{self.args[2]}"
+                pack = PackService.generate(ptype)
+            
+            msg = [
+                f"**Temporary {PackService.description(pack)}**:\n",
+                f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n",
+                "**Note**: This is one time pack for Special Play or Inducement purposes only!!!"                ]
+            await self.send_message(self.message.channel, msg)
+        else:
+            await self.send_short_message(self.message.channel, self.__class__.gentemp_help())
 def RepresentsInt(s):
     try:
         int(s)
