@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy import asc
 import random
 import requests
+import time
 
 class PackService:
 
@@ -483,7 +484,8 @@ class TournamentService:
             else:
                 coach_mention=coach.short_name()
 
-            NotificationService.notify(f'{coach_mention} successfuly signed to {tournament.id}. {tournament.name} - fee {tournament.fee} coins')
+            for i in range(15):
+                NotificationService.notify(f'{coach_mention} successfuly signed to {tournament.id}. {tournament.name} - fee {tournament.fee} coins')
         except Exception as e:
             raise RegistrationError(str(e))
 
@@ -651,7 +653,15 @@ class WebHook:
         self.webhook = webhook
 
     def send(self,msg):
-        requests.post(self.webhook, json={'content': msg})
+        status_code = 429
+        # 429 means rate limited
+        while status_code == 429:
+            r = requests.post(self.webhook, json={'content': msg})
+            status_code = r.status_code
+            # rate limited
+            if status_code==429:
+                wait_for_ms = int(r.json()['retry_after'])
+                time.sleep(wait_for_ms/1000)
 
 def RepresentsInt(s):
     try:
