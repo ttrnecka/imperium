@@ -484,8 +484,7 @@ class TournamentService:
             else:
                 coach_mention=coach.short_name()
 
-            for i in range(15):
-                NotificationService.notify(f'{coach_mention} successfuly signed to {tournament.id}. {tournament.name} - fee {tournament.fee} coins')
+            NotificationService.notify(f'{coach_mention} successfuly signed to {tournament.id}. {tournament.name} - fee {tournament.fee} coins')
         except Exception as e:
             raise RegistrationError(str(e))
 
