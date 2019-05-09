@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <link rel="stylesheet" href="/static/styles/main.css?1.13">
+        <link rel="stylesheet" href="/static/styles/main.css?1.14">
         <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/static/images//favicon-16x16.png">
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -129,7 +129,7 @@
                                                 </h5>
                                             </div>
                                             <div :id="'collapse'+ctype.replace(/\s/g, '')" class="collapse show" :aria-labelledby="ctype.replace(/\s/g, '')+'Cards'" data-parent="#accordionCards">
-                                                <div class="card-body">
+                                                <div class="card-body table-responsive">
                                                     <table class="table  table-striped">
                                                         <thead>
                                                         <tr>
@@ -178,14 +178,14 @@
                                                 </h5>
                                             </div>
                                             <div :id="'collapse'+ctype.replace(/\s/g, '')+'Dusting'" class="collapse show" :aria-labelledby="ctype.replace(/\s/g, '')+'CardsDusting'" data-parent="#accordionCardsDusting">
-                                                <div class="card-body">
+                                                <div class="card-body table-responsive">
                                                     <table class="table table-fixed table-striped">
                                                         <thead>
                                                         <tr>
                                                             <th>Rarity</th>
-                                                            <th>Value</th>
+                                                            <th class="d-none d-sm-table-cell">Value</th>
                                                             <th>Name</th>
-                                                            <th>Race</th>
+                                                            <th class="d-none d-sm-table-cell">Race</th>
                                                             <th class="d-none d-sm-table-cell">Subtype</th>
                                                             <th style="width: 15%"></th>
                                                         </tr>
@@ -193,9 +193,9 @@
                                                         <tbody>
                                                         <tr v-for="card in sortedCardsWithoutQuantity(selectedCoach.cards,ctype)" :key="card.id" :class="rarityclass(card.rarity)">
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
-                                                            <td>[[ card.value ]]</td>
+                                                            <td class="d-none d-sm-table-cell">[[ card.value ]]</td>
                                                             <td :title="card.description">[[ card.name ]]</td>
-                                                            <td>[[ card.race ]]</td>
+                                                            <td class="d-none d-sm-table-cell">[[ card.race ]]</td>
                                                             <td class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
                                                             <td class="text-right">
                                                                 <button v-if="is_in_duster(card)" :disabled="processing" type="button" class="col-12 btn btn-danger" @click="dust_remove(card)">Remove</button>
@@ -218,7 +218,7 @@
         <div v-if="menu=='Tournaments'" class="row">
             <div class="col-12">
                 <div class="tab-content" id="accordionTournaments">
-                    <div class="row col-md-6">
+                    <div class="row col-lg-9">
                         <div class="form-group col-md-6">
                             <select class="form-control" id="tournament_region" v-model="selected_t_region">
                                 <option selected disabled value="">Region:</option>
@@ -238,12 +238,12 @@
                             </select>
                         </div>
                     </div>
-                    <tournament class="show col-md-6" v-for="tournament in filteredTournaments" :key="tournament.id" :id="'tourn'+tournament.id" role="tabpanel" aria-labelledby="tournament" :tournament="tournament" :coaches="coaches" :data-parent="'#accordionTournaments'" :user="user"></tournament>
+                    <tournament class="show col-lg-9" v-for="tournament in filteredTournaments" :key="tournament.id" :id="'tourn'+tournament.id" role="tabpanel" aria-labelledby="tournament" :tournament="tournament" :coaches="coaches" :data-parent="'#accordionTournaments'" :user="user"></tournament>
                 </div>
             </div>
         </div>
         <div v-if="menu=='Leaderboard'" class="row">
-            <div class="col-md-3 col-sm-6 col-12 table-responsive">
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
                 <h4> TOP 10 collectors </h4>
                 <table id="leaderboard" class="table table-hover">
                     <thead class="thead-dark">
@@ -270,6 +270,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="/static/scripts/main.js?1.13" type="module"></script>
+    <script src="/static/scripts/main.js?1.14" type="module"></script>
     </body>
 </html>

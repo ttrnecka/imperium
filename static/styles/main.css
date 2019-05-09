@@ -35,11 +35,23 @@
   transition: transform .2s ease;
 }
 
-#coach-list{
-  overflow-y: auto;
-  height: 85vh;
-  padding-right: 1vw;
+@media only screen and (max-width: 992px) {
+  #coach-list{
+    overflow-y: auto;
+    height: 35vh;
+    padding-right: 1vw;
+  }
 }
+
+@media only screen and (min-width: 992px) {
+  #coach-list{
+    overflow-y: auto;
+    height: 85vh;
+    padding-right: 1vw;
+  }
+}
+
+
 
 .card-header {
   padding: 0.1rem;
@@ -69,17 +81,6 @@
 
 .tournament .card-header h5 {
   padding: 0.4rem 0.8rem;
-}
-
-.tournament_prizes_header {
-  padding: 16px 15px;
-}
-
-.tournament_prizes button {
-  width:6rem;
-}
-.tournament_webadmin button {
-  margin: 0.4rem 0.0rem;
 }
 
 .flashpool {

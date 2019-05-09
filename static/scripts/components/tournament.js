@@ -214,13 +214,15 @@ export default {
                 <div class="card-header" :id="'tournament'+tournament.id">
                 <h5 class="mb-0">
                     <div class="row">
-                        <button class="col-9 btn btn-link btn-block" data-toggle="collapse" :data-target="'#collapseTournament'+tournament.id" aria-expanded="true" aria-controls="collapseTournament">
+                        <button class="col-md-9 btn btn-link btn-block" data-toggle="collapse" :data-target="'#collapseTournament'+tournament.id" aria-expanded="true" aria-controls="collapseTournament">
                             <div class="row">
-                            <div class="col-8 text-left">[[ tournament.id ]]. [[ tournament.name ]]</div>
-                            <div class="col-4 text-left">[[ tournament.status ]]</div>
+                                <div class="col-6 col-md-5 text-left">[[ tournament.id ]]. [[ tournament.name ]]</div>
+                                <div class="col-6 col-md-2 text-left">[[ tournament.status ]]</div>
+                                <div class="col-6 col-md-2 text-left"> Signups: [[signed.length]]/[[ tournament.coach_limit ]]</div>
+                                <div class="col-6 col-md-3 text-left">Channel: [[ tournament.discord_channel ]]</div>
                             </div>
                         </button>
-                        <div class="col-3 text-right">
+                        <div class="col-md-3 text-right">
                             <button v-if="is_user_signed" :disabled="processing" type="button" class="col-12 btn btn-danger" @click="resign()">Resign</button>
                             <button v-else type="button" :disabled="processing" class="col-12 btn btn-success" @click="sign()">Sign</button>
                         </div>
@@ -230,22 +232,22 @@ export default {
             <div :id="'collapseTournament'+tournament.id" class="collapse" :aria-labelledby="'Tournaments'+tournament.id" :data-parent="getProperty('data-parent')">
                 <div class="card-body">
                     <div class="row tournament_info_line">
-                        <div class="col-3"><b>Signup By:</b>: [[ tournament.signup_close_date ]]</div>
-                        <div class="col-3"><b>Start</b>: [[ tournament.expect_start_date ]]</div>
-                        <div class="col-3"><b>End</b>: [[ tournament.expect_end_date ]]</div>
-                        <div class="col-3"><b>Deadline</b>: [[ tournament.deadline_date ]]</div>
+                        <div class="col-sm-3"><b>Signup By:</b>: [[ tournament.signup_close_date ]]</div>
+                        <div class="col-sm-3"><b>Start</b>: [[ tournament.expect_start_date ]]</div>
+                        <div class="col-sm-3"><b>End</b>: [[ tournament.expect_end_date ]]</div>
+                        <div class="col-sm-3"><b>Deadline</b>: [[ tournament.deadline_date ]]</div>
                     </div>
                     <div class="row tournament_info_line">
-                        <div class="col-3"><b>Region</b>: [[ tournament.region ]]</div>
-                        <div class="col-3"><b>Type</b>: [[ tournament.type ]]</div>
-                        <div class="col-3"><b>Mode</b>: [[ tournament.mode ]]</div>
-                        <div class="col-3"><b>Deck Limit</b>: [[ tournament.deck_limit ]]</div>
+                        <div class="col-sm-3"><b>Region</b>: [[ tournament.region ]]</div>
+                        <div class="col-sm-3"><b>Type</b>: [[ tournament.type ]]</div>
+                        <div class="col-sm-3"><b>Mode</b>: [[ tournament.mode ]]</div>
+                        <div class="col-sm-3"><b>Deck Limit</b>: [[ tournament.deck_limit ]]</div>
                     </div>
                     <div class="row tournament_info_line">
-                        <div class="col-3"><b>Admin</b>: [[ tournament.admin ]]</div>
-                        <div class="col-3"><b>Fee</b>: [[ tournament.fee ]]</div>
-                        <div class="col-3"><b>Signups</b>: [[signed.length]]/[[ tournament.coach_limit ]]</div>
-                        <div class="col-3"><b>Reserves</b>: [[reserved.length]]/[[ tournament.reserve_limit ]]</div>
+                        <div class="col-sm-3"><b>Admin</b>: [[ tournament.admin ]]</div>
+                        <div class="col-sm-3"><b>Fee</b>: [[ tournament.fee ]]</div>
+                        <div class="col-sm-3"><b>Signups</b>: [[signed.length]]/[[ tournament.coach_limit ]]</div>
+                        <div class="col-sm-3"><b>Reserves</b>: [[reserved.length]]/[[ tournament.reserve_limit ]]</div>
                     </div>
                     <div class="row tournament_info_line">
                         <div class="col-12"><b>Discord Channel</b>: #[[tournament.discord_channel]]</div>
@@ -281,24 +283,23 @@ export default {
                         <div class="col-12"><b>Management:</b></div>
                     </div>
                     <div v-if="is_webadmin" class="row tournament_webadmin tournament_info_line">
-                        <div class="col-6"><button :disabled="processing" type="button" class="col-12 btn btn-info" @click="update()">Update</button></div>
-                        <div class="col-6">
-                            <button v-if="prize_menu" :disabled="processing" type="button" class="col-12 btn btn-danger" @click="award_and_stop()">Award & Stop</button>
-                            <button v-else :disabled="processing" type="button" class="col-12 btn btn-success" @click="setprizes()">Set Prizes</button>
+                        <div class="col-sm-6"><button :disabled="processing" type="button" class="col-12 m-1 btn btn-info" @click="update()">Update</button></div>
+                        <div class="col-sm-6">
+                            <button v-if="prize_menu" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="award_and_stop()">Award & Stop</button>
+                            <button v-else :disabled="processing" type="button" class="col-12 m-1 btn btn-success" @click="setprizes()">Set Prizes</button>
                         </div>
                     </div>
-                    <div v-if="is_webadmin && prize_menu" class="row tournament_prizes">
-                        <div class="row col-12 tournament_prizes_header" >
-                            <h5 class="col-8">Prizes:</h5>
-                            <div class="col-2 text-right">
-                            <button class="btn btn-sm btn-warning" @click="reset_prizes()">reset</button>
-                            </div>
-                            <div class="col-2 text-right">
-                            <button class="btn btn-sm btn-success" @click="add_prize()">add</button>
-                            </div>
+                    <div v-if="is_webadmin && prize_menu" class="row">
+                        <h5 class="col-12 col-sm-4 col-md-8 p-2">Prizes:</h5>
+                        <div class="col-6 col-sm-4 col-md-2 text-right">
+                            <button class="col-12 m-1 btn btn-sm btn-warning" @click="reset_prizes()">reset</button>
                         </div>
-                        <div class="row col-12" v-for="(prize,index) in prizes" :key="index">
-                            <div class="col-md-3 col-sm-12">
+                        <div class="col-6 col-sm-4 col-md-2 text-right">
+                            <button class="col-12 m-1 btn btn-sm btn-success" @click="add_prize()">add</button>
+                        </div>
+                        
+                        <template v-for="(prize,index) in prizes">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <select class="form-control" v-model="prize.coach" v-bind:class="{'is-invalid': prize.coach==''}">
                                         <option selected disabled value="">Coach:</option>
@@ -306,20 +307,20 @@ export default {
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-2 col-sm-12">
+                            <div class="col-md-2">
                                 <div class="form-group">
                                     <input class="form-control" type="number" placeholder="Cash" v-model="prize.amount" >
                                 </div>
                             </div>
-                            <div class="col-md-5 col-sm-12">
+                            <div class="col-md-5">
                                 <div class="form-group">
                                     <input type="text" class="form-control" placeholder="Reason" v-model="prize.reason" v-bind:class="{'is-invalid': prize.reason==''}">
                                 </div>
                             </div>
-                            <div class="col-md-2 col-sm-12 text-right">
-                            <button class="btn btn-sm btn-danger" @click="remove_prize(index)">remove</button>
+                            <div class="col-md-2 text-right">
+                            <button class="btn m-1 btn-sm btn-danger" @click="remove_prize(index)">remove</button>
                             </div>
-                        </div>
+                        </template>            
                     </div>
                 </div>
             </div></div>`
