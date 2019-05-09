@@ -1,6 +1,8 @@
+window.starter_cards = [];
 import tournament from './components/tournament.js';
 import VueFlashMessage from './components/VueFlashMessage/index.js';
 Vue.use(VueFlashMessage);
+
 
 Vue.mixin({
   data () {
@@ -19,7 +21,7 @@ Vue.mixin({
         {"code":"uosp", "name":'Union of Small People',  "races":['Ogre' , 'Goblin','Halfling']},
         {"code":"vt",   "name":'Violence Together',      "races":['Ogre' , 'Goblin','Orc', 'Lizardman']}
       ],
-      card_types: ["Player","Training","Special Play","Staff"]
+      card_types: ["Player","Training","Special Play","Staff"],
     }
   },
   methods: { 
@@ -45,6 +47,14 @@ Vue.mixin({
       }
       return klass;
     },
+    cardsValue(cards) {
+      return cards.reduce((total, e)=> { return total+e.value},0);
+    },
+    starter_cards() {
+      return window.starter_cards;
+    }
+  },
+  computed: {
   }
 })
 
@@ -67,7 +77,6 @@ var app = new Vue({
         tournaments: [],
         selected_t_region:"",
         selected_t_state:"",
-        starter_cards: [],
         selected_team:"All",
         coach_filter:"",
         menu: "Coaches",
@@ -154,7 +163,7 @@ var app = new Vue({
         const path = "/cards/starter";
         axios.get(path)
           .then((res) => {
-            this.starter_cards = res.data;
+            window.starter_cards = res.data;
           })
           .catch((error) => {
             console.error(error);
@@ -168,9 +177,6 @@ var app = new Vue({
         return cards.slice().sort(compare);
       },
 
-      cardsValue(cards) {
-        return cards.reduce((total, e)=> { return total+e.value},0);
-      },
       sortedCardsWithoutQuantity(cards,filter="") {
         let tmp_cards;
         if (!this.show_starter) {

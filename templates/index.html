@@ -143,7 +143,7 @@
                                                         </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <tr v-for="card in sortedCardsWithQuantity(selectedCoach.cards.concat(starter_cards),ctype)" :key="card.card.id" :class="rarityclass(card.card.rarity)">
+                                                        <tr v-for="card in sortedCardsWithQuantity(selectedCoach.cards.concat(starter_cards()),ctype)" :key="card.card.id" :class="rarityclass(card.card.rarity)">
                                                             <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.card.value ]]</td>
                                                             <td :title="card.card.description">[[ card.card.name ]]</td>

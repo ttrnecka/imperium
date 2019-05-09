@@ -41,6 +41,10 @@
     height: 35vh;
     padding-right: 1vw;
   }
+  .deck_ctype {
+    font-size:0.6rem;
+    cursor: pointer;
+  }
 }
 
 @media only screen and (min-width: 992px) {
@@ -49,9 +53,10 @@
     height: 85vh;
     padding-right: 1vw;
   }
+  .deck_ctype {
+    cursor: pointer;
+  }
 }
-
-
 
 .card-header {
   padding: 0.1rem;
@@ -155,4 +160,20 @@
 
 .flash__close-button:active,.flash__close-button:focus {
   outline: none;
+}
+
+.modal-fullscreen {
+  padding: 0 !important;
+}
+.modal-fullscreen .modal-dialog {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.modal-fullscreen .modal-content {
+  height: auto;
+  min-height: 100%;
+  border: 0 none;
+  border-radius: 0;
 }
