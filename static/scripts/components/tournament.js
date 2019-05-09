@@ -1,5 +1,9 @@
+import deck from './deck.js';
 export default {
     name: 'tournament',
+    components: {
+        deck
+    },
     data () {
       return {
           processing:false,
@@ -223,8 +227,9 @@ export default {
                             </div>
                         </button>
                         <div class="col-md-3 text-right">
-                            <button v-if="is_user_signed" :disabled="processing" type="button" class="col-12 btn btn-danger" @click="resign()">Resign</button>
-                            <button v-else type="button" :disabled="processing" class="col-12 btn btn-success" @click="sign()">Sign</button>
+                            <button v-if="is_user_signed" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="resign()">Resign</button>
+                            <button v-else type="button" :disabled="processing" class="col-12 m-1 btn btn-success" @click="sign()">Sign</button>
+                            <button v-if="is_user_signed" type="button" class="btn col-12 m-1 btn-primary" data-toggle="modal" :data-target="'#deckC'+loggedCoach.id+'T'+tournament.id">Deck</button>
                         </div>
                     </div>
                 </h5>
@@ -323,5 +328,7 @@ export default {
                         </template>            
                     </div>
                 </div>
-            </div></div>`
+            </div>
+            <deck :coach="loggedCoach" :tournament="tournament"></deck>
+        </div>`
 }
