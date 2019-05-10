@@ -120,11 +120,21 @@ class DiscordCommand:
     @classmethod
     def format_pack(cls,cards):
         msg=""
+        value=0
         for card,quantity in cards:
+            value+=card.value
             msg+=cls.number_emoji(quantity)
             msg+=" x "
             msg+=cls.rarity_emoji(card.rarity)
-            msg+=f' **{card.name}** ({card.rarity} {card.race} {card.card_type} Card)\n'
+            msg+=f' **{card.name}** ({card.rarity} {card.race} {card.card_type} Card) ({card.value})\n'
+
+        #msg+=str("-" * 65 + "\n"),
+        msg+=f"\n \n__Total value__: {value}\n \n"
+        msg+="__Description__:\n \n"
+        #msg+=str("-" * 65 + "\n"),
+        for card,quantity in cards:
+            if card.description!="":
+                msg+=f"**{card.name}**: {card.description}\n"
         return msg.strip("\n")
 
     @classmethod
