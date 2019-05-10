@@ -1,5 +1,5 @@
 from flask_marshmallow import Marshmallow
-from .data_models import Transaction, Account, Card, Coach, Tournament, TournamentSignups, Duster
+from .data_models import Transaction, Account, Card, Coach, Tournament, TournamentSignups, Duster, Deck
 
 ma = Marshmallow()
 
@@ -47,6 +47,12 @@ class SimpleCoachSchema(ma.Schema):
     class Meta:
         fields = ("id", "name", "short_name","disc_id","web_admin")
 
+class DeckSchema(ma.ModelSchema):
+    class Meta:
+        model = Deck
+    
+    cards = ma.Nested(CardSchema, many=True)
+
 cards_schema = CardSchema(many=True)
 coach_schema = CoachSchema()
 leaderboard_coach_schema = CoachLeaderboardSchema(many=True)
@@ -54,3 +60,4 @@ coaches_schema = SimpleCoachSchema(many=True)
 tournaments_schema = TournamentSchema(many=True)
 tournament_schema = TournamentSchema()
 duster_schema = DusterSchema()
+deck_schema = DeckSchema()

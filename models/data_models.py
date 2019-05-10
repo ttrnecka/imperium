@@ -204,6 +204,8 @@ class Deck(Base):
 
     cards = db.relationship("Card", secondary=deck_card_table, backref=db.backref('decks', lazy="dynamic"), lazy="dynamic")
 
+    extra_cards = db.relationship('Card', secondary="packs",backref=db.backref('extra_deck', lazy=True, uselist=False), viewonly=True,lazy="dynamic")
+
 class TournamentSignups(Base):
     __tablename__ = 'tournaments_signups'
 

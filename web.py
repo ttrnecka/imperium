@@ -5,9 +5,9 @@ from flask import Flask, render_template, jsonify, abort, session, redirect, req
 from flask_migrate import Migrate
 from misc.helpers import CardHelper
 from models.base_model import db
-from models.data_models import Coach, Card, Account, Transaction, Tournament, TournamentSignups, Duster, TransactionError
-from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService, TransactionService
-from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema, tournament_schema, duster_schema, leaderboard_coach_schema
+from models.data_models import Coach, Card, Account, Transaction, Tournament, TournamentSignups, Duster, TransactionError, Deck
+from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService, TransactionService, DeckService, DeckError
+from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema, tournament_schema, duster_schema, leaderboard_coach_schema, deck_schema
 from sqlalchemy.orm import raiseload
 from requests_oauthlib import OAuth2Session
 
@@ -257,6 +257,59 @@ def get_coach(coach_id):
 def get_starter_cards():
     starter_cards = PackService.generate("starter").cards
     result = cards_schema.dump(starter_cards)
+    return jsonify(result.data)
+
+@app.route("/decks/<int:deck_id>", methods=["GET"])
+def get_deck(deck_id):
+    #deck = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).all()
+    deck = Deck.query.get(deck_id)
+    if deck is None:
+        abort(404)
+    result = deck_schema.dump(deck)
+    return jsonify(result.data)
+
+# updates just base deck info not cards
+@app.route("/decks/<int:deck_id>", methods=["POST"])
+def update_deck(deck_id):
+    deck = Deck.query.get(deck_id)
+    if deck is None:
+        abort(404)
+
+    received_deck = request.get_json()
+    deck = DeckService.update(deck,received_deck)
+    result = deck_schema.dump(deck)
+    return jsonify(result.data)
+
+# updates just base deck info not cards
+@app.route("/decks/<int:deck_id>/addcard", methods=["POST"])
+def addcard_deck(deck_id):
+    deck = Deck.query.get(deck_id)
+    if deck is None:
+        abort(404)
+
+    card = request.get_json()
+    try:
+        deck = DeckService.addcard(deck,card)
+    except (DeckError) as e:
+        raise InvalidUsage(str(e), status_code=403)
+
+    result = deck_schema.dump(deck)
+    return jsonify(result.data)
+
+# updates just base deck info not cards
+@app.route("/decks/<int:deck_id>/remove", methods=["POST"])
+def removecard_deck(deck_id):
+    deck = Deck.query.get(deck_id)
+    if deck is None:
+        abort(404)
+
+    card = request.get_json()
+    try:
+        deck = DeckService.removecard(deck,card)
+    except (DeckError) as e:
+        raise InvalidUsage(str(e), status_code=403)
+
+    result = deck_schema.dump(deck)
     return jsonify(result.data)
 
 # run the application

@@ -8,7 +8,9 @@ export default {
           deck: {
               cards:[],
               mixed_team:"",
-              team_name:""
+              team_name:"",
+              packs:[],
+              search_timeout: null,
           }
       }
     },
@@ -21,7 +23,7 @@ export default {
           return cards.slice().sort(compare);
         },
     
-        sortedCardsWithoutQuantity(cards,filter="") {
+        sortedCardsWithoutQuantity(cards,filter="",mixed_filter=true) {
           let tmp_cards;
           if (!this.show_starter) {
             tmp_cards =  cards.filter(function(i) { return i.id != null});
@@ -33,29 +35,17 @@ export default {
             tmp_cards =  tmp_cards.filter(function(i) { return i.card_type == filter});
           }
     
-          if (this.selected_team!="All" && filter=="Player") {
+          if (this.selected_team!="All" && filter=="Player" && mixed_filter) {
             const races = this.mixed_teams.find((e) => { return e.name == this.selected_team }).races;
             tmp_cards =  tmp_cards.filter(function(i) { return i.race.split("/").some((r) => races.includes(r))});
           }
           return this.sortedCards(tmp_cards);
         },
         addToDeck(card) {
-            if (this.development) {
-                card.in_development_deck = true;
-            } else {
-                card.in_imperium_deck = true;
-            }
-            this.deck.cards.push(card);
-            console.log(this.deck);
+            this.addCard(card);
         },
         removeFromDeck(card) {
-            if (this.development) {
-                card.in_development_deck = false;
-            } else {
-                card.in_imperium_deck = false;
-            }
-            const idx = this.deck.cards.indexOf(card);
-            this.deck.cards.splice(idx,1);
+            this.removeCard(card);
         },
         isInDeck(card) {
             if (this.development) {
@@ -63,12 +53,117 @@ export default {
             } else {
                 return card.in_imperium_deck;
             }
-        }
+        },
+        getDeck() {
+            const path = "/decks/"+this.deck_id;
+            axios.get(path)
+            .then((res) => {
+                this.deck=res.data;
+                this.selected_team = (this.deck.mixed_team=="") ? "All" : this.deck.mixed_team;
+            })
+            .catch((error) => {
+                if (error.response) {
+                    this.flash(error.response.data.message, 'error',{timeout: 3000});
+                } else {
+                    console.error(error);
+                }
+            })
+        },
+        addCard(card) {
+            const path = "/decks/"+this.deck_id+"/addcard";
+            this.processing= true;
+            const processingMsg = this.flash("Processing...", 'info');
+            axios.post(path,card)
+            .then((res) => {
+                let msg = "Card added!";
+                this.flash(msg, 'success',{timeout: 1000});
+                this.deck = res.data;
+                if (this.development) {
+                    card.in_development_deck = true;
+                } else {
+                    card.in_imperium_deck = true;
+                }
+            })
+            .catch((error) => {
+                if (error.response) {
+                    this.flash(error.response.data.message, 'error',{timeout: 3000});
+                } else {
+                    console.error(error);
+                }
+            })
+            .then(() => {
+                processingMsg.destroy();
+                this.processing=false;
+            });
+        },
+
+        removeCard(card) {
+            const path = "/decks/"+this.deck_id+"/remove";
+            this.processing= true;
+            const processingMsg = this.flash("Processing...", 'info');
+            axios.post(path,card)
+            .then((res) => {
+                let msg = "Card removed!";
+                this.flash(msg, 'success',{timeout: 1000});
+                this.deck = res.data;
+                const ccard = this.coach.cards.find((c) => c.id == card.id);
+                if (this.development) {
+                    ccard.in_development_deck = false;
+                } else {
+                    ccard.in_imperium_deck = false;
+                }
+            })
+            .catch((error) => {
+                if (error.response) {
+                    this.flash(error.response.data.message, 'error',{timeout: 3000});
+                } else {
+                    console.error(error);
+                }
+            })
+            .then(() => {
+                processingMsg.destroy();
+                this.processing=false;
+            });
+        },
+        updateDeck() {
+            const path = "/decks/"+this.deck_id;
+            this.processing= true;
+            const processingMsg = this.flash("Processing...", 'info');
+            axios.post(path,this.deck)
+            .then((res) => {
+                let msg = "Deck saved!";
+                this.flash(msg, 'success',{timeout: 3000});
+                this.deck = res.data;
+            })
+            .catch((error) => {
+                if (error.response) {
+                    this.flash(error.response.data.message, 'error',{timeout: 3000});
+                } else {
+                    console.error(error);
+                }
+            })
+            .then(() => {
+                processingMsg.destroy();
+                this.processing=false;
+            });
+        },
+        debounceUpdate(val){
+            if(this.search_timeout) clearTimeout(this.search_timeout);
+            var that=this;
+            this.search_timeout = setTimeout(function() {
+              that.deck.team_name = val;
+              that.updateDeck();
+            }, 1000);
+        },
     },
     watch: {
         selected_team: function(newValue,oldValue) { 
             this.deck.mixed_team = newValue;
-        }
+            this.updateDeck();
+        },
+        deck_id: function(newValue,oldValue) { 
+            this.getDeck();
+        },
     },
     computed: {
         id() {
@@ -79,7 +174,7 @@ export default {
         }
     },
     beforeMount() {
-
+        this.getDeck();
     },
     delimiters: ['[[',']]'],
     props: ['coach','tournament','deck_id'],
@@ -88,9 +183,7 @@ export default {
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Deck for [[coach.short_name]] in [[tournament.name ]]</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                            </button>
+                            <button type="button" class="btn btn-primary ml-auto" @click="updateDeck()">Save</button>
                         </div>
                         <div class="modal-body">
                             <div class="row">
@@ -101,7 +194,7 @@ export default {
                                     </select>
                                 </div>
                                 <div class="form-group col-6">
-                                    <input type="text" class="form-control" placeholder="Team Name" v-model="deck.team_name">
+                                    <input type="text" class="form-control" placeholder="Team Name" v-bind:value="deck.team_name" v-on:input="debounceUpdate($event.target.value)">
                                 </div>
                             </div>
                             <div class="row">
@@ -182,7 +275,7 @@ export default {
                                                         </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <tr @click="removeFromDeck(card)" v-for="card in sortedCardsWithoutQuantity(deck.cards,ctype)" :key="card.id" :class="rarityclass(card.rarity)">
+                                                        <tr @click="removeFromDeck(card)" v-for="card in sortedCardsWithoutQuantity(deck.cards,ctype,false)" :key="card.id" :class="rarityclass(card.rarity)">
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.value ]]</td>
                                                             <td :title="card.description">[[ card.name ]]</td>

@@ -505,8 +505,14 @@ class TournamentService:
             raise RegistrationError(f"Coach {coach.short_name()} is not registered to {tournament.name}!!!")
 
         try:
-            db.session.delete(ts[0])
+            for card in ts[0].deck.cards:
+                if tournament.type=="Development":
+                    card.in_development_deck = False
+                else:
+                    card.in_imperium_deck = False
 
+            db.session.delete(ts[0])
+        
             if refund:
                 reason = f"{tournament.name} resignation - refund {tournament.fee} coins"
                 t = Transaction(description=reason,price=-1*tournament.fee)
@@ -636,6 +642,68 @@ class TransactionService:
         NotificationService.notify(f"<@{coach.disc_id}>: Your bank has been updated by **{-1*amount}** coins - {reason}")
         return True
  
+class DeckService:
+    @classmethod
+    def update(cls,deck,deck_params):
+        deck.update(**cls.init_dict_from_params(deck_params))
+        db.session.commit()
+
+        return deck
+
+    @classmethod
+    def init_dict_from_params(cls,params):
+        return {
+            "team_name":params["team_name"],
+            "mixed_team":params["mixed_team"],
+        }
+    
+    @classmethod
+    def deck_type(cls,deck):
+        return deck.tournament_signup.tournament.type
+
+    @classmethod
+    def addcard(cls,deck,card):
+        if card["id"]:
+            cCard = Card.query.get(card["id"])
+            if cCard is not None:
+                if deck in cCard.decks:
+                    raise DeckError("Card is already in the deck")
+                else:
+                    if cls.deck_type(deck)=="Development":
+                        cCard.in_development_deck = True
+                    else:
+                        cCard.in_imperium_deck = True
+
+                    deck.cards.append(cCard)
+                    db.session.commit()
+            else:
+                raise DeckError("Card not found")
+        else:
+            # add starting pack handling
+            pass
+        return deck
+
+    @classmethod
+    def removecard(cls,deck,card):
+        cCard = Card.query.get(card["id"])
+        if cCard:
+            if deck in cCard.decks:
+                if cls.deck_type(deck)=="Development":
+                    cCard.in_development_deck = False
+                else:
+                    cCard.in_imperium_deck = False
+                    
+                deck.cards.remove(cCard)
+                db.session.commit()
+            else:
+                raise DeckError("Card is not in the deck")
+        else:
+                raise DeckError("Card not found")
+        return deck
+
+class DeckError(Exception):
+    pass
+
 class DustingError(Exception):
     pass
 
