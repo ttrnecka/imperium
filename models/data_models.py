@@ -35,6 +35,9 @@ class Card(Base):
     pack_id = db.Column(db.Integer, db.ForeignKey('packs.id'), nullable=False)
     duster_id = db.Column(db.Integer, db.ForeignKey('dusters.id'))
 
+    in_development_deck = db.Column(db.Boolean(), default=False)
+    in_imperium_deck = db.Column(db.Boolean(), default=False)
+
     def __repr__(self):
         return f'<Card {self.name}, rarity: {self.rarity}, pack_id: {self.pack_id}>'
 
@@ -45,7 +48,8 @@ class Pack(Base):
     price = db.Column(db.Integer, default=0, nullable=False)
     team = db.Column(db.String(20))
 
-    coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
+    coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=True)
+    deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=True)
 
     transaction = db.relationship('Transaction',uselist=False, backref=db.backref('pack', lazy=True), cascade="all, delete-orphan",lazy=False)
     cards = db.relationship('Card', backref=db.backref('pack', lazy=False), cascade="all, delete-orphan",lazy=False)
@@ -193,9 +197,10 @@ deck_card_table = db.Table('deck_cards', Base.metadata,
 class Deck(Base):
     __tablename__ = 'decks'
 
-    tournament_signup_id = db.Column(db.Integer, db.ForeignKey('tournaments_signups.id'), nullable=False)
     team_name = db.Column(db.String(255),nullable=False)
     mixed_team = db.Column(db.String(255),nullable=False)
+
+    packs = db.relationship('Pack', backref=db.backref('deck', lazy=True),cascade="all, delete-orphan",lazy="subquery")
 
     cards = db.relationship("Card", secondary=deck_card_table, backref=db.backref('decks', lazy="dynamic"), lazy="dynamic")
 
@@ -241,6 +246,7 @@ class Tournament(Base):
     special_rules = db.Column(db.Text(),nullable=True)
     prizes = db.Column(db.Text(),nullable=True)
     unique_prize = db.Column(db.Text,nullable=True)
+    phase = db.Column(db.String(255),nullable=False, default="team_building")
 
     coaches = db.relationship("Coach", secondary="tournaments_signups", backref=db.backref('tournaments', lazy="dynamic"), lazy="dynamic")
 

@@ -478,6 +478,10 @@ class TournamentService:
             t = Transaction(description=reason,price=tournament.fee)
             coach.make_transaction(t)
 
+            # deck
+            deck = Deck(team_name="",mixed_team="", tournament_signup = signup)
+            db.session.add(deck)
+            
             db.session.commit()
             if tournament.fee>0:
                 coach_mention=f'<@{coach.disc_id}>'
@@ -631,21 +635,7 @@ class TransactionService:
         coach.make_transaction(t)
         NotificationService.notify(f"<@{coach.disc_id}>: Your bank has been updated by **{-1*amount}** coins - {reason}")
         return True
-
-class DeckService:
-    @classmethod
-    def new_deck(cls,coach,tournament):
-        tournament_signup = TournamentSignups.query.filter_by(coach_id=coach.id,tournament_id=tournament.id).one_or_none()
-
-        if tournament_signup.deck:
-            raise DecksError("Deck already exists")
-        deck = Deck(team_name="",mixed_team="")
-        deck.tournament_signup = tournament_signup
-        db.session.add(deck)
-        db.session.commit()
-
-class DecksError(Exception):
-    pass     
+ 
 class DustingError(Exception):
     pass
 
