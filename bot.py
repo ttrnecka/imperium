@@ -122,7 +122,7 @@ class DiscordCommand:
         msg=""
         value=0
         for card,quantity in cards:
-            value+=card.value
+            value+=card.value * quantity
             msg+=cls.number_emoji(quantity)
             msg+=" x "
             msg+=cls.rarity_emoji(card.rarity)
