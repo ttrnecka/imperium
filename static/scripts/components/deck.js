@@ -45,6 +45,14 @@ export default {
         },
         addToDeck(card) {
             if(this.processing!=true) {
+                if(this.deck_size==this.tournament.deck_limit) {
+                    this.flash("Cannot add card - deck limit reached!", 'error',{timeout: 3000});
+                    return;
+                }
+                if(this.selected_team=="All") {
+                    this.flash("Cannot add card - team not selected!", 'error',{timeout: 3000});
+                    return;
+                }
                 this.addCard(card);
             }
         },
@@ -172,7 +180,7 @@ export default {
         }
     },
     watch: {
-        selected_team: function(newValue,oldValue) { 
+        selected_team: function(newValue,oldValue) {
             this.deck.mixed_team = newValue;
             this.updateDeck();
         },
@@ -192,6 +200,14 @@ export default {
         },
         collection_cards() {
             return this.coach.cards.concat(this.coach_starter_cards);
+        },
+        deck_player_size() {
+            return this.deck_cards.filter((e) => e.card_type=="Player").length;
+        },
+        deck_size() {
+            const special_plays = this.deck_cards.filter((e) => e.card_type=="Special Play").length;
+            const deduct =(special_plays>0) ? 1 : 0
+            return this.deck_cards.length-deduct;
         }
     },
     beforeMount() {
@@ -214,7 +230,7 @@ export default {
                         <div class="modal-body">
                             <div class="row">
                                 <div class="form-group col-6">
-                                    <select class="form-control" v-model="selected_team">
+                                    <select class="form-control" v-model="selected_team" :disabled="deck_player_size>0">
                                         <option selected value="All">Select team</option>
                                         <option v-for="team in mixed_teams" :value="team.name" :key="team.code">[[ team.name ]] ([[ team.races.join() ]])</option>
                                     </select>
@@ -234,7 +250,7 @@ export default {
                                     </div>
                                 </div>
                                 <div class="col-3">
-                                    <h5>Deck</h5>
+                                    <h5>Deck [[deck_size]]/[[tournament.deck_limit]]</h5>
                                 </div>
                                 <div class="col-3 text-right">
                                     <h5>Value: [[ cardsValue(deck_cards) ]]</h5>

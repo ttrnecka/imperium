@@ -100,7 +100,7 @@
   width: 260px;
   -webkit-perspective: 400px;
   perspective: 400px;
-  z-index: 10;
+  z-index: 1060;
 }
 
 .flash__message {
