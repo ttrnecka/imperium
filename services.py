@@ -678,6 +678,17 @@ class DeckService:
         return deck.tournament_signup.tournament.type
 
     @classmethod
+    def addextracard(cls,deck,name):
+        card = CardService.get_card_from_sheet(name)
+        if card:
+            deck.extra_cards.append(card_schema.dump(CardService.init_Card_from_card(card)).data)
+            flag_modified(deck, "extra_cards")
+            db.session.commit()
+            return deck
+        else:
+            raise DeckError(f"Card {name} does not exist")
+
+    @classmethod
     def addcard(cls,deck,card):
         if card["id"]:
             cCard = Card.query.get(card["id"])

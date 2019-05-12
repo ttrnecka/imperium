@@ -6,9 +6,11 @@ export default {
           selected_team:"All",
           show_starter: 1,
           coach_starter_cards:[],
+          extra_card:"",
           deck: {
               cards:[],
               starter_cards:[],
+              extra_cards:[],
               mixed_team:"",
               team_name:"",
               packs:[],
@@ -44,6 +46,9 @@ export default {
           return this.sortedCards(tmp_cards);
         },
         addToDeck(card) {
+            if(!this.is_owner) {
+                return;
+            }
             if(this.processing!=true) {
                 if(this.deck_size==this.tournament.deck_limit) {
                     this.flash("Cannot add card - deck limit reached!", 'error',{timeout: 3000});
@@ -53,10 +58,17 @@ export default {
                     this.flash("Cannot add card - team not selected!", 'error',{timeout: 3000});
                     return;
                 }
+                if(this.deck_player_size==16) {
+                    this.flash("Cannot add card - 16 Player cards are already in the deck!", 'error',{timeout: 3000});
+                    return;
+                }
                 this.addCard(card);
             }
         },
         removeFromDeck(card) {
+            if(!this.is_owner) {
+                return;
+            }
             if(this.processing!=true) {
                 this.removeCard(card);
             }
@@ -88,6 +100,31 @@ export default {
             })
             .then(() => {
                 processingMsg.destroy();
+            });
+        },
+        addExtraCard(name) {
+            if(!this.is_owner) {
+                return;
+            }
+            const path = "/decks/"+this.deck_id+"/addcard/extra";
+            this.processing= true;
+            const processingMsg = this.flash("Processing...", 'info');
+            axios.post(path,{name: name})
+            .then((res) => {
+                let msg = "Card added!";
+                this.flash(msg, 'success',{timeout: 1000});
+                this.deck = res.data;
+            })
+            .catch((error) => {
+                if (error.response) {
+                    this.flash(error.response.data.message, 'error',{timeout: 3000});
+                } else {
+                    console.error(error);
+                }
+            })
+            .then(() => {
+                processingMsg.destroy();
+                this.processing=false;
             });
         },
         addCard(card) {
@@ -146,6 +183,9 @@ export default {
             });
         },
         updateDeck() {
+            if(!this.is_owner) {
+                return;
+            }
             const path = "/decks/"+this.deck_id;
             this.processing= true;
             const processingMsg = this.flash("Processing...", 'info');
@@ -199,7 +239,7 @@ export default {
             return this.deck.cards.concat(this.deck.starter_cards);
         },
         collection_cards() {
-            return this.coach.cards.concat(this.coach_starter_cards);
+            return this.coach.cards.concat(this.coach_starter_cards,this.deck.extra_cards);
         },
         deck_player_size() {
             return this.deck_cards.filter((e) => e.card_type=="Player").length;
@@ -208,6 +248,18 @@ export default {
             const special_plays = this.deck_cards.filter((e) => e.card_type=="Special Play").length;
             const deduct =(special_plays>0) ? 1 : 0
             return this.deck_cards.length-deduct;
+        },
+        extra_card_placeholder() {
+            if(this.tournament.phase=="deck_building") {
+                return "Sponsor Card";
+            }
+            return ""
+        },
+        extra_allowed() {
+            if(this.tournament.status=="OPEN") {
+                return false;
+            }
+            return true;
         }
     },
     beforeMount() {
@@ -217,7 +269,7 @@ export default {
         this.modal().on('hidden.bs.modal', () => this.$parent.$emit('deckClosed'))
     },
     delimiters: ['[[',']]'],
-    props: ['coach','tournament','deck_id'],
+    props: ['coach','tournament','deck_id','is_owner'],
     template:   `<div class="modal fade deck" :id="'deck'+id" tabindex="-1" role="dialog" aria-labelledby="deck" aria-hidden="true">
                     <div class="modal-dialog modal-xl">
                     <div class="modal-content">
@@ -229,35 +281,46 @@ export default {
                         </div>
                         <div class="modal-body">
                             <div class="row">
-                                <div class="form-group col-6">
-                                    <select class="form-control" v-model="selected_team" :disabled="deck_player_size>0">
+                                <div class="col-12">
+                                    <h5>Team:</h5>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <select class="form-control" v-model="selected_team" :disabled="deck_player_size>0 || !is_owner">
                                         <option selected value="All">Select team</option>
                                         <option v-for="team in mixed_teams" :value="team.name" :key="team.code">[[ team.name ]] ([[ team.races.join() ]])</option>
                                     </select>
                                 </div>
-                                <div class="form-group col-6">
-                                    <input type="text" class="form-control" placeholder="Team Name" v-bind:value="deck.team_name" v-on:input="debounceUpdate($event.target.value)">
+                                <div class="form-group col-md-6">
+                                    <input type="text" :disabled="!is_owner" class="form-control" placeholder="Team Name" v-bind:value="deck.team_name" v-on:input="debounceUpdate($event.target.value)">
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-3">
-                                    <h5>Collection</h5>
+                                <div class="col-12">
+                                <h5>Sponsor: [[tournament.sponsor]]</h5>
                                 </div>
-                                <div class="col-3">
-                                    <div class="custom-control custom-checkbox mr-sm-2 text-right">
-                                        <input type="checkbox" class="custom-control-input" :id="'sptoggle'+id" v-model="show_starter">
-                                        <label class="custom-control-label" :for="'sptoggle'+id">Toggle Starter Pack</label>
+                                <div class="col-12">
+                                [[tournament.sponsor_description]]
+                                </div>
+                                <div class="form-group col-md-6" v-if="extra_allowed">
+                                    <input type="text" :disabled="!is_owner" class="d-inline  form-control" :placeholder="extra_card_placeholder" v-model="extra_card">
+                                </div>
+                                <div class="form-group col-md-6" v-if="extra_allowed">
+                                    <button type="button" :disabled="processing" class="btn-sm btn btn-success btn-block" @click="addExtraCard(extra_card)">Add</button>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                    <div class="col-6">
+                                        <h5>Collection</h5>
                                     </div>
-                                </div>
-                                <div class="col-3">
-                                    <h5>Deck [[deck_size]]/[[tournament.deck_limit]]</h5>
-                                </div>
-                                <div class="col-3 text-right">
-                                    <h5>Value: [[ cardsValue(deck_cards) ]]</h5>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-6">
+                                    <div class="col-6">
+                                        <div class="custom-control custom-checkbox mr-sm-2 text-right">
+                                            <input type="checkbox" class="custom-control-input" :id="'sptoggle'+id" v-model="show_starter">
+                                            <label class="custom-control-label" :for="'sptoggle'+id">Toggle Starter Pack</label>
+                                        </div>
+                                    </div>
+                                    </div>
                                     <div :id="'accordionCardsCollection'+id">
                                         <div class="card" v-for="ctype in card_types">
                                             <div class="card-header" :id="ctype.replace(/\\s/g, '')+'CardsCollection'+id">
@@ -294,7 +357,15 @@ export default {
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-md-6">
+                                    <div class="row">
+                                    <div class="col-6">
+                                        <h5>Deck [[deck_size]]/[[tournament.deck_limit]]</h5>
+                                    </div>
+                                    <div class="col-6 text-right">
+                                        <h5>Value: [[ cardsValue(deck_cards) ]]</h5>
+                                    </div>
+                                    </div>
                                     <div :id="'accordionCardsDeck'+id">
                                         <div class="card" v-for="ctype in card_types">
                                             <div class="card-header" :id="ctype.replace(/\\s/g, '')+'CardsDeck'+id">

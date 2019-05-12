@@ -184,6 +184,12 @@ export default {
             this.selected.coach=coach;
             this.show_deck = true;
         },
+        is_owner(coach) {
+            if(this.loggedCoach && this.loggedCoach.id==coach.id) {
+                return true;
+            }
+            return false;
+        }
     },
     computed: {
         signed() {
@@ -223,7 +229,7 @@ export default {
                 return true;
             }
             return false;
-        }
+        },
     },
     mounted() {
         this.$on('deckClosed', () => this.show_deck=false);
@@ -343,6 +349,6 @@ export default {
                     </div>
                 </div>
             </div>
-            <deck v-if="show_deck" :coach="selected.coach" :tournament="tournament" :deck_id="selected.deck_id"></deck>
+            <deck v-if="show_deck" :coach="selected.coach" :tournament="tournament" :deck_id="selected.deck_id" :is_owner="is_owner(selected.coach)"></deck>
         </div>`
 }
