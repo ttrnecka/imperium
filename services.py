@@ -6,6 +6,8 @@ from sqlalchemy import asc
 import random
 import requests
 import time
+from sqlalchemy.orm.attributes import flag_modified
+from models.marsh_models import card_schema
 
 class PackService:
 
@@ -354,6 +356,20 @@ class CoachService:
             db.session.delete(coach)
         db.session.commit()
 
+    @classmethod
+    def get_starter_cards(cls,coach):
+        used_starter_cards = DeckService.get_used_starter_cards(coach)
+        starter_cards = PackService.generate("starter").cards
+
+        for card in used_starter_cards:
+            ctype  = "in_development_deck" if card['in_development_deck']==True else "in_imperium_deck"
+            g = (i for i, acard in enumerate(starter_cards) if getattr(acard,ctype)!=True and acard.name==card['name'])
+            index = next(g)
+            setattr(starter_cards[index],ctype,True)
+
+        print(starter_cards)
+        return starter_cards
+
 class NotificationService:
     notificators = []
 
@@ -479,7 +495,7 @@ class TournamentService:
             coach.make_transaction(t)
 
             # deck
-            deck = Deck(team_name="",mixed_team="", tournament_signup = signup)
+            deck = Deck(team_name="",mixed_team="", tournament_signup = signup, extra_cards = [], unused_extra_cards = [], starter_cards = [])
             db.session.add(deck)
             
             db.session.commit()
@@ -680,26 +696,49 @@ class DeckService:
                 raise DeckError("Card not found")
         else:
             # add starting pack handling
-            pass
+            if "extra" not in card:
+                if cls.deck_type(deck)=="Development":
+                    card['in_development_deck'] = True
+                else:
+                    card['in_imperium_deck'] = True
+                deck.starter_cards.append(card)
+                flag_modified(deck, "starter_cards")
+                db.session.commit()
+            else:
+                pass
         return deck
 
     @classmethod
     def removecard(cls,deck,card):
-        cCard = Card.query.get(card["id"])
-        if cCard:
-            if deck in cCard.decks:
-                if cls.deck_type(deck)=="Development":
-                    cCard.in_development_deck = False
+        if card["id"]:
+            cCard = Card.query.get(card["id"])
+            if cCard:
+                if deck in cCard.decks:
+                    if cls.deck_type(deck)=="Development":
+                        cCard.in_development_deck = False
+                    else:
+                        cCard.in_imperium_deck = False
+                        
+                    deck.cards.remove(cCard)
+                    db.session.commit()
                 else:
-                    cCard.in_imperium_deck = False
-                    
-                deck.cards.remove(cCard)
+                    raise DeckError("Card is not in the deck")
+            else:
+                    raise DeckError("Card not found")
+        else:
+            # remove starting pack handling
+            if "extra" not in card:
+                deck.starter_cards.remove(card)
+                flag_modified(deck, "starter_cards")
                 db.session.commit()
             else:
-                raise DeckError("Card is not in the deck")
-        else:
-                raise DeckError("Card not found")
+                pass
         return deck
+
+    @classmethod
+    def get_used_starter_cards(cls,coach):
+        decks = [ts.deck for ts in coach.tournament_signups]
+        return sum([deck.starter_cards for deck in decks ],[])
 
 class DeckError(Exception):
     pass

@@ -51,9 +51,13 @@ class DeckSchema(ma.ModelSchema):
     class Meta:
         model = Deck
     
+    extra_cards = ma.List(ma.Nested(CardSchema))
+    unused_extra_cards = ma.List(ma.Nested(CardSchema))
+    starter_cards = ma.List(ma.Nested(CardSchema))
     cards = ma.Nested(CardSchema, many=True)
 
 cards_schema = CardSchema(many=True)
+card_schema = CardSchema()
 coach_schema = CoachSchema()
 leaderboard_coach_schema = CoachLeaderboardSchema(many=True)
 coaches_schema = SimpleCoachSchema(many=True)

@@ -6,7 +6,7 @@ from flask_migrate import Migrate
 from misc.helpers import CardHelper
 from models.base_model import db
 from models.data_models import Coach, Card, Account, Transaction, Tournament, TournamentSignups, Duster, TransactionError, Deck
-from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService, TransactionService, DeckService, DeckError
+from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService, TransactionService, DeckService, DeckError, CoachService
 from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema, tournament_schema, duster_schema, leaderboard_coach_schema, deck_schema
 from sqlalchemy.orm import raiseload
 from requests_oauthlib import OAuth2Session
@@ -261,56 +261,80 @@ def get_starter_cards():
 
 @app.route("/decks/<int:deck_id>", methods=["GET"])
 def get_deck(deck_id):
-    #deck = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).all()
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
+
+    coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
+    if deck.commited==False and (coach.id!=deck.tournament_signup.coach.id and not coach.web_admin):
+        raise InvalidUsage("Only owner or admin can see the deck in this phase", status_code=403)    
+
+    starter_cards = CoachService.get_starter_cards(deck.tournament_signup.coach)
     result = deck_schema.dump(deck)
-    return jsonify(result.data)
+    result2 = cards_schema.dump(starter_cards)
+    return jsonify({'deck':result.data, 'starter_cards':result2.data})
 
 # updates just base deck info not cards
 @app.route("/decks/<int:deck_id>", methods=["POST"])
 def update_deck(deck_id):
-    deck = Deck.query.get(deck_id)
-    if deck is None:
-        abort(404)
+    if current_user():
+        deck = Deck.query.get(deck_id)
+        if deck is None:
+            abort(404)
+        coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
+        if deck.tournament_signup.coach!=coach:
+            raise InvalidUsage("Unauthorized access!!!!", status_code=403)
 
-    received_deck = request.get_json()
-    deck = DeckService.update(deck,received_deck)
-    result = deck_schema.dump(deck)
-    return jsonify(result.data)
+        received_deck = request.get_json()
+        deck = DeckService.update(deck,received_deck)
+        result = deck_schema.dump(deck)
+        return jsonify(result.data)
+    else:
+        raise InvalidUsage('You are not authenticated', status_code=401)
 
 # updates just base deck info not cards
 @app.route("/decks/<int:deck_id>/addcard", methods=["POST"])
 def addcard_deck(deck_id):
-    deck = Deck.query.get(deck_id)
-    if deck is None:
-        abort(404)
+    if current_user():
+        deck = Deck.query.get(deck_id)
+        if deck is None:
+            abort(404)
+        coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
+        if deck.tournament_signup.coach!=coach:
+            raise InvalidUsage("Unauthorized access!!!!", status_code=403)
 
-    card = request.get_json()
-    try:
-        deck = DeckService.addcard(deck,card)
-    except (DeckError) as e:
-        raise InvalidUsage(str(e), status_code=403)
+        card = request.get_json()
+        try:
+            deck = DeckService.addcard(deck,card)
+        except (DeckError) as e:
+            raise InvalidUsage(str(e), status_code=403)
 
-    result = deck_schema.dump(deck)
-    return jsonify(result.data)
+        result = deck_schema.dump(deck)
+        return jsonify(result.data)
+    else:
+        raise InvalidUsage('You are not authenticated', status_code=401)
 
 # updates just base deck info not cards
 @app.route("/decks/<int:deck_id>/remove", methods=["POST"])
 def removecard_deck(deck_id):
-    deck = Deck.query.get(deck_id)
-    if deck is None:
-        abort(404)
+    if current_user():
+        deck = Deck.query.get(deck_id)
+        if deck is None:
+            abort(404)
+        coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
+        if deck.tournament_signup.coach!=coach:
+            raise InvalidUsage("Unauthorized access!!!!", status_code=403)
 
-    card = request.get_json()
-    try:
-        deck = DeckService.removecard(deck,card)
-    except (DeckError) as e:
-        raise InvalidUsage(str(e), status_code=403)
+        card = request.get_json()
+        try:
+            deck = DeckService.removecard(deck,card)
+        except (DeckError) as e:
+            raise InvalidUsage(str(e), status_code=403)
 
-    result = deck_schema.dump(deck)
-    return jsonify(result.data)
+        result = deck_schema.dump(deck)
+        return jsonify(result.data)
+    else:
+        raise InvalidUsage('You are not authenticated', status_code=401)
 
 # run the application
 if __name__ == "__main__":

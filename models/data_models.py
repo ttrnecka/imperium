@@ -1,10 +1,12 @@
 from .base_model import db, Base, QueryWithSoftDelete
 import datetime
 import logging
+import json
 from logging.handlers import RotatingFileHandler
 import os
 from sqlalchemy import UniqueConstraint, event
 from sqlalchemy.dialects import mysql 
+from sqlalchemy.types import TypeDecorator
 
 ROOT = os.path.dirname(__file__)
 
@@ -19,6 +21,20 @@ db_logger.setLevel(logging.INFO)
 handler = RotatingFileHandler(os.path.join(ROOT, '../logs/db.log'), maxBytes=10000000, backupCount=5, encoding='utf-8', mode='a')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 db_logger.addHandler(handler)
+
+class TextPickleType(TypeDecorator):
+    impl = db.Text
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = json.dumps(value)
+
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
 
 class Card(Base):
     __tablename__ = 'cards'
@@ -48,8 +64,7 @@ class Pack(Base):
     price = db.Column(db.Integer, default=0, nullable=False)
     team = db.Column(db.String(20))
 
-    coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=True)
-    deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=True)
+    coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
 
     transaction = db.relationship('Transaction',uselist=False, backref=db.backref('pack', lazy=True), cascade="all, delete-orphan",lazy=False)
     cards = db.relationship('Card', backref=db.backref('pack', lazy=False), cascade="all, delete-orphan",lazy=False)
@@ -199,13 +214,13 @@ class Deck(Base):
 
     team_name = db.Column(db.String(255),nullable=False)
     mixed_team = db.Column(db.String(255),nullable=False)
-
-    packs = db.relationship('Pack', backref=db.backref('deck', lazy=True),cascade="all, delete-orphan",lazy="subquery")
-
     cards = db.relationship("Card", secondary=deck_card_table, backref=db.backref('decks', lazy="dynamic"), lazy="dynamic")
 
-    extra_cards = db.relationship('Card', secondary="packs",backref=db.backref('extra_deck', lazy=True, uselist=False), viewonly=True,lazy="dynamic")
-
+    commited = db.Column(db.Boolean(), default=False)
+    extra_cards = db.Column(TextPickleType(), nullable=False)
+    unused_extra_cards = db.Column(TextPickleType(), nullable=False)
+    starter_cards = db.Column(TextPickleType(), nullable=False)
+    
 class TournamentSignups(Base):
     __tablename__ = 'tournaments_signups'
 
@@ -248,7 +263,7 @@ class Tournament(Base):
     special_rules = db.Column(db.Text(),nullable=True)
     prizes = db.Column(db.Text(),nullable=True)
     unique_prize = db.Column(db.Text,nullable=True)
-    phase = db.Column(db.String(255),nullable=False, default="team_building")
+    phase = db.Column(db.String(255),nullable=False, default="deck_building")
 
     coaches = db.relationship("Coach", secondary="tournaments_signups", backref=db.backref('tournaments', lazy="dynamic"), lazy="dynamic")
 

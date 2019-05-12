@@ -5,8 +5,10 @@ export default {
           processing:false,
           selected_team:"All",
           show_starter: 1,
+          coach_starter_cards:[],
           deck: {
               cards:[],
+              starter_cards:[],
               mixed_team:"",
               team_name:"",
               packs:[],
@@ -42,10 +44,14 @@ export default {
           return this.sortedCards(tmp_cards);
         },
         addToDeck(card) {
-            this.addCard(card);
+            if(this.processing!=true) {
+                this.addCard(card);
+            }
         },
         removeFromDeck(card) {
-            this.removeCard(card);
+            if(this.processing!=true) {
+                this.removeCard(card);
+            }
         },
         isInDeck(card) {
             if (this.development) {
@@ -56,18 +62,25 @@ export default {
         },
         getDeck() {
             const path = "/decks/"+this.deck_id;
+            const processingMsg = this.flash("Loading deck...", 'info');
             axios.get(path)
             .then((res) => {
-                this.deck=res.data;
+                this.deck=res.data.deck;
+                this.coach_starter_cards = res.data.starter_cards;
                 this.selected_team = (this.deck.mixed_team=="") ? "All" : this.deck.mixed_team;
+                this.modal().modal('show');
             })
             .catch((error) => {
                 if (error.response) {
-                    this.flash(error.response.data.message, 'error',{timeout: 3000});
+                    let message = (error.response.data.message) ? error.response.data.message : "Unknown error: "+error.response.status;
+                    this.flash(message, 'error',{timeout: 3000});
                 } else {
                     console.error(error);
                 }
             })
+            .then(() => {
+                processingMsg.destroy();
+            });
         },
         addCard(card) {
             const path = "/decks/"+this.deck_id+"/addcard";
@@ -78,11 +91,8 @@ export default {
                 let msg = "Card added!";
                 this.flash(msg, 'success',{timeout: 1000});
                 this.deck = res.data;
-                if (this.development) {
-                    card.in_development_deck = true;
-                } else {
-                    card.in_imperium_deck = true;
-                }
+                const check = (this.development) ? "in_development_deck" : "in_imperium_deck";
+                card[check] = true;                
             })
             .catch((error) => {
                 if (error.response) {
@@ -104,14 +114,16 @@ export default {
             axios.post(path,card)
             .then((res) => {
                 let msg = "Card removed!";
+                let ccard;
                 this.flash(msg, 'success',{timeout: 1000});
                 this.deck = res.data;
-                const ccard = this.coach.cards.find((c) => c.id == card.id);
-                if (this.development) {
-                    ccard.in_development_deck = false;
+                const check = (this.development) ? "in_development_deck" : "in_imperium_deck";
+                if(card.id) {
+                    ccard = this.coach.cards.find((c) => c.id == card.id);
                 } else {
-                    ccard.in_imperium_deck = false;
+                    ccard = this.coach_starter_cards.find((c) => c.name == card.name && c[check]==true);
                 }
+                ccard[check] = false;
             })
             .catch((error) => {
                 if (error.response) {
@@ -155,6 +167,9 @@ export default {
               that.updateDeck();
             }, 1000);
         },
+        modal() {
+            return $('#deck'+this.id);
+        }
     },
     watch: {
         selected_team: function(newValue,oldValue) { 
@@ -171,10 +186,19 @@ export default {
         },
         development() {
             return this.tournament.type=="Development";
+        },
+        deck_cards() {
+            return this.deck.cards.concat(this.deck.starter_cards);
+        },
+        collection_cards() {
+            return this.coach.cards.concat(this.coach_starter_cards);
         }
     },
     beforeMount() {
         this.getDeck();
+    },
+    mounted() {
+        this.modal().on('hidden.bs.modal', () => this.$parent.$emit('deckClosed'))
     },
     delimiters: ['[[',']]'],
     props: ['coach','tournament','deck_id'],
@@ -183,7 +207,9 @@ export default {
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Deck for [[coach.short_name]] in [[tournament.name ]]</h5>
-                            <button type="button" class="btn btn-primary ml-auto" @click="updateDeck()">Save</button>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
                         </div>
                         <div class="modal-body">
                             <div class="row">
@@ -211,7 +237,7 @@ export default {
                                     <h5>Deck</h5>
                                 </div>
                                 <div class="col-3 text-right">
-                                    <h5>Value: [[ cardsValue(deck.cards) ]]</h5>
+                                    <h5>Value: [[ cardsValue(deck_cards) ]]</h5>
                                 </div>
                             </div>
                             <div class="row">
@@ -238,7 +264,7 @@ export default {
                                                         </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <tr v-if="!isInDeck(card)" @click="addToDeck(card)" v-for="card in sortedCardsWithoutQuantity(coach.cards.concat(starter_cards()),ctype)" :key="card.id" :class="rarityclass(card.rarity)">
+                                                        <tr v-if="!isInDeck(card)" @click="addToDeck(card)" v-for="card in sortedCardsWithoutQuantity(collection_cards,ctype)" :key="card.id" :class="rarityclass(card.rarity)">
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.value ]]</td>
                                                             <td :title="card.description">[[ card.name ]]</td>
@@ -275,7 +301,7 @@ export default {
                                                         </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <tr @click="removeFromDeck(card)" v-for="card in sortedCardsWithoutQuantity(deck.cards,ctype,false)" :key="card.id" :class="rarityclass(card.rarity)">
+                                                        <tr @click="removeFromDeck(card)" v-for="card in sortedCardsWithoutQuantity(deck_cards,ctype,false)" :key="card.id" :class="rarityclass(card.rarity)">
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.value ]]</td>
                                                             <td :title="card.description">[[ card.name ]]</td>

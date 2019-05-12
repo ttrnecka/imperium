@@ -225,6 +225,9 @@ export default {
             return false;
         }
     },
+    mounted() {
+        this.$on('deckClosed', () => this.show_deck=false);
+    },
     template: `<div class="tournament">
                 <div class="card-header" :id="'tournament'+tournament.id">
                 <h5 class="mb-0">
@@ -240,7 +243,7 @@ export default {
                         <div class="col-md-3 text-right">
                             <button v-if="is_user_signed" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="resign()">Resign</button>
                             <button v-else type="button" :disabled="processing" class="col-12 m-1 btn btn-success" @click="sign()">Sign</button>
-                            <button v-if="is_user_signed" type="button" class="btn col-12 m-1 btn-primary" data-toggle="modal" :data-target="'#deckC'+loggedCoach.id+'T'+tournament.id" @click="showDeck(loggedCoach)">My Deck</button>
+                            <button v-if="is_user_signed" type="button" class="btn col-12 m-1 btn-primary"  @click="showDeck(loggedCoach)">My Deck</button>
                         </div>
                     </div>
                 </h5>
@@ -269,10 +272,7 @@ export default {
                         <div class="col-12"><b>Discord Channel</b>: #[[tournament.discord_channel]]</div>
                     </div>
                     <div class="row tournament_info_line">
-                        <div class="col-12"><b>Signed</b>: [[signed_coaches_names.join(", ")]]</div>
-                    </div>
-                    <div class="row tournament_info_line">
-                        <div class="col-12"><b>Signed</b>: <a href="#" @click="showDeck(coach)" data-toggle="modal" :data-target="'#deckC'+coach.id+'T'+tournament.id" v-for="coach in signed_coaches" :key="coach.id">[[coach.short_name]] </a></div>
+                        <div class="col-12"><b>Signed</b>: <span v-for="coach in signed_coaches" :key="coach.id">[[coach.short_name]] (<a href="#" @click="showDeck(coach)">Deck</a>) </span></div>
                     </div>
                     <div class="row tournament_info_line">
                         <div class="col-12"><b>Prizes</b>:</div>
