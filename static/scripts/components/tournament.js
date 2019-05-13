@@ -258,8 +258,8 @@ export default {
                 <div class="card-body">
                     <div class="row tournament_info_line">
                         <div class="col-sm-3"><b>Signup By:</b>: [[ tournament.signup_close_date ]]</div>
-                        <div class="col-sm-3"><b>Start</b>: [[ tournament.expect_start_date ]]</div>
-                        <div class="col-sm-3"><b>End</b>: [[ tournament.expect_end_date ]]</div>
+                        <div class="col-sm-3"><b>Start</b>: [[ tournament.expected_start_date ]]</div>
+                        <div class="col-sm-3"><b>End</b>: [[ tournament.expected_end_date ]]</div>
                         <div class="col-sm-3"><b>Deadline</b>: [[ tournament.deadline_date ]]</div>
                     </div>
                     <div class="row tournament_info_line">
