@@ -314,7 +314,6 @@ def addcard_deck(deck_id):
     else:
         raise InvalidUsage('You are not authenticated', status_code=401)
 
-# updates just base deck info not cards
 @app.route("/decks/<int:deck_id>/addcard/extra", methods=["POST"])
 def addcardextra_deck(deck_id):
     if not current_user():
@@ -330,6 +329,27 @@ def addcardextra_deck(deck_id):
     name = request.get_json()['name']
     try:
         deck = DeckService.addextracard(deck,name)
+    except (DeckError) as e:            
+        raise InvalidUsage(str(e), status_code=403)
+
+    result = deck_schema.dump(deck)
+    return jsonify(result.data)
+
+@app.route("/decks/<int:deck_id>/removecard/extra", methods=["POST"])
+def removecardextra_deck(deck_id):
+    if not current_user():
+        raise InvalidUsage('You are not authenticated', status_code=401)
+    deck = Deck.query.get(deck_id)
+    if deck is None:
+        abort(404)
+
+    coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
+    if deck.tournament_signup.coach!=coach:
+        raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+
+    name = request.get_json()['name']
+    try:
+        deck = DeckService.removeextracard(deck,name)
     except (DeckError) as e:            
         raise InvalidUsage(str(e), status_code=403)
 

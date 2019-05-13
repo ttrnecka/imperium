@@ -177,3 +177,8 @@
   border: 0 none;
   border-radius: 0;
 }
+
+.extra_card {
+  font-style: italic;
+  font-weight: bold;
+}

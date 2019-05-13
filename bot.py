@@ -1079,6 +1079,9 @@ class DiscordCommand:
                     await self.send_message(self.message.channel, [f"Tournament admin {tourn.admin} was not found on the discord server, check name in the Tournament sheet and run **!admincomp update**!\n"])
                     return
 
+                tourn.phase="deck_building"
+                db.session.commit()
+                
                 submit_deck_channel = discord.utils.get(self.client.get_all_channels(), name='submit-a-deck')
 
                 members = [discord.utils.get(self.client.get_all_members(), id=str(coach.disc_id)) for coach in tourn.coaches.filter(TournamentSignups.mode=="active")]

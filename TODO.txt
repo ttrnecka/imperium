@@ -1,7 +1,9 @@
 
 VERY HIGH
-card value/collection value
+add deck templates
 Add manage deck capability (web)
+RENAME production cards
+Dream Team and Galacticos are now Hired Muscle and Personal Army
 
 MEDIUM
 Adminlist/list - show transactions(genpacks/adminbanks) for given coach

@@ -11,6 +11,7 @@ export default {
               cards:[],
               starter_cards:[],
               extra_cards:[],
+              unused_extra_cards:[],
               mixed_team:"",
               team_name:"",
               packs:[],
@@ -111,7 +112,33 @@ export default {
             const processingMsg = this.flash("Processing...", 'info');
             axios.post(path,{name: name})
             .then((res) => {
-                let msg = "Card added!";
+                let msg = "Extra card added!";
+                this.flash(msg, 'success',{timeout: 1000});
+                this.deck = res.data;
+                this.extra_card = "";
+            })
+            .catch((error) => {
+                if (error.response) {
+                    this.flash(error.response.data.message, 'error',{timeout: 3000});
+                } else {
+                    console.error(error);
+                }
+            })
+            .then(() => {
+                processingMsg.destroy();
+                this.processing=false;
+            });
+        },
+        removeExtraCard(name) {
+            if(!this.is_owner) {
+                return;
+            }
+            const path = "/decks/"+this.deck_id+"/removecard/extra";
+            this.processing= true;
+            const processingMsg = this.flash("Processing...", 'info');
+            axios.post(path,{name: name})
+            .then((res) => {
+                let msg = "Extra card removed!";
                 this.flash(msg, 'success',{timeout: 1000});
                 this.deck = res.data;
             })
@@ -217,6 +244,15 @@ export default {
         },
         modal() {
             return $('#deck'+this.id);
+        },
+        extra_type(type) {
+            switch(type) {
+                case "base":
+                case null:
+                    return "";
+                default:
+                    return "extra_card";
+            }
         }
     },
     watch: {
@@ -235,19 +271,24 @@ export default {
         development() {
             return this.tournament.type=="Development";
         },
-        deck_cards() {
+
+        user_deck_cards() {
             return this.deck.cards.concat(this.deck.starter_cards);
         },
+
+        deck_cards() {
+            return this.deck.cards.concat(this.deck.starter_cards,this.deck.extra_cards);
+        },
         collection_cards() {
-            return this.coach.cards.concat(this.coach_starter_cards,this.deck.extra_cards);
+            return this.coach.cards.concat(this.coach_starter_cards,this.deck.unused_extra_cards);
         },
         deck_player_size() {
             return this.deck_cards.filter((e) => e.card_type=="Player").length;
         },
         deck_size() {
-            const special_plays = this.deck_cards.filter((e) => e.card_type=="Special Play").length;
+            const special_plays = this.user_deck_cards.filter((e) => e.card_type=="Special Play").length;
             const deduct =(special_plays>0) ? 1 : 0
-            return this.deck_cards.length-deduct;
+            return this.user_deck_cards.length-deduct;
         },
         extra_card_placeholder() {
             if(this.tournament.phase=="deck_building") {
@@ -275,9 +316,7 @@ export default {
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Deck for [[coach.short_name]] in [[tournament.name ]]</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
+                            <button type="button" :disabled="processing" class="btn btn btn-danger" @click="commit()">Commit</button>
                         </div>
                         <div class="modal-body">
                             <div class="row">
@@ -301,11 +340,36 @@ export default {
                                 <div class="col-12">
                                 [[tournament.sponsor_description]]
                                 </div>
-                                <div class="form-group col-md-6" v-if="extra_allowed">
-                                    <input type="text" :disabled="!is_owner" class="d-inline  form-control" :placeholder="extra_card_placeholder" v-model="extra_card">
-                                </div>
-                                <div class="form-group col-md-6" v-if="extra_allowed">
-                                    <button type="button" :disabled="processing" class="btn-sm btn btn-success btn-block" @click="addExtraCard(extra_card)">Add</button>
+                            </div>
+                            <div class="row">
+                                <div :id="'extraCardsAccordion'+id" class="col-12 mb-3 mt-3" v-if="extra_allowed">
+                                    <div class="card-header" :id="'extraCards'+id">
+                                        <h5 class="mb-0">
+                                            <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseExtraCards'+id" aria-expanded="true" aria-controls="collapseExtraCards">
+                                            Extra Cards
+                                            </button>
+                                        </h5>
+                                    </div>
+                                    <div :id="'collapseExtraCards'+id" class="collapse hide" aria-labelledby="extraCards'" :data-parent="'#extraCardsAccordion'+id">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <input type="text" :disabled="!is_owner" class="d-inline  form-control" :placeholder="extra_card_placeholder" v-model="extra_card">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <button type="button" :disabled="processing" class="btn-sm btn btn-success btn-block mb-1" @click="addExtraCard(extra_card)">Add</button>
+                                                </div>
+                                                <template v-for="card in deck.unused_extra_cards">
+                                                    <div class="col-md-6 pt-1 pl-4">
+                                                    <h6 class="extra_card">[[card.name]]</h6>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <button type="button" :disabled="processing" class="btn-sm mb-1 btn btn-danger btn-block" @click="removeExtraCard(card.name)">Remove</button>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="row">
@@ -343,7 +407,7 @@ export default {
                                                         </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <tr v-if="!isInDeck(card)" @click="addToDeck(card)" v-for="card in sortedCardsWithoutQuantity(collection_cards,ctype)" :key="card.id" :class="rarityclass(card.rarity)">
+                                                        <tr v-if="!isInDeck(card)" @click="addToDeck(card)" v-for="card in sortedCardsWithoutQuantity(collection_cards,ctype)" :key="card.id" :class="[rarityclass(card.rarity), extra_type(card.deck_type)]">
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.value ]]</td>
                                                             <td :title="card.description">[[ card.name ]]</td>
@@ -388,7 +452,7 @@ export default {
                                                         </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <tr @click="removeFromDeck(card)" v-for="card in sortedCardsWithoutQuantity(deck_cards,ctype,false)" :key="card.id" :class="rarityclass(card.rarity)">
+                                                        <tr @click="removeFromDeck(card)" v-for="card in sortedCardsWithoutQuantity(deck_cards,ctype,false)" :key="card.id" :class="[rarityclass(card.rarity), extra_type(card.deck_type)]">
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.value ]]</td>
                                                             <td :title="card.description">[[ card.name ]]</td>

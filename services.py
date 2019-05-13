@@ -680,9 +680,23 @@ class DeckService:
     @classmethod
     def addextracard(cls,deck,name):
         card = CardService.get_card_from_sheet(name)
+
         if card:
-            deck.extra_cards.append(card_schema.dump(CardService.init_Card_from_card(card)).data)
-            flag_modified(deck, "extra_cards")
+            cCard= CardService.init_Card_from_card(CardService.get_card_from_sheet(name))
+            cCard.deck_type = "extra"
+            deck.unused_extra_cards.append(card_schema.dump(cCard).data)
+            flag_modified(deck, "unused_extra_cards")
+            db.session.commit()
+            return deck
+        else:
+            raise DeckError(f"Card {name} does not exist")
+    
+    @classmethod
+    def removeextracard(cls,deck,name):
+        card = CardService.get_card_from_sheet(name)
+        if card:
+            deck.unused_extra_cards.remove(card_schema.dump(CardService.init_Card_from_card(card)).data)
+            flag_modified(deck, "unused_extra_cards")
             db.session.commit()
             return deck
         else:
@@ -707,16 +721,28 @@ class DeckService:
                 raise DeckError("Card not found")
         else:
             # add starting pack handling
-            if "extra" not in card:
+            if card["deck_type"]=="base":
                 if cls.deck_type(deck)=="Development":
                     card['in_development_deck'] = True
                 else:
                     card['in_imperium_deck'] = True
                 deck.starter_cards.append(card)
                 flag_modified(deck, "starter_cards")
-                db.session.commit()
             else:
-                pass
+                #extra cards
+                if card in deck.unused_extra_cards:
+                    deck.unused_extra_cards.remove(card)
+                    if cls.deck_type(deck)=="Development":
+                        card['in_development_deck'] = True
+                    else:
+                        card['in_imperium_deck'] = True
+                    deck.extra_cards.append(card)
+                    deck.unused_extra_cards.append(card)
+                    flag_modified(deck, "extra_cards")
+                    flag_modified(deck, "unused_extra_cards")
+                else:
+                    raise DeckError("Extra card not found")
+            db.session.commit()
         return deck
 
     @classmethod
@@ -738,12 +764,24 @@ class DeckService:
                     raise DeckError("Card not found")
         else:
             # remove starting pack handling
-            if "extra" not in card:
+            if card["deck_type"]=="base":
                 deck.starter_cards.remove(card)
                 flag_modified(deck, "starter_cards")
-                db.session.commit()
             else:
-                pass
+                #extra cards
+                if card in deck.unused_extra_cards:
+                    deck.unused_extra_cards.remove(card)
+                    deck.extra_cards.remove(card)
+                    if cls.deck_type(deck)=="Development":
+                        card['in_development_deck'] = False
+                    else:
+                        card['in_imperium_deck'] = False
+                    deck.unused_extra_cards.append(card)
+                    flag_modified(deck, "extra_cards")
+                    flag_modified(deck, "unused_extra_cards")
+                else:
+                    raise DeckError("Extra card not found")
+            db.session.commit()
         return deck
 
     @classmethod

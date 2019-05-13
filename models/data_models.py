@@ -47,6 +47,7 @@ class Card(Base):
     subtype = db.Column(db.String(30), nullable=False)
     notes = db.Column(db.String(255))
     value = db.Column(db.Integer, nullable=False, default=1)
+    deck_type = db.Column(db.String(255), nullable=False, default="base")
 
     pack_id = db.Column(db.Integer, db.ForeignKey('packs.id'), nullable=False)
     duster_id = db.Column(db.Integer, db.ForeignKey('dusters.id'))
