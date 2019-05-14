@@ -1,9 +1,7 @@
 
 VERY HIGH
 add deck templates
-Add manage deck capability (web)
-RENAME production cards
-Dream Team and Galacticos are now Hired Muscle and Personal Army
+disable dusting of cards used in deck
 
 MEDIUM
 Adminlist/list - show transactions(genpacks/adminbanks) for given coach
