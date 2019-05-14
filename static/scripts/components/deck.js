@@ -366,7 +366,7 @@ export default {
                                     <input type="text" :disabled="!is_owner" class="form-control" placeholder="Team Name" v-bind:value="deck.team_name" v-on:input="debounceUpdate($event.target.value)">
                                 </div>
                             </div>
-                            <div class="row">
+                            <div class="row mb-4">
                                 <div class="col-12">
                                 <h5>Sponsor: [[tournament.sponsor]]</h5>
                                 </div>
