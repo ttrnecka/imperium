@@ -24,10 +24,16 @@ export default {
             if(!this.is_owner) {
                 return false;
             }
+
             if(this.processing==true) {
                 return false;
             }
             
+            if(card.duster) {
+                this.flash("Cannot add card - card is flagged for dusting!", 'error',{timeout: 3000});
+                    return false;
+            }
+
             if(this.deck_size==this.tournament.deck_limit) {
                 if (card.card_type!="Special Play" || this.user_special_plays.length!=0) {
                     this.flash("Cannot add card - deck limit reached!", 'error',{timeout: 3000});

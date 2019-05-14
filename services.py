@@ -310,7 +310,7 @@ class CardService:
 
     @classmethod
     def get_undusted_Card_from_coach(cls,coach,name):
-        cards = Card.query.join(Card.coach).filter(Coach.id == coach.id, Card.name == name, Card.duster_id == None).all()
+        cards = Card.query.join(Card.coach).filter(Coach.id == coach.id, Card.name == name, Card.duster_id == None, Card.in_development_deck == False, Card.in_imperium_deck == False).all()
 
         if len(cards)==0:
             return None
@@ -583,6 +583,8 @@ class DusterService:
     
     @classmethod
     def check_and_dust(cls,coach,card):
+        if card.in_development_deck or card.in_imperium_deck:
+            raise DustingError("Cannot dust card that is used in the deck!!!")
         if card.coach.id != coach.id:
             raise DustingError("Coach ID mismatch!!!")
         duster = cls.get_duster(coach)
@@ -611,7 +613,7 @@ class DusterService:
     def dust_card_by_name(cls,coach,card_name):
         card=CardService.get_undusted_Card_from_coach(coach,card_name)
         if card is None:
-            raise DustingError(f"Card **{card_name}** - not found, check spelling, or maybe it is already dusted")
+            raise DustingError(f"Card **{card_name}** - not found, check spelling, or maybe it is already dusted or used in deck")
         return cls.check_and_dust(coach,card)
 
     @classmethod
@@ -759,6 +761,8 @@ class DeckService:
             if cCard is not None:
                 if deck in cCard.decks:
                     raise DeckError("Card is already in the deck")
+                elif cCard.duster is not None:
+                    raise DeckError("Cannot add card - card is flagged for dusting!")
                 else:
                     if cls.deck_type(deck)=="Development":
                         cCard.in_development_deck = True
