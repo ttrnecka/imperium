@@ -272,6 +272,10 @@ export default {
         id() {
             return 'C'+this.coach.id+'T'+this.tournament.id;
         },
+        tier_tax() {
+            const team = this.mixed_teams.find((t)=> t.name==this.selected_team);
+            return (team) ? team['tier_tax'] : 0;
+        },
         development() {
             return this.tournament.type=="Development";
         },
@@ -450,7 +454,7 @@ export default {
                                         <h5>Deck [[deck_size]]/[[tournament.deck_limit]]</h5>
                                     </div>
                                     <div class="col-6 text-right">
-                                        <h5>Value: [[ cardsValue(user_deck_cards) ]]</h5>
+                                        <h5>Value: [[ cardsValue(user_deck_cards) + tier_tax ]]</h5>
                                     </div>
                                     </div>
                                     <div :id="'accordionCardsDeck'+id">
