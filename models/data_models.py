@@ -26,13 +26,13 @@ class TextPickleType(TypeDecorator):
     impl = db.Text
 
     def process_bind_param(self, value, dialect):
-        if value is not None:
+        if value not in [None,""]:
             value = json.dumps(value)
 
         return value
 
     def process_result_value(self, value, dialect):
-        if value is not None:
+        if value not in [None,""]:
             value = json.loads(value)
         return value
 
@@ -54,6 +54,8 @@ class Card(Base):
 
     in_development_deck = db.Column(db.Boolean(), default=False)
     in_imperium_deck = db.Column(db.Boolean(), default=False)
+    assigned_to = db.Column(db.String(255),default="")
+    uuid = db.Column(db.String(255),default="", index=True)
 
     def __repr__(self):
         return f'<Card {self.name}, rarity: {self.rarity}, pack_id: {self.pack_id}>'

@@ -8,6 +8,7 @@ import requests
 import time
 from sqlalchemy.orm.attributes import flag_modified
 from models.marsh_models import card_schema
+import uuid
 
 class PackService:
 
@@ -382,6 +383,18 @@ class NotificationService:
     def register_notifier(cls,func):
         cls.notificators.append(func)
 
+class LedgerNotificationService:
+    notificators = []
+
+    @classmethod
+    def notify(cls,msg):
+        for notificator in cls.notificators:
+            notificator(msg)
+
+    @classmethod
+    def register_notifier(cls,func):
+        cls.notificators.append(func)
+
 class TournamentService:
     @classmethod
     def init_dict_from_tournament(cls,tournament):
@@ -684,6 +697,8 @@ class DeckService:
         if card:
             cCard= CardService.init_Card_from_card(CardService.get_card_from_sheet(name))
             cCard.deck_type = "extra"
+            cCard.assigned_to=""
+            cCard.uuid = str(uuid.uuid4())
             deck.unused_extra_cards.append(card_schema.dump(cCard).data)
             flag_modified(deck, "unused_extra_cards")
             db.session.commit()
@@ -692,15 +707,50 @@ class DeckService:
             raise DeckError(f"Card {name} does not exist")
     
     @classmethod
-    def removeextracard(cls,deck,name):
-        card = CardService.get_card_from_sheet(name)
+    def removeextracard(cls,deck,card):
         if card:
-            deck.unused_extra_cards.remove(card_schema.dump(CardService.init_Card_from_card(card)).data)
+            deck.unused_extra_cards.remove(card)
+            if card in deck.extra_cards:
+                deck.extra_cards.remove(card)
+                flag_modified(deck, "extra_cards")
             flag_modified(deck, "unused_extra_cards")
             db.session.commit()
             return deck
         else:
-            raise DeckError(f"Card {name} does not exist")
+            raise DeckError(f"Card does not exist")
+
+    @classmethod
+    def assigncard(cls,deck,card):
+        if card['card_type']!="Training":
+            raise DeckError(f"Cannot assign non-training card!")
+        if card["id"]:
+            cCard = Card.query.get(card["id"])
+            cCard.assigned_to = card["assigned_to"]
+            db.session.commit()
+        else:
+            # starting pack handling - there should not be any training starter card
+            if card["deck_type"] in ["base",None]:
+                raise DeckError(f"Unexpected dard type!")
+            else:
+                #extra cards
+                tcard = next((c for c in deck.unused_extra_cards if c['uuid'] == card['uuid']), None)
+                if tcard:
+                    deck.unused_extra_cards.remove(tcard)
+                    deck.extra_cards.remove(tcard)
+                    if cls.deck_type(deck)=="Development":
+                        tcard['in_development_deck'] = True
+                    else:
+                        tcard['in_imperium_deck'] = True
+                    
+                    tcard['assigned_to']=card['assigned_to']
+                    deck.extra_cards.append(tcard)
+                    deck.unused_extra_cards.append(tcard)
+                    flag_modified(deck, "extra_cards")
+                    flag_modified(deck, "unused_extra_cards")
+                else:
+                    raise DeckError("Extra card not found")
+            db.session.commit()
+        return deck
 
     @classmethod
     def addcard(cls,deck,card):
@@ -721,7 +771,7 @@ class DeckService:
                 raise DeckError("Card not found")
         else:
             # add starting pack handling
-            if card["deck_type"]=="base":
+            if card["deck_type"] in ["base",None]:
                 if cls.deck_type(deck)=="Development":
                     card['in_development_deck'] = True
                 else:
@@ -755,7 +805,8 @@ class DeckService:
                         cCard.in_development_deck = False
                     else:
                         cCard.in_imperium_deck = False
-                        
+                    
+                    cCard.assigned_to=""
                     deck.cards.remove(cCard)
                     db.session.commit()
                 else:
@@ -764,7 +815,7 @@ class DeckService:
                     raise DeckError("Card not found")
         else:
             # remove starting pack handling
-            if card["deck_type"]=="base":
+            if card["deck_type"] in ["base",None]:
                 deck.starter_cards.remove(card)
                 flag_modified(deck, "starter_cards")
             else:
@@ -788,6 +839,29 @@ class DeckService:
     def get_used_starter_cards(cls,coach):
         decks = [ts.deck for ts in coach.tournament_signups]
         return sum([deck.starter_cards for deck in decks ],[])
+
+    @classmethod
+    def commit(cls,deck):
+        deck.commited=True
+        db.session.commit()
+        coach = deck.tournament_signup.coach
+        tournament = deck.tournament_signup.tournament
+        admins = Coach.find_all_by_name(tournament.admin)
+        if len(admins) == 1:
+            admin_mention =f'<@{admins[0].disc_id}>'
+        else:
+            admin_mention = deck.tournament_signup.admin
+        
+        coach_mention=coach.short_name()
+
+        LedgerNotificationService.notify(f'{admin_mention} - {coach_mention} submitted ledger for {tournament.id}. {tournament.name} - channel {tournament.discord_channel}')
+
+        # check if all ledgers are commited
+        deck_states = [ts.deck.commited for ts in tournament.tournament_signups]
+        if False not in deck_states:
+            LedgerNotificationService.notify(f'{admin_mention} - All ledgers are now commited for {tournament.id}. {tournament.name} - channel {tournament.discord_channel}')
+            tournament.phase="special_play"
+        return deck
 
 class DeckError(Exception):
     pass

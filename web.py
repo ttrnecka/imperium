@@ -6,7 +6,7 @@ from flask_migrate import Migrate
 from misc.helpers import CardHelper
 from models.base_model import db
 from models.data_models import Coach, Card, Account, Transaction, Tournament, TournamentSignups, Duster, TransactionError, Deck
-from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService, TransactionService, DeckService, DeckError, CoachService
+from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService, TransactionService, DeckService, DeckError, CoachService, LedgerNotificationService
 from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema, tournament_schema, duster_schema, leaderboard_coach_schema, deck_schema
 from sqlalchemy.orm import raiseload
 from requests_oauthlib import OAuth2Session
@@ -23,6 +23,7 @@ def create_app():
     
     # register wehook as Tournament service notifier
     NotificationService.register_notifier(WebHook(app.config['DISCORD_WEBHOOK_BANK']).send)
+    LedgerNotificationService.register_notifier(WebHook(app.config['DISCORD_WEBHOOK_LEDGER']).send)
     return app
 
 app = create_app()
@@ -168,6 +169,9 @@ def tournament_close(tournament_id):
 
             for coach in tourn.coaches:
                 TournamentService.unregister(tourn,coach,admin=True,refund=False)
+            tourn.phase="deck_building"
+            db.session.commit()
+
             result = tournament_schema.dump(tourn)
             return jsonify(result.data)
         except (RegistrationError,TransactionError) as e:
@@ -314,6 +318,27 @@ def addcard_deck(deck_id):
     else:
         raise InvalidUsage('You are not authenticated', status_code=401)
 
+@app.route("/decks/<int:deck_id>/assign", methods=["POST"])
+def assigncard_deck(deck_id):
+    if not current_user():
+        raise InvalidUsage('You are not authenticated', status_code=401)
+
+    deck = Deck.query.get(deck_id)
+    if deck is None:
+        abort(404)
+    coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
+    if deck.tournament_signup.coach!=coach:
+        raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+
+    card = request.get_json()
+    try:
+        deck = DeckService.assigncard(deck,card)
+    except (DeckError) as e:
+        raise InvalidUsage(str(e), status_code=403)
+
+    result = deck_schema.dump(deck)
+    return jsonify(result.data)
+    
 @app.route("/decks/<int:deck_id>/addcard/extra", methods=["POST"])
 def addcardextra_deck(deck_id):
     if not current_user():
@@ -347,9 +372,9 @@ def removecardextra_deck(deck_id):
     if deck.tournament_signup.coach!=coach:
         raise InvalidUsage("Unauthorized access!!!!", status_code=403)
 
-    name = request.get_json()['name']
+    card = request.get_json()
     try:
-        deck = DeckService.removeextracard(deck,name)
+        deck = DeckService.removeextracard(deck,card)
     except (DeckError) as e:            
         raise InvalidUsage(str(e), status_code=403)
 
@@ -359,24 +384,46 @@ def removecardextra_deck(deck_id):
 # updates just base deck info not cards
 @app.route("/decks/<int:deck_id>/remove", methods=["POST"])
 def removecard_deck(deck_id):
-    if current_user():
-        deck = Deck.query.get(deck_id)
-        if deck is None:
-            abort(404)
-        coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
-        if deck.tournament_signup.coach!=coach:
-            raise InvalidUsage("Unauthorized access!!!!", status_code=403)
-
-        card = request.get_json()
-        try:
-            deck = DeckService.removecard(deck,card)
-        except (DeckError) as e:
-            raise InvalidUsage(str(e), status_code=403)
-
-        result = deck_schema.dump(deck)
-        return jsonify(result.data)
-    else:
+    if not current_user():
         raise InvalidUsage('You are not authenticated', status_code=401)
+
+    deck = Deck.query.get(deck_id)
+    if deck is None:
+        abort(404)
+    coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
+    if deck.tournament_signup.coach!=coach:
+        raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+
+    card = request.get_json()
+    try:
+        deck = DeckService.removecard(deck,card)
+    except (DeckError) as e:
+        raise InvalidUsage(str(e), status_code=403)
+
+    result = deck_schema.dump(deck)
+    return jsonify(result.data)
+    
+# commits deck
+@app.route("/decks/<int:deck_id>/commit", methods=["GET"])
+def commit_deck(deck_id):
+    if not current_user():
+        raise InvalidUsage('You are not authenticated', status_code=401)
+    
+    deck = Deck.query.get(deck_id)
+    if deck is None:
+        abort(404)
+    
+    coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
+    if deck.tournament_signup.coach!=coach:
+        raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+
+    try:
+        deck = DeckService.commit(deck)
+    except (DeckError) as e:
+        raise InvalidUsage(str(e), status_code=403)
+
+    result = deck_schema.dump(deck)
+    return jsonify(result.data)
 
 # run the application
 if __name__ == "__main__":

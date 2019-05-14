@@ -1056,7 +1056,9 @@ class DiscordCommand:
                 await self.send_message(self.message.channel, [f"Tournaments updated!!!\n"])
             if self.args[1]=="stop":
                 for coach in tourn.coaches:
-                    TournamentService.unregister(tourn,coach,admin=True,refund=False)    
+                    TournamentService.unregister(tourn,coach,admin=True,refund=False)
+                tourn.phase="deck_building"
+                db.session.commit() 
                 await self.send_message(self.message.channel, [f"Coaches have been resigned from {tourn.name}!!!\n"])
                 return
 
@@ -1081,7 +1083,7 @@ class DiscordCommand:
 
                 tourn.phase="deck_building"
                 db.session.commit()
-                
+
                 submit_deck_channel = discord.utils.get(self.client.get_all_channels(), name='submit-a-deck')
 
                 members = [discord.utils.get(self.client.get_all_members(), id=str(coach.disc_id)) for coach in tourn.coaches.filter(TournamentSignups.mode=="active")]

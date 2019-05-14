@@ -22,6 +22,7 @@ Vue.mixin({
         {"code":"vt",   "name":'Violence Together',      "races":['Ogre' , 'Goblin','Orc', 'Lizardman']}
       ],
       card_types: ["Player","Training","Special Play","Staff"],
+      show_starter:1,
     }
   },
   methods: { 
@@ -52,7 +53,49 @@ Vue.mixin({
     },
     starter_cards() {
       return window.starter_cards;
-    }
+    },
+    sortedCards(cards) {
+      var order = this.rarityorder;
+      function compare(a,b) {
+        return (order[a.rarity] - order[b.rarity]) || a.name.localeCompare(b.name);
+      }
+      return cards.slice().sort(compare);
+    },
+
+    sortedCardsWithoutQuantity(cards,filter="",mixed_filter=true) {
+      let tmp_cards;
+      if (!this.show_starter) {
+        tmp_cards =  cards.filter(function(i) { return i.id != null});
+      }
+      else {
+        tmp_cards =  cards
+      }
+      if (filter!="") {
+        tmp_cards =  tmp_cards.filter(function(i) { return i.card_type == filter});
+      }
+
+      if (this.selected_team!="All" && filter=="Player" && mixed_filter) {
+        const races = this.mixed_teams.find((e) => { return e.name == this.selected_team }).races;
+        tmp_cards =  tmp_cards.filter(function(i) { return i.race.split("/").some((r) => races.includes(r))});
+      }
+      return this.sortedCards(tmp_cards);
+    },
+
+    sortedCardsWithQuantity(cards,filter="") {
+      let new_collection = {}
+      const sorted = this.sortedCardsWithoutQuantity(cards,filter);
+      for (let i=0, len = sorted.length; i<len; i++) {
+        if (new_collection.hasOwnProperty(sorted[i].name)) {
+          new_collection[sorted[i].name]['quantity'] += 1
+        }
+        else {
+          new_collection[sorted[i].name] = {}
+          new_collection[sorted[i].name]["card"] = sorted[i]
+          new_collection[sorted[i].name]["quantity"] = 1
+        }
+      }
+      return new_collection;
+    },
   },
   computed: {
   }
@@ -62,7 +105,6 @@ var app = new Vue({
     el: '#app',
     data () {
       return {
-        show_starter: 1,
         coaches: [],
         selectedCoach: {
           short_name: "",
@@ -168,48 +210,6 @@ var app = new Vue({
           .catch((error) => {
             console.error(error);
           });
-      },
-      sortedCards(cards) {
-        var order = this.rarityorder;
-        function compare(a,b) {
-          return (order[a.rarity] - order[b.rarity]) || a.name.localeCompare(b.name);
-        }
-        return cards.slice().sort(compare);
-      },
-
-      sortedCardsWithoutQuantity(cards,filter="") {
-        let tmp_cards;
-        if (!this.show_starter) {
-          tmp_cards =  cards.filter(function(i) { return i.id != null});
-        }
-        else {
-          tmp_cards =  cards
-        }
-        if (filter!="") {
-          tmp_cards =  tmp_cards.filter(function(i) { return i.card_type == filter});
-        }
-
-        if (this.selected_team!="All" && filter=="Player") {
-          const races = this.mixed_teams.find((e) => { return e.name == this.selected_team }).races;
-          tmp_cards =  tmp_cards.filter(function(i) { return i.race.split("/").some((r) => races.includes(r))});
-        }
-        return this.sortedCards(tmp_cards);
-      },
-
-      sortedCardsWithQuantity(cards,filter="") {
-        let new_collection = {}
-        const sorted = this.sortedCardsWithoutQuantity(cards,filter);
-        for (let i=0, len = sorted.length; i<len; i++) {
-          if (new_collection.hasOwnProperty(sorted[i].name)) {
-            new_collection[sorted[i].name]['quantity'] += 1
-          }
-          else {
-            new_collection[sorted[i].name] = {}
-            new_collection[sorted[i].name]["card"] = sorted[i]
-            new_collection[sorted[i].name]["quantity"] = 1
-          }
-        }
-        return new_collection;
       },
       debounceCoachSearch(val){
         if(this.search_timeout) clearTimeout(this.search_timeout);
