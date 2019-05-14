@@ -10,6 +10,6 @@ app.app_context().push()
 ROOT = os.path.dirname(__file__)
 
 for ts in TournamentSignups.query.all():
-    ts.deck.skill_allocations = Deck(team_name="",mixed_team="", tournament_signup = ts, extra_cards = [], unused_extra_cards = [], starter_cards = [])
+    deck = Deck(team_name="",mixed_team="", tournament_signup = ts, extra_cards = [], unused_extra_cards = [], starter_cards = [])
     db.session.add(deck)
     db.session.commit()
