@@ -151,6 +151,9 @@ Vue.mixin({
         case "Training Wildcard":
           names = ["MVPCondition2"];
           break;
+        case "Sidestep":
+          names = ["SideStep"];
+          break;
         default:
           names = [card.name.replace(/\s/g, '')]
       }
