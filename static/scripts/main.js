@@ -96,6 +96,70 @@ Vue.mixin({
       }
       return new_collection;
     },
+
+    skills_for(card) {
+      if(card.card_type!="Training") {
+        return "";
+      }
+      const url = "https://cdn2.rebbl.net/images/skills/";
+      let names=[];
+      switch(card.name) {
+        case "Strength Up!":
+          names = ["IncreaseStrength"];
+        case "Agility Up!":
+          names = ["IncreaseAgility"];
+          break;
+        case "Movement Up!":
+          names = ["IncreaseMovement"];
+          break;
+        case "Armour Up!":
+          names = ["IncreaseArmour"];
+          break;
+        case "Block Party":
+          names = ["Block","Block","Block"];
+          break;
+        case "Roger Dodger":
+          names = ["Dodge","Dodge","Dodge"];
+          break;
+        case "Packing a Punch":
+          names = ["MightyBlow","MightyBlow","MightyBlow"];
+          break;
+        case "Ballhawk":
+          names = ["Wrestle","Tackle","StripBall"];
+          break;
+        case "Roadblock":
+          names = ["Block","Dodge","StandFirm"];
+          break;
+        case "Cold-Blooded Killer":
+          names = ["MightyBlow","PilingOn"];
+          break;
+        case "Sniper":
+          names = ["Accurate","StrongArm"];
+          break;
+        case "A Real Nuisance":
+          names = ["SideStep","DivingTackle"];
+          break;
+        case "Insect DNA":
+          names = ["TwoHeads","ExtraArms"];
+          break;
+        case "Super Wildcard":
+          names = ["MVPCondition"];
+          break;
+        case "I Didn't Read The Rules":
+          names = ["MVPCondition"];
+          break;
+        case "Training Wildcard":
+          names = ["MVPCondition2"];
+          break;
+        default:
+          names = [card.name.replace(/\s/g, '')]
+      }
+      const full_url = url+name+".png"
+      names = names.map((e) => {
+        return "<img class=\"skill_icon\" src=\""+url+e+".png\" title=\""+e+"\"></img>";  
+      })
+      return names.join("");
+    }
   },
   computed: {
   }

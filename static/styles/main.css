@@ -182,3 +182,9 @@
   font-style: italic;
   font-weight: bold;
 }
+
+img.skill_icon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 5px;
+}

@@ -137,6 +137,7 @@
                                                             <th>Rarity</th>
                                                             <th>Value</th>
                                                             <th>Name</th>
+                                                            <th v-if="ctype=='Training'">Skills</th>
                                                             <th>Race</th>
                                                             <th class="d-none d-sm-table-cell">Subtype</th>
                                                             <th class="d-none d-sm-table-cell">Quantity</th>
@@ -148,6 +149,7 @@
                                                             <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.card.value ]]</td>
                                                             <td :title="card.card.description">[[ card.card.name ]]</td>
+                                                            <td v-if="ctype=='Training'"><span v-html="skills_for(card.card)"></span></td>
                                                             <td>[[ card.card.race ]]</td>
                                                             <td class="d-none d-sm-table-cell">[[ card.card.subtype ]]</td>
                                                             <td>[[ card.quantity ]]</td>
@@ -186,6 +188,7 @@
                                                             <th>Rarity</th>
                                                             <th class="d-none d-sm-table-cell">Value</th>
                                                             <th>Name</th>
+                                                            <th v-if="ctype=='Training'">Skills</th>
                                                             <th class="d-none d-sm-table-cell">Race</th>
                                                             <th class="d-none d-sm-table-cell">Subtype</th>
                                                             <th style="width: 15%"></th>
@@ -196,6 +199,7 @@
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
                                                             <td class="d-none d-sm-table-cell">[[ card.value ]]</td>
                                                             <td :title="card.description">[[ card.name ]]</td>
+                                                            <td v-if="ctype=='Training'"><span v-html="skills_for(card)"></span></td>
                                                             <td class="d-none d-sm-table-cell">[[ card.race ]]</td>
                                                             <td class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
                                                             <td class="text-right">
