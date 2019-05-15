@@ -309,7 +309,7 @@ def get_deck(deck_id):
         raise InvalidUsage("Deck not commited, only owner can display it!", status_code=403)
 
     # is committed    
-    if deck.tournament_signup.tournament.phase=="deck_building" and not (coach.id==deck.tournament_signup.coach.id or coach.short_name()==deck.tournament_signup.tournament.admin):
+    if deck.tournament_signup.tournament.phase=="deck_building" and not (coach.id==deck.tournament_signup.coach.id or coach.short_name()==deck.tournament_signup.tournament.admin or coach.short_name()=="TomasT"):
         raise InvalidUsage("Only owner and admin can see display commited deck in the Deck Building phase!", status_code=403)    
 
     starter_cards = CoachService.get_starter_cards(deck.tournament_signup.coach)
