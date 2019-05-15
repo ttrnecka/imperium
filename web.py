@@ -135,6 +135,12 @@ def get_tournaments():
     result = tournaments_schema.dump(all_tournaments)
     return jsonify(result.data)
 
+@app.route("/tournaments/<int:tournament_id>", methods=["GET"])
+def get_tournament(tournament_id):
+    tourn = Tournament.query.get(tournament_id)
+    result = tournament_schema.dump(tourn)
+    return jsonify(result.data)
+    
 @app.route("/tournaments/update", methods=["GET"])
 def tournaments_update():
     if current_user():
@@ -170,6 +176,29 @@ def tournament_close(tournament_id):
             for coach in tourn.coaches:
                 TournamentService.unregister(tourn,coach,admin=True,refund=False)
             tourn.phase="deck_building"
+            db.session.commit()
+
+            result = tournament_schema.dump(tourn)
+            return jsonify(result.data)
+        except (RegistrationError,TransactionError) as e:
+            raise InvalidUsage(str(e), status_code=403)
+    else:
+        raise InvalidUsage('You are not authenticated', status_code=401)
+
+@app.route("/tournaments/<int:tournament_id>/set_phase", methods=["POST"])
+def tournament_set_phase(tournament_id):
+    if current_user():
+        try:
+            tourn = Tournament.query.get(tournament_id)
+            coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
+            if not coach:
+                raise InvalidUsage("Coach not found", status_code=403)    
+            if not coach.short_name()==tourn.admin:
+                raise InvalidUsage("You are not admin for this tournament!", status_code=403)    
+            phase = request.get_json()['phase']
+            if phase not in ["deck_building","locked","special_play","inducement"]:
+                raise InvalidUsage(f"Incorrect phase - {phase}", status_code=403)  
+            tourn.phase=phase
             db.session.commit()
 
             result = tournament_schema.dump(tourn)
@@ -263,6 +292,11 @@ def get_starter_cards():
     result = cards_schema.dump(starter_cards)
     return jsonify(result.data)
 
+# DECKS
+
+def locked(deck):
+    return True if deck.tournament_signup.tournament.phase=="locked" else False
+
 @app.route("/decks/<int:deck_id>", methods=["GET"])
 def get_deck(deck_id):
     deck = Deck.query.get(deck_id)
@@ -270,8 +304,13 @@ def get_deck(deck_id):
         abort(404)
 
     coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
-    if deck.commited==False and (coach.id!=deck.tournament_signup.coach.id and not coach.web_admin):
-        raise InvalidUsage("Only owner or admin can see the deck in this phase", status_code=403)    
+
+    if not deck.commited and (coach.id!=deck.tournament_signup.coach.id or not coach.short_name()=="TomasT"):
+        raise InvalidUsage("Deck not commited, only owner can display it!", status_code=403)
+
+    # is committed    
+    if deck.tournament_signup.tournament.phase=="deck_building" and not (coach.id==deck.tournament_signup.coach.id or coach.short_name()==deck.tournament_signup.tournament.admin):
+        raise InvalidUsage("Only owner and admin can see display commited deck in the Deck Building phase!", status_code=403)    
 
     starter_cards = CoachService.get_starter_cards(deck.tournament_signup.coach)
     result = deck_schema.dump(deck)
@@ -285,16 +324,19 @@ def update_deck(deck_id):
         deck = Deck.query.get(deck_id)
         if deck is None:
             abort(404)
+        if locked(deck):
+            raise InvalidUsage('Deck is locked!', status_code=403)
+
         coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
         if deck.tournament_signup.coach!=coach:
-            raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+            raise InvalidUsage("Unauthorized access!", status_code=403)
 
-        received_deck = request.get_json()
+        received_deck = request.get_json()['deck']
         deck = DeckService.update(deck,received_deck)
         result = deck_schema.dump(deck)
         return jsonify(result.data)
     else:
-        raise InvalidUsage('You are not authenticated', status_code=401)
+        raise InvalidUsage('You are not authenticated!', status_code=401)
 
 # updates just base deck info not cards
 @app.route("/decks/<int:deck_id>/addcard", methods=["POST"])
@@ -303,9 +345,12 @@ def addcard_deck(deck_id):
         deck = Deck.query.get(deck_id)
         if deck is None:
             abort(404)
+        if locked(deck):
+            raise InvalidUsage("Deck is locked!", status_code=403)
+
         coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
         if deck.tournament_signup.coach!=coach:
-            raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+            raise InvalidUsage("Unauthorized access!", status_code=403)
 
         card = request.get_json()
         try:
@@ -326,9 +371,12 @@ def assigncard_deck(deck_id):
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
+    if locked(deck):
+            raise InvalidUsage("Deck is locked!", status_code=403)
+
     coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
     if deck.tournament_signup.coach!=coach:
-        raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+        raise InvalidUsage("Unauthorized access!", status_code=403)
 
     card = request.get_json()
     try:
@@ -346,10 +394,12 @@ def addcardextra_deck(deck_id):
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
+    if locked(deck):
+            raise InvalidUsage("Deck is locked!", status_code=403)
 
     coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
     if deck.tournament_signup.coach!=coach:
-        raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+        raise InvalidUsage("Unauthorized access!", status_code=403)
 
     name = request.get_json()['name']
     try:
@@ -367,10 +417,12 @@ def removecardextra_deck(deck_id):
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
+    if locked(deck):
+            raise InvalidUsage("Deck is locked!", status_code=403)
 
     coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
     if deck.tournament_signup.coach!=coach:
-        raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+        raise InvalidUsage("Unauthorized access!", status_code=403)
 
     card = request.get_json()
     try:
@@ -381,7 +433,6 @@ def removecardextra_deck(deck_id):
     result = deck_schema.dump(deck)
     return jsonify(result.data)
 
-# updates just base deck info not cards
 @app.route("/decks/<int:deck_id>/remove", methods=["POST"])
 def removecard_deck(deck_id):
     if not current_user():
@@ -390,9 +441,12 @@ def removecard_deck(deck_id):
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
+    if locked(deck):
+            raise InvalidUsage("Deck is locked!", status_code=403)
+
     coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
     if deck.tournament_signup.coach!=coach:
-        raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+        raise InvalidUsage("Unauthorized access!", status_code=403)
 
     card = request.get_json()
     try:
@@ -412,7 +466,9 @@ def commit_deck(deck_id):
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
-    
+    if locked(deck):
+            raise InvalidUsage("Deck is locked!", status_code=403)
+
     coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
     if deck.tournament_signup.coach!=coach:
         raise InvalidUsage("Unauthorized access!!!!", status_code=403)

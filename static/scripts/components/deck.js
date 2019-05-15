@@ -14,6 +14,7 @@ export default {
               unused_extra_cards:[],
               mixed_team:"",
               team_name:"",
+              comment:"",
               packs:[],
               search_timeout: null,
           }
@@ -24,7 +25,10 @@ export default {
             if(!this.is_owner) {
                 return false;
             }
-
+            if(this.locked) {
+                this.flash("Deck is locked!", 'info',{timeout: 3000});
+                return false;
+            }
             if(this.processing==true) {
                 return false;
             }
@@ -34,7 +38,7 @@ export default {
                     return false;
             }
 
-            if(this.deck_size==this.tournament.deck_limit) {
+            if(this.deck_size==this.tournament.deck_limit && card.deck_type!="extra") {
                 if (card.card_type!="Special Play" || this.user_special_plays.length!=0) {
                     this.flash("Cannot add card - deck limit reached!", 'error',{timeout: 3000});
                     return false;
@@ -58,6 +62,10 @@ export default {
         },
         canRemoveFromDeck(card) {
             if(!this.is_owner) {
+                return false;
+            }
+            if(this.locked) {
+                this.flash("Deck is locked!", 'info',{timeout: 3000});
                 return false;
             }
             if(this.processing==true) {
@@ -105,6 +113,10 @@ export default {
             if(!this.is_owner) {
                 return;
             }
+            if(this.locked) {
+                this.flash("Deck is locked!", 'info',{timeout: 3000});
+                return;
+            }
             const path = "/decks/"+this.deck_id+"/addcard/extra";
             this.processing= true;
             const processingMsg = this.flash("Processing...", 'info');
@@ -125,6 +137,10 @@ export default {
             if(!this.is_owner) {
                 return;
             }
+            if(this.locked) {
+                this.flash("Deck is locked!", 'info',{timeout: 3000});
+                return;
+            }
             const path = "/decks/"+this.deck_id+"/removecard/extra";
             this.processing= true;
             const processingMsg = this.flash("Processing...", 'info');
@@ -140,8 +156,43 @@ export default {
                 this.processing=false;
             });
         },
+        deck_valid() {
+            if(this.deck_player_size<11) {
+                this.flash("You need to include at least 11 player cards!", 'error',{timeout: 3000});
+                return false;
+            }
+            if(this.deck_size!=this.tournament.deck_limit) {
+                this.flash("You need to include "+this.tournament.deck_limit+" cards!", 'error',{timeout: 3000});
+                return false;
+            }
+
+            if(this.deck.team_name=="") {
+                this.flash("Team name is not specified!", 'error',{timeout: 3000});
+                return false;
+            }
+
+            if(this.deck.mixed_team=="All") {
+                this.flash("Team mixed race is not specified!", 'error',{timeout: 3000});
+                return false;
+            }
+
+            let training_cards = this.sortedCardsWithoutQuantity(this.deck_cards,"Training",false);
+            let found_card = training_cards.find((c)=> c.assigned_to=="");
+            if(found_card!=undefined) {
+                this.flash("Not all training cards are assigned to players!", 'error',{timeout: 3000});
+                return false;
+            }
+            return true;
+        },
         commit() {
             if(!this.is_owner) {
+                return;
+            }
+            if(this.locked) {
+                this.flash("Deck is locked!", 'info',{timeout: 3000});
+                return;
+            }
+            if(!this.deck_valid()) {
                 return;
             }
             const path = "/decks/"+this.deck_id+"/commit";
@@ -152,6 +203,7 @@ export default {
                 let msg = "Deck commited!";
                 this.flash(msg, 'success',{timeout: 1000});
                 this.deck = res.data;
+                this.$parent.$emit('reloadTournament');
             })
             .catch(this.async_error)
             .then(() => {
@@ -179,6 +231,13 @@ export default {
         },
 
         assignCard(card) {
+            if(!this.is_owner) {
+                return;
+            }
+            if(this.locked) {
+                this.flash("Deck is locked!", 'info',{timeout: 3000});
+                return;
+            }
             const path = "/decks/"+this.deck_id+"/assign";
             this.processing= true;
             const processingMsg = this.flash("Processing...", 'info');
@@ -226,10 +285,19 @@ export default {
             if(!this.is_owner) {
                 return;
             }
+            if(this.locked) {
+                this.flash("Deck is locked!", 'info',{timeout: 3000});
+                return;
+            }
             const path = "/decks/"+this.deck_id;
             this.processing= true;
             const processingMsg = this.flash("Processing...", 'info');
-            axios.post(path,this.deck)
+            const send_deck = {
+                team_name:this.deck.team_name,
+                mixed_team:this.deck.mixed_team,
+                comment:this.deck.comment,
+            }
+            axios.post(path,{deck:send_deck})
             .then((res) => {
                 let msg = "Deck saved!";
                 this.flash(msg, 'success',{timeout: 3000});
@@ -241,11 +309,19 @@ export default {
                 this.processing=false;
             });
         },
-        debounceUpdate(val){
+        debounceUpdateName(val){
             if(this.search_timeout) clearTimeout(this.search_timeout);
             var that=this;
             this.search_timeout = setTimeout(function() {
               that.deck.team_name = val;
+              that.updateDeck();
+            }, 1000);
+        },
+        debounceUpdateComment(val){
+            if(this.search_timeout) clearTimeout(this.search_timeout);
+            var that=this;
+            this.search_timeout = setTimeout(function() {
+              that.deck.comment = val;
               that.updateDeck();
             }, 1000);
         },
@@ -333,6 +409,10 @@ export default {
                 return false;
             }
             return true;
+        },
+
+        locked() {
+            return this.tournament.phase=="locked";
         }
     },
     beforeMount() {
@@ -348,30 +428,39 @@ export default {
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Deck for [[coach.short_name]] in [[tournament.name ]]</h5>
-                            <button type="button" :disabled="processing" class="btn btn btn-danger" v-if="is_owner && !deck.commited" @click="commit()">Commit</button>
-                            <button type="button" disabled class="btn btn btn-success" v-if="deck.commited">Committed</button>
+                            <button type="button" :disabled="processing" class="btn btn btn-danger" v-if="is_owner && !deck.commited && !locked" @click="commit()">Commit</button>
+                            <button type="button" disabled class="btn btn btn-success" v-if="deck.commited && !locked">Committed</button>
+                            <button type="button" disabled class="btn btn btn-info" v-if="locked">Locked</button>
                         </div>
                         <div class="modal-body">
                             <div class="row">
                                 <div class="col-12">
                                     <h5>Team:</h5>
                                 </div>
-                                <div class="form-group col-md-6">
-                                    <select class="form-control" v-model="selected_team" :disabled="deck_player_size>0 || !is_owner">
+                                <div class="form-group col-lg-6">
+                                    <select class="form-control" v-model="selected_team" :disabled="deck_player_size>0 || !is_owner || locked">
                                         <option selected value="All">Select team</option>
                                         <option v-for="team in mixed_teams" :value="team.name" :key="team.code">[[ team.name ]] ([[ team.races.join() ]])</option>
                                     </select>
                                 </div>
-                                <div class="form-group col-md-6">
-                                    <input type="text" :disabled="!is_owner" class="form-control" placeholder="Team Name" v-bind:value="deck.team_name" v-on:input="debounceUpdate($event.target.value)">
+                                <div class="form-group col-lg-6">
+                                    <input type="text" :disabled="!is_owner || locked" class="form-control" placeholder="Team Name" v-bind:value="deck.team_name" v-on:input="debounceUpdateName($event.target.value)">
                                 </div>
                             </div>
-                            <div class="row mb-4">
+                            <div class="row mb-3">
                                 <div class="col-12">
                                 <h5>Sponsor: [[tournament.sponsor]]</h5>
                                 </div>
                                 <div class="col-12">
-                                [[tournament.sponsor_description]]
+                                [[tournament.special_rules]]
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                <h5>Comment:</h5>
+                                </div>
+                                <div class="col-12">
+                                <textarea class="form-control" :disabled="!is_owner || locked" rows="3" v-bind:value="deck.comment" v-on:input="debounceUpdateComment($event.target.value)"></textarea>
                                 </div>
                             </div>
                             <div class="row">
@@ -387,17 +476,17 @@ export default {
                                         <div class="card-body">
                                             <div class="row">
                                                 <div class="col-md-6">
-                                                    <input type="text" :disabled="!is_owner" class="d-inline  form-control" :placeholder="extra_card_placeholder" v-model="extra_card">
+                                                    <input type="text" :disabled="!is_owner || locked" class="d-inline  form-control" :placeholder="extra_card_placeholder" v-model="extra_card">
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <button type="button" :disabled="processing" class="btn-sm btn btn-success btn-block mb-1" @click="addExtraCard(extra_card)">Add</button>
+                                                    <button type="button" :disabled="processing || !is_owner || locked" class="btn-sm btn btn-success btn-block mb-1" @click="addExtraCard(extra_card)">Add</button>
                                                 </div>
                                                 <template v-for="card in deck.unused_extra_cards">
                                                     <div class="col-md-6 pt-1 pl-4">
                                                     <h6 class="extra_card">[[card.name]]</h6>
                                                     </div>
                                                     <div class="col-md-6">
-                                                        <button type="button" :disabled="processing" class="btn-sm mb-1 btn btn-danger btn-block" @click="removeExtraCard(card)">Remove</button>
+                                                        <button type="button" :disabled="processing || !is_owner || locked" class="btn-sm mb-1 btn btn-danger btn-block" @click="removeExtraCard(card)">Remove</button>
                                                     </div>
                                                 </template>
                                             </div>
@@ -406,8 +495,8 @@ export default {
                                 </div>
                             </div>
                             <div class="row">
-                                <div class="col-md-6">
-                                    <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="row mt-1">
                                     <div class="col-6">
                                         <h5>Collection</h5>
                                     </div>
@@ -432,8 +521,10 @@ export default {
                                                     <table class="table  table-striped table-hover">
                                                         <thead>
                                                         <tr>
-                                                            <th>Rarity</th>
-                                                            <th>Value</th>
+                                                            <th class="d-none d-xl-table-cell">Rarity</th>
+                                                            <th class="d-xl-none">R</th>
+                                                            <th class="d-none d-xl-table-cell">Value</th>
+                                                            <th class="d-xl-none">V</th>
                                                             <th>Name</th>
                                                             <th>Race</th>
                                                             <th class="d-none d-sm-table-cell">Subtype</th>
@@ -454,8 +545,8 @@ export default {
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="row mt-1">
                                     <div class="col-6">
                                         <h5>Deck [[deck_size]]/[[tournament.deck_limit]]</h5>
                                     </div>
@@ -477,28 +568,34 @@ export default {
                                                     <table class="table  table-striped table-hover">
                                                         <thead>
                                                         <tr>
-                                                            <th>Rarity</th>
-                                                            <th>Value</th>
+                                                            <th class="d-none d-xl-table-cell">Rarity</th>
+                                                            <th class="d-xl-none">R</th>
+                                                            <th class="d-none d-xl-table-cell">Value</th>
+                                                            <th class="d-xl-none">V</th>
                                                             <th>Name</th>
-                                                            <th v-if="ctype!='Training'">Race</th>
-                                                            <th v-else>Player</th>
+                                                            <th v-if="ctype=='Player'">Race</th>
                                                             <th class="d-none d-sm-table-cell">Subtype</th>
                                                         </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <tr @click="removeFromDeck(card)" v-for="(card,index) in sortedCardsWithoutQuantity(deck_cards,ctype,false)" :key="card.id" :class="[rarityclass(card.rarity), extra_type(card.deck_type)]">
+                                                        <template v-for="(card,index) in sortedCardsWithoutQuantity(deck_cards,ctype,false)">
+                                                        <tr @click="removeFromDeck(card)" :key="card.id" :class="[rarityclass(card.rarity), extra_type(card.deck_type)]">
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.value ]]</td>
                                                             <td :title="card.description">[[ card.name ]]</td>
-                                                            <td v-if="ctype!='Training'">[[ card.race ]]</td>
-                                                            <td v-else>
-                                                                <select class="form-control" v-model="card.assigned_to" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner">
-                                                                    <option default value="">Select Player</option>
-                                                                    <option v-for="card in deck_player_cards" :value="card.name">[[ card.name ]]</option>
-                                                                </select>
-                                                            </td>
+                                                            <td v-if="ctype=='Player'">[[ card.race ]]</td>
                                                             <td class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
                                                         </tr>
+                                                        <tr v-if="ctype=='Training'" :class="[rarityclass(card.rarity)]">
+                                                            <th colspan="2">Assigned to:</th>
+                                                            <td colspan="3">
+                                                                <select class="form-control" v-model="card.assigned_to" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
+                                                                    <option default value="">Select Player</option>
+                                                                    <option v-for="(card,index) in deck_player_cards" :key="index" :value="card.name+index">[[index+1]]. [[ card.name ]]</option>
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                        </template>
                                                         </tbody>
                                                     </table>
                                                 </div>

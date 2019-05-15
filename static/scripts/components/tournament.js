@@ -12,8 +12,15 @@ export default {
           selected: {
               coach:{},
               deck_id:null,
+              phase:"deck_building",
           },
           show_deck:false,
+          phases: [
+              {"name":"deck_building", "desc":"Deck Building"},
+              {"name":"locked", "desc":"Locked"},
+              {"name":"special_play", "desc":"Special Play"},
+              {"name":"inducement", "desc":"Inducement"},
+          ]
       }
     },
     delimiters: ['[[',']]'],
@@ -123,6 +130,28 @@ export default {
                 });
             }
         },
+        set_phase() {
+            this.processing=true;
+            const path = "/tournaments/"+this.tournament.id+"/set_phase";
+            const processingMsg = this.flash("Processing...", 'info');
+            axios.post(path,{phase: this.selected.phase})
+            .then((res) => {
+                let msg = "Phase updated!";
+                this.flash(msg, 'success',{timeout: 3000});
+                this.$parent.$emit('updateTournament', res.data);
+            })
+            .catch((error) => {
+                if (error.response) {
+                    this.flash(error.response.data.message, 'error',{timeout: 3000});
+                } else {
+                    console.error(error);
+                }
+            })
+            .then(() => {
+                processingMsg.destroy();
+                this.processing=false;
+            });
+        },
         sign() {
             this.call("sign");
         },
@@ -132,11 +161,16 @@ export default {
         update() {
             this.call("update");
         },
+        get() {
+            this.call("get");
+        },
         call(method) {
             let path;
             if(method=="update") {
                 path = "/tournaments/"+method;
                 this.flash("Updating...", 'info',{timeout: 3000});
+            } else if(method=="get") {
+                path = "/tournaments/"+this.tournament.id;
             } else {
                 path = "/tournaments/"+this.tournament.id+"/"+method;
             }
@@ -152,6 +186,9 @@ export default {
                 else if(method=="update") {
                     msg = "Tournaments updated";
                 }
+                else if(method=="get") {
+                    msg = "Tournament updated";
+                }
                 this.flash(msg, 'success',{timeout: 3000});
                 if(this.tournament.fee>0 && ["sign","resign"].includes(method)) {
                     if(method=="sign") {
@@ -161,7 +198,7 @@ export default {
                     }
                     this.flash(msg, 'info',{timeout: 3000});
                 }
-                if(["sign","resign"].includes(method)) {
+                if(["sign","resign","get"].includes(method)) {
                     this.$parent.$emit('updateTournament', res.data);
                 } else if(method=="update") {
                     this.$parent.$emit('updateTournaments', res.data);
@@ -191,7 +228,15 @@ export default {
             return false;
         }
     },
+    watch: {
+        deck_id: function(newValue,oldValue) { 
+            this.getDeck();
+        },
+    },
     computed: {
+        selected_phase() {
+            return this.selected.phase;
+        },
         signed() {
             return this.tournament.tournament_signups.filter((e) => { return e.mode=="active"});
         },
@@ -230,9 +275,24 @@ export default {
             }
             return false;
         },
+        is_tournament_admin() {
+            if(this.loggedCoach && this.loggedCoach.short_name==this.tournament.admin) {
+                return true;
+            }
+            return false;
+        },
+        phase() {
+            let found = this.phases.find((p) => p.name == this.tournament.phase);
+            if(found) {
+                return found;
+            }
+            return this.phases[0];
+        }
     },
     mounted() {
         this.$on('deckClosed', () => this.show_deck=false);
+        this.$on('reloadTournament', this.get);
+        this.selected.phase=this.tournament.phase;
     },
     template: `<div class="tournament">
                 <div class="card-header" :id="'tournament'+tournament.id">
@@ -275,7 +335,14 @@ export default {
                         <div class="col-sm-3"><b>Reserves</b>: [[reserved.length]]/[[ tournament.reserve_limit ]]</div>
                     </div>
                     <div class="row tournament_info_line">
-                        <div class="col-12"><b>Discord Channel</b>: #[[tournament.discord_channel]]</div>
+                        <div class="col-6"><b>Discord Channel</b>: #[[tournament.discord_channel]]</div>
+                        <div class="col-3"><b>Deck Phase:</b></div>
+                        <div class="col-3" v-if="!is_tournament_admin">[[phase.desc]]</div>
+                        <div class="col-3" v-else>
+                            <select class="form-control" v-model="selected.phase" @change="set_phase()">
+                                <option v-for="phase in phases" :value="phase.name" :key="phase.name">[[ phase.desc ]]</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="row tournament_info_line">
                         <div class="col-12"><b>Signed</b>: <span v-for="coach in signed_coaches" :key="coach.id">[[coach.short_name]] (<a href="#" @click="showDeck(coach)">Deck</a>) </span></div>

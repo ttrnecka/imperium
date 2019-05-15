@@ -223,7 +223,8 @@ class Deck(Base):
     extra_cards = db.Column(TextPickleType(), nullable=False)
     unused_extra_cards = db.Column(TextPickleType(), nullable=False)
     starter_cards = db.Column(TextPickleType(), nullable=False)
-    
+    comment = db.Column(db.Text(),nullable=False, default="")
+
 class TournamentSignups(Base):
     __tablename__ = 'tournaments_signups'
 

@@ -10,7 +10,7 @@ app.app_context().push()
 
 ROOT = os.path.dirname(__file__)
 
-for ts in TournamentSignups.query.all():
-    ts.deck.starter_cards=[]
-    flag_modified(ts.deck, "starter_cards")
-    db.session.commit()
+for t in Tournament.query.all():
+    if t.phase=="":
+        t.phase="deck_building"
+        db.session.commit()

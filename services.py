@@ -686,6 +686,7 @@ class DeckService:
         return {
             "team_name":params["team_name"],
             "mixed_team":params["mixed_team"],
+            "comment":params["comment"],
         }
     
     @classmethod
@@ -853,6 +854,9 @@ class DeckService:
         admins = Coach.find_all_by_name(tournament.admin)
         if len(admins) == 1:
             admin_mention =f'<@{admins[0].disc_id}>'
+        elif len(admins) > 1:
+            match_admins = [admin for admin in admins if admin.short_name()==tournament.admin]
+            admin_mention = f'<@{match_admins[0].disc_id}>'
         else:
             admin_mention = deck.tournament_signup.admin
         
@@ -863,8 +867,9 @@ class DeckService:
         # check if all ledgers are commited
         deck_states = [ts.deck.commited for ts in tournament.tournament_signups]
         if False not in deck_states:
-            LedgerNotificationService.notify(f'{admin_mention} - All ledgers are now commited for {tournament.id}. {tournament.name} - channel {tournament.discord_channel}')
-            tournament.phase="special_play"
+            LedgerNotificationService.notify(f'{admin_mention} - All ledgers are locked & commited now for {tournament.id}. {tournament.name} - channel {tournament.discord_channel}')
+            tournament.phase="locked"
+            db.session.commit()
         return deck
 
 class DeckError(Exception):
