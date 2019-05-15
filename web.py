@@ -305,7 +305,7 @@ def get_deck(deck_id):
 
     coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
 
-    if not deck.commited and (coach.id!=deck.tournament_signup.coach.id or not coach.short_name()=="TomasT"):
+    if not deck.commited and not (coach.id==deck.tournament_signup.coach.id or coach.short_name()=="TomasT"):
         raise InvalidUsage("Deck not commited, only owner can display it!", status_code=403)
 
     # is committed    
