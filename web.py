@@ -299,6 +299,9 @@ def locked(deck):
 
 @app.route("/decks/<int:deck_id>", methods=["GET"])
 def get_deck(deck_id):
+    if not current_user():
+        raise InvalidUsage('You are not authenticated', status_code=401)
+
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
