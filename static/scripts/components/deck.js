@@ -398,16 +398,22 @@ export default {
 
         extra_card_placeholder() {
             if(this.tournament.phase=="deck_building") {
-                return "Sponsor Card";
+                return "Extra & Sponsor Cards";
+            }
+            if(this.tournament.phase=="special_play") {
+                return "Special Play & Inducement";
+            }
+            if(this.tournament.phase=="inducement") {
+                return "Special Play & Inducement";
             }
             return ""
         },
 
         // allows extra cards menu
         extra_allowed() {
-            if(this.tournament.status=="OPEN") {
-                return false;
-            }
+            //if(this.tournament.status=="OPEN") {
+            //    return false;
+            //}
             return true;
         },
 

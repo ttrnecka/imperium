@@ -155,7 +155,7 @@ Vue.mixin({
           names = ["SideStep"];
           break;
         default:
-          names = [card.name.replace(/\s/g, '')]
+          names = [card.name.replace(/[\s-]/g, '')]
       }
       const full_url = url+name+".png"
       names = names.map((e) => {
