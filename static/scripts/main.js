@@ -23,6 +23,7 @@ Vue.mixin({
       ],
       card_types: ["Player","Training","Special Play","Staff"],
       show_starter:1,
+      skillreg: /(Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Loner)[ ,.]|(Block$)/g,
     }
   },
   methods: { 
@@ -137,7 +138,6 @@ Vue.mixin({
       if(card.card_type!="Player") {
         return card.name;
       }
-      let reg = /(Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player)[ ,.]|(Block$)/g;
       let str;
       if(["Unique","Legendary"].includes(card.rarity)) {
         str = card.description
@@ -146,7 +146,7 @@ Vue.mixin({
       }
       let matches=[];
       let match;
-      while (match = reg.exec(str)) {
+      while (match = this.skillreg.exec(str)) {
         if(!(match.input.match("Pro Elf") && match[1]=="Pro")) {
           if(match[1]) {
             matches.push(match[1]);
@@ -155,8 +155,30 @@ Vue.mixin({
           }
         }
 
-        if (reg.lastIndex === match.index) {
-            reg.lastIndex++;
+        if (this.skillreg.lastIndex === match.index) {
+          this.skillreg.lastIndex++;
+        }
+      }
+      return matches.map((s) => this.imgs_for_skill(s)).join("");
+    },
+    skills_for_special_and_staff(card) {
+      if(!["Special Play","Staff"].includes(card.card_type)) {
+        return card.name;
+      }
+      let str = card.description
+      let matches=[];
+      let match;
+      while (match = this.skillreg.exec(str)) {
+        if(!(match.input.match("Pro Elf") && match[1]=="Pro")) {
+          if(match[1]) {
+            matches.push(match[1]);
+          } else if (match[2]) {
+            matches.push(match[2]);
+          }
+        }
+
+        if (this.skillreg.lastIndex === match.index) {
+          this.skillreg.lastIndex++;
         }
       }
       return matches.map((s) => this.imgs_for_skill(s)).join("");
@@ -166,7 +188,7 @@ Vue.mixin({
         return this.skills_for_player(card);
       }
       if(["Special Play", "Staff"].includes(card.card_type)) {
-        return this.skills_for_player(card);
+        return this.skills_for_special_and_staff(card);
       } 
       let skills=[];
       switch(card.name) {

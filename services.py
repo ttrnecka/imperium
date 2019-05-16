@@ -368,7 +368,6 @@ class CoachService:
             index = next(g)
             setattr(starter_cards[index],ctype,True)
 
-        print(starter_cards)
         return starter_cards
 
 class NotificationService:
