@@ -97,74 +97,118 @@ Vue.mixin({
       return new_collection;
     },
 
-    skills_for(card) {
-      if(card.card_type!="Training") {
-        return "";
-      }
-      const url = "https://cdn2.rebbl.net/images/skills/";
-      let names=[];
-      switch(card.name) {
+    imgs_for_skill(skill) {
+      let name;
+      switch(skill) {
         case "Strength Up!":
-          names = ["IncreaseStrength"];
+        case "ST+":
+        case "+ST":
+          name = "IncreaseStrength";
+          break;
         case "Agility Up!":
-          names = ["IncreaseAgility"];
+        case "AG+":
+        case "+AG":
+          name = "IncreaseAgility";
           break;
         case "Movement Up!":
-          names = ["IncreaseMovement"];
+        case "MA+":
+        case "+MA":
+          name = "IncreaseMovement";
           break;
         case "Armour Up!":
-          names = ["IncreaseArmour"];
-          break;
-        case "Block Party":
-          names = ["Block","Block","Block"];
-          break;
-        case "Roger Dodger":
-          names = ["Dodge","Dodge","Dodge"];
-          break;
-        case "Packing a Punch":
-          names = ["MightyBlow","MightyBlow","MightyBlow"];
-          break;
-        case "Ballhawk":
-          names = ["Wrestle","Tackle","StripBall"];
-          break;
-        case "Roadblock":
-          names = ["Block","Dodge","StandFirm"];
-          break;
-        case "Cold-Blooded Killer":
-          names = ["MightyBlow","PilingOn"];
-          break;
-        case "Sniper":
-          names = ["Accurate","StrongArm"];
-          break;
-        case "A Real Nuisance":
-          names = ["SideStep","DivingTackle"];
-          break;
-        case "Insect DNA":
-          names = ["TwoHeads","ExtraArms"];
-          break;
-        case "Super Wildcard":
-          names = ["MVPCondition"];
-          break;
-        case "I Didn't Read The Rules":
-          names = ["MVPCondition"];
-          break;
-        case "Training Wildcard":
-          names = ["MVPCondition2"];
+        case "AV+":
+        case "+AV":
+          name = "IncreaseArmour";
           break;
         case "Sidestep":
-          names = ["SideStep"];
+          name = "SideStep";
           break;
         case "Nerves of Steel":
-          names = ["NervesOfSteel"];
+          name = "NervesOfSteel";
           break;
         default:
-          names = [card.name.replace(/[\s-]/g, '')]
+          name = skill.replace(/[\s-]/g, '')
       }
-      const full_url = url+name+".png"
-      names = names.map((e) => {
-        return "<img class=\"skill_icon\" src=\""+url+e+".png\" title=\""+e+"\"></img>";  
+      const url = "https://cdn2.rebbl.net/images/skills/";
+      return "<img class=\"skill_icon\" src=\""+url+name+".png\" title=\""+skill+"\"></img>";  
+    },
+
+    skills_for_player(card) {
+      if(card.card_type!="Player") {
+        return card.name;
+      }
+      let reg = /(Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player)/g;
+      let str;
+      if(["Unique","Legendary"].includes(card.rarity)) {
+        str = card.description
+      } else {
+        str = card.name
+      }
+      let matches=[];
+      let match;
+      while (match = reg.exec(str)) {
+        if(!match.input.match("Pro Elf")) {
+          matches.push(match);
+        }
+
+        if (reg.lastIndex === match.index) {
+            reg.lastIndex++;
+        }
+      }
+      return matches.map((s) => this.imgs_for_skill(s[0])).join("");
+    },
+    skills_for(card) {
+      if(card.card_type=="Player") {
+        return this.skills_for_player(card);
+      }
+      if(["Special Play", "Staff"].includes(card.card_type)) {
+        return this.skills_for_player(card);
+      } 
+      let skills=[];
+      switch(card.name) {
+        case "Block Party":
+          skills = ["Block","Block","Block"];
+          break;
+        case "Roger Dodger":
+          skills = ["Dodge","Dodge","Dodge"];
+          break;
+        case "Packing a Punch":
+          skills = ["MightyBlow","MightyBlow","MightyBlow"];
+          break;
+        case "Ballhawk":
+          skills = ["Wrestle","Tackle","StripBall"];
+          break;
+        case "Roadblock":
+          skills = ["Block","Dodge","StandFirm"];
+          break;
+        case "Cold-Blooded Killer":
+          skills = ["MightyBlow","PilingOn"];
+          break;
+        case "Sniper":
+          skills = ["Accurate","StrongArm"];
+          break;
+        case "A Real Nuisance":
+          skills = ["SideStep","DivingTackle"];
+          break;
+        case "Insect DNA":
+          skills = ["TwoHeads","ExtraArms"];
+          break;
+        case "Super Wildcard":
+          skills = ["MVPCondition"];
+          break;
+        case "I Didn't Read The Rules":
+          skills = ["MVPCondition"];
+          break;
+        case "Training Wildcard":
+          skills = ["MVPCondition2"];
+          break;
+        default:
+          skills = [card.name]
+      }
+      const imgs = skills.map((s) => {
+        return this.imgs_for_skill(s);  
       })
-      return names.join("");
+      return imgs.join("");
     }
   },
   computed: {
