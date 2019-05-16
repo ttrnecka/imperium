@@ -154,6 +154,9 @@ Vue.mixin({
         case "Sidestep":
           names = ["SideStep"];
           break;
+        case "Nerves of Steel":
+          names = ["NervesOfSteel"];
+          break;
         default:
           names = [card.name.replace(/[\s-]/g, '')]
       }
