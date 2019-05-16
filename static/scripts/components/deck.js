@@ -416,7 +416,12 @@ export default {
             //}
             return true;
         },
-
+        started() {
+            if(this.tournament.status=="OPEN") {
+                return false;
+            }
+            return true;
+        },
         locked() {
             return this.tournament.phase=="locked";
         }
@@ -434,7 +439,7 @@ export default {
                     <div class="modal-content">
                         <div class="modal-header deck_header">
                             <h5 class="modal-title">Deck for [[coach.short_name]] in [[tournament.name ]]</h5>
-                            <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked" @click="commit()">Commit</button>
+                            <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked && started" @click="commit()">Commit</button>
                             <button type="button" disabled class="btn btn-success" v-if="deck.commited && !locked">Committed</button>
                             <button type="button" disabled class="btn btn-info" v-if="locked">Locked</button>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">

@@ -856,7 +856,11 @@ class DeckService:
             admin_mention =f'<@{admins[0].disc_id}>'
         elif len(admins) > 1:
             match_admins = [admin for admin in admins if admin.short_name()==tournament.admin]
-            admin_mention = f'<@{match_admins[0].disc_id}>'
+            # special scenario where admin is empty string
+            if len(match_admins)>0:
+                admin_mention = f'<@{match_admins[0].disc_id}>'
+            else:
+                admin_mention = "Unknown admin"
         else:
             admin_mention = deck.tournament_signup.admin
         
