@@ -540,9 +540,9 @@ export default {
                                                             <th class="d-none d-xl-table-cell">Value</th>
                                                             <th class="d-xl-none">V</th>
                                                             <th>Name</th>
-                                                            <th v-if="ctype=='Training'">Skills</th>
+                                                            <th v-if="ctype=='Training' || ctype=='Special Play'">Skills</th>
                                                             <th v-if="ctype=='Player'">Race</th>
-                                                            <th class="d-none d-sm-table-cell">Subtype</th>
+                                                            <th v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">Subtype</th>
                                                         </tr>
                                                         </thead>
                                                         <tbody>
@@ -550,9 +550,9 @@ export default {
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.value ]]</td>
                                                             <td :title="card.description">[[ card.name ]]</td>
-                                                            <td v-if="ctype=='Training'"><span v-html="skills_for(card)"></span></td>
+                                                            <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
                                                             <td v-if="ctype=='Player'">[[ card.race ]]</td>
-                                                            <td class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
+                                                            <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
                                                         </tr>
                                                         </tbody>
                                                     </table>
@@ -589,9 +589,9 @@ export default {
                                                             <th class="d-none d-xl-table-cell">Value</th>
                                                             <th class="d-xl-none">V</th>
                                                             <th>Name</th>
-                                                            <th v-if="ctype=='Training'">Skills</th>
+                                                            <th v-if="ctype=='Training' || ctype=='Special Play'">Skills</th>
                                                             <th v-if="ctype=='Player'">Race</th>
-                                                            <th class="d-none d-sm-table-cell">Subtype</th>
+                                                            <th v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">Subtype</th>
                                                         </tr>
                                                         </thead>
                                                         <tbody>
@@ -600,10 +600,9 @@ export default {
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.value ]]</td>
                                                             <td :title="card.description">[[ card.name ]]</td>
-                                                            <td v-if="ctype=='Training'"><span v-html="skills_for(card)"></span></td>
+                                                            <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
                                                             <td v-if="ctype=='Player'">[[ card.race ]]</td>
-                                                            <td class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
-                                                        </tr>
+                                                            <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
                                                         <tr v-if="ctype=='Training'" :class="[rarityclass(card.rarity)]">
                                                             <th colspan="1">Assigned to:</th>
                                                             <td colspan="3">
