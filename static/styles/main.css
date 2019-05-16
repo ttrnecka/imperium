@@ -178,6 +178,14 @@
   border-radius: 0;
 }
 
+.deck_header .close {
+  margin: -1rem !important;
+}
+
+.deck_header .btn {
+  margin: 0 1rem 0 auto;
+}
+
 .extra_card {
   font-style: italic;
   font-weight: bold;

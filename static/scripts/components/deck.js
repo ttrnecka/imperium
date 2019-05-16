@@ -291,7 +291,7 @@ export default {
             }
             const path = "/decks/"+this.deck_id;
             this.processing= true;
-            const processingMsg = this.flash("Processing...", 'info');
+            //const processingMsg = this.flash("Processing...", 'info');
             const send_deck = {
                 team_name:this.deck.team_name,
                 mixed_team:this.deck.mixed_team,
@@ -299,13 +299,13 @@ export default {
             }
             axios.post(path,{deck:send_deck})
             .then((res) => {
-                let msg = "Deck saved!";
-                this.flash(msg, 'success',{timeout: 3000});
+                //let msg = "Deck saved!";
+                //this.flash(msg, 'success',{timeout: 3000});
                 this.deck = res.data;
             })
             .catch(this.async_error)
             .then(() => {
-                processingMsg.destroy();
+            //    processingMsg.destroy();
                 this.processing=false;
             });
         },
@@ -432,11 +432,14 @@ export default {
     template:   `<div class="modal fade deck" :id="'deck'+id" tabindex="-1" role="dialog" aria-labelledby="deck" aria-hidden="true">
                     <div class="modal-dialog modal-xl">
                     <div class="modal-content">
-                        <div class="modal-header">
+                        <div class="modal-header deck_header">
                             <h5 class="modal-title">Deck for [[coach.short_name]] in [[tournament.name ]]</h5>
-                            <button type="button" :disabled="processing" class="btn btn btn-danger" v-if="is_owner && !deck.commited && !locked" @click="commit()">Commit</button>
-                            <button type="button" disabled class="btn btn btn-success" v-if="deck.commited && !locked">Committed</button>
-                            <button type="button" disabled class="btn btn btn-info" v-if="locked">Locked</button>
+                            <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked" @click="commit()">Commit</button>
+                            <button type="button" disabled class="btn btn-success" v-if="deck.commited && !locked">Committed</button>
+                            <button type="button" disabled class="btn btn-info" v-if="locked">Locked</button>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
                         </div>
                         <div class="modal-body">
                             <div class="row">
