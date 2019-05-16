@@ -147,7 +147,6 @@ Vue.mixin({
       let matches=[];
       let match;
       while (match = reg.exec(str)) {
-        console.log(match);
         if(!(match.input.match("Pro Elf") && match[1]=="Pro")) {
           if(match[1]) {
             matches.push(match[1]);
