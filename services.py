@@ -867,7 +867,7 @@ class DeckService:
         # check if all ledgers are commited
         deck_states = [ts.deck.commited for ts in tournament.tournament_signups]
         if False not in deck_states:
-            LedgerNotificationService.notify(f'{admin_mention} - All ledgers are locked & commited now for {tournament.id}. {tournament.name} - channel {tournament.discord_channel}')
+            LedgerNotificationService.notify(f'{admin_mention} - All ledgers are locked & committed now for {tournament.id}. {tournament.name} - channel {tournament.discord_channel}')
             tournament.phase="locked"
             db.session.commit()
         return deck
