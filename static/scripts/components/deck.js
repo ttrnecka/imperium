@@ -17,7 +17,8 @@ export default {
               comment:"",
               packs:[],
               search_timeout: null,
-          }
+          },
+          team:{}
       }
     },
     methods: {
@@ -103,6 +104,23 @@ export default {
                 this.coach_starter_cards = res.data.starter_cards;
                 this.selected_team = (this.deck.mixed_team=="") ? "All" : this.deck.mixed_team;
                 this.modal().modal('show');
+            })
+            .catch(this.async_error)
+            .then(() => {
+                processingMsg.destroy();
+            });
+        },
+        getTeam(name) {
+            const path = "/teams/"+name;
+            const processingMsg = this.flash("Loading team...", 'info');
+            axios.get(path)
+            .then((res) => {
+                if (res.data==false) {
+                    this.flash("Team "+name+" does not exist", 'error',{timeout: 3000});     
+                } else {
+                    this.team=res.data;
+                    console.log(this.team);
+                }
             })
             .catch(this.async_error)
             .then(() => {
@@ -339,7 +357,7 @@ export default {
         },
         deck_size_for(type) {
             return this.deck_cards.filter((e) => e.card_type==type).length;
-        },
+        }
     },
     watch: {
         selected_team: function(newValue,oldValue) {
@@ -424,6 +442,9 @@ export default {
         },
         locked() {
             return this.tournament.phase=="locked";
+        },
+        sorted_roster() {
+            return this.team.roster.sort((a,b) => a.number - b.number);
         }
     },
     beforeMount() {
@@ -449,7 +470,8 @@ export default {
                         <div class="modal-body">
                             <div class="row">
                                 <div class="col-12">
-                                    <h5>Team:</h5>
+                                    <h5 class="d-inline-block">Team:</h5>
+                                    <button v-if="deck.team_name" class="mb-2 ml-3 btn btn-sm btn-info" @click="getTeam(deck.team_name)">Load Team</button>
                                 </div>
                                 <div class="form-group col-lg-6">
                                     <select class="form-control" v-model="selected_team" :disabled="deck_player_size>0 || !is_owner || locked">
@@ -459,6 +481,59 @@ export default {
                                 </div>
                                 <div class="form-group col-lg-6">
                                     <input type="text" :disabled="!is_owner || locked" class="form-control" placeholder="Team Name" v-bind:value="deck.team_name" v-on:input="debounceUpdateName($event.target.value)">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div :id="'teamInfoAccordion'+id" class="col-12 mb-3 mt-3" v-if="extra_allowed && 'coach' in team">
+                                    <div class="card-header" :id="'teamInfo'+id">
+                                        <h5 class="mb-0">
+                                            <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseTeamInfo'+id" aria-expanded="true" aria-controls="collapseTeamInfo">
+                                            BB2 Team Details
+                                            </button>
+                                        </h5>
+                                    </div>
+                                    <div :id="'collapseTeamInfo'+id" class="collapse hide" aria-labelledby="teamInfo'" :data-parent="'#teamInfoAccordion'+id">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-sm-4"><b>Team:</b> [[team.team.name]]</div>
+                                                <div class="col-sm-4"><b>Coach:</b> [[team.coach.name]]</div>
+                                                <div class="col-sm-4"><b>TV:</b> [[team.team.value]]</div>
+                                                <div class="col-sm-4"><b>Apothecary:</b> [[ team.team.apothecary ? "Yes" : "No"]]</div>
+                                                <div class="col-sm-4"><b>Rerols:</b> [[team.team.rerolls]]</div>
+                                                <div class="col-sm-4"><b>Assistant Coaches:</b> [[team.team.assistantcoaches]]</div>
+                                                <div class="col-sm-4"><b>Cheerleaders:</b> [[team.team.cheerleaders]]</div>
+                                            </div>
+                                            <h5 class="mt-2">Roster:</h5>
+                                            <div class="row">
+                                            <table class="table  table-striped table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>N.</th>
+                                                        <th>Lvl.</th>
+                                                        <th>SPP</th>
+                                                        <th>TV</th>
+                                                        <th>Name</th>
+                                                        <th>Position</th>
+                                                        <th>Skills</th>
+                                                        <th>Injuries</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr v-for="player in sorted_roster" :key="player.id">
+                                                    <td>[[player.number]]</td>
+                                                    <td>[[player.level]]</td>
+                                                    <td>[[player.xp]]</td>
+                                                    <td>[[player.value]]</td>
+                                                    <td>[[player.name]]</td>
+                                                    <td>[[player.type]]</td>
+                                                    <td><span v-html="player.skills.map((s) => imgs_for_skill(s)).join('')"></span></td>
+                                                    <td><span v-html="player.casualties_state.map((c) => imgs_for_skill(c)).join('')"></span></td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="row mb-3">

@@ -914,3 +914,12 @@ def RepresentsInt(s):
         return True
     except ValueError:
         return False
+
+class BB2Service:
+    @classmethod
+    def register_agent(cls,agent):
+        cls.agent = agent
+
+    @classmethod
+    def team(cls,name):
+        return cls.agent.team(name)
