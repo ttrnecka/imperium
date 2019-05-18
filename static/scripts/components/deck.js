@@ -119,7 +119,6 @@ export default {
                     this.flash("Team "+name+" does not exist", 'error',{timeout: 3000});     
                 } else {
                     this.team=res.data;
-                    console.log(this.team);
                 }
             })
             .catch(this.async_error)
@@ -493,7 +492,7 @@ export default {
                                         </h5>
                                     </div>
                                     <div :id="'collapseTeamInfo'+id" class="collapse hide" aria-labelledby="teamInfo'" :data-parent="'#teamInfoAccordion'+id">
-                                        <div class="card-body">
+                                        <div class="card-body table-responsive">
                                             <div class="row">
                                                 <div class="col-sm-4"><b>Team:</b> [[team.team.name]]</div>
                                                 <div class="col-sm-4"><b>Coach:</b> [[team.coach.name]]</div>
