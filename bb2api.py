@@ -13,4 +13,5 @@ class Agent:
     def call(self,method,**kwargs):
         URL = self.__class__.BASE_URL + method+"/"
         kwargs['key'] = self.api_key
+        kwargs['order'] = 'CreationDate'
         return requests.get(url = URL, params = kwargs) 
