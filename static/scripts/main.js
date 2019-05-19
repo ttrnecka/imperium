@@ -9,24 +9,37 @@ Vue.mixin({
     return {
       rarityorder: {"Starter":10,"Common":5, "Rare":4, "Epic":3, "Legendary":2, "Unique":1},
       mixed_teams: [
-        {"code":"aog", "tier_tax":10,  "name":"Alliance of Goodness",   "races":['Bretonnian' , 'Human', 'Dwarf', 'Halfling', 'Wood Elf'] },
-        {"code":"au",  "tier_tax":-10, "name":'Afterlife United',       "races":['Undead','Necromantic','Khemri','Vampire']},
-        {"code":"afs", "tier_tax":0,   "name":'Anti-Fur Society',       "races":['Kislev' , 'Norse', 'Amazon', 'Lizardman']},
-        {"code":"cgs", "tier_tax":-10, "name":'Chaos Gods Selection',   "races":['Chaos' , 'Nurgle']},
-        {"code":"cpp", "tier_tax":10,  "name":'Chaotic Player Pact',    "races":['Chaos' , 'Skaven', 'Dark Elf', 'Underworld']},
-        {"code":"egc", "tier_tax":10,  "name":'Elfic Grand Coalition',  "races":['High Elf' , 'Dark Elf', 'Wood Elf', 'Pro Elf']},
-        {"code":"fea", "tier_tax":0,   "name":'Far East Association',   "races":['Chaos Dwarf' , 'Orc', 'Goblin', 'Skaven', 'Ogre']},
-        {"code":"hl",  "tier_tax":0,   "name":'Human League',           "races":['Bretonnian' , 'Human', 'Kislev', 'Norse', 'Amazon']},
-        {"code":"sbr", "tier_tax":0,   "name":'Superior Being Ring',    "races":['Bretonnian' , 'High Elf', 'Vampire', 'Chaos Dwarf']},
-        {"code":"uosp", "tier_tax":-10, "name":'Union of Small People',  "races":['Ogre' , 'Goblin','Halfling']},
-        {"code":"vt",  "tier_tax":0, "name":'Violence Together',      "races":['Ogre' , 'Goblin','Orc', 'Lizardman']}
+        {"idraces":38, "code":"aog", "tier_tax":10,  "name":"Alliance of Goodness",   "races":['Bretonnian' , 'Human', 'Dwarf', 'Halfling', 'Wood Elf'] },
+        {"idraces":42, "code":"au",  "tier_tax":-10, "name":'Afterlife United',       "races":['Undead','Necromantic','Khemri','Vampire']},
+        {"idraces":37, "code":"afs", "tier_tax":0,   "name":'Anti-Fur Society',       "races":['Kislev' , 'Norse', 'Amazon', 'Lizardman']},
+        {"idraces":34, "code":"cgs", "tier_tax":-10, "name":'Chaos Gods Selection',   "races":['Chaos' , 'Nurgle']},
+        {"idraces":33, "code":"cpp", "tier_tax":10,  "name":'Chaotic Player Pact',    "races":['Chaos' , 'Skaven', 'Dark Elf', 'Underworld']},
+        {"idraces":36, "code":"egc", "tier_tax":10,  "name":'Elfic Grand Coalition',  "races":['High Elf' , 'Dark Elf', 'Wood Elf', 'Pro Elf']},
+        {"idraces":35, "code":"fea", "tier_tax":0,   "name":'Far East Association',   "races":['Chaos Dwarf' , 'Orc', 'Goblin', 'Skaven', 'Ogre']},
+        {"idraces":39, "code":"hl",  "tier_tax":0,   "name":'Human League',           "races":['Bretonnian' , 'Human', 'Kislev', 'Norse', 'Amazon']},
+        {"idraces":32, "code":"sbr", "tier_tax":0,   "name":'Superior Being Ring',    "races":['Bretonnian' , 'High Elf', 'Vampire', 'Chaos Dwarf']},
+        {"idraces":41, "code":"uosp", "tier_tax":-10, "name":'Union of Small People',  "races":['Ogre' , 'Goblin','Halfling']},
+        {"idraces":40, "code":"vt",  "tier_tax":0, "name":'Violence Together',      "races":['Ogre' , 'Goblin','Orc', 'Lizardman']}
       ],
       card_types: ["Player","Training","Special Play","Staff"],
       show_starter:1,
       skillreg: /(Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail)( |,|.|$)/g,
     }
   },
-  methods: { 
+  methods: {
+    race(raceid) {
+      const team = this.mixed_teams.find((t) => t.idraces==raceid)
+      if(team) {
+        return team.name;
+      } else {
+        return "Unknown race";
+      }
+    },
+    positional_from_api(positional) {
+      const names = positional.split("_");
+      names.shift();
+      return names.join(" ");
+    },
     rarityclass(rarity) {
       let klass;
       switch(rarity) {

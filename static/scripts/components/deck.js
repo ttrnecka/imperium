@@ -119,6 +119,7 @@ export default {
                     this.flash("Team "+name+" does not exist", 'error',{timeout: 3000});     
                 } else {
                     this.team=res.data;
+                    console.log(this.team);
                 }
             })
             .catch(this.async_error)
@@ -499,6 +500,7 @@ export default {
                                         <div class="card-body table-responsive">
                                             <div class="row">
                                                 <div class="col-sm-4"><b>Team:</b> [[team.team.name]]</div>
+                                                <div class="col-sm-4"><b>Race:</b> [[race(team.team.idraces)]]</div>
                                                 <div class="col-sm-4"><b>Coach:</b> [[team.coach.name]]</div>
                                                 <div class="col-sm-4"><b>TV:</b> [[team.team.value]]</div>
                                                 <div class="col-sm-4"><b>Apothecary:</b> [[ team.team.apothecary ? "Yes" : "No"]]</div>
@@ -528,7 +530,7 @@ export default {
                                                     <td>[[player.xp]]</td>
                                                     <td>[[player.value]]</td>
                                                     <td>[[player.name]]</td>
-                                                    <td>[[player.type]]</td>
+                                                    <td>[[positional_from_api(player.type)]]</td>
                                                     <td><span v-html="player.skills.map((s) => imgs_for_skill(s)).join('')"></span></td>
                                                     <td><span v-html="player.casualties_state.map((c) => imgs_for_skill(c)).join('')"></span></td>
                                                 </tr>
