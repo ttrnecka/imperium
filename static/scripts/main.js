@@ -23,7 +23,7 @@ Vue.mixin({
       ],
       card_types: ["Player","Training","Special Play","Staff"],
       show_starter:1,
-      skillreg: /(Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail)[ ,.]|(Block$|Pro$)/g,
+      skillreg: /(Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail)( |,|.|$)/g,
     }
   },
   methods: { 
@@ -169,7 +169,7 @@ Vue.mixin({
       let matches=[];
       let match;
       while (match = this.skillreg.exec(str)) {
-        if(!(match.input.match("Pro Elf") && match[1]=="Pro")) {
+        if(!(card.name=="The Apple Pie Killer" && match[1]=="Block")) {
           if(match[1]) {
             matches.push(match[1]);
           } else if (match[2]) {
