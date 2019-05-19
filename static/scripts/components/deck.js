@@ -120,6 +120,7 @@ export default {
                     this.flash("Team "+name+" does not exist", 'error',{timeout: 3000});     
                 } else {
                     this.team=res.data;
+                    console.log(this.team);
                 }
             })
             .catch(this.async_error)
@@ -507,6 +508,7 @@ export default {
                                                 <div class="col-sm-4"><b>Rerols:</b> [[team.team.rerolls]]</div>
                                                 <div class="col-sm-4"><b>Assistant Coaches:</b> [[team.team.assistantcoaches]]</div>
                                                 <div class="col-sm-4"><b>Cheerleaders:</b> [[team.team.cheerleaders]]</div>
+                                                <div class="col-sm-4"><b>Stadium Enhancement:</b> [[stadium_enhacement(team.team)]]</div>
                                             </div>
                                             <h5 class="mt-2">Roster:</h5>
                                             <div class="row">

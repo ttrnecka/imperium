@@ -41,6 +41,27 @@ Vue.mixin({
       names.shift();
       return names.join(" ");
     },
+    stadium_enhacement(team) {
+      const building = team.cards.find((c) => c.type=="Building")
+      if(building) {
+        switch(building.name) {
+          case "Bazar":
+            return "Magician's Shop";
+          case "SecurityArea":
+            return "Security gate";
+          case "RefreshmentArea":
+            return "Beer stand";
+          case "RefereeArea":
+            return "Referee rest area";
+          case "Astrogranit":
+            return "Astrogranite";
+          case "ElfTurf":
+            return "Elf turf";
+        }
+      } else {
+        return "None"
+      }
+    },
     rarityclass(rarity) {
       let klass;
       switch(rarity) {

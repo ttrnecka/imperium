@@ -363,10 +363,20 @@ class CoachService:
         starter_cards = PackService.generate("starter").cards
 
         for card in used_starter_cards:
-            ctype  = "in_development_deck" if card['in_development_deck']==True else "in_imperium_deck"
-            g = (i for i, acard in enumerate(starter_cards) if getattr(acard,ctype)!=True and acard.name==card['name'])
-            index = next(g)
-            setattr(starter_cards[index],ctype,True)
+            if card['in_development_deck']==True:
+                try:
+                    g = (i for i, acard in enumerate(starter_cards) if getattr(acard,'in_development_deck')!=True and acard.name==card['name'])
+                    index = next(g)
+                    setattr(starter_cards[index],'in_development_deck',True)
+                except StopIteration:
+                    pass
+            if card['in_imperium_deck']==True:
+                try:
+                    g = (i for i, acard in enumerate(starter_cards) if getattr(acard,'in_imperium_deck')!=True and acard.name==card['name'])
+                    index = next(g)
+                    setattr(starter_cards[index],'in_imperium_deck',True)
+                except StopIteration:
+                    pass
 
         return starter_cards
 

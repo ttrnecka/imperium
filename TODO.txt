@@ -1,7 +1,7 @@
 VERY HIGH
 before new season change the starter cards to use uuid and then the training card mapping to use uuid lookup
 You can them lookup back the skills and show them next to players
-
+ability to assign play order for Special Plays
 log changes in the deck after they are commited
 
 backend validation for decks
