@@ -120,7 +120,6 @@ export default {
                     this.flash("Team "+name+" does not exist", 'error',{timeout: 3000});     
                 } else {
                     this.team=res.data;
-                    console.log(this.team);
                 }
             })
             .catch(this.async_error)
