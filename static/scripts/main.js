@@ -48,18 +48,26 @@ Vue.mixin({
           case "Bazar":
             return "Magician's Shop";
           case "SecurityArea":
-            return "Security gate";
+            return "Security Gate";
           case "RefreshmentArea":
-            return "Beer stand";
+            return "Beer Stand";
           case "RefereeArea":
-            return "Referee rest area";
+            return "Referee Rest Area";
           case "Astrogranit":
             return "Astrogranite";
           case "ElfTurf":
-            return "Elf turf";
+            return "Elf Turf";
+          case "VIPArea":
+            return "Royal Box";
+          case "FoodArea":
+            return "Squig Sandwich Kiosk";
+          case "Nuffle":
+            return "Nuffle Altar";
+          case "Roof":
+            return "Magic Dome";
         }
       } else {
-        return "None"
+        return "None";
       }
     },
     rarityclass(rarity) {
