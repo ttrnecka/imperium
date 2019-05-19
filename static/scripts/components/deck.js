@@ -443,7 +443,11 @@ export default {
             return this.tournament.phase=="locked";
         },
         sorted_roster() {
-            return this.team.roster.sort((a,b) => a.number - b.number);
+            if ('roster' in this.team) {
+                return this.team.roster.sort((a,b) => a.number - b.number);
+            } else {
+                return []
+            }
         }
     },
     beforeMount() {
