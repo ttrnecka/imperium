@@ -23,6 +23,7 @@ Vue.mixin({
       ],
       card_types: ["Player","Training","Special Play","Staff"],
       show_starter:1,
+      rarity_order:1,
       skillreg: /(Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail)( |,|\.|$)/g,
     }
   },
@@ -69,6 +70,9 @@ Vue.mixin({
       return window.starter_cards;
     },
     sortedCards(cards) {
+      if (this.rarity_order==0) {
+        return cards;
+      }
       var order = this.rarityorder;
       function compare(a,b) {
         return (order[a.rarity] - order[b.rarity]) || a.name.localeCompare(b.name);

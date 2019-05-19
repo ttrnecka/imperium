@@ -1,12 +1,15 @@
 VERY HIGH
 before new season change the starter cards to use uuid and then the training card mapping to use uuid lookup
 You can them lookup back the skills and show them next to players
+
+log changes in the deck after they are commited
+
 backend validation for decks
 
 
 MEDIUM
 add deck templates
-Collect data from cyanide API and display on page
+Collect tournament data from cyanide API and display on page
 
 LOW:
 randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is not bound to a Session; lazy load operation of attribute 'cards' cannot proceed (Background on this error at: http://sqlalche.me/e/bhk3)
@@ -99,3 +102,4 @@ Deck Lock phase
 Cannot add extra cards when deck is full
 Deck - commit validation - all cards/name/team
 phase change only by tourn admin
+Collect data from cyanide API and display on page

@@ -5,6 +5,7 @@ export default {
           processing:false,
           selected_team:"All",
           show_starter: 1,
+          rarity_order: 1,
           coach_starter_cards:[],
           extra_card:"",
           deck: {
@@ -642,11 +643,17 @@ export default {
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="row mt-1">
-                                    <div class="col-6">
+                                    <div class="col-4">
                                         <h5>Deck [[deck_size]]/[[tournament.deck_limit]]</h5>
                                     </div>
-                                    <div class="col-6 text-right">
+                                    <div class="col-4 text-center">
                                         <h5>Value: [[ cardsValue(user_deck_cards) + tier_tax ]]</h5>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="custom-control custom-checkbox mr-sm-2 text-right">
+                                            <input type="checkbox" class="custom-control-input" :id="'raritytoggle'+id" v-model="rarity_order">
+                                            <label class="custom-control-label" :for="'raritytoggle'+id">Toggle rarity order</label>
+                                        </div>
                                     </div>
                                     </div>
                                     <div :id="'accordionCardsDeck'+id">
