@@ -287,6 +287,15 @@ export default {
                 return found;
             }
             return this.phases[0];
+        },
+
+        show_date() {
+            if(this.tournament.status=="OPEN") {
+                return "("+this.tournament.expected_start_date+")";
+            } else if (this.tournament.status=="RUNNING") {
+                return "("+this.tournament.deadline_date+")";
+            }
+            return "";
         }
     },
     mounted() {
@@ -301,7 +310,7 @@ export default {
                         <button class="col-md-9 btn btn-link btn-block" data-toggle="collapse" :data-target="'#collapseTournament'+tournament.id" aria-expanded="true" aria-controls="collapseTournament">
                             <div class="row">
                                 <div class="col-6 col-md-5 text-left">[[ tournament.id ]]. [[ tournament.name ]]</div>
-                                <div class="col-6 col-md-2 text-left">[[ tournament.status ]]</div>
+                                <div class="col-6 col-md-2 text-left">[[ tournament.status ]] [[show_date]]</div>
                                 <div class="col-6 col-md-2 text-left"> Signups: [[signed.length]]/[[ tournament.coach_limit ]]</div>
                                 <div class="col-6 col-md-3 text-left">Channel: [[ tournament.discord_channel ]]</div>
                             </div>
