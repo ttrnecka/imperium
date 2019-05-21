@@ -282,7 +282,6 @@ export default {
                 let ccard;
                 this.flash(msg, 'success',{timeout: 1000});
                 this.deck = res.data;
-                const check = (this.development) ? "in_development_deck" : "in_imperium_deck";
                 if(card.deck_type!="extra") {
                     const check = (this.development) ? "in_development_deck" : "in_imperium_deck";
                     if(card.id) {
@@ -357,7 +356,18 @@ export default {
         },
         deck_size_for(type) {
             return this.deck_cards.filter((e) => e.card_type==type).length;
-        }
+        },
+        card_id_or_uuid(card) {
+            if(card.id) {
+                return card.id;
+            } else {
+                return card.uuid;
+            }
+        },
+        deck_skills_for(card) {
+            const assigned_cards = this.deck_cards.filter((c) => c.assigned_to==this.card_id_or_uuid(card));
+            return assigned_cards.map((c) => this.skills_for(c)).join("");
+        },
     },
     watch: {
         selected_team: function(newValue,oldValue) {
@@ -695,8 +705,16 @@ export default {
                                                             <td colspan="3">
                                                                 <select class="form-control" v-model="card.assigned_to" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
                                                                     <option default value="">Select Player</option>
-                                                                    <option v-for="(card,index) in deck_player_cards" :key="index" :value="card.name+index">[[index+1]]. [[ card.name ]]</option>
+                                                                    <option v-for="(card,index) in deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.name ]]</option>
                                                                 </select>
+                                                            </td>
+                                                            <td class="d-none d-sm-table-cell"></td>
+                                                        </tr>
+                                                        <tr v-if="ctype=='Player'" :class="[rarityclass(card.rarity)]">
+                                                            <th colspan="1">Skills:</th>
+                                                            <td colspan="3">
+                                                                <span v-html="skills_for(card)"></span>
+                                                                <span v-html="deck_skills_for(card)"></span>
                                                             </td>
                                                             <td class="d-none d-sm-table-cell"></td>
                                                         </tr>

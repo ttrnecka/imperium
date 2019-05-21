@@ -790,6 +790,7 @@ class DeckService:
                     card['in_development_deck'] = True
                 else:
                     card['in_imperium_deck'] = True
+                card['uuid'] = str(uuid.uuid4())
                 deck.starter_cards.append(card)
                 flag_modified(deck, "starter_cards")
             else:
