@@ -1,7 +1,5 @@
 VERY HIGH
-before new season change the starter cards to use uuid and then the training card mapping to use uuid lookup
-You can them lookup back the skills and show them next to players
-ability to assign play order for Special Plays
+removing player with assigned card unassigns it
 log changes in the deck after they are commited
 
 backend validation for decks
@@ -103,3 +101,8 @@ Cannot add extra cards when deck is full
 Deck - commit validation - all cards/name/team
 phase change only by tourn admin
 Collect data from cyanide API and display on page
+before new season change the starter cards to use uuid and then the training card mapping to use uuid lookup
+You can them lookup back the skills and show them next to players
+ability to assign play order for Special Plays
+Multi skills cards are now properly assignable
+Show assign skills in deck for players

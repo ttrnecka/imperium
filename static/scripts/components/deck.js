@@ -195,7 +195,7 @@ export default {
             }
 
             let training_cards = this.sortedCardsWithoutQuantity(this.deck_cards,"Training",false);
-            let found_card = training_cards.find((c)=> c.assigned_to=="");
+            let found_card = training_cards.find((c)=> {return c.assigned_to_array.length==0 || c.assigned_to_array.includes(undefined) || c.assigned_to_array.includes(null)});
             if(found_card!=undefined) {
                 this.flash("Not all training cards are assigned to players!", 'error',{timeout: 3000});
                 return false;
@@ -359,13 +359,13 @@ export default {
         },
         card_id_or_uuid(card) {
             if(card.id) {
-                return card.id;
+                return String(card.id);
             } else {
-                return card.uuid;
+                return String(card.uuid);
             }
         },
         deck_skills_for(card) {
-            const assigned_cards = this.deck_cards.filter((c) => c.assigned_to==this.card_id_or_uuid(card));
+            const assigned_cards = this.deck_cards.filter((c) => c.assigned_to_array.includes(String(this.card_id_or_uuid(card))));
             return assigned_cards.map((c) => this.skills_for(c)).join("");
         },
     },
@@ -700,11 +700,11 @@ export default {
                                                             <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
                                                             <td v-if="ctype=='Player'">[[ card.race ]]</td>
                                                             <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
-                                                        <tr v-if="ctype=='Training'" :class="[rarityclass(card.rarity)]">
+                                                        <tr v-if="ctype=='Training'" :class="[rarityclass(card.rarity)]" v-for="idx in number_of_assignments(card)">
                                                             <th colspan="1">Assigned to:</th>
                                                             <td colspan="3">
-                                                                <select class="form-control" v-model="card.assigned_to" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
-                                                                    <option default value="">Select Player</option>
+                                                                <select class="form-control" v-model="card.assigned_to_array[idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
+                                                                    <option default :value="null">Select Player</option>
                                                                     <option v-for="(card,index) in deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.name ]]</option>
                                                                 </select>
                                                             </td>

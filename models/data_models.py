@@ -55,8 +55,13 @@ class Card(Base):
     in_development_deck = db.Column(db.Boolean(), default=False)
     in_imperium_deck = db.Column(db.Boolean(), default=False)
     assigned_to = db.Column(db.String(255),default="")
+    assigned_to_array = db.Column(TextPickleType(), nullable=False, default=json.dumps([]))
     uuid = db.Column(db.String(255),default="", index=True)
 
+    def __init__(self,**kwargs):
+        super(Card, self).__init__(**kwargs)
+        self.assigned_to_array = []
+        
     def __repr__(self):
         return f'<Card {self.name}, rarity: {self.rarity}, pack_id: {self.pack_id}>'
 

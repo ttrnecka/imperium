@@ -239,13 +239,19 @@ Vue.mixin({
       let skills=[];
       switch(card.name) {
         case "Block Party":
-          skills = ["Block","Block","Block"];
+          skills = ["Block"];
+          break;
+        case "Dodge like a Honeybadger, Sting like the Floor":
+          skills = ["Tackle"];
+          break;
+        case "Gengar Mode":
+          skills = ["DirtyPlayer"];
           break;
         case "Roger Dodger":
-          skills = ["Dodge","Dodge","Dodge"];
+          skills = ["Dodge"];
           break;
         case "Packing a Punch":
-          skills = ["MightyBlow","MightyBlow","MightyBlow"];
+          skills = ["MightyBlow"];
           break;
         case "Ballhawk":
           skills = ["Wrestle","Tackle","StripBall"];
@@ -281,6 +287,21 @@ Vue.mixin({
         return this.imgs_for_skill(s);  
       })
       return imgs.join("");
+    },
+    number_of_assignments(card) {
+      if(card.card_type!="Training") {
+        return 0;
+      }
+      if(card.name=="Super Wildcard") {
+        return 3;
+      }
+      if(card.description.match(/ one /)) {
+        return 1;
+      }
+      if(card.description.match(/ three /)) {
+        return 3;
+      }
+      return 1;
     }
   },
   computed: {

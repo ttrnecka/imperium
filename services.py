@@ -261,6 +261,7 @@ class CardService:
             subtype = card["Subtype"],
             value = int(card["Card Value"]) if "Card Value" in card and RepresentsInt(card["Card Value"]) else 0,
             notes = card["Notes"] if hasattr(card, "Notes") else "",
+            assigned_to_array = [],
         )
 
     @classmethod
@@ -709,7 +710,7 @@ class DeckService:
         if card:
             cCard= CardService.init_Card_from_card(CardService.get_card_from_sheet(name))
             cCard.deck_type = "extra"
-            cCard.assigned_to=""
+            cCard.assigned_to_array=[]
             cCard.uuid = str(uuid.uuid4())
             deck.unused_extra_cards.append(card_schema.dump(cCard).data)
             flag_modified(deck, "unused_extra_cards")
@@ -737,7 +738,7 @@ class DeckService:
             raise DeckError(f"Cannot assign non-training card!")
         if card["id"]:
             cCard = Card.query.get(card["id"])
-            cCard.assigned_to = card["assigned_to"]
+            cCard.assigned_to_array = card["assigned_to_array"]
             db.session.commit()
         else:
             # starting pack handling - there should not be any training starter card
@@ -754,7 +755,7 @@ class DeckService:
                     else:
                         tcard['in_imperium_deck'] = True
                     
-                    tcard['assigned_to']=card['assigned_to']
+                    tcard['assigned_to_array']=card['assigned_to_array']
                     deck.extra_cards.append(tcard)
                     deck.unused_extra_cards.append(tcard)
                     flag_modified(deck, "extra_cards")
@@ -821,7 +822,7 @@ class DeckService:
                     else:
                         cCard.in_imperium_deck = False
                     
-                    cCard.assigned_to=""
+                    cCard.assigned_to_array=[]
                     deck.cards.remove(cCard)
                     db.session.commit()
                 else:
