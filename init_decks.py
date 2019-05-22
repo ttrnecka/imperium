@@ -15,6 +15,19 @@ ROOT = os.path.dirname(__file__)
 #        t.phase="deck_building"
 #        db.session.commit()
 
-for card in Card.query.all():
-        card.assigned_to_array = []
+#for card in Card.query.all():
+#        card.assigned_to_array = []
+#        db.session.commit()
+
+for deck in Deck.query.all():
+        for card in deck.extra_cards:
+                card['assigned_to_array']=[]
+        for card in deck.unused_extra_cards:
+                card['assigned_to_array']=[]
+        for card in deck.starter_cards:
+                card['assigned_to_array']=[]
+
+        flag_modified(deck, "extra_cards")
+        flag_modified(deck, "unused_extra_cards")
+        flag_modified(deck, "starter_cards")
         db.session.commit()

@@ -514,7 +514,7 @@ export default {
                                                 <div class="col-sm-4"><b>Coach:</b> [[team.coach.name]]</div>
                                                 <div class="col-sm-4"><b>TV:</b> [[team.team.value]]</div>
                                                 <div class="col-sm-4"><b>Apothecary:</b> [[ team.team.apothecary ? "Yes" : "No"]]</div>
-                                                <div class="col-sm-4"><b>Rerols:</b> [[team.team.rerolls]]</div>
+                                                <div class="col-sm-4"><b>Rerolls:</b> [[team.team.rerolls]]</div>
                                                 <div class="col-sm-4"><b>Assistant Coaches:</b> [[team.team.assistantcoaches]]</div>
                                                 <div class="col-sm-4"><b>Cheerleaders:</b> [[team.team.cheerleaders]]</div>
                                                 <div class="col-sm-4"><b>Stadium Enhancement:</b> [[stadium_enhacement(team.team)]]</div>
