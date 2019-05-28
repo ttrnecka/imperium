@@ -261,7 +261,7 @@ class CardService:
             subtype = card["Subtype"],
             value = int(card["Card Value"]) if "Card Value" in card and RepresentsInt(card["Card Value"]) else 0,
             notes = card["Notes"] if hasattr(card, "Notes") else "",
-            assigned_to_array = [],
+            assigned_to_array = {},
         )
 
     @classmethod
@@ -710,7 +710,7 @@ class DeckService:
         if card:
             cCard= CardService.init_Card_from_card(CardService.get_card_from_sheet(name))
             cCard.deck_type = "extra"
-            cCard.assigned_to_array=[]
+            cCard.assigned_to_array={}
             cCard.uuid = str(uuid.uuid4())
             deck.unused_extra_cards.append(card_schema.dump(cCard).data)
             flag_modified(deck, "unused_extra_cards")
@@ -779,7 +779,9 @@ class DeckService:
                         cCard.in_development_deck = True
                     else:
                         cCard.in_imperium_deck = True
-
+                    # set the deck id in assignment array
+                    cCard.assigned_to_array[deck.id] = []
+                    flag_modified(cCard, "assigned_to_array")
                     deck.cards.append(cCard)
                     db.session.commit()
             else:
@@ -792,6 +794,8 @@ class DeckService:
                 else:
                     card['in_imperium_deck'] = True
                 card['uuid'] = str(uuid.uuid4())
+                # set the deck id in assignment array
+                card['assigned_to_array'][deck.id] = []
                 deck.starter_cards.append(card)
                 flag_modified(deck, "starter_cards")
             else:
@@ -802,6 +806,8 @@ class DeckService:
                         card['in_development_deck'] = True
                     else:
                         card['in_imperium_deck'] = True
+                    # set the deck id in assignment array
+                    card['assigned_to_array'][deck.id] = []
                     deck.extra_cards.append(card)
                     deck.unused_extra_cards.append(card)
                     flag_modified(deck, "extra_cards")
@@ -822,7 +828,8 @@ class DeckService:
                     else:
                         cCard.in_imperium_deck = False
                     
-                    cCard.assigned_to_array=[]
+                    cCard.assigned_to_array[deck.id] = []
+                    flag_modified(cCard, "assigned_to_array")
                     deck.cards.remove(cCard)
                     db.session.commit()
                 else:
@@ -843,6 +850,7 @@ class DeckService:
                         card['in_development_deck'] = False
                     else:
                         card['in_imperium_deck'] = False
+                    card['assigned_to_array'][deck.id] = []
                     deck.unused_extra_cards.append(card)
                     flag_modified(deck, "extra_cards")
                     flag_modified(deck, "unused_extra_cards")

@@ -18,6 +18,7 @@ export default {
               comment:"",
               packs:[],
               search_timeout: null,
+              id:null,
           },
           team:{}
       }
@@ -195,7 +196,7 @@ export default {
             }
 
             let training_cards = this.sortedCardsWithoutQuantity(this.deck_cards,"Training",false);
-            let found_card = training_cards.find((c)=> {return c.assigned_to_array.length==0 || c.assigned_to_array.includes(undefined) || c.assigned_to_array.includes(null)});
+            let found_card = training_cards.find((c)=> {return this.get_card_assignment(c).length==0 || this.get_card_assignment(c).includes(undefined) || this.get_card_assignment(c).includes(null)});
             if(found_card!=undefined) {
                 this.flash("Not all training cards are assigned to players!", 'error',{timeout: 3000});
                 return false;
@@ -365,9 +366,16 @@ export default {
             }
         },
         deck_skills_for(card) {
-            const assigned_cards = this.deck_cards.filter((c) => c.assigned_to_array.includes(String(this.card_id_or_uuid(card))));
+            const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
             return assigned_cards.map((c) => this.skills_for(c)).join("");
         },
+        get_card_assignment(card) {
+            if (card.assigned_to_array[this.deck.id]) {
+                return card.assigned_to_array[this.deck.id];
+            } else {
+                return [];
+            }
+        }
     },
     watch: {
         selected_team: function(newValue,oldValue) {
@@ -703,7 +711,7 @@ export default {
                                                         <tr v-if="ctype=='Training'" :class="[rarityclass(card.rarity)]" v-for="idx in number_of_assignments(card)">
                                                             <th colspan="1">Assigned to:</th>
                                                             <td colspan="3">
-                                                                <select class="form-control" v-model="card.assigned_to_array[idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
+                                                                <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
                                                                     <option default :value="null">Select Player</option>
                                                                     <option v-for="(card,index) in deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.name ]]</option>
                                                                 </select>

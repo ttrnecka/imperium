@@ -15,7 +15,7 @@ class AccountSchema(ma.ModelSchema):
 class CardSchema(ma.ModelSchema):
     class Meta:
         model = Card
-    assigned_to_array = ma.List(ma.String)
+    assigned_to_array = ma.Dict(ma.List(ma.String))
 
 class TournamentSignupSchema(ma.ModelSchema):
     class Meta:
