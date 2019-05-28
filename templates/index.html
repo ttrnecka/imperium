@@ -75,13 +75,13 @@
                         </ul> 
                         <div class="tab-content" id="coachTabContent">
                             <div class="tab-pane fade" id="coach_info" role="tabpanel" aria-labelledby="info-tab">
-                                <div class="col-12"><b>Bank:</b> [[ selectedCoach.account.amount]] coins</div>
+                                <div class="col-12 display-4"><h4>Bank: <small class="text-muted">[[ selectedCoach.account.amount]] coins</small></h4></div>
                                 <div class="tab-content show col-12" id="accordionTournamentsCoach">
-                                    <b>Tournaments:</b>
+                                    <h4>Tournaments:</h4>
                                     <tournament v-for="tournament in tournamentsFor(selectedCoach)" :key="tournament.id" :id="'tourn'+tournament.id+'coach'" role="tabpanel" aria-labelledby="tournament" :tournament="tournament" :coaches="coaches" data-parent="#accordionTournamentsCoach" :user="user"></tournament>
                                 </div>
                                 <div class="col-12">
-                                <b>Transactions:</b>
+                                <h4>Transactions:</h4>
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
@@ -92,7 +92,7 @@
                                     </thead>
                                     <tbody>
                                         <tr v-for="transaction in selectedCoach.account.transactions.slice().reverse()" :key="transaction.id">
-                                            <td>[[ transaction.date_confirmed ]]</td>
+                                            <td>[[ print_date(transaction.date_confirmed) ]]</td>
                                             <td>[[ transaction.price*-1 ]]</td>
                                             <td>[[ transaction.description ]]</td>
                                         </tr>

@@ -18,7 +18,7 @@ Vue.mixin({
         {"idraces":35, "code":"fea", "tier_tax":0,   "name":'Far East Association',   "races":['Chaos Dwarf' , 'Orc', 'Goblin', 'Skaven', 'Ogre']},
         {"idraces":39, "code":"hl",  "tier_tax":0,   "name":'Human League',           "races":['Bretonnian' , 'Human', 'Kislev', 'Norse', 'Amazon']},
         {"idraces":32, "code":"sbr", "tier_tax":0,   "name":'Superior Being Ring',    "races":['Bretonnian' , 'High Elf', 'Vampire', 'Chaos Dwarf']},
-        {"idraces":41, "code":"uosp", "tier_tax":-10, "name":'Union of Small People',  "races":['Ogre' , 'Goblin','Halfling']},
+        {"idraces":41, "code":"uosp", "tier_tax":-10, "name":'Union of Small People',  "races":['Ogre', 'Goblin','Halfling']},
         {"idraces":40, "code":"vt",  "tier_tax":0, "name":'Violence Together',      "races":['Ogre' , 'Goblin','Orc', 'Lizardman']}
       ],
       card_types: ["Player","Training","Special Play","Staff"],
@@ -302,6 +302,11 @@ Vue.mixin({
         return 3;
       }
       return 1;
+    },
+    print_date(pdate) {
+      const jdate = new Date(pdate);
+      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'};
+      return jdate.toLocaleDateString('default',options);
     }
   },
   computed: {
