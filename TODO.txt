@@ -1,6 +1,10 @@
 VERY HIGH
-removing player with assigned card unassigns it
-log changes in the deck after they are commited
+
+
+Statistics
+Coach BB2 name claim
+Achievements
+
 
 backend validation for decks
 
@@ -106,3 +110,5 @@ You can them lookup back the skills and show them next to players
 ability to assign play order for Special Plays
 Multi skills cards are now properly assignable
 Show assign skills in deck for players
+Fix resign over web - no reserve to active move
+log changes in the deck after they are commited

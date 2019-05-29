@@ -19,6 +19,7 @@ export default {
               packs:[],
               search_timeout: null,
               id:null,
+              log:""
           },
           team:{}
       }
@@ -507,6 +508,7 @@ export default {
                             </div>
                             <div class="row">
                                 <div :id="'teamInfoAccordion'+id" class="col-12 mb-3 mt-3" v-if="extra_allowed && 'coach' in team">
+                                    <div class="card">
                                     <div class="card-header" :id="'teamInfo'+id">
                                         <h5 class="mb-0">
                                             <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseTeamInfo'+id" aria-expanded="true" aria-controls="collapseTeamInfo">
@@ -558,6 +560,7 @@ export default {
                                             </div>
                                         </div>
                                     </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="row mb-3">
@@ -578,6 +581,7 @@ export default {
                             </div>
                             <div class="row">
                                 <div :id="'extraCardsAccordion'+id" class="col-12 mb-3 mt-3" v-if="extra_allowed && is_owner">
+                                    <div class="card">
                                     <div class="card-header" :id="'extraCards'+id">
                                         <h5 class="mb-0">
                                             <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseExtraCards'+id" aria-expanded="true" aria-controls="collapseExtraCards">
@@ -604,6 +608,25 @@ export default {
                                                 </template>
                                             </div>
                                         </div>
+                                    </div>
+                                    </div>
+                                    <div class="card">
+                                    <div class="card-header" :id="'log'+id">
+                                        <h5 class="mb-0">
+                                            <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapselog'+id" aria-expanded="true" aria-controls="collapselog">
+                                            Deck Log
+                                            </button>
+                                        </h5>
+                                    </div>
+                                    <div :id="'collapselog'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <template v-for="line in deck.log.split(/\\r?\\n/).reverse().slice(1)">
+                                                [[line]] <br>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
                                     </div>
                                 </div>
                             </div>

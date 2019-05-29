@@ -235,6 +235,11 @@ def tournament_resign(tournament_id):
             if not coach:
                 raise InvalidUsage("Coach not found", status_code=403)    
             TournamentService.unregister(tourn,coach)
+            signups = TournamentService.update_signups(tourn)
+            coaches = [signup.coach for signup in signups]
+            msg = (", ").join([f"<@{coach.disc_id}>" for coach in coaches])
+        
+            NotificationService.notify(f"{msg}: Your signup to {tourn.name} has been updated from RESERVE to ACTIVE")
             result = tournament_schema.dump(tourn)
             return jsonify(result.data)
         except RegistrationError as e:

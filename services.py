@@ -1,5 +1,5 @@
 from models.base_model import db
-from models.data_models import Pack, Card, Coach, Tournament, TournamentSignups, Transaction, Duster, Deck
+from models.data_models import Pack, Card, Coach, Tournament, TournamentSignups, Transaction, Duster, Deck, date_now
 from imperiumbase import ImperiumSheet
 from sqlalchemy.orm import joinedload
 from sqlalchemy import asc
@@ -714,6 +714,7 @@ class DeckService:
             cCard.uuid = str(uuid.uuid4())
             deck.unused_extra_cards.append(card_schema.dump(cCard).data)
             flag_modified(deck, "unused_extra_cards")
+            deck.to_log(f"{date_now()}: Extra Card {cCard.name} inserted to the collection")
             db.session.commit()
             return deck
         else:
@@ -727,6 +728,7 @@ class DeckService:
                 deck.extra_cards.remove(card)
                 flag_modified(deck, "extra_cards")
             flag_modified(deck, "unused_extra_cards")
+            deck.to_log(f"{date_now()}: Extra Card {card['name']} removed from the collection")
             db.session.commit()
             return deck
         else:
@@ -739,15 +741,18 @@ class DeckService:
         if card["id"]:
             cCard = Card.query.get(card["id"])
             cCard.assigned_to_array = card["assigned_to_array"]
+            deck.to_log(f"{date_now()}: Card {card['name']} assignment changed")
             db.session.commit()
         else:
             # starting pack handling - there should not be any training starter card
             if card["deck_type"] in ["base",None]:
-                raise DeckError(f"Unexpected dard type!")
+                raise DeckError(f"Unexpected card type!")
             else:
-                #extra cards
+                #only other assignable cards can be extra cards
+                #find it my uuid in the holder array
                 tcard = next((c for c in deck.unused_extra_cards if c['uuid'] == card['uuid']), None)
                 if tcard:
+                    # remove the card from both arrays, update it and stick it back
                     deck.unused_extra_cards.remove(tcard)
                     deck.extra_cards.remove(tcard)
                     if cls.deck_type(deck)=="Development":
@@ -758,6 +763,7 @@ class DeckService:
                     tcard['assigned_to_array']=card['assigned_to_array']
                     deck.extra_cards.append(tcard)
                     deck.unused_extra_cards.append(tcard)
+                    deck.to_log(f"{date_now()}: Card {card['name']} assignment changed")
                     flag_modified(deck, "extra_cards")
                     flag_modified(deck, "unused_extra_cards")
                 else:
@@ -814,6 +820,7 @@ class DeckService:
                     flag_modified(deck, "unused_extra_cards")
                 else:
                     raise DeckError("Extra card not found")
+            deck.to_log(f"{date_now()}: Card {card['name']} added to the deck")
             db.session.commit()
         return deck
 
@@ -856,6 +863,7 @@ class DeckService:
                     flag_modified(deck, "unused_extra_cards")
                 else:
                     raise DeckError("Extra card not found")
+            deck.to_log(f"{date_now()}: Card {card['name']} removed from the deck")
             db.session.commit()
         return deck
 

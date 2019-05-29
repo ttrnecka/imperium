@@ -229,6 +229,12 @@ class Deck(Base):
     unused_extra_cards = db.Column(TextPickleType(), nullable=False)
     starter_cards = db.Column(TextPickleType(), nullable=False)
     comment = db.Column(db.Text(),nullable=False, default="")
+    log = db.Column(db.Text(),nullable=False, default="")
+
+    def to_log(self,msg):
+        if self.commited:
+            self.log += msg
+            self.log +="\n"
 
 class TournamentSignups(Base):
     __tablename__ = 'tournaments_signups'
@@ -300,3 +306,31 @@ def receive_after_delete(mapper, connection, target):
 @event.listens_for(Duster, 'after_insert')
 def receive_after_insert(mapper, connection, target):
     db_logger.info(f"Created {target.__dict__}")
+
+
+def date_now():
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+@event.listens_for(Deck.mixed_team,'set')
+def log_deck_team(target, value, oldvalue, initiator):
+    if value!=oldvalue:
+        target.to_log(f"{date_now()}: Mixed team changed from {oldvalue} to {value}")
+
+@event.listens_for(Deck.team_name,'set')
+def log_deck_team_name(target, value, oldvalue, initiator):
+    if value!=oldvalue:
+        target.to_log(f"{date_now()}: Team name changed from {oldvalue} to {value}")
+
+@event.listens_for(Deck.commited,'set')
+def log_deck_committed(target, value, oldvalue, initiator):
+    if value!=oldvalue:
+        target.to_log(f"{date_now()}: Deck committed")
+
+@event.listens_for(Deck.cards, 'append', propagate=True)
+def log_deck_cards_append(target, value, initiator):
+    target.to_log(f"{date_now()}: Card {value.name} added to the deck")
+
+@event.listens_for(Deck.cards, 'remove', propagate=True)
+def log_deck_cards_remove(target, value, initiator):
+    target.to_log(f"{date_now()}: Card {value.name} removed from the deck")
+
