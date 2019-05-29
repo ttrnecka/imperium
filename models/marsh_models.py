@@ -42,7 +42,7 @@ class CoachSchema(ma.ModelSchema):
 
 class CoachLeaderboardSchema(ma.Schema):
     class Meta:
-        fields = ("id", "name", "short_name","collection_value","earned","stats")
+        fields = ("id", "name", "short_name","collection_value","earned","stats", "bb2_name")
 
 class SimpleCoachSchema(ma.Schema):
     class Meta:

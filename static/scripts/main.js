@@ -307,7 +307,7 @@ Vue.mixin({
       const jdate = new Date(pdate);
       const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'};
       return jdate.toLocaleDateString('default',options);
-    }
+    },
   },
   computed: {
   }
@@ -530,7 +530,17 @@ var app = new Vue({
         .then(() => {
             this.processing=false;
         });
-    },
+      },
+      is_loggedcoach(name) {
+        if(this.loggedCoach.bb2_name==name) {
+          return true;
+        } else {
+          return false;
+        }
+      },
+      leaderboard_class(name) {
+        return this.is_loggedcoach(name) ? 'table-success' : ''
+      }
     },
     computed: {
       duster_type() {

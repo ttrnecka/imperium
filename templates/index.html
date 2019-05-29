@@ -278,7 +278,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.deck_values" :key="coach.id">
+                        <tr :class="leaderboard_class(coach.bb2_name)" v-for="(coach,index) in leaderboard.deck_values" :key="coach.id">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.short_name ]]</td>
                             <td class="text-right">[[ coach.collection_value ]]</td>
@@ -297,7 +297,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.earners" :key="coach.id">
+                        <tr :class="leaderboard_class(coach.bb2_name)" v-for="(coach,index) in leaderboard.earners" :key="coach.id">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.short_name ]]</td>
                             <td class="text-right">[[ coach.earned ]]</td>
@@ -316,7 +316,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.matches - a.matches).slice(0,10)" :key="coach.name">
+                        <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.matches - a.matches).slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
                             <td class="text-right">[[ coach.matches ]]</td>
@@ -335,7 +335,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.points - a.points).slice(0,10)" :key="coach.name">
+                        <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.points - a.points).slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
                             <td class="text-right">[[ coach.points ]]</td>
@@ -354,7 +354,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.points/b.matches - a.points/a.matches).slice(0,10)" :key="coach.name">
+                        <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.points/b.matches - a.points/a.matches).slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
                             <td class="text-right">[[ (coach.points/coach.matches).toFixed(2) ]]</td>
@@ -373,7 +373,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedtouchdowns - a.inflictedtouchdowns).slice(0,10)" :key="coach.name">
+                        <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedtouchdowns - a.inflictedtouchdowns).slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
                             <td class="text-right">[[ coach.inflictedtouchdowns ]]</td>
@@ -392,7 +392,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedtouchdowns/b.matches - a.inflictedtouchdowns/a.matches).slice(0,10)" :key="coach.name">
+                        <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedtouchdowns/b.matches - a.inflictedtouchdowns/a.matches).slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
                             <td class="text-right">[[ (coach.inflictedtouchdowns/coach.matches).toFixed(2) ]]</td>
@@ -411,7 +411,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedcasualties - a.inflictedcasualties).slice(0,10)" :key="coach.name">
+                        <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedcasualties - a.inflictedcasualties).slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
                             <td class="text-right">[[ coach.inflictedcasualties ]]</td>
@@ -430,7 +430,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedcasualties/b.matches - a.inflictedcasualties/a.matches).slice(0,10)" :key="coach.name">
+                        <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedcasualties/b.matches - a.inflictedcasualties/a.matches).slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
                             <td class="text-right">[[ (coach.inflictedcasualties/coach.matches).toFixed(2) ]]</td>
@@ -449,7 +449,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflicteddead - a.inflicteddead).slice(0,10)" :key="coach.name">
+                        <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflicteddead - a.inflicteddead).slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
                             <td class="text-right">[[ coach.inflicteddead ]]</td>
@@ -468,7 +468,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedpasses - a.inflictedpasses).slice(0,10)" :key="coach.name">
+                        <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedpasses - a.inflictedpasses).slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
                             <td class="text-right">[[ coach.inflictedpasses ]]</td>
@@ -487,7 +487,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedpushouts - a.inflictedpushouts).slice(0,10)" :key="coach.name">
+                        <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedpushouts - a.inflictedpushouts).slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
                             <td class="text-right">[[ coach.inflictedpushouts ]]</td>
