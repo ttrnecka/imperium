@@ -11,8 +11,10 @@ from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, 
 from sqlalchemy.orm import raiseload
 from requests_oauthlib import OAuth2Session
 from bb2api import Agent
+import json
 
 os.environ["YOURAPPLICATION_SETTINGS"] = "config/config.py"
+ROOT = os.path.dirname(__file__)
 
 def create_app():
     app = Flask(__name__)
@@ -34,6 +36,15 @@ migrate = Migrate(app, db)
 API_BASE_URL = os.environ.get('API_BASE_URL', 'https://discordapp.com/api')
 AUTHORIZATION_BASE_URL = API_BASE_URL + '/oauth2/authorize'
 TOKEN_URL = API_BASE_URL + '/oauth2/token'
+
+store = os.path.join(ROOT, 'data', f"season{app.config['SEASON']}")
+stats_file = os.path.join(store,"stats.json")
+
+def get_stats():
+  f = open(stats_file, "r")
+  data = json.loads(f.read())
+  f.close()
+  return data
 
 if 'http://' in app.config["OAUTH2_REDIRECT_URI"]:
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'
@@ -128,8 +139,10 @@ def get_coaches():
 @app.route("/coaches/leaderboard", methods=["GET"])
 def get_coaches_leaderboard():
     all_coaches = Coach.query.all()
-    result = leaderboard_coach_schema.dump(all_coaches)
-    return jsonify(result.data)
+    result={}
+    result['coaches'] = leaderboard_coach_schema.dump(all_coaches).data
+    result['coach_stats'] = list(get_stats()['coaches'].values())
+    return jsonify(result)
 
 @app.route("/tournaments", methods=["GET"])
 def get_tournaments():

@@ -249,7 +249,7 @@
         </div>
         <div v-if="menu=='Leaderboard'" class="row">
             <div class="col-12 col-md-6 col-lg-4 table-responsive">
-                <h4> TOP 10 collectors </h4>
+                <h4> TOP 10 Collectors </h4>
                 <table id="leaderboard" class="table table-hover">
                     <thead class="thead-dark">
                         <tr>
@@ -259,10 +259,162 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(coach,index) in leaderboard" :key="coach.id">
+                        <tr v-for="(coach,index) in leaderboard.deck_values" :key="coach.id">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.short_name ]]</td>
                             <td class="text-right">[[ coach.collection_value ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
+                <h4> TOP 10 Earners </h4>
+                <table id="leaderboard" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th class="text-right" scope="col">Coins</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(coach,index) in leaderboard.earners" :key="coach.id">
+                            <th scope="row">[[ index+1 ]].</th>
+                            <td>[[ coach.short_name ]]</td>
+                            <td class="text-right">[[ coach.earned ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
+                <h4> TOP 10 Grinders </h4>
+                <table id="leaderboard" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th class="text-right" scope="col">Matches</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.matches - a.matches).slice(0,10)" :key="coach.name">
+                            <th scope="row">[[ index+1 ]].</th>
+                            <td>[[ coach.name ]]</td>
+                            <td class="text-right">[[ coach.matches ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
+                <h4> TOP 10 Points </h4>
+                <table id="leaderboard" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th class="text-right" scope="col">Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.points - a.points).slice(0,10)" :key="coach.name">
+                            <th scope="row">[[ index+1 ]].</th>
+                            <td>[[ coach.name ]]</td>
+                            <td class="text-right">[[ coach.points ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
+                <h4> TOP 10 Points Per Game </h4>
+                <table id="leaderboard" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th class="text-right" scope="col">PPG</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.points/b.matches - a.points/a.matches).slice(0,10)" :key="coach.name">
+                            <th scope="row">[[ index+1 ]].</th>
+                            <td>[[ coach.name ]]</td>
+                            <td class="text-right">[[ (coach.points/coach.matches).toFixed(2) ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
+                <h4> TOP 10 Scorers </h4>
+                <table id="leaderboard" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th class="text-right" scope="col">Touchdowns</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedtouchdowns - a.inflictedtouchdowns).slice(0,10)" :key="coach.name">
+                            <th scope="row">[[ index+1 ]].</th>
+                            <td>[[ coach.name ]]</td>
+                            <td class="text-right">[[ coach.inflictedtouchdowns ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
+                <h4> TOP 10 Touchdowns Per Game </h4>
+                <table id="leaderboard" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th class="text-right" scope="col">TDPG</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedtouchdowns/b.matches - a.inflictedtouchdowns/a.matches).slice(0,10)" :key="coach.name">
+                            <th scope="row">[[ index+1 ]].</th>
+                            <td>[[ coach.name ]]</td>
+                            <td class="text-right">[[ (coach.inflictedtouchdowns/coach.matches).toFixed(2) ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
+                <h4> TOP 10 Bashers </h4>
+                <table id="leaderboard" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th class="text-right" scope="col">Casualties</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedcasualties - a.inflictedcasualties).slice(0,10)" :key="coach.name">
+                            <th scope="row">[[ index+1 ]].</th>
+                            <td>[[ coach.name ]]</td>
+                            <td class="text-right">[[ coach.inflictedcasualties ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
+                <h4> TOP 10 Casualties Per Game </h4>
+                <table id="leaderboard" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th class="text-right" scope="col">CPG</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedcasualties/b.matches - a.inflictedcasualties/a.matches).slice(0,10)" :key="coach.name">
+                            <th scope="row">[[ index+1 ]].</th>
+                            <td>[[ coach.name ]]</td>
+                            <td class="text-right">[[ (coach.inflictedcasualties/coach.matches).toFixed(2) ]]</td>
                         </tr>
                     </tbody>
                 </table>

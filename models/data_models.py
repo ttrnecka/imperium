@@ -113,6 +113,16 @@ class Coach(Base):
     def discord_id(self):
         return self.name[-4:]
 
+    def earned(self):
+        cash = 0
+        for tr in self.account.transactions:
+            if tr.price<0:
+                cash += -1*tr.price
+        return cash
+
+    def stats(self):
+        return {}
+
     def make_transaction(self,transaction):
         # do nothing
         if self.account.amount < transaction.price:

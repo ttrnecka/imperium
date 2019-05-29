@@ -338,7 +338,11 @@ var app = new Vue({
         user:{},
         processing: false,
         leaderboard_loaded:false,
-        leaderboard:[],
+        leaderboard:{
+          deck_values:[],
+          earners:[],
+          stats:[]
+        },
       }
     },
     components: {
@@ -397,7 +401,9 @@ var app = new Vue({
         const path = "/coaches/leaderboard";
         axios.get(path)
           .then((res) => {
-            this.leaderboard = res.data.sort((a,b) => b.collection_value - a.collection_value).slice(0,10);
+            this.leaderboard['deck_values'] = res.data.coaches.sort((a,b) => b.collection_value - a.collection_value).slice(0,10);
+            this.leaderboard['earners'] = res.data.coaches.sort((a,b) => b.earned - a.earned).slice(0,10);
+            this.leaderboard['stats'] = res.data.coach_stats;
           })
           .catch((error) => {
             console.error(error);
