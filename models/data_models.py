@@ -92,6 +92,7 @@ class Coach(Base):
     deleted = db.Column(db.Boolean(), default=False)
     duster = db.relationship("Duster", backref=db.backref('coach'), cascade="all, delete-orphan",uselist=False)
     web_admin = db.Column(db.Boolean(), default=False)
+    bb2_name = db.Column(db.String(80), unique=True, nullable=True, index=True)
 
     query_class = QueryWithSoftDelete
 

@@ -367,6 +367,24 @@ var app = new Vue({
             console.error(error);
           });
       },
+      linkBB2Name() {
+        const id = this.selectedCoach.id;
+        const path = "/coaches/"+id;
+        axios.put(path,{name: this.selectedCoach.bb2_name})
+          .then((res) => {
+            const idx = this.coaches.findIndex(x => x.id === parseInt(id));
+            Vue.set(this.coaches, idx, res.data);
+            this.selectedCoach = this.coaches[idx];
+            this.flash("BB2 name updated", 'success',{timeout: 3000});
+          })
+          .catch((error) => {
+            if (error.response) {
+              this.flash(error.response.data.message, 'error',{timeout: 3000});
+          } else {
+              console.error(error);
+          }
+          });
+      },
       getUser(id) {
         const path = "/me";
         axios.get(path)
@@ -561,7 +579,13 @@ var app = new Vue({
         else {
           return undefined;
         }
-      }
+      },
+      is_webadmin() {
+        if(this.loggedCoach && this.loggedCoach.web_admin) {
+            return true;
+        }
+        return false;
+      },
     },
     watch: {
       menu: function(newMenu,oldMenu) {

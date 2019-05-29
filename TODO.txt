@@ -1,13 +1,7 @@
 VERY HIGH
 
-
-Statistics
-Coach BB2 name claim
 Achievements
-
-
 backend validation for decks
-
 
 MEDIUM
 add deck templates
@@ -112,3 +106,5 @@ Multi skills cards are now properly assignable
 Show assign skills in deck for players
 Fix resign over web - no reserve to active move
 log changes in the deck after they are commited
+Statistics
+Coach BB2 name claim

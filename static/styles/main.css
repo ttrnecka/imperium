@@ -196,3 +196,7 @@ img.skill_icon {
   height: 28px !important;
   border-radius: 5px;
 }
+
+#coach_info h5,select {
+  margin:0.5rem 0.5rem 0 0.5rem;
+}

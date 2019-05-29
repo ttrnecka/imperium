@@ -5,7 +5,7 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        <link rel="stylesheet" href="/static/styles/main.css?1.17">
+        <link rel="stylesheet" href="/static/styles/main.css?1.18">
         <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/static/images//favicon-16x16.png">
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -39,6 +39,7 @@
                 <ul class="navbar-nav" v-cloak>
                     <li v-if="user.username" class="nav-item">
                         <span class="navbar-text">Welcome [[ user.username ]]</span> 
+                        <img class="ml-2" :src="'https://cdn.discordapp.com/avatars/'+user.id+'/'+user.avatar+'.png'" width="35" height="35"/>
                     </li>
                     <li v-if="user.code==0" class="nav-item">
                         <a class="nav-link" href="/signin">Signin</a>
@@ -75,29 +76,47 @@
                         </ul> 
                         <div class="tab-content" id="coachTabContent">
                             <div class="tab-pane fade" id="coach_info" role="tabpanel" aria-labelledby="info-tab">
-                                <div class="col-12 display-4"><h4>Bank: <small class="text-muted">[[ selectedCoach.account.amount]] coins</small></h4></div>
-                                <div class="tab-content show col-12" id="accordionTournamentsCoach">
-                                    <h4>Tournaments:</h4>
-                                    <tournament v-for="tournament in tournamentsFor(selectedCoach)" :key="tournament.id" :id="'tourn'+tournament.id+'coach'" role="tabpanel" aria-labelledby="tournament" :tournament="tournament" :coaches="coaches" data-parent="#accordionTournamentsCoach" :user="user"></tournament>
-                                </div>
-                                <div class="col-12">
-                                <h4>Transactions:</h4>
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th class="th-lg">Date</th>
-                                            <th class="th-lg">Bank Change</th>
-                                            <th class="th-lg">Description</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="transaction in selectedCoach.account.transactions.slice().reverse()" :key="transaction.id">
-                                            <td>[[ print_date(transaction.date_confirmed) ]]</td>
-                                            <td>[[ transaction.price*-1 ]]</td>
-                                            <td>[[ transaction.description ]]</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                <div class="row">
+                                    <div class="col-6"><h5>Bank: <small class="text-muted">[[ selectedCoach.account.amount]] coins</small></h5></div>
+                                    <div class="col-3 text-right">
+                                        <h5>BB2 Name:</h5>
+                                    </div>
+                                    <div class="col-3">
+                                        <div v-if="is_webadmin" class="form-group">
+                                            <select class="form-control col-11" @change="linkBB2Name()" id="bb2_name" v-model="selectedCoach.bb2_name">
+                                                <option selected value="">None</option>
+                                                {% for name in bb2_names %}
+                                                    <option value="{{name}}">{{name}}</option>
+                                                {%endfor%}
+                                            </select>
+                                        </div>
+                                        <div v-else>
+                                            <h5><small class="text-muted">[[selectedCoach.bb2_name]]</small></h5>
+                                        </div>
+                                    </div>
+                                    <div class="tab-content show col-12" id="accordionTournamentsCoach">
+                                        <h5>Tournaments:</h5>
+                                        <tournament v-for="tournament in tournamentsFor(selectedCoach)" :key="tournament.id" :id="'tourn'+tournament.id+'coach'" role="tabpanel" aria-labelledby="tournament" :tournament="tournament" :coaches="coaches" data-parent="#accordionTournamentsCoach" :user="user"></tournament>
+                                    </div>
+                                    <div class="col-12">
+                                    <h5>Transactions:</h5>
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th class="th-lg">Date</th>
+                                                <th class="th-lg">Bank Change</th>
+                                                <th class="th-lg">Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="transaction in selectedCoach.account.transactions.slice().reverse()" :key="transaction.id">
+                                                <td>[[ print_date(transaction.date_confirmed) ]]</td>
+                                                <td>[[ transaction.price*-1 ]]</td>
+                                                <td>[[ transaction.description ]]</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    </div>
                                 </div>
                             </div>    
                             <div class="tab-pane fade show active" id="coach_cards" role="tabpanel" aria-labelledby="cards-tab">
@@ -419,6 +438,63 @@
                     </tbody>
                 </table>
             </div>
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
+                <h4> TOP 10 Hitmen </h4>
+                <table id="leaderboard" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th class="text-right" scope="col">Kills</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflicteddead - a.inflicteddead).slice(0,10)" :key="coach.name">
+                            <th scope="row">[[ index+1 ]].</th>
+                            <td>[[ coach.name ]]</td>
+                            <td class="text-right">[[ coach.inflicteddead ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
+                <h4> TOP 10 Passers </h4>
+                <table id="leaderboard" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th class="text-right" scope="col">Passes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedpasses - a.inflictedpasses).slice(0,10)" :key="coach.name">
+                            <th scope="row">[[ index+1 ]].</th>
+                            <td>[[ coach.name ]]</td>
+                            <td class="text-right">[[ coach.inflictedpasses ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-12 col-md-6 col-lg-4 table-responsive">
+                <h4> TOP 10 Surfers </h4>
+                <table id="leaderboard" class="table table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Name</th>
+                            <th class="text-right" scope="col">Surfs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(coach,index) in leaderboard.stats.slice().sort((a,b) => b.inflictedpushouts - a.inflictedpushouts).slice(0,10)" :key="coach.name">
+                            <th scope="row">[[ index+1 ]].</th>
+                            <td>[[ coach.name ]]</td>
+                            <td class="text-right">[[ coach.inflictedpushouts ]]</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </div><!-- /.container -->
@@ -427,6 +503,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="/static/scripts/main.js?1.52" type="module"></script>
+    <script src="/static/scripts/main.js?1.53" type="module"></script>
     </body>
 </html>

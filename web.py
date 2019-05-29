@@ -127,14 +127,15 @@ def me():
 
 @app.route("/")
 def index():
-    starter_cards = PackService.generate("starter").cards
-    return render_template("index.html",starter_cards=starter_cards)
+    bb2_names = sorted(list(get_stats()['coaches'].keys()))
+    return render_template("index.html",bb2_names=bb2_names)
 
 @app.route("/coaches", methods=["GET"])
 def get_coaches():
     all_coaches = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).all()
     result = coaches_schema.dump(all_coaches)
     return jsonify(result.data)
+
 
 @app.route("/coaches/leaderboard", methods=["GET"])
 def get_coaches_leaderboard():
@@ -303,6 +304,27 @@ def get_coach(coach_id):
     coach = Coach.query.get(coach_id)
     if coach is None:
         abort(404)
+    result = coach_schema.dump(coach)
+    return jsonify(result.data)
+
+@app.route("/coaches/<int:coach_id>", methods=["PUT"])
+def update_coach(coach_id):
+    if not current_user():
+        raise InvalidUsage('You are not authenticated', status_code=401)
+    
+    tcoach = Coach.query.filter_by(disc_id=current_user()['id']).one_or_none()
+    if not tcoach:
+        raise InvalidUsage("Coach not found", status_code=403)
+    if not tcoach.web_admin:
+        raise InvalidUsage("Coach does not have webadmin role", status_code=403)    
+
+    coach = Coach.query.get(coach_id)
+    if coach is None:
+        abort(404)
+
+    bb2_name = request.get_json()['name']
+    coach.bb2_name=bb2_name
+    db.session.commit()
     result = coach_schema.dump(coach)
     return jsonify(result.data)
 
