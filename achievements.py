@@ -151,7 +151,7 @@ achievements_template = {
       'award_text': "20 Coins",
       'award': 'grant, 20',
       'best':0,
-      'target':1
+      'target':11
     },
   }
 }

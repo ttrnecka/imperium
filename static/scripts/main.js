@@ -591,7 +591,24 @@ var app = new Vue({
           }
         }
         return pointer;
-      }
+      },
+      team_stats(coach) {
+        if (coach.stats['teams']) {
+          return [32,33,34,35,36,37,38,39,40,41,42].map((e) => {
+            return {
+              team_name: this.mixed_teams.find((t) => t.idraces==e).name,
+              stats: coach.stats.teams[e]
+            } 
+          });
+        }
+        return [];
+      },
+      getTeamStat(team) {
+        if(team.stats && team.stats[arguments[1]]) {
+          return team.stats[arguments[1]];
+        }
+        return 0;
+      },
     },
     computed: {
       duster_type() {
