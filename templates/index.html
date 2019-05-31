@@ -71,8 +71,14 @@
                               <a class="nav-link" id="info-tab" data-toggle="tab" href="#coach_info" role="tab" aria-controls="coach_info" aria-selected="true">[[ selectedCoach.short_name]]'s Info</a>
                             </li>
                             <li v-if="loggedCoach==selectedCoach" class="nav-item">
-                                <a class="nav-link" id="dusting-tab" data-toggle="tab" href="#coach_dusting" role="tab" aria-controls="coach_dusting" aria-selected="true">Dusting</a>
-                              </li>
+                                <a class="nav-link" id="dusting-tab" data-toggle="tab" href="#coach_dusting" role="tab" aria-controls="coach_dusting" aria-selected="false">Dusting</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="stats-tab" data-toggle="tab" href="#coach_stats" role="tab" aria-controls="coach_stats" aria-selected="false">Stats</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="stats-tab" data-toggle="tab" href="#coach_achievements" role="tab" aria-controls="coach_achievements" aria-selected="false">Achievements</a>
+                            </li>
                         </ul> 
                         <div class="tab-content" id="coachTabContent">
                             <div class="tab-pane fade" id="coach_info" role="tabpanel" aria-labelledby="info-tab">
@@ -231,6 +237,71 @@
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="coach_achievements" role="tabpanel" aria-labelledby="coach-achievements">
+                                <div class="col-auto my-1">
+                                    <div class="row">
+                                        <h4 class="col-12">Achievements</h4>
+                                        <h5 class="col-12">Match Achievements (Any Team)</h5>
+                                    </div>
+                                    <div v-for="ach in match_achievements(selectedCoach)" class="row">
+                                        <div class="col-9">
+                                            <div class="progress position-relative mb-2">
+                                                <div class="progress-bar" :class="ach.completed ? 'bg-success' : ''" role="progressbar" :style="'width: '+progress(ach.best/ach.target)+'%;'" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                                <span class="justify-content-center d-flex position-absolute w-100">[[ach.desc]] [[ach.best]] / [[ach.target]]</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <button type="button" :disabled="!achievement_ready(ach)" :class="achievement_state_class(ach)" class="col-12 mb-2 ml-2 btn">[[ach.award_text]]</button>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <h5>Mixed Team Achievements</h5>
+                                    </div>
+                                    <div v-for="ta in team_achievements(selectedCoach)" class="row">
+                                        <h6 class="col-12">[[ta.team_name]]</h6>
+                                        <template v-for="stat in ['played','touchdowns','casualties','kills','passes','wins']">
+                                            <template v-for="n in [1,2,3]">
+                                                <div class="col-9">
+                                                    <div class="progress position-relative mb-2">
+                                                        <div class="progress-bar" :class="ta.achievements[stat][n].completed ? 'bg-success' : ''" role="progressbar" :style="'width: '+progress(ta.achievements[stat][n].best/ta.achievements[stat][n].target)+'%;'" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        <span class="justify-content-center d-flex position-absolute w-100">[[ta.achievements[stat][n].desc]] [[ta.achievements[stat][n].best]] / [[ta.achievements[stat][n].target]]</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col-3">
+                                                    <button type="button" :disabled="!achievement_ready(ta.achievements[stat][n])" :class="achievement_state_class(ta.achievements[stat][n])" class="col-12 mb-2 ml-2 btn">[[ta.achievements[stat][n].award_text]]</button>
+                                                </div>
+                                            </template>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="coach_stats" role="tabpanel" aria-labelledby="coach-stats">
+                                <div class="col-auto my-1">
+                                    <div class="row">
+                                        <h4 class="col-12">Summary</h4>
+                                        <div class="col-2"><h5>Matches: <small class="text-muted">[[getStat(selectedCoach,'matches')]]</small></h5></div>
+                                        <div class="col-2"><h5>Wins: <small class="text-muted">[[getStat(selectedCoach,'wins')]]</small></h5></div>
+                                        <div class="col-2"><h5>Draws: <small class="text-muted">[[getStat(selectedCoach,'draws')]]</small></h5></div>
+                                        <div class="col-2"><h5>Losses: <small class="text-muted">[[getStat(selectedCoach,'losses')]]</small></h5></div>
+                                        <div class="col-2"><h5>Points: <small class="text-muted">[[getStat(selectedCoach,'points')]]</small></h5></div>
+                                        <div class="col-2"><h5 title="Points Per Game">PPG: <small class="text-muted">[[(getStat(selectedCoach,'points')/getStat(selectedCoach,'matches')).toFixed(2)]]</small></h5></div>
+
+                                        <div class="col-2"><h5>Blocks: <small class="text-muted">[[getStat(selectedCoach,'inflictedtackles')]]</small></h5></div>
+                                        <div class="col-2"><h5 title="Armor Breaks">ABs: <small class="text-muted">[[getStat(selectedCoach,'inflictedinjuries')]]</small></h5></div>
+                                        <div class="col-2"><h5>KOs: <small class="text-muted">[[getStat(selectedCoach,'inflictedko')]]</small></h5></div>
+                                        <div class="col-2"><h5>Casualties: <small class="text-muted">[[getStat(selectedCoach,'inflictedcasualties')]]</small></h5></div>
+                                        <div class="col-2"><h5>Kills: <small class="text-muted">[[getStat(selectedCoach,'inflicteddead')]]</small></h5></div>
+                                        <div class="col-2"><h5 title="Blocks Per Game">BPG: <small class="text-muted">[[(getStat(selectedCoach,'inflictedtackles')/getStat(selectedCoach,'matches')).toFixed(2)]]</small></h5></div>
+
+                                        <div class="col-2"><h5>TDs: <small class="text-muted">[[getStat(selectedCoach,'inflictedtouchdowns')]]</small></h5></div>
+                                        <div class="col-2"><h5>Passes: <small class="text-muted">[[getStat(selectedCoach,'inflictedpasses')]]</small></h5></div>
+                                        <div class="col-2"><h5>Passed [m]: <small class="text-muted">[[getStat(selectedCoach,'inflictedmeterspassing')]]</small></h5></div>
+                                        <div class="col-2"><h5>Ran [m]: <small class="text-muted">[[getStat(selectedCoach,'inflictedmetersrunning')]]</small></h5></div>
+                                        <div class="col-2"><h5>Interceptions: <small class="text-muted">[[getStat(selectedCoach,'inflictedinterceptions')]]</small></h5></div>
+                                        <div class="col-2"><h5 title="Touchdowns Per Game">TDPG: <small class="text-muted">[[(getStat(selectedCoach,'inflictedtouchdowns')/getStat(selectedCoach,'matches')).toFixed(2)]]</small></h5></div>
                                     </div>
                                 </div>
                             </div>

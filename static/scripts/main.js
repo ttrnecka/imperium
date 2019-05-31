@@ -327,6 +327,8 @@ var app = new Vue({
           tournaments:[],
           cards:[],
           id:0,
+          achievements:{},
+          stats:{},
         },
         tournaments: [],
         selected_t_region:"",
@@ -540,6 +542,55 @@ var app = new Vue({
       },
       leaderboard_class(name) {
         return this.is_loggedcoach(name) ? 'table-success' : ''
+      },
+      team_achievements(coach) {
+        if (coach.achievements['team']) {
+          return [32,33,34,35,36,37,38,39,40,41,42].map((e) => {
+            return {
+              team_name: this.mixed_teams.find((t) => t.idraces==e).name,
+              achievements: coach.achievements.team[e]
+            } 
+          });
+        }
+        return [];
+      },
+      match_achievements(coach) {
+        if (coach.achievements['match']) {
+          return ['passingtotal1','passingtotal2','runningtotal1','runningtotal2','surfstotal1','surfstotal2','blocks1game1','blocks1game2',
+                  'breaks1game1','breaks1game2','cas1game1','cas1game2','int1game1','score1game1','score1game2',
+                  'sufferandwin1','sufferandwin2','winwithall'].map((e) => coach.achievements.match[e])
+        }
+        return [];
+      },
+      progress(number) {
+        if(number > 1) {
+          return 100;
+        } else {
+          return number*100;
+        }
+      },
+      achievement_state_class(ach) {
+        if(this.progress(ach.best/ach.target) == 100) {
+            return 'btn-success';
+        }
+        return 'btn-secondary';
+      },
+      achievement_ready(ach) {
+        if(this.progress(ach.best/ach.target) == 100 && !ach.completed) {
+          return true;
+        }
+        return false;
+      },
+      getStat(coach) {
+        let pointer = coach.stats;
+        for (let i = 1; i < arguments.length; i++) {
+          if(pointer[arguments[i]]) {
+            pointer = pointer[arguments[i]];
+          } else {
+            return 0;
+          }
+        }
+        return pointer;
       }
     },
     computed: {

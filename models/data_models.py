@@ -93,6 +93,7 @@ class Coach(Base):
     duster = db.relationship("Duster", backref=db.backref('coach'), cascade="all, delete-orphan",uselist=False)
     web_admin = db.Column(db.Boolean(), default=False)
     bb2_name = db.Column(db.String(80), unique=True, nullable=True, index=True)
+    achievements = db.Column(TextPickleType(), nullable=True)
 
     query_class = QueryWithSoftDelete
 
@@ -122,6 +123,13 @@ class Coach(Base):
         return cash
 
     def stats(self):
+        app = db.get_app()
+        store = os.path.join(ROOT, '..', 'data', f"season{app.config['SEASON']}")
+        stats_file = os.path.join(store,"stats.json")
+        f = open(stats_file, "r")
+        data = json.loads(f.read())
+        if self.bb2_name:
+            return data['coaches'][self.bb2_name]
         return {}
 
     def make_transaction(self,transaction):

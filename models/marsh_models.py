@@ -39,10 +39,12 @@ class CoachSchema(ma.ModelSchema):
     account = ma.Nested(AccountSchema)
     duster = ma.Nested(DusterSchema)
     short_name = ma.String()
+    achievements = ma.Dict()
+    stats = ma.Dict()
 
 class CoachLeaderboardSchema(ma.Schema):
     class Meta:
-        fields = ("id", "name", "short_name","collection_value","earned","stats", "bb2_name")
+        fields = ("id", "name", "short_name","collection_value","earned", "bb2_name")
 
 class SimpleCoachSchema(ma.Schema):
     class Meta:

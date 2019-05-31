@@ -200,3 +200,12 @@ img.skill_icon {
 #coach_info h5,select {
   margin:0.5rem 0.5rem 0 0.5rem;
 }
+
+.progress {
+  height: 40px;
+  color: black !important;
+}
+
+.progress span {
+  line-height: 40px;
+}
