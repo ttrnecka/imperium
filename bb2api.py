@@ -14,6 +14,11 @@ class Agent:
         r = self.call("match", match_id=id)
         data = r.json() 
         return data
+    
+    def league(self,name):
+        r = self.call("league", league=name)
+        data = r.json() 
+        return data
 
     def matches(self, **kwargs):
         if 'limit' not in kwargs:

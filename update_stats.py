@@ -25,6 +25,11 @@ start_date = DT.date.today() - DT.timedelta(days=1)
 
 a = Agent(app.config['BB2_API_KEY'])
 
+stats = {
+  'coaches': {},
+  'teams': {},
+}
+
 # run the application
 if __name__ == "__main__":
   logger.info(f"Getting matches since {start_date}")
@@ -59,11 +64,6 @@ if __name__ == "__main__":
 
   # stats rebuilding
   matchfiles = [f for f in os.listdir(matches_folder) if os.path.isfile(os.path.join(matches_folder, f))]
-
-  stats = {
-    'coaches': {},
-    'teams': {}
-  }
 
   for file in matchfiles:
     f = open(os.path.join(matches_folder,file), "r")
@@ -319,7 +319,6 @@ if __name__ == "__main__":
     db.session.commit()
 
     # update achievements
-    #callback to check achivements and send updates
     coach_mention=f'<@{coach.disc_id}>'
     for key,achievement in coach.achievements['match'].items():
         if achievement['target']<=achievement['best'] and achievement['completed']==False:
