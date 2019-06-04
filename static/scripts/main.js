@@ -329,6 +329,7 @@ var app = new Vue({
           id:0,
           achievements:{},
           stats:{},
+          free_packs: "",
         },
         tournaments: [],
         selected_t_region:"",
@@ -534,7 +535,7 @@ var app = new Vue({
         });
       },
       is_loggedcoach(name) {
-        if(this.loggedCoach.bb2_name==name) {
+        if(this.loggedCoach!=undefined && this.loggedCoach.bb2_name==name) {
           return true;
         } else {
           return false;
@@ -608,6 +609,22 @@ var app = new Vue({
           return team.stats[arguments[1]];
         }
         return 0;
+      },
+      getFreePacks(coach){
+        return coach.free_packs.split(',').map((e) => {
+          switch(e) {
+            case "player":
+              return "Player";
+            case "training":
+              return "Training";
+            case "special":
+              return "Special Play";
+            case "booster_budget":
+              return "Booster";
+            case "booster_premium":
+              return "Booster Premium";
+          }
+        }).join(", ");
       },
     },
     computed: {

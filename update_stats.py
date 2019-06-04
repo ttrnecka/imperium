@@ -4,9 +4,11 @@ from web import db, app, store, stats_file
 import datetime as DT
 import json
 import logging
+import services
 from logging.handlers import RotatingFileHandler
 from models.data_models import Coach
 from sqlalchemy.orm.attributes import flag_modified
+from services import NotificationService
 
 app.app_context().push()
 
@@ -314,5 +316,37 @@ if __name__ == "__main__":
     coach.achievements['match']['sufferandwin2']['best'] = coach_stats['max']['max_cas_win']
 
     flag_modified(coach, "achievements")
+    db.session.commit()
 
-  db.session.commit()
+    # update achievements
+    #callback to check achivements and send updates
+    coach_mention=f'<@{coach.disc_id}>'
+    for key,achievement in coach.achievements['match'].items():
+        if achievement['target']<=achievement['best'] and achievement['completed']==False:
+            NotificationService.notify(f"{coach_mention}: {achievement['desc']} - completed")
+            call, arg = achievement['award'].split(",")
+            res, error = getattr(coach, call)(arg,achievement['desc'])
+            if res:
+                print(f"{coach_mention}: {achievement['desc']} awarded")
+                NotificationService.notify(f"{coach_mention}: {achievement['award_text']} awarded")
+                coach.achievements['match'][key]['completed']=True
+                flag_modified(coach, "achievements")
+            else:
+                print(error)
+                NotificationService.notify(f"{coach_mention}: {achievement['award_text']} could not be awarded - {error}")
+    for key1,stat in coach.achievements['team'].items():
+        for key2,item in stat.items():
+            for key3,achievement in item.items():
+                if achievement['target']<=achievement['best'] and achievement['completed']==False:
+                    NotificationService.notify(f"{coach_mention}: {achievement['desc']} - completed")
+                    call, arg = achievement['award'].split(",")
+                    res, error = getattr(coach, call)(arg,achievement['desc'])
+                    if res:
+                        print(f"{coach_mention}: {achievement['desc']} awarded")
+                        coach.achievements['team'][key1][key2][key3]['completed']=True
+                        flag_modified(coach, "achievements")
+                        NotificationService.notify(f"{coach_mention}: {achievement['award_text']} awarded")
+                    else:
+                        print(error)
+                        NotificationService.notify(f"{coach_mention}: {achievement['award_text']} could not be awarded - {error}")
+    db.session.commit()

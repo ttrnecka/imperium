@@ -1139,6 +1139,11 @@ class DiscordCommand:
             msg.append(f"**Tournament Admin:**")
             msg.extend([f'{t.id}. {t.name}, status: {t.status}, channel: {t.discord_channel}' for t in admin_in])
 
+        free_packs = coach.get_freepacks()
+        if len(free_packs)>0:
+            msg.append(f"**Free Packs:**")
+            msg.append((', ').join(free_packs))
+
         await self.send_message(self.message.author, msg)
         await self.send_short_message(self.message.channel, "Info sent to PM")
     
@@ -1175,12 +1180,23 @@ class DiscordCommand:
                          duster_txt = f" ({duster.type})"
                          db.session.delete(duster)
 
-                if ptype in ["player"] and pp_count!=0 and not duster_on:
-                        raise TransactionError("You need to commit Tryouts to be able to generate this pack!")
+                free_packs = coach.get_freepacks()
+
+                if ptype in ["player"] and not duster_on:
+                    if ptype in free_packs:
+                        pack.price=0
+                        coach.remove_from_freepacks(ptype)
+                    else:
+                        raise TransactionError("You need to commit Tryouts or earn the pack through Achievements to be able to generate this pack!")
 
                 if ptype in ["training","special"] and not duster_on:
                     raise TransactionError("You need to commit Drills to be able to generate this pack!")
      
+                if ptype in ["booster_budget","booster_premium"]:
+                    if ptype in free_packs:
+                        pack.price=0
+                        coach.remove_from_freepacks(ptype)
+
                 t = Transaction(pack = pack,price=pack.price,description=PackService.description(pack))
                 coach.make_transaction(t)
             except TransactionError as e:

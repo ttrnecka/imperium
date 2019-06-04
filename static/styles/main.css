@@ -197,6 +197,12 @@ img.skill_icon {
   border-radius: 5px;
 }
 
+img.avatar {
+  width: 35px !important;
+  height: 35px !important;
+  border-radius: 5px;
+}
+
 #coach_info h5,select {
   margin:0.5rem 0.5rem 0 0.5rem;
 }

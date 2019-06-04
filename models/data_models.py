@@ -1,4 +1,5 @@
 from .base_model import db, Base, QueryWithSoftDelete
+from .achievements_template import achievements_template
 import datetime
 import logging
 import json
@@ -21,6 +22,13 @@ db_logger.setLevel(logging.INFO)
 handler = RotatingFileHandler(os.path.join(ROOT, '../logs/db.log'), maxBytes=10000000, backupCount=5, encoding='utf-8', mode='a')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 db_logger.addHandler(handler)
+
+def RepresentsInt(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
 
 class TextPickleType(TypeDecorator):
     impl = db.Text
@@ -94,6 +102,7 @@ class Coach(Base):
     web_admin = db.Column(db.Boolean(), default=False)
     bb2_name = db.Column(db.String(80), unique=True, nullable=True, index=True)
     achievements = db.Column(TextPickleType(), nullable=True)
+    free_packs = db.Column(db.Text(), nullable=False, default="")
 
     query_class = QueryWithSoftDelete
 
@@ -101,6 +110,8 @@ class Coach(Base):
         self.name = name
         self.disc_id = disc_id
         self.account = Account()
+        self.free_packs = "player"
+        self.achievements = achievements_template
 
     def __repr__(self):
         return '<Coach %r>' % self.name
@@ -191,6 +202,40 @@ class Coach(Base):
             logger.info(f"{new_coach.name}: Coach reset")
         return new_coach
     
+    def grant(self,item=0,description=""):
+        print(description)
+        if RepresentsInt(item):
+            t = Transaction(description=description,price=-1*int(item))
+            try:
+                self.make_transaction(t)
+            except TransactionError as e:
+                return False, e
+            else:
+                return True, ""
+        else:
+            t = Transaction(description=description,price=0)
+            self.add_to_freepacks(item)
+            self.make_transaction(t)
+            return True, ""
+
+    def get_freepacks(self):
+        return self.free_packs.split(',')
+
+    def set_freepacks(self,list):
+        self.free_packs=(',').join(list)
+        return self.free_packs
+
+    def add_to_freepacks(self,pack):
+        packs = self.get_freepacks()
+        packs.append(pack)
+        self.set_freepacks(packs)
+    
+    def remove_from_freepacks(self,pack):
+        packs = self.get_freepacks()
+        packs.remove(pack)
+        self.set_freepacks(packs)
+
+
     @classmethod
     def get_by_discord_id(cls,id):
         return cls.query.filter_by(disc_id=id).one_or_none()
@@ -352,4 +397,3 @@ def log_deck_cards_append(target, value, initiator):
 @event.listens_for(Deck.cards, 'remove', propagate=True)
 def log_deck_cards_remove(target, value, initiator):
     target.to_log(f"{date_now()}: Card {value.name} removed from the deck")
-

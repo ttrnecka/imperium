@@ -6,11 +6,6 @@ app = create_app()
 app.app_context().push()
 
 for coach in Coach.query.with_deleted().all():
-    coach.packs[:] = []
-
-# set all accounts to 10
-for account in Account.query.all():
-    account.amount=10
-    account.transactions[:] = []
+    db.session.delete(coach)
 
 db.session.commit()

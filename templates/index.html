@@ -39,7 +39,7 @@
                 <ul class="navbar-nav" v-cloak>
                     <li v-if="user.username" class="nav-item">
                         <span class="navbar-text">Welcome [[ user.username ]]</span> 
-                        <img class="ml-2" :src="'https://cdn.discordapp.com/avatars/'+user.id+'/'+user.avatar+'.png'" width="35" height="35"/>
+                        <img class="ml-2 avatar" :src="'https://cdn.discordapp.com/avatars/'+user.id+'/'+user.avatar+'.png'"/>
                     </li>
                     <li v-if="user.code==0" class="nav-item">
                         <a class="nav-link" href="/signin">Signin</a>
@@ -99,6 +99,9 @@
                                         <div v-else>
                                             <h5><small class="text-muted">[[selectedCoach.bb2_name]]</small></h5>
                                         </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <h5>Free Packs: <small class="text-muted">[[ getFreePacks(selectedCoach) ]]</small></h5>
                                     </div>
                                     <div class="tab-content show col-12" id="accordionTournamentsCoach">
                                         <h5>Tournaments:</h5>
@@ -254,7 +257,7 @@
                                             </div>
                                         </div>
                                         <div class="col-3">
-                                            <button type="button" :disabled="!achievement_ready(ach)" :class="achievement_state_class(ach)" class="col-12 mb-2 ml-2 btn">[[ach.award_text]]</button>
+                                            <button type="button" :disabled="!achievement_ready(ach)" :class="achievement_state_class(ach)" class="col-12 mb-2 ml-2 btn">[[ach.award_text]]<span v-if="ach.completed"> ✓</span></button>
                                         </div>
                                     </div>
                                     <div class="row">
@@ -271,7 +274,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-3">
-                                                    <button type="button" :disabled="!achievement_ready(ta.achievements[stat][n])" :class="achievement_state_class(ta.achievements[stat][n])" class="col-12 mb-2 ml-2 btn">[[ta.achievements[stat][n].award_text]]</button>
+                                                    <button type="button" :disabled="!achievement_ready(ta.achievements[stat][n])" :class="achievement_state_class(ta.achievements[stat][n])" class="col-12 mb-2 ml-2 btn">[[ta.achievements[stat][n].award_text]]<span v-if="ta.achievements[stat][n].completed"> ✓</span></button>
                                                 </div>
                                             </template>
                                         </template>
@@ -292,50 +295,86 @@
                                         <div class="tab-content" id="coachStatsTabContent">
                                             <div class="tab-pane fade show active" id="stats_summary" role="tabpanel" aria-labelledby="stats-summary-tab">
                                                 <div class="row mt-2">
-                                                    <div class="col-2"><h5>Matches: <small class="text-muted">[[getStat(selectedCoach,'matches')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Wins: <small class="text-muted">[[getStat(selectedCoach,'wins')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Draws: <small class="text-muted">[[getStat(selectedCoach,'draws')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Losses: <small class="text-muted">[[getStat(selectedCoach,'losses')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Points: <small class="text-muted">[[getStat(selectedCoach,'points')]]</small></h5></div>
-                                                    <div class="col-2"><h5 title="Points Per Game">PPG: <small class="text-muted">[[(getStat(selectedCoach,'points')/getStat(selectedCoach,'matches')).toFixed(2)]]</small></h5></div>
+                                                    <div class="col-3"><h5>Wins:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'wins')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Draws:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'draws')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Losses:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'losses')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Matches:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'matches')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Points:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'points')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Points Per Game">PPG:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[(getStat(selectedCoach,'points')/getStat(selectedCoach,'matches')).toFixed(2)]]</small></h5></div>
                     
-                                                    <div class="col-2"><h5>Blocks: <small class="text-muted">[[getStat(selectedCoach,'inflictedtackles')]]</small></h5></div>
-                                                    <div class="col-2"><h5 title="Armor Breaks">ABs: <small class="text-muted">[[getStat(selectedCoach,'inflictedinjuries')]]</small></h5></div>
-                                                    <div class="col-2"><h5>KOs: <small class="text-muted">[[getStat(selectedCoach,'inflictedko')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Casualties: <small class="text-muted">[[getStat(selectedCoach,'inflictedcasualties')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Kills: <small class="text-muted">[[getStat(selectedCoach,'inflicteddead')]]</small></h5></div>
-                                                    <div class="col-2"><h5 title="Blocks Per Game">BPG: <small class="text-muted">[[(getStat(selectedCoach,'inflictedtackles')/getStat(selectedCoach,'matches')).toFixed(2)]]</small></h5></div>
+                                                    <div class="col-3"><h5>Blocks:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'inflictedtackles')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Armor Breaks">ABs:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'inflictedinjuries')]]</small></h5></div>
+                                                    <div class="col-3"><h5>KOs:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'inflictedko')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Casualties">Cas:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'inflictedcasualties')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Kills:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'inflicteddead')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Blocks Per Game">BPG:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[(getStat(selectedCoach,'inflictedtackles')/getStat(selectedCoach,'matches')).toFixed(2)]]</small></h5></div>
                     
-                                                    <div class="col-2"><h5>TDs: <small class="text-muted">[[getStat(selectedCoach,'inflictedtouchdowns')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Passes: <small class="text-muted">[[getStat(selectedCoach,'inflictedpasses')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Passed [m]: <small class="text-muted">[[getStat(selectedCoach,'inflictedmeterspassing')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Ran [m]: <small class="text-muted">[[getStat(selectedCoach,'inflictedmetersrunning')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Interceptions: <small class="text-muted">[[getStat(selectedCoach,'inflictedinterceptions')]]</small></h5></div>
-                                                    <div class="col-2"><h5 title="Touchdowns Per Game">TDPG: <small class="text-muted">[[(getStat(selectedCoach,'inflictedtouchdowns')/getStat(selectedCoach,'matches')).toFixed(2)]]</small></h5></div>
+                                                    <div class="col-3"><h5>TDs:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'inflictedtouchdowns')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Passes:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'inflictedpasses')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Passed [m]:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'inflictedmeterspassing')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Ran [m]:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'inflictedmetersrunning')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Interceptions">Int:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getStat(selectedCoach,'inflictedinterceptions')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Touchdowns Per Game">TDPG:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[(getStat(selectedCoach,'inflictedtouchdowns')/getStat(selectedCoach,'matches')).toFixed(2)]]</small></h5></div>
                                                 </div>
                                             </div>
                                             <div v-for="(team,index) in team_stats(selectedCoach)" class="tab-pane fade" :id="'stats_'+index" role="tabpanel" aria-labelledby="stats-team-tab">
                                                 <div class="row mt-2">
-                                                    <div class="col-2"><h5>Matches: <small class="text-muted">[[getTeamStat(team,'matches')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Wins: <small class="text-muted">[[getTeamStat(team,'wins')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Draws: <small class="text-muted">[[getTeamStat(team,'draws')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Losses: <small class="text-muted">[[getTeamStat(team,'losses')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Points: <small class="text-muted">[[getTeamStat(team,'points')]]</small></h5></div>
-                                                    <div class="col-2"><h5 title="Points Per Game">PPG: <small class="text-muted">[[(getTeamStat(team,'points')/getTeamStat(team,'matches')).toFixed(2)]]</small></h5></div>
-                    
-                                                    <div class="col-2"><h5>Blocks: <small class="text-muted">[[getTeamStat(team,'inflictedtackles')]]</small></h5></div>
-                                                    <div class="col-2"><h5 title="Armor Breaks">ABs: <small class="text-muted">[[getTeamStat(team,'inflictedinjuries')]]</small></h5></div>
-                                                    <div class="col-2"><h5>KOs: <small class="text-muted">[[getTeamStat(team,'inflictedko')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Casualties: <small class="text-muted">[[getTeamStat(team,'inflictedcasualties')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Kills: <small class="text-muted">[[getTeamStat(team,'inflicteddead')]]</small></h5></div>
-                                                    <div class="col-2"><h5 title="Blocks Per Game">BPG: <small class="text-muted">[[(getTeamStat(team,'inflictedtackles')/getTeamStat(team,'matches')).toFixed(2)]]</small></h5></div>
-                    
-                                                    <div class="col-2"><h5>TDs: <small class="text-muted">[[getTeamStat(team,'inflictedtouchdowns')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Passes: <small class="text-muted">[[getTeamStat(team,'inflictedpasses')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Passed [m]: <small class="text-muted">[[getTeamStat(team,'inflictedmeterspassing')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Ran [m]: <small class="text-muted">[[getTeamStat(team,'inflictedmetersrunning')]]</small></h5></div>
-                                                    <div class="col-2"><h5>Interceptions: <small class="text-muted">[[getTeamStat(team,'inflictedinterceptions')]]</small></h5></div>
-                                                    <div class="col-2"><h5 title="Touchdowns Per Game">TDPG: <small class="text-muted">[[(getTeamStat(team,'inflictedtouchdowns')/getTeamStat(team,'matches')).toFixed(2)]]</small></h5></div>
+                                                    <div class="col-3"><h5>Wins:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'wins')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Draws:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'draws')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Losses:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'losses')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Matches:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'matches')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Points:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'points')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Points Per Game">PPG:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[(getTeamStat(team,'points')/getTeamStat(team,'matches')).toFixed(2)]]</small></h5></div>
+                        
+                                                    <div class="col-3"><h5>Blocks:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'inflictedtackles')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Armor Breaks">ABs:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'inflictedinjuries')]]</small></h5></div>
+                                                    <div class="col-3"><h5>KOs:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'inflictedko')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Casualties">Cas:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'inflictedcasualties')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Kills:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'inflicteddead')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Blocks Per Game">BPG:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[(getTeamStat(team,'inflictedtackles')/getTeamStat(team,'matches')).toFixed(2)]]</small></h5></div>
+                        
+                                                    <div class="col-3"><h5>TDs:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'inflictedtouchdowns')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Passes:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'inflictedpasses')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Passed [m]:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'inflictedmeterspassing')]]</small></h5></div>
+                                                    <div class="col-3"><h5>Ran [m]:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'inflictedmetersrunning')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Interceptions">Int:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[getTeamStat(team,'inflictedinterceptions')]]</small></h5></div>
+                                                    <div class="col-3"><h5 title="Touchdowns Per Game">TDPG:</h5></div>
+                                                    <div class="col-1"><h5><small class="text-muted">[[(getTeamStat(team,'inflictedtouchdowns')/getTeamStat(team,'matches')).toFixed(2)]]</small></h5></div>
                                                 </div>
                                             </div>
                                         </div>

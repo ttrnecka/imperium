@@ -41,6 +41,7 @@ class CoachSchema(ma.ModelSchema):
     short_name = ma.String()
     achievements = ma.Dict()
     stats = ma.Dict()
+    free_packs = ma.String()
 
 class CoachLeaderboardSchema(ma.Schema):
     class Meta:

@@ -1,6 +1,5 @@
 VERY HIGH
 
-Achievements
 backend validation for decks
 
 MEDIUM
@@ -108,3 +107,4 @@ Fix resign over web - no reserve to active move
 log changes in the deck after they are commited
 Statistics
 Coach BB2 name claim
+Achievements
