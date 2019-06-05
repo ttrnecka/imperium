@@ -8,7 +8,7 @@ import services
 from logging.handlers import RotatingFileHandler
 from models.data_models import Coach
 from sqlalchemy.orm.attributes import flag_modified
-from services import NotificationService
+from services import NotificationService, AchievementNotificationService
 
 app.app_context().push()
 
@@ -322,7 +322,7 @@ if __name__ == "__main__":
     coach_mention=f'<@{coach.disc_id}>'
     for key,achievement in coach.achievements['match'].items():
         if achievement['target']<=achievement['best'] and achievement['completed']==False:
-            NotificationService.notify(f"{coach_mention}: {achievement['desc']} - completed")
+            AchievementNotificationService.notify(f"{coach_mention}: {achievement['desc']} - completed")
             call, arg = achievement['award'].split(",")
             res, error = getattr(coach, call)(arg,achievement['desc'])
             if res:
@@ -337,7 +337,7 @@ if __name__ == "__main__":
         for key2,item in stat.items():
             for key3,achievement in item.items():
                 if achievement['target']<=achievement['best'] and achievement['completed']==False:
-                    NotificationService.notify(f"{coach_mention}: {achievement['desc']} - completed")
+                    AchievementNotificationService.notify(f"{coach_mention}: {achievement['desc']} - completed")
                     call, arg = achievement['award'].split(",")
                     res, error = getattr(coach, call)(arg,achievement['desc'])
                     if res:

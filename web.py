@@ -6,7 +6,7 @@ from flask_migrate import Migrate
 from misc.helpers import CardHelper
 from models.base_model import db
 from models.data_models import Coach, Card, Account, Transaction, Tournament, TournamentSignups, Duster, TransactionError, Deck
-from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService, TransactionService, DeckService, DeckError, CoachService, LedgerNotificationService, BB2Service
+from services import PackService, TournamentService, RegistrationError, WebHook, DusterService, DustingError, NotificationService, TransactionService, DeckService, DeckError, CoachService, LedgerNotificationService, BB2Service, AchievementNotificationService
 from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema, tournaments_schema, tournament_schema, duster_schema, leaderboard_coach_schema, deck_schema
 from sqlalchemy.orm import raiseload
 from requests_oauthlib import OAuth2Session
@@ -27,6 +27,7 @@ def create_app():
     # register wehook as Tournament service notifier
     NotificationService.register_notifier(WebHook(app.config['DISCORD_WEBHOOK_BANK']).send)
     LedgerNotificationService.register_notifier(WebHook(app.config['DISCORD_WEBHOOK_LEDGER']).send)
+    AchievementNotificationService.register_notifier(WebHook(app.config['DISCORD_WEBHOOK_ACHIEVEMENTS']).send)
     BB2Service.register_agent(Agent(app.config['BB2_API_KEY']))
     return app
 

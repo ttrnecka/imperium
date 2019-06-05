@@ -394,6 +394,18 @@ class LedgerNotificationService:
     def register_notifier(cls,func):
         cls.notificators.append(func)
 
+class AchievementNotificationService:
+    notificators = []
+
+    @classmethod
+    def notify(cls,msg):
+        for notificator in cls.notificators:
+            notificator(msg)
+
+    @classmethod
+    def register_notifier(cls,func):
+        cls.notificators.append(func)
+
 class TournamentService:
     @classmethod
     def init_dict_from_tournament(cls,tournament):

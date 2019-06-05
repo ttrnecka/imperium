@@ -1211,9 +1211,7 @@ class DiscordCommand:
                 ]
                 await self.send_message(self.message.channel, msg)
                 await self.auto_cards(pack)
-
-                if pp_count==0 and ptype!="player":
-                    await self.send_message(self.message.channel, ["You are eligible for free player pack. Run **!genpack player <team>** to generate it!"])
+                
                 return
         else:
             await self.send_short_message(self.message.channel, self.__class__.gen_help())
