@@ -487,14 +487,15 @@ class TournamentService:
             ts = coach.tournaments.filter_by(type="Imperium").all()
             if len(ts)>0:
                 raise RegistrationError(f"Coach cannot be registered to more than 1 Imperium tournament!!!")
-        else:
-            ts = coach.tournaments.filter(Tournament.type!="Imperium").all()
-            if len(ts)>1:
-                raise RegistrationError(f"Coach cannot be registered to more than 2 Development tournaments!!!")
-            if len(ts)==1:
-                etour = ts[0]
-                if not ((etour.mode=="Boot Camp" or etour.mode=="Regular") and tournament.mode=="Fast-Track") and not ((tournament.mode=="Boot Camp" or tournament.mode=="Regular") and etour.mode=="Fast-Track"):
-                    raise RegistrationError(f"Coach cannot be registered to {tournament.type} {tournament.mode} tournament and {etour.type} {etour.mode} tournament at the same time!!!")
+        # Dev tournaments signups are not limited anymore
+        #else:
+        #    ts = coach.tournaments.filter(Tournament.type!="Imperium").all()
+        #    if len(ts)>1:
+        #        raise RegistrationError(f"Coach cannot be registered to more than 2 Development tournaments!!!")
+        #    if len(ts)==1:
+        #        etour = ts[0]
+        #       if not ((etour.mode=="Boot Camp" or etour.mode=="Regular") and tournament.mode=="Fast-Track") and not ((tournament.mode=="Boot Camp" or tournament.mode=="Regular") and etour.mode=="Fast-Track"):
+        #            raise RegistrationError(f"Coach cannot be registered to {tournament.type} {tournament.mode} tournament and {etour.type} {etour.mode} tournament at the same time!!!")
 
         # check for free slots
         signups = tournament.coaches.filter(TournamentSignups.mode != 'reserve').all()
