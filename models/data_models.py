@@ -203,7 +203,6 @@ class Coach(Base):
         return new_coach
     
     def grant(self,item=0,description=""):
-        print(description)
         if RepresentsInt(item):
             t = Transaction(description=description,price=-1*int(item))
             try:
@@ -219,7 +218,7 @@ class Coach(Base):
             return True, ""
 
     def get_freepacks(self):
-        return self.free_packs.split(',')
+        return [pack for pack in self.free_packs.split(',') if pack!='']
 
     def set_freepacks(self,list):
         self.free_packs=(',').join(list)
