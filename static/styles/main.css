@@ -77,6 +77,15 @@
 .duster_info {
   padding: 0.75rem;
 }
+
+.deck {
+  font-size: 0.8rem;
+}
+
+.deck .form-control {
+  font-size: 0.8rem;
+}
+
 .tournament .tournament_info_line div[class^="col-"] {
   padding-bottom: 0.1rem;
   border-bottom-width: 1px;
