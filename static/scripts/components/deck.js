@@ -493,7 +493,6 @@ export default {
                     count += this.doubles_count(card);
                 }
             });
-            console.log("recalculating");
             return count;
         },
     },
