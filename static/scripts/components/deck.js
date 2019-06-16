@@ -368,7 +368,13 @@ export default {
         },
         deck_skills_for(card) {
             const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
-            return assigned_cards.map((c) => this.skills_for(c)).join("");
+            return assigned_cards.map((c) => {
+                let double = false; 
+                if(this.is_skill_double(card,c.name)) {
+                    double = true;
+                }
+                return this.skills_for(c,double);
+            }).join("");
         },
         get_card_assignment(card) {
             if (card.assigned_to_array[this.deck.id]) {
@@ -376,6 +382,17 @@ export default {
             } else {
                 return [];
             }
+        },
+
+        doubles_count(card) {
+            const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
+            let doubles = 0;
+            assigned_cards.forEach((skill) => {
+                if(this.is_skill_double(card,skill.name)) {
+                    doubles += 1;
+                }
+            })
+            return doubles;
         }
     },
     watch: {
@@ -468,7 +485,17 @@ export default {
             } else {
                 return []
             }
-        }
+        },
+        deck_doubles_count() {
+            let count = 0;
+            this.deck_cards.forEach((card) => {
+                if(card.card_type=="Player") {
+                    count += this.doubles_count(card);
+                }
+            });
+            console.log("recalculating");
+            return count;
+        },
     },
     beforeMount() {
         this.getDeck();
@@ -685,13 +712,16 @@ export default {
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="row mt-1">
-                                    <div class="col-4">
+                                    <div class="col-3">
                                         <h5>Deck [[deck_size]]/[[tournament.deck_limit]]</h5>
                                     </div>
-                                    <div class="col-4 text-center">
+                                    <div class="col-3 text-center">
                                         <h5>Value: [[ cardsValue(user_deck_cards) + tier_tax ]]</h5>
                                     </div>
-                                    <div class="col-4">
+                                    <div class="col-3 text-center">
+                                        <h5>Doubles: [[ deck_doubles_count ]]</h5>
+                                    </div>
+                                    <div class="col-3">
                                         <div class="custom-control custom-checkbox mr-sm-2 text-right">
                                             <input type="checkbox" class="custom-control-input" :id="'raritytoggle'+id" v-model="rarity_order">
                                             <label class="custom-control-label" :for="'raritytoggle'+id">Toggle rarity order</label>
@@ -747,7 +777,7 @@ export default {
                                                                 <span v-html="skills_for(card)"></span>
                                                                 <span v-html="deck_skills_for(card)"></span>
                                                             </td>
-                                                            <td class="d-none d-sm-table-cell"></td>
+                                                            <td class="d-none d-sm-table-cell"><b>Doubles:</b> [[doubles_count(card)]]</td>
                                                         </tr>
                                                         </template>
                                                         </tbody>

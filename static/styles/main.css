@@ -196,6 +196,17 @@ img.skill_icon {
   height: 28px !important;
   border-radius: 5px;
 }
+img.skill_single, img.skill_double {
+  width: 32px !important;
+  height: 32px !important;
+  border-style: ridge;
+  border-width: 2px;
+  border-color: transparent;
+}
+
+img.skill_double {
+  border-color:purple;
+}
 
 img.avatar {
   width: 35px !important;
@@ -203,7 +214,7 @@ img.avatar {
   border-radius: 5px;
 }
 
-#coach_info h5,select {
+h5.coach_info, select.coach_info {
   margin:0.5rem 0.5rem 0 0.5rem;
 }
 

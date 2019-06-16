@@ -239,6 +239,7 @@ class PackService:
 
 
 class CardService:
+    # init Card from card loaded from Imperium base sheet
     @classmethod
     def init_Card_from_card(cls,card):
         return Card(
@@ -250,9 +251,11 @@ class CardService:
             subtype = card["Subtype"],
             value = int(card["Card Value"]) if "Card Value" in card and RepresentsInt(card["Card Value"]) else 0,
             notes = card["Notes"] if hasattr(card, "Notes") else "",
+            skill_access = card["Skill Access"],
             assigned_to_array = {},
         )
 
+    # transform imperium base card into dict that can be mapped to Card attributes
     @classmethod
     def init_dict_from_card(cls,card):
         return {
@@ -264,8 +267,10 @@ class CardService:
             "subtype":card["Subtype"],
             "value":int(card["Card Value"]) if "Card Value" in card and RepresentsInt(card["Card Value"]) else 0,
             "notes":card["Notes"] if hasattr(card, "Notes") else "",
+            "skill_access":card["Skill Access"],
         }
 
+    # tranfrom Card to card format used by imperium sheet
     @classmethod
     def turn_Card_to_card(cls,card):
         return {
@@ -277,7 +282,8 @@ class CardService:
             "Type": card.card_type,
             "Subtype": card.subtype,
             "Card Value": card.value,
-            "Notes": card.notes
+            "Notes": card.notes,
+            "Skill Access": card.skill_access,
         }
 
     # return card from sheet in dict format, name must be exact match, case insensitive

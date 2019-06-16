@@ -21,6 +21,13 @@ Vue.mixin({
         {"idraces":41, "code":"uosp", "tier_tax":-10, "name":'Union of Small People',  "races":['Ogre', 'Goblin','Halfling']},
         {"idraces":40, "code":"vt",  "tier_tax":0, "name":'Violence Together',      "races":['Ogre' , 'Goblin','Orc', 'Lizardman']}
       ],
+      skills: {
+        G: ["Dauntless","Dirty Player","Fend","Kick-Off Return","Pass Block","Shadowing","Sure Feet","Tackle","Wrestle","Block","Frenzy","Kick","Pro","Strip Ball","Sure Hands"],
+        A: ["Catch","Diving Catch","Diving Tackle","Jump Up","Leap","Sidestep","Sneaky Git","Sprint","Dodge"],
+        P: ["Accurate","Dump-Off","Hail Mary Pass","Nerves of Steel","Pass","Safe Throw","Leader"],
+        S: ["Break Tackle","Grab","Juggernaut","Multiple Block","Piling On","Stand Firm","Strong Arm","Thick Skull","Guard","Mighty Blow"],
+        M: ["Big Hand","Disturbing Presence","Extra Arms","Foul Appearance","Horns","Prehensile Tail","Tentacles","Two Heads","Very Long Legs","Claw"]
+      },
       card_types: ["Player","Training","Special Play","Staff"],
       show_starter:1,
       rarity_order:1,
@@ -28,6 +35,20 @@ Vue.mixin({
     }
   },
   methods: {
+    is_skill_double(player_card,skill) {
+      if (player_card.skill_access.indexOf(this.skill_to_group_map[skill]) > -1 ) {
+        // single
+        return false;
+      } else {
+        //double
+        return true;
+      }
+    },
+    skill_access_for(access) {
+      const groups = access.split("");
+      const skill_array = groups.map(e => this.skills[e]);
+      return Array.prototype.concat.apply([], skill_array)
+    },
     race(raceid) {
       const team = this.mixed_teams.find((t) => t.idraces==raceid)
       if(team) {
@@ -144,7 +165,7 @@ Vue.mixin({
       return new_collection;
     },
 
-    imgs_for_skill(skill) {
+    imgs_for_skill(skill,double=false) {
       let name;
       switch(skill) {
         case "Strength Up!":
@@ -177,7 +198,8 @@ Vue.mixin({
           name = skill.replace(/[\s-]/g, '')
       }
       const url = "https://cdn2.rebbl.net/images/skills/";
-      return "<img class=\"skill_icon\" src=\""+url+name+".png\" title=\""+skill+"\"></img>";  
+      const double_class = double ? "skill_double" : "skill_single"; 
+      return "<img class=\"skill_icon "+double_class+"\" src=\""+url+name+".png\" title=\""+skill+"\"></img>";  
     },
 
     skills_for_player(card) {
@@ -229,7 +251,7 @@ Vue.mixin({
       }
       return matches.map((s) => this.imgs_for_skill(s)).join("");
     },
-    skills_for(card) {
+    skills_for(card,double=false) {
       if(card.card_type=="Player") {
         return this.skills_for_player(card);
       }
@@ -284,7 +306,7 @@ Vue.mixin({
           skills = [card.name]
       }
       const imgs = skills.map((s) => {
-        return this.imgs_for_skill(s);  
+        return this.imgs_for_skill(s,double);  
       })
       return imgs.join("");
     },
@@ -310,6 +332,13 @@ Vue.mixin({
     },
   },
   computed: {
+    skill_to_group_map() {
+      let map = {};
+      ["G","A","P","S","M"].forEach((g) => {
+        this.skills[g].forEach((e) => map[e]=g);
+      });
+      return map;
+    }
   }
 })
 

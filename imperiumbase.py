@@ -17,11 +17,6 @@ class ImperiumSheet:
     STARTER_PACK_SHEET="Starter Pack"
     TOURNAMENT_SHEET="Tournaments"
 
-    with open(os.path.join(ROOT, 'config/MASTERSHEET_ID'), 'r') as file:
-        MASTERSHEET_ID=file.read()
-
-    MASTER_NAME = "Master List"
-
     CARD_HEADER = [
         "Rarity",
         "Type",
@@ -30,10 +25,9 @@ class ImperiumSheet:
         "Race",
         "Description",
         "Card Value",
-        "Notes"
+        "Notes",
+        "Skill Access"
     ]
-    MASTER_LIST_HEADER = ["Coach"] + CARD_HEADER
-
 
     @classmethod
     def cards(cls,reload=False):
@@ -65,31 +59,6 @@ class ImperiumSheet:
         # TODO change the sheet ID
         sheet = client.open_by_key(cls.SPREADSHEET_ID).worksheet(cls.TOURNAMENT_SHEET)
         return sheet.get_all_records()
-
-    @classmethod
-    def store_cards(cls,cards):
-        client = gspread.authorize(creds)
-        ws = client.open_by_key(cls.MASTERSHEET_ID)
-        try:
-            sheet = ws.worksheet(cls.MASTER_NAME)
-        except gspread.exceptions.WorksheetNotFound:
-            sheet = ws.add_worksheet(title=cls.MASTER_NAME,rows=100, cols=15)
-
-        sheet.clear()
-
-        cards.insert(0,cls.MASTER_LIST_HEADER)
-        cards_amount, keys_amount = len(cards), len(cls.MASTER_LIST_HEADER)
-
-        cell_list = sheet.range(f"A1:{gspread.utils.rowcol_to_a1(cards_amount, keys_amount)}")
-
-        for cell in cell_list:
-            if cell.row==1:
-                cell.value = cards[cell.row-1][cell.col-1]
-            else:
-                cell.value = cards[cell.row-1][cls.MASTER_LIST_HEADER[cell.col-1]]
-        sheet.update_cells(cell_list)
-
-
 
 #if __name__ == "__main__":
 

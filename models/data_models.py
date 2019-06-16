@@ -65,6 +65,7 @@ class Card(Base):
     assigned_to = db.Column(db.String(255),default="")
     assigned_to_array = db.Column(TextPickleType(), nullable=False, default=json.dumps({}))
     uuid = db.Column(db.String(255),default="", index=True)
+    skill_access = db.Column(db.String(20))
 
     def __init__(self,**kwargs):
         super(Card, self).__init__(**kwargs)
