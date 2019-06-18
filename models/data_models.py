@@ -195,8 +195,9 @@ class Coach(Base):
     def reset(self):
         try:
             name = self.name
+            disc_id = self.disc_id
             self.remove()
-            new_coach=self.__class__.create(name)
+            new_coach=self.__class__.create(name,disc_id)
         except Exception as e:
             raise TransactionError(str(e))
         else:

@@ -1,4 +1,4 @@
-discord.py==0.16.12
+discord.py
 gspread
 oauth2client
 pyyaml
