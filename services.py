@@ -467,7 +467,7 @@ class TournamentService:
 
     @classmethod
     def move_from_reserve_to_active(cls,tournament,coach):
-        ts = TournamentSignups.query.filter_by(tournament_id= tournament.tournament_id, coach_id = coach.id).all()
+        ts = TournamentSignups.query.filter_by(tournament_id= tournament.id, coach_id = coach.id).all()
         if len(ts)==0:
             raise RegistrationError(f"Coach {coach.short_name()} is not RESERVE in {tournament.name}!!!")
         if ts[0].mode!="reserve":
