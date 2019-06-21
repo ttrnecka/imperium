@@ -249,12 +249,14 @@ def tournament_resign(tournament_id):
             coach = Coach.query.options(raiseload(Coach.cards),raiseload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
             if not coach:
                 raise InvalidUsage("Coach not found", status_code=403)    
+            
             TournamentService.unregister(tourn,coach)
             signups = TournamentService.update_signups(tourn)
-            coaches = [signup.coach for signup in signups]
-            msg = (", ").join([f"<@{coach.disc_id}>" for coach in coaches])
-        
-            NotificationService.notify(f"{msg}: Your signup to {tourn.name} has been updated from RESERVE to ACTIVE")
+            if len(signups)>0:
+                coaches = [signup.coach for signup in signups]
+                msg = (", ").join([f"<@{coach.disc_id}>" for coach in coaches])           
+                NotificationService.notify(f"{msg}: Your signup to {tourn.name} has been updated from RESERVE to ACTIVE")
+
             result = tournament_schema.dump(tourn)
             return jsonify(result.data)
         except RegistrationError as e:
