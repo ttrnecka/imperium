@@ -657,7 +657,7 @@ class DiscordCommand:
         msg = [
             f"**Bank:** {coach.account.amount} coins\n",
             f"**Tournaments:**",
-            *[f'{t.id}. {t.name}, status: {t.status}, expected start: {t.expected_start_date}' for t in coach.tournaments],
+            *[f'{t.tournament_id}. {t.name}, status: {t.status}, expected start: {t.expected_start_date}' for t in coach.tournaments],
             f"\n**Collection**{sp_msg}:",
             "-" * 65 + "",
             f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(all_cards))}",
