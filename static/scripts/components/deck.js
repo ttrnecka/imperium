@@ -406,7 +406,7 @@ export default {
     },
     computed: {
         id() {
-            return 'C'+this.coach.id+'T'+this.tournament.id;
+            return 'C'+this.coach.id+'T'+this.tournament.tournament_id;
         },
         tier_tax() {
             const team = this.mixed_teams.find((t)=> t.name==this.selected_team);

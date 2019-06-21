@@ -467,7 +467,7 @@ class TournamentService:
 
     @classmethod
     def move_from_reserve_to_active(cls,tournament,coach):
-        ts = TournamentSignups.query.filter_by(tournament_id= tournament.id, coach_id = coach.id).all()
+        ts = TournamentSignups.query.filter_by(tournament_id= tournament.tournament_id, coach_id = coach.id).all()
         if len(ts)==0:
             raise RegistrationError(f"Coach {coach.short_name()} is not RESERVE in {tournament.name}!!!")
         if ts[0].mode!="reserve":
@@ -483,7 +483,7 @@ class TournamentService:
         if tournament.status != "OPEN" and not admin:
             raise RegistrationError(f"Tournamnent {tournament.name} signups are not open!!!")
         # check if coach is not registered
-        ts = TournamentSignups.query.filter_by(tournament_id= tournament.id, coach_id = coach.id).all()
+        ts = TournamentSignups.query.filter_by(tournament_id= tournament.tournament_id, coach_id = coach.id).all()
         if len(ts)>0:
             raise RegistrationError(f"Coach {coach.short_name()} is already registered to {tournament.name}!!!")
 
@@ -535,7 +535,7 @@ class TournamentService:
             else:
                 coach_mention=coach.short_name()
 
-            NotificationService.notify(f'{coach_mention} successfuly signed to {tournament.id}. {tournament.name} - fee {tournament.fee} coins')
+            NotificationService.notify(f'{coach_mention} successfuly signed to {tournament.tournament_id}. {tournament.name} - fee {tournament.fee} coins')
         except Exception as e:
             raise RegistrationError(str(e))
 
@@ -547,7 +547,7 @@ class TournamentService:
         if tournament.status not in ["OPEN","FINISHED"] and not admin:
             raise RegistrationError(f"Coach cannot resign from running tournament!!!")
         # check if coach is registered
-        ts = TournamentSignups.query.filter_by(tournament_id= tournament.id, coach_id = coach.id).all()
+        ts = TournamentSignups.query.filter_by(tournament_id= tournament.tournament_id, coach_id = coach.id).all()
         if len(ts)<1:
             raise RegistrationError(f"Coach {coach.short_name()} is not registered to {tournament.name}!!!")
 
@@ -574,7 +574,7 @@ class TournamentService:
                 coach_mention=coach.short_name()
                 fee_msg=""
 
-            NotificationService.notify(f'{coach_mention} successfuly resigned from {tournament.id}. {tournament.name}{fee_msg}')
+            NotificationService.notify(f'{coach_mention} successfuly resigned from {tournament.tournament_id}. {tournament.name}{fee_msg}')
         except Exception as e:
             raise RegistrationError(str(e))
 
@@ -901,12 +901,12 @@ class DeckService:
         
         coach_mention=coach.short_name()
 
-        LedgerNotificationService.notify(f'{admin_mention} - {coach_mention} submitted ledger for {tournament.id}. {tournament.name} - channel {tournament.discord_channel}')
+        LedgerNotificationService.notify(f'{admin_mention} - {coach_mention} submitted ledger for {tournament.tournament_id}. {tournament.name} - channel {tournament.discord_channel}')
 
         # check if all ledgers are commited
         deck_states = [ts.deck.commited for ts in tournament.tournament_signups]
         if False not in deck_states:
-            LedgerNotificationService.notify(f'{admin_mention} - All ledgers are locked & committed now for {tournament.id}. {tournament.name} - channel {tournament.discord_channel}')
+            LedgerNotificationService.notify(f'{admin_mention} - All ledgers are locked & committed now for {tournament.tournament_id}. {tournament.name} - channel {tournament.discord_channel}')
             tournament.phase="locked"
             db.session.commit()
         return deck

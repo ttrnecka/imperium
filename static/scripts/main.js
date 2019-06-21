@@ -564,7 +564,7 @@ var app = new Vue({
         });
       },
       is_loggedcoach(name) {
-        if(this.loggedCoach!=undefined && this.loggedCoach.bb2_name==name) {
+        if(this.loggedCoach!=undefined && (this.loggedCoach.bb2_name==name || this.loggedCoach.name==name)) {
           return true;
         } else {
           return false;
