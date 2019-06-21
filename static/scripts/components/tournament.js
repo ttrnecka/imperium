@@ -304,12 +304,12 @@ export default {
         this.selected.phase=this.tournament.phase;
     },
     template: `<div class="tournament">
-                <div class="card-header" :id="'tournament'+tournament.id">
+                <div class="card-header" :id="'tournament'+tournament.tournament_id">
                 <h5 class="mb-0">
                     <div class="row">
-                        <button class="col-md-9 btn btn-link btn-block" data-toggle="collapse" :data-target="'#collapseTournament'+tournament.id" aria-expanded="true" aria-controls="collapseTournament">
+                        <button class="col-md-9 btn btn-link btn-block" data-toggle="collapse" :data-target="'#collapseTournament'+tournament.tournament_id" aria-expanded="true" aria-controls="collapseTournament">
                             <div class="row">
-                                <div class="col-6 col-md-5 text-left">[[ tournament.id ]]. [[ tournament.name ]]</div>
+                                <div class="col-6 col-md-5 text-left">[[ tournament.tournament_id ]]. [[ tournament.name ]]</div>
                                 <div class="col-6 col-md-2 text-left">[[ tournament.status ]] [[show_date]]</div>
                                 <div class="col-6 col-md-2 text-left"> Signups: [[signed.length]]/[[ tournament.coach_limit ]]</div>
                                 <div class="col-6 col-md-3 text-left">Channel: [[ tournament.discord_channel ]]</div>
@@ -323,7 +323,7 @@ export default {
                     </div>
                 </h5>
             </div>
-            <div :id="'collapseTournament'+tournament.id" class="collapse" :aria-labelledby="'Tournaments'+tournament.id" :data-parent="getProperty('data-parent')">
+            <div :id="'collapseTournament'+tournament.tournament_id" class="collapse" :aria-labelledby="'Tournaments'+tournament.tournament_id" :data-parent="getProperty('data-parent')">
                 <div class="card-body">
                     <div class="row tournament_info_line">
                         <div class="col-sm-3"><b>Signup By:</b>: [[ tournament.signup_close_date ]]</div>

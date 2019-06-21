@@ -1142,7 +1142,7 @@ class DiscordCommand:
                 count = len(coaches)
                 count_res = len(reserves)
                 reserve_message = f" ({count_res}/{tournament.reserve_limit}) " if tournament.reserve_limit!=0 else "" 
-                msg.append(f"**{tournament.id}.** {tournament.name}{' (Imperium)' if tournament.type=='Imperium' else ''} - Signups: {count}/{tournament.coach_limit}{reserve_message}, Closes: {tournament.signup_close_date}")
+                msg.append(f"**{tournament.tournament_id}.** {tournament.name}{' (Imperium)' if tournament.type=='Imperium' else ''} - Signups: {count}/{tournament.coach_limit}{reserve_message}, Closes: {tournament.signup_close_date}")
 
             msg.append(" \nUse **!complist all|full|free <bigo|gman|rel>** to display tournaments")
             msg.append("Use **!complist <id>** to display details of the tournament")
