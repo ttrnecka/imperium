@@ -213,7 +213,9 @@ if __name__ == "__main__":
 
       # cas achievement check
       if not 'max_cas_win' in coachA_stats['max']:
-        coachA_stats['max']['max_cas_win']=0  
+        coachA_stats['max']['max_cas_win']=0
+      if not 'max_cas_win' in coachB_stats['max']:
+        coachB_stats['max']['max_cas_win']=0
       if teamA['sustainedcasualties'] > coachA_stats['max']['max_cas_win']:
         coachA_stats['max']['max_cas_win']=teamA['sustainedcasualties']
 
@@ -231,6 +233,8 @@ if __name__ == "__main__":
       coachA_team_stats['losses']+=1
 
       # cas achievement check
+      if not 'max_cas_win' in coachA_stats['max']:
+        coachA_stats['max']['max_cas_win']=0
       if not 'max_cas_win' in coachB_stats['max']:
         coachB_stats['max']['max_cas_win']=0  
       if teamB['sustainedcasualties'] > coachB_stats['max']['max_cas_win']:

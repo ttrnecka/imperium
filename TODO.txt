@@ -1,4 +1,10 @@
 VERY HIGH
+Rules on page
+Beer Fund link
+
+Edge not working - does not support JS default parameters
+Insect DNA - counts as double for UW GOBO (or any other mutation skill clearly)
+Statups count as doubles
 
 backend validation for decks
 
