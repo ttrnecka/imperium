@@ -23,7 +23,7 @@ Vue.mixin({
       ],
       skills: {
         G: ["Dauntless","Dirty Player","Fend","Kick-Off Return","Pass Block","Shadowing","Sure Feet","Tackle","Wrestle","Block","Frenzy","Kick","Pro","Strip Ball","Sure Hands"],
-        A: ["Catch","Diving Catch","Diving Tackle","Jump Up","Leap","Sidestep","Sneaky Git","Sprint","Dodge"],
+        A: ["Catch","Diving Catch","Diving Tackle","Jump Up","Leap","Sidestep","SideStep","Sneaky Git","Sprint","Dodge"],
         P: ["Accurate","Dump-Off","Hail Mary Pass","Nerves of Steel","Pass","Safe Throw","Leader"],
         S: ["Break Tackle","Grab","Juggernaut","Multiple Block","Piling On","Stand Firm","Strong Arm","Thick Skull","Guard","Mighty Blow"],
         M: ["Big Hand","Disturbing Presence","Extra Arms","Foul Appearance","Horns","Prehensile Tail","Tentacles","Two Heads","Very Long Legs","Claw"]
@@ -36,6 +36,9 @@ Vue.mixin({
   },
   methods: {
     is_skill_double(player_card,skill) {
+      if (["Strength Up!", "Agility Up!", "Movement Up!", "Armour Up!"].includes(skill)) {
+        return false;
+      }
       if (player_card.skill_access.indexOf(this.skill_to_group_map[skill]) > -1 ) {
         // single
         return false;
@@ -188,9 +191,6 @@ Vue.mixin({
         case "+AV":
           name = "IncreaseArmour";
           break;
-        case "Sidestep":
-          name = "SideStep";
-          break;
         case "Nerves of Steel":
           name = "NervesOfSteel";
           break;
@@ -251,13 +251,7 @@ Vue.mixin({
       }
       return matches.map((s) => this.imgs_for_skill(s)).join("");
     },
-    skills_for(card,double=false) {
-      if(card.card_type=="Player") {
-        return this.skills_for_player(card);
-      }
-      if(["Special Play", "Staff"].includes(card.card_type)) {
-        return this.skills_for_special_and_staff(card);
-      } 
+    skill_names_for(card) {
       let skills=[];
       switch(card.name) {
         case "Block Party":
@@ -302,9 +296,22 @@ Vue.mixin({
         case "Training Wildcard":
           skills = ["MVPCondition2"];
           break;
+        case "Sidestep":
+          skills = ["SideStep"];
+          break;
         default:
           skills = [card.name]
       }
+      return skills;
+    },
+    skills_for(card,double=false) {
+      if(card.card_type=="Player") {
+        return this.skills_for_player(card);
+      }
+      if(["Special Play", "Staff"].includes(card.card_type)) {
+        return this.skills_for_special_and_staff(card);
+      } 
+      let skills = this.skill_names_for(card);
       const imgs = skills.map((s) => {
         return this.imgs_for_skill(s,double);  
       })
@@ -336,6 +343,7 @@ Vue.mixin({
       let map = {};
       ["G","A","P","S","M"].forEach((g) => {
         this.skills[g].forEach((e) => map[e]=g);
+        this.skills[g].forEach((e) => map[e.replace(/[\s-]/g, '')]=g);
       });
       return map;
     }

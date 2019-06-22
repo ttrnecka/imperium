@@ -370,9 +370,12 @@ export default {
             const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
             return assigned_cards.map((c) => {
                 let double = false; 
-                if(this.is_skill_double(card,c.name)) {
-                    double = true;
-                }
+                let skills = this.skill_names_for(c);
+                skills.forEach((skill) => {
+                    if(this.is_skill_double(card,skill)) {
+                        double = true;
+                    }
+                })
                 return this.skills_for(c,double);
             }).join("");
         },
@@ -387,10 +390,16 @@ export default {
         doubles_count(card) {
             const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
             let doubles = 0;
-            assigned_cards.forEach((skill) => {
-                if(this.is_skill_double(card,skill.name)) {
-                    doubles += 1;
-                }
+            assigned_cards.forEach((tcard) => {
+                let skills = this.skill_names_for(tcard);
+                let card_doubles = 0;
+                // only count 1 double for a multiskill card
+                skills.forEach((skill) => {
+                    if(this.is_skill_double(card,skill)) {
+                        card_doubles = 1;
+                    }
+                })
+                doubles += card_doubles;
             })
             return doubles;
         }

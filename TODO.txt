@@ -1,10 +1,5 @@
 VERY HIGH
-Rules on page
-Beer Fund link
-
 Edge not working - does not support JS default parameters
-Insect DNA - counts as double for UW GOBO (or any other mutation skill clearly)
-Statups count as doubles
 
 backend validation for decks
 
@@ -13,9 +8,7 @@ add deck templates
 Collect tournament data from cyanide API and display on page
 
 LOW:
-randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is not bound to a Session; lazy load operation of attribute 'cards' cannot proceed (Background on this error at: http://sqlalche.me/e/bhk3)
-
-VERY LOW:
+Y LOW:
 test code
 
 
@@ -114,3 +107,7 @@ log changes in the deck after they are commited
 Statistics
 Coach BB2 name claim
 Achievements
+
+Rules on page
+Beer Fund link
+Statups / multi skill cards now reporting doubles proeprly
