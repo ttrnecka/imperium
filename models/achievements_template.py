@@ -225,7 +225,7 @@ for team in MIXED_TEAMS:
       'target':25
     },
     '3': {
-      'desc': f"Complete 50 casualties with {team['name']}",
+      'desc': f"Complete 50 passes with {team['name']}",
       'completed': False,
       'award_text': "15 Coins",
       'award': 'grant,15',
