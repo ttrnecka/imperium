@@ -1,4 +1,4 @@
-import FlashMessageComponent from './FlashMessageComponent.js';
+import FlashMessageComponent from './FlashMessageComponent.js?1.1';
 
 function isFunction(functionToCheck) {
   const getType = {};

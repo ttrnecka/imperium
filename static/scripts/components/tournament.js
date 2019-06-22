@@ -1,4 +1,4 @@
-import deck from './deck.js';
+import deck from './deck.js?1.1';
 export default {
     name: 'tournament',
     components: {

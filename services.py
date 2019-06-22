@@ -717,7 +717,12 @@ class DeckService:
 
         if card:
             cCard= CardService.init_Card_from_card(CardService.get_card_from_sheet(name))
-            cCard.deck_type = "extra"
+            # cards added in inducement phase can count towards double
+            if deck.tournament_signup.tournament.phase=="inducement":
+                cCard.deck_type = "extra_inducement"
+            # any other type is ignored
+            else:
+                cCard.deck_type = "extra"
             cCard.assigned_to_array={}
             cCard.uuid = str(uuid.uuid4())
             deck.unused_extra_cards.append(card_schema.dump(cCard).data)

@@ -391,6 +391,10 @@ export default {
             const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
             let doubles = 0;
             assigned_cards.forEach((tcard) => {
+                // ignore extra cards
+                if(tcard.deck_type=="extra") {
+                    return;
+                }
                 let skills = this.skill_names_for(tcard);
                 let card_doubles = 0;
                 // only count 1 double for a multiskill card
@@ -618,8 +622,8 @@ export default {
                                 </div>
                             </div>
                             <div class="row">
-                                <div :id="'extraCardsAccordion'+id" class="col-12 mb-3 mt-3" v-if="extra_allowed && is_owner">
-                                    <div class="card">
+                                <div :id="'extraCardsAccordion'+id" class="col-12 mb-3 mt-3">
+                                    <div class="card" v-if="extra_allowed && is_owner">
                                     <div class="card-header" :id="'extraCards'+id">
                                         <h5 class="mb-0">
                                             <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseExtraCards'+id" aria-expanded="true" aria-controls="collapseExtraCards">
