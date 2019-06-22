@@ -22,8 +22,8 @@ Vue.mixin({
         {"idraces":40, "code":"vt",  "tier_tax":0, "name":'Violence Together',      "races":['Ogre' , 'Goblin','Orc', 'Lizardman']}
       ],
       skills: {
-        G: ["Dauntless","Dirty Player","Fend","Kick-Off Return","Pass Block","Shadowing","Sure Feet","Tackle","Wrestle","Block","Frenzy","Kick","Pro","Strip Ball","Sure Hands"],
-        A: ["Catch","Diving Catch","Diving Tackle","Jump Up","Leap","Sidestep","SideStep","Sneaky Git","Sprint","Dodge"],
+        G: ["Dauntless","Dirty Player","Fend","Kick-Off Return","Pass Block","Shadowing","Tackle","Wrestle","Block","Frenzy","Kick","Pro","Strip Ball","Sure Hands"],
+        A: ["Catch","Diving Catch","Diving Tackle","Jump Up","Leap","Sidestep","SideStep","Sneaky Git","Sprint","Dodge","Sure Feet"],
         P: ["Accurate","Dump-Off","Hail Mary Pass","Nerves of Steel","Pass","Safe Throw","Leader"],
         S: ["Break Tackle","Grab","Juggernaut","Multiple Block","Piling On","Stand Firm","Strong Arm","Thick Skull","Guard","Mighty Blow"],
         M: ["Big Hand","Disturbing Presence","Extra Arms","Foul Appearance","Horns","Prehensile Tail","Tentacles","Two Heads","Very Long Legs","Claw"]
