@@ -1,5 +1,6 @@
 VERY HIGH
 Edge not working - does not support JS default parameters
+Ignore Extra cards in the double calculation
 
 backend validation for decks
 
@@ -8,7 +9,9 @@ add deck templates
 Collect tournament data from cyanide API and display on page
 
 LOW:
-Y LOW:
+randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is not bound to a Session; lazy load operation of attribute 'cards' cannot proceed (Background on this error at: http://sqlalche.me/e/bhk3)
+
+VERY LOW:
 test code
 
 
@@ -108,6 +111,3 @@ Statistics
 Coach BB2 name claim
 Achievements
 
-Rules on page
-Beer Fund link
-Statups / multi skill cards now reporting doubles proeprly

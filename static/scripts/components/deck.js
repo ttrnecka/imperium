@@ -461,13 +461,13 @@ export default {
 
         extra_card_placeholder() {
             if(this.tournament.phase=="deck_building") {
-                return "Extra & Sponsor Cards";
+                return "Type exact name of Sponsor Card and click Add";
             }
             if(this.tournament.phase=="special_play") {
-                return "Special Play & Inducement";
+                return "Type exact name of Card and click Add";
             }
             if(this.tournament.phase=="inducement") {
-                return "Special Play & Inducement";
+                return "Type exact name of Card and click Add";
             }
             return ""
         },
@@ -509,7 +509,10 @@ export default {
         this.getDeck();
     },
     mounted() {
-        this.modal().on('hidden.bs.modal', () => this.$parent.$emit('deckClosed'))
+        this.modal().on('hidden.bs.modal', () => this.$parent.$emit('deckClosed'));
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        })
     },
     delimiters: ['[[',']]'],
     props: ['coach','tournament','deck_id','is_owner'],
@@ -620,7 +623,7 @@ export default {
                                     <div class="card-header" :id="'extraCards'+id">
                                         <h5 class="mb-0">
                                             <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseExtraCards'+id" aria-expanded="true" aria-controls="collapseExtraCards">
-                                            Extra Cards
+                                            <span data-toggle="tooltip" data-placement="top" title="Use this to add Sponsor Cards or Inducement Cards to the collection for this tournament only">Sponsor & Extra Cards</span>
                                             </button>
                                         </h5>
                                     </div>
