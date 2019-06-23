@@ -724,6 +724,9 @@ var app = new Vue({
       stats_coach() {
         return this.leaderboard.stats.find((e) => this.is_loggedcoach(e.name));
       },
+      leaderboard_coach() {
+        return this.leaderboard.coaches.find((e) => this.is_loggedcoach(e.short_name));
+      },
       collectors_sorted() {
         return this.leaderboard['coaches'].slice().sort((a,b) => b.collection_value - a.collection_value);
       },
