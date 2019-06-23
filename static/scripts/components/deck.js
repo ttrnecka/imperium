@@ -528,6 +528,7 @@ export default {
                             <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked && started" @click="commit()">Commit</button>
                             <button type="button" disabled class="btn btn-success" v-if="deck.commited && !locked">Committed</button>
                             <button type="button" disabled class="btn btn-info" v-if="locked">Locked</button>
+                            <button type="button" disabled class="btn btn-info" v-if="!started">Not Started</button>
                             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>

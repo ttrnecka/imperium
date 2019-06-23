@@ -1,6 +1,7 @@
 VERY HIGH
-Edge not working - does not support JS default parameters
-Ignore Extra cards in the double calculation
+assignable bodyguard
+JS transpiling/packaging tool
+mark tournamnets admined by the given coach
 
 backend validation for decks
 
@@ -112,3 +113,6 @@ Coach BB2 name claim
 Achievements
 
 Achievements - cas in stead of pass for 50
+Ignore Extra cards in the double calculation
+make obvious that you cannot submit deck while tournament is not started
+Hide signup button for full tournaments

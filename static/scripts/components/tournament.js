@@ -1,4 +1,4 @@
-import deck from './deck.js?1.1';
+import deck from './deck.js?1.2';
 export default {
     name: 'tournament',
     components: {
@@ -296,6 +296,12 @@ export default {
                 return "("+this.tournament.deadline_date+")";
             }
             return "";
+        },
+
+        is_full() {
+            let active = this.tournament.coach_limit == this.tournament.tournament_signups.filter((e) => { return e.mode=="active"}).length;
+            let reserve = this.tournament.reserve_limit == this.tournament.tournament_signups.filter((e) => { return e.mode!="active"}).length;
+            return active && reserve;
         }
     },
     mounted() {
@@ -317,8 +323,9 @@ export default {
                         </button>
                         <div class="col-md-3 text-right">
                             <button v-if="is_user_signed" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="resign()">Resign</button>
-                            <button v-else type="button" :disabled="processing" class="col-12 m-1 btn btn-success" @click="sign()">Sign</button>
+                            <button v-if="!is_user_signed && !is_full" type="button" :disabled="processing" class="col-12 m-1 btn btn-success" @click="sign()">Sign</button>
                             <button v-if="is_user_signed" type="button" class="btn col-12 m-1 btn-primary"  @click="showDeck(loggedCoach)">My Deck</button>
+                            <button v-if="!is_user_signed && is_full" disabled type="button" class="col-12 m-1 btn btn-info">Full</button>
                         </div>
                     </div>
                 </h5>

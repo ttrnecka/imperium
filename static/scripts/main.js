@@ -1,5 +1,5 @@
 window.starter_cards = [];
-import tournament from './components/tournament.js?1.1';
+import tournament from './components/tournament.js?1.2';
 import VueFlashMessage from './components/VueFlashMessage/index.js?1.1';
 Vue.use(VueFlashMessage);
 
@@ -194,6 +194,9 @@ Vue.mixin({
         case "Nerves of Steel":
           name = "NervesOfSteel";
           break;
+        case "Sidestep":
+            name = "SideStep";
+            break;
         default:
           name = skill.replace(/[\s-]/g, '')
       }
@@ -381,7 +384,8 @@ var app = new Vue({
         leaderboard:{
           deck_values:[],
           earners:[],
-          stats:[]
+          stats:[],
+          coaches:[],
         },
       }
     },
@@ -459,8 +463,7 @@ var app = new Vue({
         const path = "/coaches/leaderboard";
         axios.get(path)
           .then((res) => {
-            this.leaderboard['deck_values'] = res.data.coaches.sort((a,b) => b.collection_value - a.collection_value).slice(0,10);
-            this.leaderboard['earners'] = res.data.coaches.sort((a,b) => b.earned - a.earned).slice(0,10);
+            this.leaderboard['coaches'] = res.data.coaches;
             this.leaderboard['stats'] = res.data.coach_stats;
           })
           .catch((error) => {
@@ -572,7 +575,7 @@ var app = new Vue({
         });
       },
       is_loggedcoach(name) {
-        if(this.loggedCoach!=undefined && (this.loggedCoach.bb2_name==name || this.loggedCoach.name==name)) {
+        if(this.loggedCoach!=undefined && (this.loggedCoach.bb2_name==name || this.loggedCoach.short_name==name)) {
           return true;
         } else {
           return false;
@@ -718,6 +721,45 @@ var app = new Vue({
         }
         return false;
       },
+      stats_coach() {
+        return this.leaderboard.stats.find((e) => this.is_loggedcoach(e.name));
+      },
+      collectors_sorted() {
+        return this.leaderboard['coaches'].slice().sort((a,b) => b.collection_value - a.collection_value);
+      },
+      earners_sorted() {
+        return this.leaderboard['coaches'].slice().sort((a,b) => b.earned - a.earned);
+      },
+      grinders_sorted() {
+        return this.leaderboard.stats.slice().sort((a,b) => b.matches - a.matches);
+      },
+      points_sorted() {
+        return this.leaderboard.stats.slice().sort((a,b) => b.points - a.points);
+      },
+      ppg_sorted() {
+        return this.leaderboard.stats.slice().sort((a,b) => b.points/b.matches - a.points/a.matches);
+      },
+      scorers_sorted() {
+        return this.leaderboard.stats.slice().sort((a,b) => b.inflictedtouchdowns - a.inflictedtouchdowns);
+      },
+      tpg_sorted() {
+        return this.leaderboard.stats.slice().sort((a,b) => b.inflictedtouchdowns/b.matches - a.inflictedtouchdowns/a.matches);
+      },
+      bashers_sorted() {
+        return this.leaderboard.stats.slice().sort((a,b) => b.inflictedcasualties - a.inflictedcasualties);
+      },
+      cpg_sorted() {
+        return this.leaderboard.stats.slice().sort((a,b) => b.inflictedcasualties/b.matches - a.inflictedcasualties/a.matches);
+      },
+      hitmen_sorted() {
+        return this.leaderboard.stats.slice().sort((a,b) => b.inflicteddead - a.inflicteddead);
+      },
+      passers_sorted() {
+        return this.leaderboard.stats.slice().sort((a,b) => b.inflictedpasses - a.inflictedpasses);
+      },
+      surfers_sorted() {
+        return this.leaderboard.stats.slice().sort((a,b) => b.inflictedpushouts - a.inflictedpushouts);
+      }
     },
     watch: {
       menu: function(newMenu,oldMenu) {
