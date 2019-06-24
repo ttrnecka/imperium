@@ -184,7 +184,7 @@
                                                         <tr v-for="card in sortedCardsWithQuantity(selectedCoach.cards.concat(starter_cards()),ctype)" :key="card.card.id" :class="rarityclass(card.card.rarity)">
                                                             <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.card.value ]]</td>
-                                                            <td :data-toggle="popover" :title="card.card.name" :data-content="card.card.description">[[card.card.name]]</td>
+                                                            <td data-toggle="popover" :title="card.card.name" :data-content="card.card.description">[[card.card.name]]</td>
                                                             <td><span v-html="skills_for(card.card)"></span></td>
                                                             <td>[[ card.card.race ]]</td>
                                                             <td class="d-none d-sm-table-cell">[[ card.card.subtype ]]</td>
@@ -718,11 +718,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="/static/scripts/main.js?1.65" type="module"></script>
-    <script type="text/javascript">
-        $(function () {
-            $('[data-toggle="popover"]').popover()
-        })
-    </script>
+    <script src="/static/scripts/main.js?1.66" type="module"></script>
     </body>
 </html>

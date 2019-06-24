@@ -406,6 +406,9 @@ var app = new Vue({
             const idx = this.coaches.findIndex(x => x.id === parseInt(id));
             Vue.set(this.coaches, idx, res.data);
             this.selectedCoach = this.coaches[idx];
+            this.$nextTick(function() {
+              $('[data-toggle="popover"]').popover();
+            })
           })
           .catch((error) => {
             console.error(error);
