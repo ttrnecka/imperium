@@ -42,7 +42,7 @@ export default {
                     return false;
             }
 
-            if(this.deck_size==this.tournament.deck_limit && card.deck_type!="extra") {
+            if(this.deck_size==this.tournament.deck_limit && (card.deck_type!="extra" && card.deck_type!="extra_inducement")) {
                 if (card.card_type!="Special Play" || this.user_special_plays.length!=0) {
                     this.flash("Cannot add card - deck limit reached!", 'error',{timeout: 3000});
                     return false;
