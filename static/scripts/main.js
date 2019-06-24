@@ -703,6 +703,10 @@ var app = new Vue({
           filtered = filtered.filter((e) => {
             return e.coach_limit > e.tournament_signups.filter((e) => { return e.mode=="active"}).length;
           })
+        } else if (this.selected_t_state=="admined_by_me") {
+          filtered = filtered.filter((e) => {
+            return this.loggedCoach && this.loggedCoach.short_name==e.admin;
+          })
         } else if (this.selected_t_state=="entered") {
           filtered = filtered.filter((e) => {
             if(this.loggedCoach!=undefined)
