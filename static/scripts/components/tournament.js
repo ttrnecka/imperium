@@ -302,6 +302,9 @@ export default {
             let active = this.tournament.coach_limit == this.tournament.tournament_signups.filter((e) => { return e.mode=="active"}).length;
             let reserve = this.tournament.reserve_limit == this.tournament.tournament_signups.filter((e) => { return e.mode!="active"}).length;
             return active && reserve;
+        },
+        is_running() {
+            return this.tournament.status!="OPEN";
         }
     },
     mounted() {
@@ -318,14 +321,15 @@ export default {
                                 <div class="col-6 col-md-5 text-left">[[ tournament.tournament_id ]]. [[ tournament.name ]]</div>
                                 <div class="col-6 col-md-2 text-left">[[ tournament.status ]] [[show_date]]</div>
                                 <div class="col-6 col-md-2 text-left"> Signups: [[signed.length]]/[[ tournament.coach_limit ]]</div>
-                                <div class="col-6 col-md-3 text-left">Channel: [[ tournament.discord_channel ]]</div>
+                                <div class="col-6 col-md-3 text-left">Channel: [[ tournament.discord_channel ]]<br/>Phase: [[ phase.desc ]]</div>
                             </div>
                         </button>
                         <div class="col-md-3 text-right">
-                            <button v-if="is_user_signed" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="resign()">Resign</button>
-                            <button v-if="!is_user_signed && !is_full" type="button" :disabled="processing" class="col-12 m-1 btn btn-success" @click="sign()">Sign</button>
+                            <button v-if="is_user_signed && !is_running" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="resign()">Resign</button>
+                            <button v-if="!is_user_signed && !is_full && !is_running" type="button" :disabled="processing" class="col-12 m-1 btn btn-success" @click="sign()">Sign</button>
                             <button v-if="is_user_signed" type="button" class="btn col-12 m-1 btn-primary"  @click="showDeck(loggedCoach)">My Deck</button>
                             <button v-if="!is_user_signed && is_full" disabled type="button" class="col-12 m-1 btn btn-info">Full</button>
+                            <button v-if="!is_user_signed && is_running" disabled type="button" class="col-12 m-1 btn btn-info">In Progress</button>
                         </div>
                     </div>
                 </h5>
