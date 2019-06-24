@@ -328,7 +328,7 @@ export default {
                             <button v-if="is_user_signed && !is_running" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="resign()">Resign</button>
                             <button v-if="!is_user_signed && !is_full && !is_running" type="button" :disabled="processing" class="col-12 m-1 btn btn-success" @click="sign()">Sign</button>
                             <button v-if="is_user_signed" type="button" class="btn col-12 m-1 btn-primary"  @click="showDeck(loggedCoach)">My Deck</button>
-                            <button v-if="!is_user_signed && is_full" disabled type="button" class="col-12 m-1 btn btn-info">Full</button>
+                            <button v-if="!is_user_signed && is_full && !is_running" disabled type="button" class="col-12 m-1 btn btn-info">Full</button>
                             <button v-if="!is_user_signed && is_running" disabled type="button" class="col-12 m-1 btn btn-info">In Progress</button>
                         </div>
                     </div>
