@@ -703,8 +703,15 @@ var app = new Vue({
           filtered = filtered.filter((e) => {
             return e.coach_limit > e.tournament_signups.filter((e) => { return e.mode=="active"}).length;
           })
-        }
-        
+        } else if (this.selected_t_state=="entered") {
+          filtered = filtered.filter((e) => {
+            for(var i=0;i<e.coach_limit;i++) {
+              if(e.tournament_signups[i])
+                if(e.tournament_signups[i].coach==this.coaches[0].id)
+                  return e
+            }
+          })
+        }        
         return filtered;
       },
       loggedCoach() {
