@@ -705,11 +705,12 @@ var app = new Vue({
           })
         } else if (this.selected_t_state=="entered") {
           filtered = filtered.filter((e) => {
-            for(var i=0;i<e.coach_limit;i++) {
-              if(e.tournament_signups[i])
-                if(e.tournament_signups[i].coach==this.coaches[0].id)
-                  return e
-            }
+            if(this.loggedCoach!=undefined)
+              for(var i=0;i<e.coach_limit;i++) {
+                if(e.tournament_signups[i])
+                  if(e.tournament_signups[i].coach==this.loggedCoach.id)
+                    return e
+              }
           })
         }        
         return filtered;
