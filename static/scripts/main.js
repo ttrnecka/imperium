@@ -399,7 +399,7 @@ var app = new Vue({
       updateTournament(tournament) {
         const idx = this.tournaments.findIndex(x => x.id === parseInt(tournament.id));
         Vue.set(this.tournaments, idx, tournament);
-        this.selectCoach();
+        //this.selectCoach();
       },
       getCoach(id) {
         const path = "/coaches/"+id;
