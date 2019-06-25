@@ -750,8 +750,8 @@ class DeckService:
 
     @classmethod
     def assigncard(cls,deck,card):
-        if card['card_type']!="Training":
-            raise DeckError(f"Cannot assign non-training card!")
+        if card['card_type']!="Training" and card['name']!="Bodyguard":
+            raise DeckError(f"{card['name']} is not assignable!")
         if card["id"]:
             cCard = Card.query.get(card["id"])
             cCard.assigned_to_array = card["assigned_to_array"]

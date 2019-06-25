@@ -406,6 +406,14 @@ export default {
                 doubles += card_doubles;
             })
             return doubles;
+        },
+        is_guarded(card) {
+            if (card.card_type!="Player")
+              return false;
+            const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
+            if (assigned_cards.find((c) => c.name=='Bodyguard')!=undefined)
+              return true;
+            return false;
         }
     },
     watch: {
@@ -774,11 +782,12 @@ export default {
                                                         <tr @click="removeFromDeck(card)" :key="card.id" :class="[rarityclass(card.rarity), extra_type(card.deck_type)]">
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.value ]]</td>
-                                                            <td :title="card.description">[[ card.name ]]</td>
+                                                            <td :title="card.description">[[ card.name ]]<span v-if="is_guarded(card)" title="Bodyguard">&#128170;</span></td>
                                                             <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
                                                             <td v-if="ctype=='Player'">[[ card.race ]]</td>
                                                             <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
-                                                        <tr v-if="ctype=='Training'" :class="[rarityclass(card.rarity)]" v-for="idx in number_of_assignments(card)">
+                                                        </tr>
+                                                        <tr :class="[rarityclass(card.rarity)]" v-for="idx in number_of_assignments(card)">
                                                             <th colspan="1">Assigned to:</th>
                                                             <td colspan="3">
                                                                 <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">

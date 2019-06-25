@@ -1,5 +1,5 @@
 window.starter_cards = [];
-import tournament from './components/tournament.js?1.6';
+import tournament from './components/tournament.js?1.7';
 import VueFlashMessage from './components/VueFlashMessage/index.js?1.1';
 Vue.use(VueFlashMessage);
 
@@ -321,6 +321,8 @@ Vue.mixin({
       return imgs.join("");
     },
     number_of_assignments(card) {
+      if(card.name=="Bodyguard")
+        return 1;
       if(card.card_type!="Training") {
         return 0;
       }
