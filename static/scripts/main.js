@@ -302,6 +302,9 @@ Vue.mixin({
         case "Sidestep":
           skills = ["SideStep"];
           break;
+        case "Bodyguard":
+          skills = [];
+          break;
         default:
           skills = [card.name]
       }
