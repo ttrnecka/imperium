@@ -635,7 +635,7 @@
                         <tr v-if="stats_coach!=undefined && cpg_sorted.indexOf(stats_coach) > 9" :class="leaderboard_class(stats_coach.name)">
                             <th scope="row">[[ cpg_sorted.indexOf(stats_coach)+1 ]].</th>
                             <td>[[ stats_coach.name ]]</td>
-                            <td class="text-right">[[(stats_coach.inflictedcasualties/stats_coach.inflictedcasualties).toFixed(2)]]</td>
+                            <td class="text-right">[[(stats_coach.inflictedcasualties/stats_coach.matches).toFixed(2)]]</td>
                         </tr>
                     </tbody>
                 </table>
