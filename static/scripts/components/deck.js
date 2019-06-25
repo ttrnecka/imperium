@@ -511,6 +511,7 @@ export default {
     },
     beforeMount() {
         this.getDeck();
+        this.$parent.$emit('reloadTournament');
     },
     mounted() {
         this.modal().on('hidden.bs.modal', () => this.$parent.$emit('deckClosed'));

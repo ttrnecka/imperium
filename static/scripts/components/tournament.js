@@ -1,4 +1,4 @@
-import deck from './deck.js?1.3';
+import deck from './deck.js?1.4';
 export default {
     name: 'tournament',
     components: {
@@ -175,6 +175,7 @@ export default {
                 path = "/tournaments/"+this.tournament.id+"/"+method;
             }
             let msg;
+            let display_flash = true;
             this.processing=true;
             axios.get(path)
             .then((res) => {
@@ -187,9 +188,10 @@ export default {
                     msg = "Tournaments updated";
                 }
                 else if(method=="get") {
-                    msg = "Tournament updated";
+                    display_flash = false;
                 }
-                this.flash(msg, 'success',{timeout: 3000});
+                if (display_flash)
+                    this.flash(msg, 'success',{timeout: 3000});
                 if(this.tournament.fee>0 && ["sign","resign"].includes(method)) {
                     if(method=="sign") {
                         msg = "Charged registration fee "+this.tournament.fee+" coins";
@@ -227,11 +229,6 @@ export default {
             }
             return false;
         }
-    },
-    watch: {
-        deck_id: function(newValue,oldValue) { 
-            this.getDeck();
-        },
     },
     computed: {
         selected_phase() {
