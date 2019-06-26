@@ -1,5 +1,5 @@
 VERY HIGH
-assignable Bodyguard
+disable giving skills to legends
 
 MEDIUM
 backend validation for decks

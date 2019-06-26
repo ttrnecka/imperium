@@ -495,10 +495,10 @@ class TournamentService:
                 raise RegistrationError(f"Coach cannot be registered to more than 1 Imperium tournament!!!")
         # Deve tournaments limited to 1 for Fast Tracks and 2 for Regulars
         else:
-            if tournament.mode=="Fast-Track":
-                ts = coach.tournaments.filter(Tournament.type!="Imperium", Tournament.mode=="Fast-Track").all()
+            if tournament.mode=="Fast Track":
+                ts = coach.tournaments.filter(Tournament.type!="Imperium", Tournament.mode=="Fast Track").all()
                 if len(ts)>0:
-                    raise RegistrationError(f"Coach cannot be registered to more than 1 Fast-Track Development tournament!!!")
+                    raise RegistrationError(f"Coach cannot be registered to more than 1 Fast Track Development tournament!!!")
             if tournament.mode=="Regular":
                 ts = coach.tournaments.filter(Tournament.type!="Imperium", Tournament.mode=="Regular").all()
                 if len(ts)>1:
