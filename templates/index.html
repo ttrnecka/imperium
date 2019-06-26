@@ -418,6 +418,15 @@
                                 <option value="admined_by_me">Admined by me</option>
                             </select>
                         </div>
+                        <div class="form-group col-md-6">
+                            <select class="form-control" id="tournament_duration" v-model="selected_t_mode">
+                                <option selected disabled value="">Mode:</option>
+                                <option value="">Reset</option>
+                                <option value="regular">Regular</option>
+                                <option value="fast-track">Fast Track</option>
+                                <option value="boot-camp">Boot Camp</option>
+                            </select>
+                        </div>
                     </div>
                     <tournament class="show col-lg-9" v-for="tournament in filteredTournaments" :key="tournament.tournament_id" :id="'tourn'+tournament.tournament_id" role="tabpanel" aria-labelledby="tournament" :tournament="tournament" :coaches="coaches" :data-parent="'#accordionTournaments'" :user="user"></tournament>
                 </div>

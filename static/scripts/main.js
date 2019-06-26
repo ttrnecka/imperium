@@ -374,6 +374,7 @@ var app = new Vue({
         tournaments: [],
         selected_t_region:"",
         selected_t_state:"",
+        selected_t_mode:"",
         selected_team:"All",
         coach_filter:"",
         menu: "Coaches",
@@ -693,6 +694,11 @@ var app = new Vue({
         if(this.selected_t_region!="") {
           filtered = filtered.filter((e) => {
             return e.region.toLowerCase().replace(/\s/g, '') == this.selected_t_region
+          })
+        }
+        if(this.selected_t_mode!="") {
+          filtered = filtered.filter((e) => {
+            return e.mode.toLowerCase().replace(/\s/g, '') == this.selected_t_mode
           })
         }
         if(this.selected_t_state=="full") {
