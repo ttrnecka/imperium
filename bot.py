@@ -138,7 +138,7 @@ class DiscordCommand:
 
     @classmethod
     def is_admin_channel(cls,dchannel):
-        if dchannel.name is not None and "admin-channel" in dchannel.name:
+        if dchannel.name is not None and dchannel.name=="admin-channel":
             return True
         return False
 
