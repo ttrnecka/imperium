@@ -442,9 +442,14 @@ export default {
             return this.deck.cards.concat(this.deck.starter_cards);
         },
 
-        deck_player_cards() {
-            return this.deck_cards.filter((e) => e.card_type=="Player")
+        assignable_deck_player_cards() {
+            return this.deck_player_cards.filter((e) => e.rarity!="Legendary");
         },
+
+        deck_player_cards() {
+            return this.deck_cards.filter((e) => e.card_type=="Player");
+        },
+
         deck_player_size() {
             return this.deck_size_for("Player");
         },
@@ -790,7 +795,11 @@ export default {
                                                         <tr :class="[rarityclass(card.rarity)]" v-for="idx in number_of_assignments(card)">
                                                             <th colspan="1">Assigned to:</th>
                                                             <td colspan="3">
-                                                                <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
+                                                                <select v-if="ctype=='Training'" class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
+                                                                    <option default :value="null">Select Player</option>
+                                                                    <option v-for="(card,index) in assignable_deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.name ]]</option>
+                                                                </select>
+                                                                <select v-else class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
                                                                     <option default :value="null">Select Player</option>
                                                                     <option v-for="(card,index) in deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.name ]]</option>
                                                                 </select>
