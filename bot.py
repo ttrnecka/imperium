@@ -138,7 +138,7 @@ class DiscordCommand:
 
     @classmethod
     def is_admin_channel(cls,dchannel):
-        if dchannel.name is not None and "admin-channel" in dchannel.name:
+        if dchannel.name is not None and dchannel.name=="admin-channel":
             return True
         return False
 
@@ -168,7 +168,7 @@ class DiscordCommand:
             f"Coach **{coach.name}**\n",
             f"**Bank:** {coach.account.amount} coins\n",
             f"**Tournaments:**",
-            *[f'{t.id}. {t.name}, status: {t.status}, expected start: {t.expected_start_date}' for t in coach.tournaments],
+            *[f'{t.tournament_id}. {t.name}, status: {t.status}, expected start: {t.expected_start_date}' for t in coach.tournaments],
             "\n**Collection**:",
             "-" * 65 + "",
             f"{cls.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.cards))}",
@@ -179,7 +179,7 @@ class DiscordCommand:
 
         if len(admin_in)>0:
             msg.append(f"**Tournament Admin:**")
-            msg.extend([f'{t.id}. {t.name}, status: {t.status}, channel: {t.discord_channel}' for t in admin_in])
+            msg.extend([f'{t.tournament_id}. {t.name}, status: {t.status}, channel: {t.discord_channel}' for t in admin_in])
 
         return msg
 
@@ -671,7 +671,7 @@ class DiscordCommand:
 
         if len(admin_in)>0:
             msg.append(f"**Tournament Admin:**")
-            msg.extend([f'{t.id}. {t.name}, status: {t.status}, channel: {t.discord_channel}' for t in admin_in])
+            msg.extend([f'{t.tournament_id}. {t.name}, status: {t.status}, channel: {t.discord_channel}' for t in admin_in])
 
         free_packs = coach.get_freepacks()
         if len(free_packs)>0:

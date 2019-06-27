@@ -1,5 +1,6 @@
 VERY HIGH
-assignable Bodyguard
+disable giving skills to legends
+add filter to display only free cards in the coach collection
 
 MEDIUM
 backend validation for decks

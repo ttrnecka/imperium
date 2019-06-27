@@ -401,7 +401,7 @@
             <div class="col-12">
                 <div class="tab-content" id="accordionTournaments">
                     <div class="row col-lg-9">
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <select class="form-control" id="tournament_region" v-model="selected_t_region">
                                 <option selected disabled value="">Region:</option>
                                 <option value="">Reset</option>
@@ -411,7 +411,7 @@
                                 <option value="rel">REL</option>
                             </select>
                         </div>
-                        <div class="form-group col-md-6">
+                        <div class="form-group col-md-4">
                             <select class="form-control" id="tournament_state" v-model="selected_t_state">
                                 <option selected disabled value="">Occupation:</option>
                                 <option value="">Reset</option>
@@ -419,6 +419,15 @@
                                 <option value="full">Full</option>
                                 <option value="entered">Entered</option>
                                 <option value="admined_by_me">Admined by me</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <select class="form-control" id="tournament_duration" v-model="selected_t_mode">
+                                <option selected disabled value="">Mode:</option>
+                                <option value="">Reset</option>
+                                <option value="regular">Regular</option>
+                                <option value="fasttrack">Fast Track</option>
+                                <option value="bootcamp">Boot Camp</option>
                             </select>
                         </div>
                     </div>
@@ -638,7 +647,7 @@
                         <tr v-if="stats_coach!=undefined && cpg_sorted.indexOf(stats_coach) > 9" :class="leaderboard_class(stats_coach.name)">
                             <th scope="row">[[ cpg_sorted.indexOf(stats_coach)+1 ]].</th>
                             <td>[[ stats_coach.name ]]</td>
-                            <td class="text-right">[[(stats_coach.inflictedcasualties/stats_coach.inflictedcasualties).toFixed(2)]]</td>
+                            <td class="text-right">[[(stats_coach.inflictedcasualties/stats_coach.matches).toFixed(2)]]</td>
                         </tr>
                     </tbody>
                 </table>
@@ -723,6 +732,6 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    <script src="/static/scripts/main.js?1.72" type="module"></script>
+    <script src="/static/scripts/main.js?1.79" type="module"></script>
     </body>
 </html>

@@ -406,6 +406,14 @@ export default {
                 doubles += card_doubles;
             })
             return doubles;
+        },
+        is_guarded(card) {
+            if (card.card_type!="Player")
+              return false;
+            const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
+            if (assigned_cards.find((c) => c.name=='Bodyguard')!=undefined)
+              return true;
+            return false;
         }
     },
     watch: {
@@ -434,9 +442,14 @@ export default {
             return this.deck.cards.concat(this.deck.starter_cards);
         },
 
-        deck_player_cards() {
-            return this.deck_cards.filter((e) => e.card_type=="Player")
+        assignable_deck_player_cards() {
+            return this.deck_player_cards.filter((e) => e.rarity!="Legendary");
         },
+
+        deck_player_cards() {
+            return this.deck_cards.filter((e) => e.card_type=="Player");
+        },
+
         deck_player_size() {
             return this.deck_size_for("Player");
         },
@@ -511,6 +524,7 @@ export default {
     },
     beforeMount() {
         this.getDeck();
+        this.$parent.$emit('reloadTournament');
     },
     mounted() {
         this.modal().on('hidden.bs.modal', () => this.$parent.$emit('deckClosed'));
@@ -546,7 +560,7 @@ export default {
                                     </select>
                                 </div>
                                 <div class="form-group col-lg-6">
-                                    <input type="text" :disabled="!is_owner || locked" class="form-control" placeholder="Team Name" v-bind:value="deck.team_name" v-on:input="debounceUpdateName($event.target.value)">
+                                    <input type="text" :disabled="!is_owner || locked" class="form-control" placeholder="Team Name (max 25 characters)" maxlength="25" v-bind:value="deck.team_name" v-on:input="debounceUpdateName($event.target.value)">
                                 </div>
                             </div>
                             <div class="row">
@@ -773,14 +787,19 @@ export default {
                                                         <tr @click="removeFromDeck(card)" :key="card.id" :class="[rarityclass(card.rarity), extra_type(card.deck_type)]">
                                                             <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.value ]]</td>
-                                                            <td :title="card.description">[[ card.name ]]</td>
+                                                            <td :title="card.description">[[ card.name ]]<span v-if="is_guarded(card)" title="Bodyguard">&#128170;</span></td>
                                                             <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
                                                             <td v-if="ctype=='Player'">[[ card.race ]]</td>
                                                             <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
-                                                        <tr v-if="ctype=='Training'" :class="[rarityclass(card.rarity)]" v-for="idx in number_of_assignments(card)">
+                                                        </tr>
+                                                        <tr :class="[rarityclass(card.rarity)]" v-for="idx in number_of_assignments(card)">
                                                             <th colspan="1">Assigned to:</th>
                                                             <td colspan="3">
-                                                                <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
+                                                                <select v-if="ctype=='Training'" class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
+                                                                    <option default :value="null">Select Player</option>
+                                                                    <option v-for="(card,index) in assignable_deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.name ]]</option>
+                                                                </select>
+                                                                <select v-else class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
                                                                     <option default :value="null">Select Player</option>
                                                                     <option v-for="(card,index) in deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.name ]]</option>
                                                                 </select>

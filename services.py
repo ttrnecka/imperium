@@ -495,10 +495,10 @@ class TournamentService:
                 raise RegistrationError(f"Coach cannot be registered to more than 1 Imperium tournament!!!")
         # Deve tournaments limited to 1 for Fast Tracks and 2 for Regulars
         else:
-            if tournament.mode=="Fast-Track":
-                ts = coach.tournaments.filter(Tournament.type!="Imperium", Tournament.mode=="Fast-Track").all()
+            if tournament.mode=="Fast Track":
+                ts = coach.tournaments.filter(Tournament.type!="Imperium", Tournament.mode=="Fast Track").all()
                 if len(ts)>0:
-                    raise RegistrationError(f"Coach cannot be registered to more than 1 Fast-Track Development tournament!!!")
+                    raise RegistrationError(f"Coach cannot be registered to more than 1 Fast Track Development tournament!!!")
             if tournament.mode=="Regular":
                 ts = coach.tournaments.filter(Tournament.type!="Imperium", Tournament.mode=="Regular").all()
                 if len(ts)>1:
@@ -750,8 +750,8 @@ class DeckService:
 
     @classmethod
     def assigncard(cls,deck,card):
-        if card['card_type']!="Training":
-            raise DeckError(f"Cannot assign non-training card!")
+        if card['card_type']!="Training" and card['name']!="Bodyguard":
+            raise DeckError(f"{card['name']} is not assignable!")
         if card["id"]:
             cCard = Card.query.get(card["id"])
             cCard.assigned_to_array = card["assigned_to_array"]
