@@ -560,7 +560,7 @@ export default {
                                     </select>
                                 </div>
                                 <div class="form-group col-lg-6">
-                                    <input type="text" :disabled="!is_owner || locked" class="form-control" placeholder="Team Name" v-bind:value="deck.team_name" v-on:input="debounceUpdateName($event.target.value)">
+                                    <input type="text" :disabled="!is_owner || locked" class="form-control" placeholder="Team Name (max 25 characters)" maxlength="25" v-bind:value="deck.team_name" v-on:input="debounceUpdateName($event.target.value)">
                                 </div>
                             </div>
                             <div class="row">
