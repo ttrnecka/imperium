@@ -8,4 +8,4 @@ flask_marshmallow
 marshmallow-sqlalchemy
 requests-oauthlib==1.2.0
 requests
-mysql-connector-python
+flask-fontawesome

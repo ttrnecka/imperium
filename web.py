@@ -2,6 +2,7 @@ import os
 import requests
 from datetime import timedelta
 from flask import Flask, render_template, jsonify, abort, session, redirect, request, url_for
+from flask_fontawesome import FontAwesome
 from flask_migrate import Migrate
 from misc.helpers import CardHelper
 from models.base_model import db
@@ -23,6 +24,7 @@ def create_app():
     app.config.from_envvar('YOURAPPLICATION_SETTINGS')
     db.init_app(app)
     ma.init_app(app)
+    fa=FontAwesome(app)
     
     # register wehook as Tournament service notifier
     NotificationService.register_notifier(WebHook(app.config['DISCORD_WEBHOOK_BANK']).send)
