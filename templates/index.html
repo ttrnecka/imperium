@@ -10,6 +10,7 @@
         <link rel="icon" type="image/png" sizes="16x16" href="/static/images//favicon-16x16.png">
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        {{ fontawesome_html() }}
         <title>REBBL Imperium</title>
     </head>
 
@@ -170,6 +171,7 @@
                                                     <table class="table  table-striped">
                                                         <thead>
                                                         <tr>
+                                                            <th><i class="fas fa-lock" title="Locked in another tournament"></i></th>
                                                             <th>Rarity</th>
                                                             <th>Value</th>
                                                             <th>Name</th>
@@ -182,6 +184,7 @@
                                                         </thead>
                                                         <tbody>
                                                         <tr v-for="card in sortedCardsWithQuantity(selectedCoach.cards.concat(starter_cards()),ctype)" :key="card.card.id" :class="rarityclass(card.card.rarity)">
+                                                            <td><i v-if="is_locked(card)" class="fas fa-lock"></i></td>
                                                             <td><img class="rarity" :src="'static/images/'+card.card.rarity+'.jpg'" :alt="card.card.rarity" :title="card.card.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.card.value ]]</td>
                                                             <td data-toggle="popover" data-placement="top" :title="card.card.name" :data-content="card.card.description">[[card.card.name]]</td>

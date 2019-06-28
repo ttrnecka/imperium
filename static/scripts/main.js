@@ -167,6 +167,12 @@ Vue.mixin({
       }
       return new_collection;
     },
+    is_locked(card) {
+      if(card.card.in_development_deck || card.card.in_imperium_deck)
+        return true
+      else
+        return false
+    },
 
     imgs_for_skill(skill,double=false) {
       let name;
