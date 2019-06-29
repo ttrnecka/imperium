@@ -948,7 +948,7 @@ class DiscordCommand:
                     unknown_cards = []
 
                     for name in card_names:
-                        card = CardService.get_Card_from_coach(coach,name)
+                        card = CardService.get_card_from_coach(coach,name)
                         if card:
                             removed_cards.append(card)
                             db.session.delete(card)

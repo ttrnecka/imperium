@@ -1,5 +1,6 @@
+"""resets coaches and tournaments in DB"""
 from web import db, create_app
-from models.data_models import  Account, Pack, Transaction, Coach, Tournament
+from models.data_models import Coach, Tournament
 
 app = create_app()
 app.app_context().push()

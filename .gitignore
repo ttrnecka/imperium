@@ -7,3 +7,4 @@ data/
 .vscode/
 imperium.code-workspace
 config/config.py
+pylintrc
