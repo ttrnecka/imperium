@@ -22,7 +22,7 @@ class DusterService:
     @classmethod
     def dust_card(cls, duster, card):
         """Dust `card` model"""
-        if duster.cards:
+        if not duster.cards:
             if card.card_type == "Player":
                 duster.type = "Tryouts"
             else:

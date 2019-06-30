@@ -1,5 +1,9 @@
 [v-cloak] { display: none; }
 
+body {
+  /* navbar fixed position */
+  padding-top: 59px;
+}
 .toggle-wrapper {
     display: inline-block;
     position: relative;

@@ -351,15 +351,16 @@ def main():
         coach_mention = f'<@{coach.disc_id}>'
         for key, achievement in coach.achievements['match'].items():
             if achievement['target'] <= achievement['best'] and not achievement['completed']:
+                achievement_bank_text = f"{achievement['award_text']} awarded - {achievement['desc']}"
                 AchievementNotificationService.notify(
-                    f"{coach_mention}: {achievement['desc']} - completed"
+                    f"{coach.short_name()}: {achievement['desc']} - completed"
                 )
                 call, arg = achievement['award'].split(",")
                 res, error = getattr(coach, call)(arg, achievement['desc'])
                 if res:
                     print(f"{coach_mention}: {achievement['desc']} awarded")
                     NotificationService.notify(
-                        f"{coach_mention}: {achievement['award_text']} awarded"
+                        f"{coach_mention}: {achievement_bank_text}"
                     )
                     coach.achievements['match'][key]['completed'] = True
                     flag_modified(coach, "achievements")
@@ -374,8 +375,9 @@ def main():
                 for key3, achievement in item.items():
                     if (achievement['target'] <= achievement['best'] and
                             not achievement['completed']):
+                        achievement_bank_text = f"{achievement['award_text']} awarded - {achievement['desc']}"
                         AchievementNotificationService.notify(
-                            f"{coach_mention}: {achievement['desc']} - completed"
+                            f"{coach.short_name()}: {achievement['desc']} - completed"
                         )
                         call, arg = achievement['award'].split(",")
                         res, error = getattr(coach, call)(arg, achievement['desc'])
@@ -384,7 +386,7 @@ def main():
                             coach.achievements['team'][key1][key2][key3]['completed'] = True
                             flag_modified(coach, "achievements")
                             NotificationService.notify(
-                                f"{coach_mention}: {achievement['award_text']} awarded"
+                                f"{coach_mention}: {achievement_bank_text}"
                             )
                         else:
                             print(error)

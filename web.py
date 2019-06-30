@@ -20,6 +20,8 @@ from services import LedgerNotificationService, AchievementNotificationService
 from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError
 from services import TransactionService, DeckService, DeckError
+from misc.helpers import InvalidUsage
+from misc.decorators import authenticated
 import bb2
 
 
@@ -87,23 +89,6 @@ def make_session(token=None, state=None, scope=None):
 def current_user():
     """current_user"""
     return session['discord_user'] if 'discord_user' in session else None
-
-class InvalidUsage(Exception):
-    """Error handling exception"""
-    status_code = 400
-
-    def __init__(self, message, status_code=None, payload=None):
-        Exception.__init__(self)
-        self.message = message
-        if status_code is not None:
-            self.status_code = status_code
-        self.payload = payload
-
-    def to_dict(self):
-        """to_dict"""
-        value = dict(self.payload or ())
-        value['message'] = self.message
-        return value
 
 @app.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):
@@ -192,158 +177,145 @@ def get_tournament(tournament_id):
     return jsonify(result.data)
 
 @app.route("/tournaments/update", methods=["GET"])
+@authenticated
 def tournaments_update():
     """Update tournaments from sheet"""
-    if current_user():
-        try:
-            coach = Coach.query.options(
-                raiseload(Coach.cards), raiseload(Coach.packs)
-            ).filter_by(disc_id=current_user()['id']).one_or_none()
+    try:
+        coach = Coach.query.options(
+            raiseload(Coach.cards), raiseload(Coach.packs)
+        ).filter_by(disc_id=current_user()['id']).one_or_none()
 
-            if not coach:
-                raise InvalidUsage("Coach not found", status_code=403)
-            if not coach.web_admin:
-                raise InvalidUsage("Coach does not have webadmin role", status_code=403)
-            TournamentService.update()
-            return jsonify(True)
-        except RegistrationError as exc:
-            raise InvalidUsage(str(exc), status_code=403)
-    else:
-        raise InvalidUsage('You are not authenticated', status_code=401)
+        if not coach:
+            raise InvalidUsage("Coach not found", status_code=403)
+        if not coach.web_admin:
+            raise InvalidUsage("Coach does not have webadmin role", status_code=403)
+        TournamentService.update()
+        return jsonify(True)
+    except RegistrationError as exc:
+        raise InvalidUsage(str(exc), status_code=403)
 
 @app.route("/tournaments/<int:tournament_id>/close", methods=["POST"])
+@authenticated
 def tournament_close(tournament_id):
     """Close tournaments and award prizes"""
-    if current_user():
-        try:
-            tourn = Tournament.query.get(tournament_id)
-            coach = Coach.query.options(
+    try:
+        tourn = Tournament.query.get(tournament_id)
+        coach = Coach.query.options(
+            raiseload(Coach.cards), raiseload(Coach.packs)
+        ).filter_by(disc_id=current_user()['id']).one_or_none()
+
+        if not coach:
+            raise InvalidUsage("Coach not found", status_code=403)
+        if not coach.web_admin:
+            raise InvalidUsage("Coach does not have webadmin role", status_code=403)
+        #prizes
+        for prize in request.get_json():
+            tmp_coach = Coach.query.options(
                 raiseload(Coach.cards), raiseload(Coach.packs)
-            ).filter_by(disc_id=current_user()['id']).one_or_none()
+            ).get(prize['coach'])
 
-            if not coach:
-                raise InvalidUsage("Coach not found", status_code=403)
-            if not coach.web_admin:
-                raise InvalidUsage("Coach does not have webadmin role", status_code=403)
-            #prizes
-            for prize in request.get_json():
-                tmp_coach = Coach.query.options(
-                    raiseload(Coach.cards), raiseload(Coach.packs)
-                ).get(prize['coach'])
+            reason = prize['reason']+" by "+coach.short_name()
+            TransactionService.process(tmp_coach, int(prize['amount'])*-1, reason)
 
-                reason = prize['reason']+" by "+coach.short_name()
-                TransactionService.process(tmp_coach, int(prize['amount'])*-1, reason)
+        for coach in tourn.coaches:
+            TournamentService.unregister(tourn, coach, admin=True, refund=False)
+        tourn.phase = "deck_building"
+        db.session.commit()
 
-            for coach in tourn.coaches:
-                TournamentService.unregister(tourn, coach, admin=True, refund=False)
-            tourn.phase = "deck_building"
-            db.session.commit()
-
-            result = tournament_schema.dump(tourn)
-            return jsonify(result.data)
-        except (RegistrationError, TransactionError) as exc:
-            raise InvalidUsage(str(exc), status_code=403)
-    else:
-        raise InvalidUsage('You are not authenticated', status_code=401)
+        result = tournament_schema.dump(tourn)
+        return jsonify(result.data)
+    except (RegistrationError, TransactionError) as exc:
+        raise InvalidUsage(str(exc), status_code=403)
 
 @app.route("/tournaments/<int:tournament_id>/set_phase", methods=["POST"])
+@authenticated
 def tournament_set_phase(tournament_id):
     """Set tournament phase"""
-    if current_user():
-        try:
-            tourn = Tournament.query.get(tournament_id)
-            coach = Coach.query.options(
-                raiseload(Coach.cards), raiseload(Coach.packs)
-            ).filter_by(disc_id=current_user()['id']).one_or_none()
+    try:
+        tourn = Tournament.query.get(tournament_id)
+        coach = Coach.query.options(
+            raiseload(Coach.cards), raiseload(Coach.packs)
+        ).filter_by(disc_id=current_user()['id']).one_or_none()
 
-            if not coach:
-                raise InvalidUsage("Coach not found", status_code=403)
-            if not coach.short_name() == tourn.admin:
-                raise InvalidUsage("You are not admin for this tournament!", status_code=403)
-            phase = request.get_json()['phase']
-            if phase not in ["deck_building", "locked", "special_play", "inducement"]:
-                raise InvalidUsage(f"Incorrect phase - {phase}", status_code=403)
-            tourn.phase = phase
-            db.session.commit()
+        if not coach:
+            raise InvalidUsage("Coach not found", status_code=403)
+        if not coach.short_name() == tourn.admin:
+            raise InvalidUsage("You are not admin for this tournament!", status_code=403)
+        phase = request.get_json()['phase']
+        if phase not in ["deck_building", "locked", "special_play", "inducement"]:
+            raise InvalidUsage(f"Incorrect phase - {phase}", status_code=403)
+        tourn.phase = phase
+        db.session.commit()
 
-            result = tournament_schema.dump(tourn)
-            return jsonify(result.data)
-        except (RegistrationError, TransactionError) as exc:
-            raise InvalidUsage(str(exc), status_code=403)
-    else:
-        raise InvalidUsage('You are not authenticated', status_code=401)
+        result = tournament_schema.dump(tourn)
+        return jsonify(result.data)
+    except (RegistrationError, TransactionError) as exc:
+        raise InvalidUsage(str(exc), status_code=403)
 
 @app.route("/tournaments/<int:tournament_id>/sign", methods=["GET"])
+@authenticated
 def tournament_sign(tournament_id):
     """Sign coach into tournament"""
-    if current_user():
-        try:
-            tourn = Tournament.query.get(tournament_id)
-            coach = Coach.query.options(
-                raiseload(Coach.cards), raiseload(Coach.packs)
-            ).filter_by(disc_id=current_user()['id']).one_or_none()
+    try:
+        tourn = Tournament.query.get(tournament_id)
+        coach = Coach.query.options(
+            raiseload(Coach.cards), raiseload(Coach.packs)
+        ).filter_by(disc_id=current_user()['id']).one_or_none()
 
-            if not coach:
-                raise InvalidUsage("Coach not found", status_code=403)
-            TournamentService.register(tourn, coach)
-            result = tournament_schema.dump(tourn)
-            return jsonify(result.data)
-        except RegistrationError as exc:
-            raise InvalidUsage(str(exc), status_code=403)
-    else:
-        raise InvalidUsage('You are not authenticated', status_code=401)
+        if not coach:
+            raise InvalidUsage("Coach not found", status_code=403)
+        TournamentService.register(tourn, coach)
+        result = tournament_schema.dump(tourn)
+        return jsonify(result.data)
+    except RegistrationError as exc:
+        raise InvalidUsage(str(exc), status_code=403)
 
 @app.route("/tournaments/<int:tournament_id>/resign", methods=["GET"])
+@authenticated
 def tournament_resign(tournament_id):
     """resign from tournament"""
-    if current_user():
-        try:
-            tourn = Tournament.query.get(tournament_id)
-            coach = Coach.query.options(
-                raiseload(Coach.cards), raiseload(Coach.packs)
-            ).filter_by(disc_id=current_user()['id']).one_or_none()
+    try:
+        tourn = Tournament.query.get(tournament_id)
+        coach = Coach.query.options(
+            raiseload(Coach.cards), raiseload(Coach.packs)
+        ).filter_by(disc_id=current_user()['id']).one_or_none()
 
-            if not coach:
-                raise InvalidUsage("Coach not found", status_code=403)
+        if not coach:
+            raise InvalidUsage("Coach not found", status_code=403)
 
-            TournamentService.unregister(tourn, coach)
-            signups = TournamentService.update_signups(tourn)
-            if signups:
-                coaches = [signup.coach for signup in signups]
-                msg = (", ").join([f"<@{coach.disc_id}>" for coach in coaches])
-                NotificationService.notify(
-                    f"{msg}: Your signup to {tourn.name} has been updated from RESERVE to ACTIVE"
-                )
+        TournamentService.unregister(tourn, coach)
+        signups = TournamentService.update_signups(tourn)
+        if signups:
+            coaches = [signup.coach for signup in signups]
+            msg = (", ").join([f"<@{coach.disc_id}>" for coach in coaches])
+            NotificationService.notify(
+                f"{msg}: Your signup to {tourn.name} has been updated from RESERVE to ACTIVE"
+            )
 
-            result = tournament_schema.dump(tourn)
-            return jsonify(result.data)
-        except RegistrationError as exc:
-            raise InvalidUsage(str(exc), status_code=403)
-    else:
-        raise InvalidUsage('You are not authenticated', status_code=401)
+        result = tournament_schema.dump(tourn)
+        return jsonify(result.data)
+    except RegistrationError as exc:
+        raise InvalidUsage(str(exc), status_code=403)
 
-
+@authenticated
 def dust_template(mode="add", card_id=None):
     """wrapper around various dust calls"""
-    if current_user():
-        try:
-            coach = Coach.query.filter_by(disc_id=current_user()['id']).one_or_none()
-            if not coach:
-                raise InvalidUsage("Coach not found", status_code=403)
-            if mode == "add":
-                DusterService.dust_card_by_id(coach, card_id)
-            elif mode == "remove":
-                DusterService.undust_card_by_id(coach, card_id)
-            elif mode == "cancel":
-                DusterService.cancel_duster(coach)
-            elif mode == "commit":
-                DusterService.commit_duster(coach)
-            result = duster_schema.dump(coach.duster)
-            return jsonify(result.data)
-        except (DustingError, TransactionError) as exc:
-            raise InvalidUsage(str(exc), status_code=403)
-    else:
-        raise InvalidUsage('You are not authenticated', status_code=401)
+    try:
+        coach = Coach.query.filter_by(disc_id=current_user()['id']).one_or_none()
+        if not coach:
+            raise InvalidUsage("Coach not found", status_code=403)
+        if mode == "add":
+            DusterService.dust_card_by_id(coach, card_id)
+        elif mode == "remove":
+            DusterService.undust_card_by_id(coach, card_id)
+        elif mode == "cancel":
+            DusterService.cancel_duster(coach)
+        elif mode == "commit":
+            DusterService.commit_duster(coach)
+        result = duster_schema.dump(coach.duster)
+        return jsonify(result.data)
+    except (DustingError, TransactionError) as exc:
+        raise InvalidUsage(str(exc), status_code=403)
 
 @app.route("/duster/cancel", methods=["GET"])
 def dust_cancel():
@@ -375,11 +347,9 @@ def get_coach(coach_id):
     return jsonify(result.data)
 
 @app.route("/coaches/<int:coach_id>", methods=["PUT"])
+@authenticated
 def update_coach(coach_id):
     """Update coaches bb2 name"""
-    if not current_user():
-        raise InvalidUsage('You are not authenticated', status_code=401)
-
     tcoach = Coach.query.filter_by(disc_id=current_user()['id']).one_or_none()
     if not tcoach:
         raise InvalidUsage("Coach not found", status_code=403)
@@ -405,11 +375,9 @@ def get_starter_cards():
 
 # BB teams
 @app.route("/teams/<teamname>", methods=["GET"])
+@authenticated
 def get_team(teamname):
     """pulls team from BB2 api and returns it"""
-    if not current_user():
-        raise InvalidUsage('You are not authenticated', status_code=401)
-
     result = BB2Service.team(teamname)
     return jsonify(result)
 # DECKS
@@ -419,11 +387,9 @@ def locked(deck):
     return deck.tournament_signup.tournament.phase == "locked"
 
 @app.route("/decks/<int:deck_id>", methods=["GET"])
+@authenticated
 def get_deck(deck_id):
     """loads deck"""
-    if not current_user():
-        raise InvalidUsage('You are not authenticated', status_code=401)
-
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
@@ -454,64 +420,58 @@ def get_deck(deck_id):
 
 # updates just base deck info not cards
 @app.route("/decks/<int:deck_id>", methods=["POST"])
+@authenticated
 def update_deck(deck_id):
     """Updates deck"""
-    if current_user():
-        deck = Deck.query.get(deck_id)
-        if deck is None:
-            abort(404)
-        if locked(deck):
-            raise InvalidUsage('Deck is locked!', status_code=403)
+    deck = Deck.query.get(deck_id)
+    if deck is None:
+        abort(404)
+    if locked(deck):
+        raise InvalidUsage('Deck is locked!', status_code=403)
 
-        coach = Coach.query.options(
-            raiseload(Coach.cards), raiseload(Coach.packs)
-        ).filter_by(disc_id=current_user()['id']).one_or_none()
+    coach = Coach.query.options(
+        raiseload(Coach.cards), raiseload(Coach.packs)
+    ).filter_by(disc_id=current_user()['id']).one_or_none()
 
-        if deck.tournament_signup.coach != coach:
-            raise InvalidUsage("Unauthorized access!", status_code=403)
+    if deck.tournament_signup.coach != coach:
+        raise InvalidUsage("Unauthorized access!", status_code=403)
 
-        received_deck = request.get_json()['deck']
-        deck = DeckService.update(deck, received_deck)
-        result = deck_schema.dump(deck)
-        return jsonify(result.data)
-
-    raise InvalidUsage('You are not authenticated!', status_code=401)
+    received_deck = request.get_json()['deck']
+    deck = DeckService.update(deck, received_deck)
+    result = deck_schema.dump(deck)
+    return jsonify(result.data)
 
 # updates just base deck info not cards
 @app.route("/decks/<int:deck_id>/addcard", methods=["POST"])
+@authenticated
 def addcard_deck(deck_id):
     """Adds cards to deck"""
-    if current_user():
-        deck = Deck.query.get(deck_id)
-        if deck is None:
-            abort(404)
-        if locked(deck):
-            raise InvalidUsage("Deck is locked!", status_code=403)
+    deck = Deck.query.get(deck_id)
+    if deck is None:
+        abort(404)
+    if locked(deck):
+        raise InvalidUsage("Deck is locked!", status_code=403)
 
-        coach = Coach.query.options(
-            raiseload(Coach.cards), raiseload(Coach.packs)
-        ).filter_by(disc_id=current_user()['id']).one_or_none()
+    coach = Coach.query.options(
+        raiseload(Coach.cards), raiseload(Coach.packs)
+    ).filter_by(disc_id=current_user()['id']).one_or_none()
 
-        if deck.tournament_signup.coach != coach:
-            raise InvalidUsage("Unauthorized access!", status_code=403)
+    if deck.tournament_signup.coach != coach:
+        raise InvalidUsage("Unauthorized access!", status_code=403)
 
-        card = request.get_json()
-        try:
-            deck = DeckService.addcard(deck, card)
-        except (DeckError) as exc:
-            raise InvalidUsage(str(exc), status_code=403)
+    card = request.get_json()
+    try:
+        deck = DeckService.addcard(deck, card)
+    except (DeckError) as exc:
+        raise InvalidUsage(str(exc), status_code=403)
 
-        result = deck_schema.dump(deck)
-        return jsonify(result.data)
-    else:
-        raise InvalidUsage('You are not authenticated', status_code=401)
+    result = deck_schema.dump(deck)
+    return jsonify(result.data)
 
 @app.route("/decks/<int:deck_id>/assign", methods=["POST"])
+@authenticated
 def assigncard_deck(deck_id):
     """Assigns card in deck"""
-    if not current_user():
-        raise InvalidUsage('You are not authenticated', status_code=401)
-
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
@@ -535,10 +495,9 @@ def assigncard_deck(deck_id):
     return jsonify(result.data)
 
 @app.route("/decks/<int:deck_id>/addcard/extra", methods=["POST"])
+@authenticated
 def addcardextra_deck(deck_id):
     """Adds extra card to deck"""
-    if not current_user():
-        raise InvalidUsage('You are not authenticated', status_code=401)
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
@@ -562,10 +521,9 @@ def addcardextra_deck(deck_id):
     return jsonify(result.data)
 
 @app.route("/decks/<int:deck_id>/removecard/extra", methods=["POST"])
+@authenticated
 def removecardextra_deck(deck_id):
     """Removes extra card from deck"""
-    if not current_user():
-        raise InvalidUsage('You are not authenticated', status_code=401)
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
@@ -589,11 +547,9 @@ def removecardextra_deck(deck_id):
     return jsonify(result.data)
 
 @app.route("/decks/<int:deck_id>/remove", methods=["POST"])
+@authenticated
 def removecard_deck(deck_id):
     """Removes cards from deck"""
-    if not current_user():
-        raise InvalidUsage('You are not authenticated', status_code=401)
-
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
@@ -618,11 +574,9 @@ def removecard_deck(deck_id):
 
 # commits deck
 @app.route("/decks/<int:deck_id>/commit", methods=["GET"])
+@authenticated
 def commit_deck(deck_id):
     """Commits deck"""
-    if not current_user():
-        raise InvalidUsage('You are not authenticated', status_code=401)
-
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)

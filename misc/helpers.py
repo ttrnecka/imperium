@@ -1,4 +1,6 @@
-"""Verious helpers"""
+"""Various helpers"""
+from flask import session
+
 class CardHelper:
     """CardHelper namespace"""
     rarityorder = {"Starter":10, "Common":5, "Rare":4, "Epic":3, "Legendary":2, "Unique":1}
@@ -29,3 +31,24 @@ def represents_int(string):
         return True
     except ValueError:
         return False
+
+def current_user():
+    """current_user"""
+    return session['discord_user'] if 'discord_user' in session else None
+
+class InvalidUsage(Exception):
+    """Error handling exception"""
+    status_code = 400
+
+    def __init__(self, message, status_code=None, payload=None):
+        Exception.__init__(self)
+        self.message = message
+        if status_code is not None:
+            self.status_code = status_code
+        self.payload = payload
+
+    def to_dict(self):
+        """to_dict"""
+        value = dict(self.payload or ())
+        value['message'] = self.message
+        return value
