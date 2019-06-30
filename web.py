@@ -20,7 +20,7 @@ from services import LedgerNotificationService, AchievementNotificationService
 from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError
 from services import TransactionService, DeckService, DeckError
-from misc.helpers import InvalidUsage
+from misc.helpers import InvalidUsage, current_user
 from misc.decorators import authenticated
 import bb2
 
@@ -86,10 +86,6 @@ def make_session(token=None, state=None, scope=None):
         auto_refresh_url=TOKEN_URL,
         token_updater=token_updater)
 
-def current_user():
-    """current_user"""
-    return session['discord_user'] if 'discord_user' in session else None
-
 @app.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):
     """Error handler"""
@@ -148,7 +144,6 @@ def get_coaches():
     all_coaches = Coach.query.options(raiseload(Coach.cards), raiseload(Coach.packs)).all()
     result = coaches_schema.dump(all_coaches)
     return jsonify(result.data)
-
 
 @app.route("/coaches/leaderboard", methods=["GET"])
 def get_coaches_leaderboard():

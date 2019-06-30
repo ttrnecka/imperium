@@ -54,7 +54,7 @@ class CardService:
         """returns card from coach by `name`"""
         cards = list(filter(lambda card: card.name.lower() == name.lower(), coach.cards))
 
-        if cards:
+        if not cards:
             return None
         return cards[0]
 
