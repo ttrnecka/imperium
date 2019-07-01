@@ -117,7 +117,7 @@ class TournamentService:
             if tournament.mode == "Regular":
                 singups = coach.tournaments.filter(
                     Tournament.type != "Imperium", Tournament.mode == "Regular").all()
-                if singups:
+                if len(singups)>1:
                     raise RegistrationError(f"Coach cannot be registered to more \
                         than 2 Regular Development tournaments!!!")
 

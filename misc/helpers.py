@@ -1,5 +1,8 @@
 """Various helpers"""
 from flask import session
+from sqlalchemy.orm import raiseload
+
+from models.data_models import Coach
 
 class CardHelper:
     """CardHelper namespace"""
@@ -35,6 +38,11 @@ def represents_int(string):
 def current_user():
     """current_user"""
     return session['discord_user'] if 'discord_user' in session else None
+
+def current_coach():
+    return Coach.query.options(
+        raiseload(Coach.cards), raiseload(Coach.packs)
+    ).filter_by(disc_id=current_user()['id']).one_or_none()
 
 class InvalidUsage(Exception):
     """Error handling exception"""

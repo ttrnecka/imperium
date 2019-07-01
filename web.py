@@ -20,8 +20,8 @@ from services import LedgerNotificationService, AchievementNotificationService
 from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError
 from services import TransactionService, DeckService, DeckError
-from misc.helpers import InvalidUsage, current_user
-from misc.decorators import authenticated
+from misc.helpers import InvalidUsage, current_user, current_coach
+from misc.decorators import authenticated, registered, webadmin
 import bb2
 
 
@@ -173,17 +173,10 @@ def get_tournament(tournament_id):
 
 @app.route("/tournaments/update", methods=["GET"])
 @authenticated
+@webadmin
 def tournaments_update():
     """Update tournaments from sheet"""
     try:
-        coach = Coach.query.options(
-            raiseload(Coach.cards), raiseload(Coach.packs)
-        ).filter_by(disc_id=current_user()['id']).one_or_none()
-
-        if not coach:
-            raise InvalidUsage("Coach not found", status_code=403)
-        if not coach.web_admin:
-            raise InvalidUsage("Coach does not have webadmin role", status_code=403)
         TournamentService.update()
         return jsonify(True)
     except RegistrationError as exc:
@@ -191,18 +184,12 @@ def tournaments_update():
 
 @app.route("/tournaments/<int:tournament_id>/close", methods=["POST"])
 @authenticated
+@webadmin
 def tournament_close(tournament_id):
     """Close tournaments and award prizes"""
     try:
         tourn = Tournament.query.get(tournament_id)
-        coach = Coach.query.options(
-            raiseload(Coach.cards), raiseload(Coach.packs)
-        ).filter_by(disc_id=current_user()['id']).one_or_none()
-
-        if not coach:
-            raise InvalidUsage("Coach not found", status_code=403)
-        if not coach.web_admin:
-            raise InvalidUsage("Coach does not have webadmin role", status_code=403)
+        coach = current_coach()
         #prizes
         for prize in request.get_json():
             tmp_coach = Coach.query.options(
@@ -224,18 +211,11 @@ def tournament_close(tournament_id):
 
 @app.route("/tournaments/<int:tournament_id>/set_phase", methods=["POST"])
 @authenticated
+@webadmin
 def tournament_set_phase(tournament_id):
     """Set tournament phase"""
     try:
         tourn = Tournament.query.get(tournament_id)
-        coach = Coach.query.options(
-            raiseload(Coach.cards), raiseload(Coach.packs)
-        ).filter_by(disc_id=current_user()['id']).one_or_none()
-
-        if not coach:
-            raise InvalidUsage("Coach not found", status_code=403)
-        if not coach.short_name() == tourn.admin:
-            raise InvalidUsage("You are not admin for this tournament!", status_code=403)
         phase = request.get_json()['phase']
         if phase not in ["deck_building", "locked", "special_play", "inducement"]:
             raise InvalidUsage(f"Incorrect phase - {phase}", status_code=403)
@@ -252,13 +232,11 @@ def tournament_set_phase(tournament_id):
 def tournament_sign(tournament_id):
     """Sign coach into tournament"""
     try:
-        tourn = Tournament.query.get(tournament_id)
-        coach = Coach.query.options(
-            raiseload(Coach.cards), raiseload(Coach.packs)
-        ).filter_by(disc_id=current_user()['id']).one_or_none()
-
+        coach = current_coach()
         if not coach:
             raise InvalidUsage("Coach not found", status_code=403)
+
+        tourn = Tournament.query.get(tournament_id)
         TournamentService.register(tourn, coach)
         result = tournament_schema.dump(tourn)
         return jsonify(result.data)
@@ -270,14 +248,11 @@ def tournament_sign(tournament_id):
 def tournament_resign(tournament_id):
     """resign from tournament"""
     try:
-        tourn = Tournament.query.get(tournament_id)
-        coach = Coach.query.options(
-            raiseload(Coach.cards), raiseload(Coach.packs)
-        ).filter_by(disc_id=current_user()['id']).one_or_none()
-
+        coach = current_coach()
         if not coach:
             raise InvalidUsage("Coach not found", status_code=403)
-
+        
+        tourn = Tournament.query.get(tournament_id)
         TournamentService.unregister(tourn, coach)
         signups = TournamentService.update_signups(tourn)
         if signups:
@@ -343,14 +318,9 @@ def get_coach(coach_id):
 
 @app.route("/coaches/<int:coach_id>", methods=["PUT"])
 @authenticated
+@webadmin
 def update_coach(coach_id):
     """Update coaches bb2 name"""
-    tcoach = Coach.query.filter_by(disc_id=current_user()['id']).one_or_none()
-    if not tcoach:
-        raise InvalidUsage("Coach not found", status_code=403)
-    if not tcoach.web_admin:
-        raise InvalidUsage("Coach does not have webadmin role", status_code=403)
-
     coach = Coach.query.get(coach_id)
     if coach is None:
         abort(404)
@@ -413,11 +383,10 @@ def get_deck(deck_id):
     result2 = cards_schema.dump(starter_cards)
     return jsonify({'deck':result.data, 'starter_cards':result2.data})
 
-# updates just base deck info not cards
 @app.route("/decks/<int:deck_id>", methods=["POST"])
 @authenticated
 def update_deck(deck_id):
-    """Updates deck"""
+    """Updates base deck info not cards"""
     deck = Deck.query.get(deck_id)
     if deck is None:
         abort(404)
