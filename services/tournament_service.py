@@ -43,7 +43,7 @@ class TournamentService:
         for tournament in ImperiumSheetService.tournaments():
             t_dict = cls.init_dict_from_tournament(tournament)
             tourns = Tournament.query.filter_by(tournament_id=t_dict['tournament_id']).all()
-            if tourns:
+            if not tourns:
                 tourn = Tournament()
                 db.session.add(tourn)
             else:
