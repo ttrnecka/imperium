@@ -36,7 +36,7 @@ class DeckService:
     @classmethod
     def addextracard(cls, deck, name):
         """Adds extra card defined by `name` to `deck`"""
-        card = CardService.get_card_from_sheet(name)
+        card = CardService.get_card_from_sheet(name.strip())
 
         if card:
             tmp_card = CardService.init_card_model_from_card(card)
