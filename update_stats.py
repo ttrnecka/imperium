@@ -30,7 +30,7 @@ def main():
     logger.addHandler(handler)
 
     matches_folder = os.path.join(STORE, "matches")
-    start_date = DT.date.today() - DT.timedelta(days=1)
+    start_date = DT.date.today() - DT.timedelta(days=7)
 
     agent = bb2.api.Agent(app.config['BB2_API_KEY'])
 
@@ -76,6 +76,10 @@ def main():
         file = open(os.path.join(matches_folder, file_name), "r")
         data = json.loads(file.read())
         file.close()
+
+        # ignore concedes
+        if bb2.is_concede(data):
+            continue
 
         # initialize coaches
         coach1 = data['match']['coaches'][0]
