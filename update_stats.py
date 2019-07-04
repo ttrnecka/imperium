@@ -30,7 +30,7 @@ def main():
     logger.addHandler(handler)
 
     matches_folder = os.path.join(STORE, "matches")
-    start_date = DT.date.today() - DT.timedelta(days=7)
+    start_date = DT.date.today() - DT.timedelta(days=1)
 
     agent = bb2.api.Agent(app.config['BB2_API_KEY'])
 
