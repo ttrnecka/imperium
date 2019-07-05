@@ -40,6 +40,7 @@ def current_user():
     return session['discord_user'] if 'discord_user' in session else None
 
 def current_coach():
+    """Returns current coach or None"""
     return Coach.query.options(
         raiseload(Coach.cards), raiseload(Coach.packs)
     ).filter_by(disc_id=current_user()['id']).one_or_none()

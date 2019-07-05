@@ -20,7 +20,7 @@ from services import LedgerNotificationService, AchievementNotificationService
 from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError
 from services import TransactionService, DeckService, DeckError
-from misc.helpers import InvalidUsage, current_user, current_coach
+from misc.helpers import InvalidUsage, current_coach
 from misc.decorators import authenticated, registered, webadmin
 import bb2
 
@@ -229,12 +229,11 @@ def tournament_set_phase(tournament_id):
 
 @app.route("/tournaments/<int:tournament_id>/sign", methods=["GET"])
 @authenticated
-def tournament_sign(tournament_id):
+@registered
+def tournament_sign(tournament_id, **kwargs):
     """Sign coach into tournament"""
     try:
-        coach = current_coach()
-        if not coach:
-            raise InvalidUsage("Coach not found", status_code=403)
+        coach = kwargs['coach']
 
         tourn = Tournament.query.get(tournament_id)
         TournamentService.register(tourn, coach)
@@ -245,13 +244,12 @@ def tournament_sign(tournament_id):
 
 @app.route("/tournaments/<int:tournament_id>/resign", methods=["GET"])
 @authenticated
-def tournament_resign(tournament_id):
+@registered
+def tournament_resign(tournament_id, **kwargs):
     """resign from tournament"""
     try:
-        coach = current_coach()
-        if not coach:
-            raise InvalidUsage("Coach not found", status_code=403)
-        
+        coach = kwargs['coach']
+
         tourn = Tournament.query.get(tournament_id)
         TournamentService.unregister(tourn, coach)
         signups = TournamentService.update_signups(tourn)
@@ -268,12 +266,11 @@ def tournament_resign(tournament_id):
         raise InvalidUsage(str(exc), status_code=403)
 
 @authenticated
-def dust_template(mode="add", card_id=None):
+@registered
+def dust_template(mode="add", card_id=None, **kwargs):
     """wrapper around various dust calls"""
     try:
-        coach = Coach.query.filter_by(disc_id=current_user()['id']).one_or_none()
-        if not coach:
-            raise InvalidUsage("Coach not found", status_code=403)
+        coach = kwargs['coach']
         if mode == "add":
             DusterService.dust_card_by_id(coach, card_id)
         elif mode == "remove":
@@ -351,17 +348,37 @@ def locked(deck):
     """check if tournament the deck is in is locked"""
     return deck.tournament_signup.tournament.phase == "locked"
 
+def get_deck_or_abort(deck_id):
+    """Returns deck or aborts"""
+    deck = Deck.query.get(deck_id)
+    if deck is None:
+        abort(404)
+    return deck
+
+def get_unlocked_deck_or_abort(deck_id):
+    """Returns InvalidUsage if the deck is locked, otherwise returns deck if it exits"""
+    deck = get_deck_or_abort(deck_id)
+    if locked(deck):
+        raise InvalidUsage("Deck is locked!", status_code=403)
+    return deck
+
+def can_edit_deck(deck):
+    """Checks if deck belongs to the current coach, otherwise raises InvalidUsage"""
+    if deck.tournament_signup.coach != current_coach():
+        raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+    return True
+
+def deck_response(deck):
+    """Turns deck into JSON response"""
+    result = deck_schema.dump(deck)
+    return jsonify(result.data)
+
 @app.route("/decks/<int:deck_id>", methods=["GET"])
 @authenticated
 def get_deck(deck_id):
     """loads deck"""
-    deck = Deck.query.get(deck_id)
-    if deck is None:
-        abort(404)
-
-    coach = Coach.query.options(
-        raiseload(Coach.cards), raiseload(Coach.packs)
-    ).filter_by(disc_id=current_user()['id']).one_or_none()
+    deck = get_deck_or_abort(deck_id)
+    coach = current_coach()
 
     if (not deck.commited and
             not (coach.id == deck.tournament_signup.coach.id or coach.short_name() == "TomasT")):
@@ -387,41 +404,20 @@ def get_deck(deck_id):
 @authenticated
 def update_deck(deck_id):
     """Updates base deck info not cards"""
-    deck = Deck.query.get(deck_id)
-    if deck is None:
-        abort(404)
-    if locked(deck):
-        raise InvalidUsage('Deck is locked!', status_code=403)
-
-    coach = Coach.query.options(
-        raiseload(Coach.cards), raiseload(Coach.packs)
-    ).filter_by(disc_id=current_user()['id']).one_or_none()
-
-    if deck.tournament_signup.coach != coach:
-        raise InvalidUsage("Unauthorized access!", status_code=403)
+    deck = get_unlocked_deck_or_abort(deck_id)
+    can_edit_deck(deck)
 
     received_deck = request.get_json()['deck']
     deck = DeckService.update(deck, received_deck)
-    result = deck_schema.dump(deck)
-    return jsonify(result.data)
+    return deck_response(deck)
 
 # updates just base deck info not cards
 @app.route("/decks/<int:deck_id>/addcard", methods=["POST"])
 @authenticated
 def addcard_deck(deck_id):
     """Adds cards to deck"""
-    deck = Deck.query.get(deck_id)
-    if deck is None:
-        abort(404)
-    if locked(deck):
-        raise InvalidUsage("Deck is locked!", status_code=403)
-
-    coach = Coach.query.options(
-        raiseload(Coach.cards), raiseload(Coach.packs)
-    ).filter_by(disc_id=current_user()['id']).one_or_none()
-
-    if deck.tournament_signup.coach != coach:
-        raise InvalidUsage("Unauthorized access!", status_code=403)
+    deck = get_unlocked_deck_or_abort(deck_id)
+    can_edit_deck(deck)
 
     card = request.get_json()
     try:
@@ -429,25 +425,14 @@ def addcard_deck(deck_id):
     except (DeckError) as exc:
         raise InvalidUsage(str(exc), status_code=403)
 
-    result = deck_schema.dump(deck)
-    return jsonify(result.data)
+    return deck_response(deck)
 
 @app.route("/decks/<int:deck_id>/assign", methods=["POST"])
 @authenticated
 def assigncard_deck(deck_id):
     """Assigns card in deck"""
-    deck = Deck.query.get(deck_id)
-    if deck is None:
-        abort(404)
-    if locked(deck):
-        raise InvalidUsage("Deck is locked!", status_code=403)
-
-    coach = Coach.query.options(
-        raiseload(Coach.cards), raiseload(Coach.packs)
-    ).filter_by(disc_id=current_user()['id']).one_or_none()
-
-    if deck.tournament_signup.coach != coach:
-        raise InvalidUsage("Unauthorized access!", status_code=403)
+    deck = get_unlocked_deck_or_abort(deck_id)
+    can_edit_deck(deck)
 
     card = request.get_json()
     try:
@@ -455,25 +440,14 @@ def assigncard_deck(deck_id):
     except (DeckError) as exc:
         raise InvalidUsage(str(exc), status_code=403)
 
-    result = deck_schema.dump(deck)
-    return jsonify(result.data)
+    return deck_response(deck)
 
 @app.route("/decks/<int:deck_id>/addcard/extra", methods=["POST"])
 @authenticated
 def addcardextra_deck(deck_id):
     """Adds extra card to deck"""
-    deck = Deck.query.get(deck_id)
-    if deck is None:
-        abort(404)
-    if locked(deck):
-        raise InvalidUsage("Deck is locked!", status_code=403)
-
-    coach = Coach.query.options(
-        raiseload(Coach.cards), raiseload(Coach.packs)
-    ).filter_by(disc_id=current_user()['id']).one_or_none()
-
-    if deck.tournament_signup.coach != coach:
-        raise InvalidUsage("Unauthorized access!", status_code=403)
+    deck = get_unlocked_deck_or_abort(deck_id)
+    can_edit_deck(deck)
 
     name = request.get_json()['name']
     try:
@@ -481,25 +455,14 @@ def addcardextra_deck(deck_id):
     except (DeckError) as exc:
         raise InvalidUsage(str(exc), status_code=403)
 
-    result = deck_schema.dump(deck)
-    return jsonify(result.data)
+    return deck_response(deck)
 
 @app.route("/decks/<int:deck_id>/removecard/extra", methods=["POST"])
 @authenticated
 def removecardextra_deck(deck_id):
     """Removes extra card from deck"""
-    deck = Deck.query.get(deck_id)
-    if deck is None:
-        abort(404)
-    if locked(deck):
-        raise InvalidUsage("Deck is locked!", status_code=403)
-
-    coach = Coach.query.options(
-        raiseload(Coach.cards), raiseload(Coach.packs)
-    ).filter_by(disc_id=current_user()['id']).one_or_none()
-
-    if deck.tournament_signup.coach != coach:
-        raise InvalidUsage("Unauthorized access!", status_code=403)
+    deck = get_unlocked_deck_or_abort(deck_id)
+    can_edit_deck(deck)
 
     card = request.get_json()
     try:
@@ -507,25 +470,14 @@ def removecardextra_deck(deck_id):
     except (DeckError) as exc:
         raise InvalidUsage(str(exc), status_code=403)
 
-    result = deck_schema.dump(deck)
-    return jsonify(result.data)
+    return deck_response(deck)
 
 @app.route("/decks/<int:deck_id>/remove", methods=["POST"])
 @authenticated
 def removecard_deck(deck_id):
     """Removes cards from deck"""
-    deck = Deck.query.get(deck_id)
-    if deck is None:
-        abort(404)
-    if locked(deck):
-        raise InvalidUsage("Deck is locked!", status_code=403)
-
-    coach = Coach.query.options(
-        raiseload(Coach.cards), raiseload(Coach.packs)
-    ).filter_by(disc_id=current_user()['id']).one_or_none()
-
-    if deck.tournament_signup.coach != coach:
-        raise InvalidUsage("Unauthorized access!", status_code=403)
+    deck = get_unlocked_deck_or_abort(deck_id)
+    can_edit_deck(deck)
 
     card = request.get_json()
     try:
@@ -533,34 +485,22 @@ def removecard_deck(deck_id):
     except (DeckError) as exc:
         raise InvalidUsage(str(exc), status_code=403)
 
-    result = deck_schema.dump(deck)
-    return jsonify(result.data)
+    return deck_response(deck)
 
 # commits deck
 @app.route("/decks/<int:deck_id>/commit", methods=["GET"])
 @authenticated
 def commit_deck(deck_id):
     """Commits deck"""
-    deck = Deck.query.get(deck_id)
-    if deck is None:
-        abort(404)
-    if locked(deck):
-        raise InvalidUsage("Deck is locked!", status_code=403)
-
-    coach = Coach.query.options(
-        raiseload(Coach.cards), raiseload(Coach.packs)
-    ).filter_by(disc_id=current_user()['id']).one_or_none()
-
-    if deck.tournament_signup.coach != coach:
-        raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+    deck = get_unlocked_deck_or_abort(deck_id)
+    can_edit_deck(deck)
 
     try:
         deck = DeckService.commit(deck)
     except (DeckError) as exc:
         raise InvalidUsage(str(exc), status_code=403)
 
-    result = deck_schema.dump(deck)
-    return jsonify(result.data)
+    return deck_response(deck)
 
 # run the application
 if __name__ == "__main__":

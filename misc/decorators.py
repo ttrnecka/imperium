@@ -1,9 +1,7 @@
 """Web decorators"""
 import functools
-from sqlalchemy.orm import raiseload
 
 from misc.helpers import current_user, InvalidUsage, current_coach
-from models.data_models import Coach
 
 def authenticated(func):
     """Raises exception if not authenticated"""
@@ -21,6 +19,7 @@ def registered(func):
         coach = current_coach()
         if not coach:
             raise InvalidUsage("Coach not found", status_code=403)
+        kwargs['coach'] = coach
         return func(*args, **kwargs)
     return wrapper_registered
 
