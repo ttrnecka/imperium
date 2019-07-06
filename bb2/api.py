@@ -13,9 +13,9 @@ class Agent:
         data = r.json()
         return data
 
-    def match(self, match_id):
+    def match(self, id):
         """Pulls match id data"""
-        r = self.call("match", match_id=match_id)
+        r = self.call("match", match_id=id)
         data = r.json()
         return data
 
