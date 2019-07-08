@@ -1,5 +1,5 @@
 """Coach service helpers"""
-from models.data_models import Coach
+from models.data_models import Coach, Deck
 from models.base_model import db
 from .pack_service import PackService
 from .deck_service import DeckService
@@ -40,3 +40,19 @@ class CoachService:
                     pass
 
         return starter_cards
+
+    @classmethod
+    def link_bb2_coach(cls,bb2_name,team_name):
+        """Links coach bb2 name to Coach account
+        If the coach is already linked or the team does not exists then return None"""
+        coach = Coach.query.filter_by(bb2_name=bb2_name).first()
+        if not coach:
+            """Coach is not linked yet, find the team"""
+            deck = Deck.query.filter_by(team_name=team_name).first()
+            if deck:
+                coach = deck.tournament_signup.coach
+                coach.bb2_name = bb2_name
+                return coach
+            else:
+                return None
+        return None

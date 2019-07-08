@@ -10,7 +10,7 @@ from sqlalchemy.orm.attributes import flag_modified
 import bb2
 from web import db, app, STORE, STATS_FILE
 from models.data_models import Coach
-from services import NotificationService, AchievementNotificationService
+from services import NotificationService, AchievementNotificationService, CoachService
 
 app.app_context().push()
 
@@ -284,6 +284,18 @@ def main():
             coach1_team_stats['points'] += 1
             coach2_team_stats['draws'] += 1
             coach2_team_stats['points'] += 1
+
+        tcoach = CoachService.link_bb2_coach(coach1['coachname'],team1['teamname'])
+        if tcoach:
+            msg = f"{coach1['coachname']} account linked to {tcoach.short_name()}"
+            AchievementNotificationService.notify(msg)
+            print(msg)
+        tcoach = CoachService.link_bb2_coach(coach2['coachname'],team2['teamname'])
+        if tcoach:
+            msg = f"{coach2['coachname']} account linked to {tcoach.short_name()}"
+            AchievementNotificationService.notify(msg)
+            print(msg)
+        db.session.commit()
 
     try:
         stats['coaches'].pop('', None)
