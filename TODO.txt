@@ -1,6 +1,9 @@
+Season 2
+Coach can take 5 cards up to 30 value to season 2
+    add active flag to coach, when new coach joins they can use newcoach using bot or web will fire up the newcoach flow, otherwise it fires the rejoin flow
+    migration to new models
+    
 VERY HIGH
-disable giving skills to legends
-add filter to display only free cards in the coach collection
 
 MEDIUM
 backend validation for decks

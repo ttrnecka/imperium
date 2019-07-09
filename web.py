@@ -57,12 +57,19 @@ TOKEN_URL = API_BASE_URL + '/oauth2/token'
 STORE = os.path.join(ROOT, 'data', f"season{app.config['SEASON']}")
 STATS_FILE = os.path.join(STORE, "stats.json")
 
-def get_stats():
+def get_stats(fresh=False):
     """pulls data from stats file"""
-    file = open(STATS_FILE, "r")
-    data = json.loads(file.read())
-    file.close()
-    return data
+    if not fresh and os.path.isfile(STATS_FILE):
+        file = open(STATS_FILE, "r")
+        data = json.loads(file.read())
+        file.close()
+        return data
+    else:
+        return {
+            'coaches': {},
+            'teams': {},
+            'matchfiles':[]
+        }
 
 if 'http://' in app.config["OAUTH2_REDIRECT_URI"]:
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'

@@ -1,5 +1,5 @@
 """Updates statistics and process achievements script"""
-import os
+import os, sys, getopt
 import json
 import logging
 from logging.handlers import RotatingFileHandler
@@ -8,7 +8,7 @@ import datetime as DT
 from sqlalchemy.orm.attributes import flag_modified
 
 import bb2
-from web import db, app, STORE, STATS_FILE
+from web import db, app, STORE, STATS_FILE, get_stats
 from models.data_models import Coach
 from services import NotificationService, AchievementNotificationService, CoachService
 
@@ -16,10 +16,20 @@ app.app_context().push()
 
 ROOT = os.path.dirname(__file__)
 
-
 # run the application
-def main():
+def main(argv):
     """main()"""
+    try:
+        opts, args = getopt.getopt(argv,"r")
+    except getopt.GetoptError:
+        print('update_stats.py -r')
+        sys.exit(2)
+    refresh = False
+    for opt, arg in opts:
+        if opt == '-r':
+            refresh = True
+            print("Recalculating statistics from the scratch")
+        
     logger = logging.getLogger('collector')
     logger.setLevel(logging.INFO)
     handler = RotatingFileHandler(
@@ -34,10 +44,8 @@ def main():
 
     agent = bb2.api.Agent(app.config['BB2_API_KEY'])
 
-    stats = {
-        'coaches': {},
-        'teams': {},
-    }
+    stats = get_stats(refresh)
+
     logger.info("Getting matches since %s", start_date)
 
     try:
@@ -45,6 +53,8 @@ def main():
     except Exception as exc:
         logger.error(exc)
         raise exc
+
+    logger.info("Matches colleted")
 
     if not os.path.isdir(STORE):
         os.mkdir(STORE)
@@ -72,13 +82,23 @@ def main():
     matchfiles = [f for f in os.listdir(matches_folder)
                   if os.path.isfile(os.path.join(matches_folder, f))]
 
+    if not 'matchfiles' in stats:
+        stats['matchfiles'] = []
+    
     for file_name in matchfiles:
         file = open(os.path.join(matches_folder, file_name), "r")
         data = json.loads(file.read())
         file.close()
 
+        if data['uuid'] in stats['matchfiles']:
+            continue
+        stats['matchfiles'].append(data['uuid'])
+
+        logger.info("Processing stat calculation of match %s ", data['uuid'])
+
         # ignore concedes
         if bb2.is_concede(data):
+            logger.info("Match %s is concede", data['uuid'])
             continue
 
         # initialize coaches
@@ -289,13 +309,14 @@ def main():
         if tcoach:
             msg = f"{coach1['coachname']} account linked to {tcoach.short_name()}"
             AchievementNotificationService.notify(msg)
-            print(msg)
+            logger.info(msg)
         tcoach = CoachService.link_bb2_coach(coach2['coachname'],team2['teamname'])
         if tcoach:
             msg = f"{coach2['coachname']} account linked to {tcoach.short_name()}"
             AchievementNotificationService.notify(msg)
-            print(msg)
+            logger.info(msg)
         db.session.commit()
+        logger.info("Stats calculation of match %s completed", data['uuid'])
 
     try:
         stats['coaches'].pop('', None)
@@ -307,6 +328,7 @@ def main():
         raise exp
     logger.info("Stats recalculated")
 
+    logger.info("Achievement processing")
     # update achievements
     for coach in Coach.query.all():
         if not coach.bb2_name:
@@ -374,14 +396,14 @@ def main():
                 call, arg = achievement['award'].split(",")
                 res, error = getattr(coach, call)(arg, achievement['desc'])
                 if res:
-                    print(f"{coach_mention}: {achievement['desc']} awarded")
+                    logger.info("%s: %s awarded", coach_mention, {achievement['desc']})
                     NotificationService.notify(
                         f"{coach_mention}: {achievement_bank_text}"
                     )
                     coach.achievements['match'][key]['completed'] = True
                     flag_modified(coach, "achievements")
                 else:
-                    print(error)
+                    logger.error(error)
                     NotificationService.notify(
                         f"{coach_mention}: {achievement['award_text']} " +
                         f"could not be awarded - {error}"
@@ -398,19 +420,20 @@ def main():
                         call, arg = achievement['award'].split(",")
                         res, error = getattr(coach, call)(arg, achievement['desc'])
                         if res:
-                            print(f"{coach_mention}: {achievement['desc']} awarded")
+                            logger.info("%s: %s awarded", coach_mention, {achievement['desc']})
                             coach.achievements['team'][key1][key2][key3]['completed'] = True
                             flag_modified(coach, "achievements")
                             NotificationService.notify(
                                 f"{coach_mention}: {achievement_bank_text}"
                             )
                         else:
-                            print(error)
+                            logger.error(error)
                             NotificationService.notify(
                                 f"{coach_mention}: {achievement['award_text']} could " +
                                 f"not be awarded - {error}"
                             )
         db.session.commit()
+    logger.info("Achievement processed")
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
