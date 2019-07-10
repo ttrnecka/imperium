@@ -123,17 +123,17 @@ def main(argv):
                                                 'matches':0, 'points':0}
             stats['teams'][idraces1]['idraces'] = idraces1
         team2 = data['match']['teams'][1]
-        idraces2 = str(team1['idraces'])
-        if not idraces1 in stats['teams']:
-            stats['teams'][idraces1] = {'wins':0, 'losses':0, 'draws':0,
+        idraces2 = str(team2['idraces'])
+        if not idraces2 in stats['teams']:
+            stats['teams'][idraces2] = {'wins':0, 'losses':0, 'draws':0,
                                                 'matches':0, 'points':0}
-            stats['teams'][idraces1]['idraces'] = idraces1
+            stats['teams'][idraces2]['idraces'] = idraces2
 
         #alias coaches and teams
         coach1_stats = stats['coaches'][coach1['coachname']]
         coach2_stats = stats['coaches'][coach2['coachname']]
         team1_stats = stats['teams'][idraces1]
-        team2_stats = stats['teams'][idraces1]
+        team2_stats = stats['teams'][idraces2]
 
         # initialize the team under coach
         if idraces1 not in coach1_stats['teams']:
