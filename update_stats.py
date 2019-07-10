@@ -115,27 +115,30 @@ def main(argv):
             stats['coaches'][coach2['coachname']]['name'] = coach2['coachname']
             stats['coaches'][coach2['coachname']]['teams'] = {}
 
+        idraces1 = str(team1['idraces'])
+        idraces2 = str(team2['idraces'])
+
         # initialize teams
         team1 = data['match']['teams'][0]
-        if not team1['idraces'] in stats['teams']:
-            stats['teams'][team1['idraces']] = {'wins':0, 'losses':0, 'draws':0,
+        if not idraces1 in stats['teams']:
+            stats['teams'][idraces1] = {'wins':0, 'losses':0, 'draws':0,
                                                 'matches':0, 'points':0}
-            stats['teams'][team1['idraces']]['idraces'] = team1['idraces']
+            stats['teams'][idraces1]['idraces'] = idraces1
         team2 = data['match']['teams'][1]
-        if not team2['idraces'] in stats['teams']:
-            stats['teams'][team2['idraces']] = {'wins':0, 'losses':0, 'draws':0,
+        if not idraces1 in stats['teams']:
+            stats['teams'][idraces1] = {'wins':0, 'losses':0, 'draws':0,
                                                 'matches':0, 'points':0}
-            stats['teams'][team2['idraces']]['idraces'] = team2['idraces']
+            stats['teams'][idraces1]['idraces'] = idraces1
 
         #alias coaches and teams
         coach1_stats = stats['coaches'][coach1['coachname']]
         coach2_stats = stats['coaches'][coach2['coachname']]
-        team1_stats = stats['teams'][team1['idraces']]
-        team2_stats = stats['teams'][team2['idraces']]
+        team1_stats = stats['teams'][idraces1]
+        team2_stats = stats['teams'][idraces1]
 
         # initialize the team under coach
-        idraces1 = str(team1['idraces'])
-        idraces2 = str(team2['idraces'])
+        idraces1 = str(idraces1)
+        idraces2 = str(idraces1)
         if idraces1 not in coach1_stats['teams']:
             coach1_stats['teams'][idraces1] = {'wins':0, 'losses':0, 'draws':0,
                                                        'matches':0, 'points':0}
@@ -144,8 +147,8 @@ def main(argv):
                                                        'matches':0, 'points':0}
 
         # coach team alias
-        coach1_team_stats = coach1_stats['teams'][team1['idraces']]
-        coach2_team_stats = coach2_stats['teams'][team2['idraces']]
+        coach1_team_stats = coach1_stats['teams'][idraces1]
+        coach2_team_stats = coach2_stats['teams'][idraces2]
 
         coach1_stats['matches'] += 1
         team1_stats['matches'] += 1
