@@ -134,12 +134,13 @@ def main(argv):
         team2_stats = stats['teams'][team2['idraces']]
 
         # initialize the team under coach
-
-        if team1['idraces'] not in coach1_stats['teams']:
-            coach1_stats['teams'][team1['idraces']] = {'wins':0, 'losses':0, 'draws':0,
+        idraces1 = str(team1['idraces'])
+        idraces2 = str(team2['idraces'])
+        if idraces1 not in coach1_stats['teams']:
+            coach1_stats['teams'][idraces1] = {'wins':0, 'losses':0, 'draws':0,
                                                        'matches':0, 'points':0}
-        if team2['idraces'] not in coach2_stats['teams']:
-            coach2_stats['teams'][team2['idraces']] = {'wins':0, 'losses':0, 'draws':0,
+        if idraces2 not in coach2_stats['teams']:
+            coach2_stats['teams'][idraces2] = {'wins':0, 'losses':0, 'draws':0,
                                                        'matches':0, 'points':0}
 
         # coach team alias
