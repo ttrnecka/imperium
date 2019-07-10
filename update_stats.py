@@ -115,16 +115,15 @@ def main(argv):
             stats['coaches'][coach2['coachname']]['name'] = coach2['coachname']
             stats['coaches'][coach2['coachname']]['teams'] = {}
 
-        idraces1 = str(team1['idraces'])
-        idraces2 = str(team2['idraces'])
-
         # initialize teams
         team1 = data['match']['teams'][0]
+        idraces1 = str(team1['idraces'])
         if not idraces1 in stats['teams']:
             stats['teams'][idraces1] = {'wins':0, 'losses':0, 'draws':0,
                                                 'matches':0, 'points':0}
             stats['teams'][idraces1]['idraces'] = idraces1
         team2 = data['match']['teams'][1]
+        idraces2 = str(team1['idraces'])
         if not idraces1 in stats['teams']:
             stats['teams'][idraces1] = {'wins':0, 'losses':0, 'draws':0,
                                                 'matches':0, 'points':0}
@@ -137,8 +136,6 @@ def main(argv):
         team2_stats = stats['teams'][idraces1]
 
         # initialize the team under coach
-        idraces1 = str(idraces1)
-        idraces2 = str(idraces1)
         if idraces1 not in coach1_stats['teams']:
             coach1_stats['teams'][idraces1] = {'wins':0, 'losses':0, 'draws':0,
                                                        'matches':0, 'points':0}
