@@ -804,6 +804,12 @@ var app = new Vue({
             this.leaderboard_loaded=true;
           }
         }
+        // pop over needs to be reenabled after you navige back to Coaches menu from the other sections
+        if(newMenu == "Coaches") {
+          this.$nextTick(function() {
+            $('[data-toggle="popover"]').popover();
+          })
+        }
       }
     },
     mounted() {
