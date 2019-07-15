@@ -59,6 +59,9 @@ class DusterService:
 
         card.duster_id = None
         db.session.commit()
+        duster = cls.get_duster(coach)
+        if not duster.cards:
+            cls.cancel_duster(coach)
         return f"Card **{card.name}** - dusting flag removed"
 
     @classmethod
