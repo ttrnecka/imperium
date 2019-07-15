@@ -136,9 +136,14 @@ class DeckService:
             # add starting pack handling
             if card["deck_type"] in ["base", None]:
                 if cls.deck_type(deck) == "Development":
+                    # since starting cards do not have real instance we need to switch the other deck type, otherwise it could be stuck
+                    # if the card is in both decks, it will be marked as in both decks in the other deck instance and while that exists
+                    # the cards are not usable
                     card['in_development_deck'] = True
+                    card['in_imperium_deck'] = False
                 else:
                     card['in_imperium_deck'] = True
+                    card['in_development_deck'] = False
                 card['uuid'] = str(uuid.uuid4())
                 # set the deck id in assignment array
                 card['assigned_to_array'][deck.id] = []
