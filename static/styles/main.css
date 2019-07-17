@@ -239,3 +239,11 @@ h5.coach_info, select.coach_info {
 .progress span {
   line-height: 40px;
 }
+
+.table-inducement tbody+tbody, .table-inducement td, .table-inducement th, .table-inducement thead th {
+  border-color: #ec9dc5;
+}
+
+.table-inducement, .table-inducement>td, .table-inducement>th {
+  background-color: #efb6d3;
+}

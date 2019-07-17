@@ -7,7 +7,7 @@ Vue.use(VueFlashMessage);
 Vue.mixin({
   data () {
     return {
-      rarityorder: {"Starter":10,"Common":5, "Rare":4, "Epic":3, "Legendary":2, "Unique":1},
+      rarityorder: {"Starter":10,"Common":6, "Rare":5, "Epic":4, "Inducement":3,"Legendary":2, "Unique":1},
       mixed_teams: [
         {"idraces":38, "code":"aog", "tier_tax":10,  "name":"Alliance of Goodness",   "races":['Bretonnian' , 'Human', 'Dwarf', 'Halfling', 'Wood Elf'] },
         {"idraces":42, "code":"au",  "tier_tax":-10, "name":'Afterlife United',       "races":['Undead','Necromantic','Khemri','Vampire']},
@@ -113,6 +113,9 @@ Vue.mixin({
         case "Unique":
           klass = "table-success";
           break;
+        case "Inducement":
+          klass = "table-inducement";
+          break;
       }
       return klass;
     },
@@ -216,7 +219,7 @@ Vue.mixin({
         return card.name;
       }
       let str;
-      if(["Unique","Legendary"].includes(card.rarity)) {
+      if(["Unique","Legendary","Inducement"].includes(card.rarity)) {
         str = card.description
       } else {
         str = card.name
