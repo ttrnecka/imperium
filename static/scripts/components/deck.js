@@ -443,7 +443,7 @@ export default {
         },
 
         assignable_deck_player_cards() {
-            return this.deck_player_cards.filter((e) => e.rarity!="Legendary");
+            return this.deck_player_cards.filter((e) => !["Legendary","Inducement","Unique"].includes(e.rarity));
         },
 
         deck_player_cards() {
