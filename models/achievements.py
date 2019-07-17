@@ -1,8 +1,27 @@
 """achievements template"""
 from .general import MIXED_TEAMS
+#from services.notification_service import NotificationService, AchievementNotificationService
 
 achievements_template = {
     'team':{
+    },
+    'quests': {
+        "collect3legends": {
+            'desc': "Collect three REBBL Legends (Hidden Quest)",
+            'completed': False,
+            'award_text': "10 Coins",
+            'award': 'grant,10',
+            'best':0,
+            'target':3
+        },
+        "buildyourownlegend": {
+            'desc': "Build Your Own Legend (Hidden Quest)",
+            'completed': False,
+            'award_text': "10 Coins",
+            'award': 'grant,10',
+            'best':0,
+            'target':1
+        },
     },
     'match':{
         'score1game1': {

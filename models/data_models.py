@@ -1,5 +1,5 @@
 from .base_model import db, Base, QueryWithSoftDelete
-from .achievements_template import achievements_template
+from .achievements import achievements_template
 import datetime
 import logging
 import json
@@ -126,6 +126,9 @@ class Coach(Base):
     # id behind #
     def discord_id(self):
         return self.name[-4:]
+
+    def mention(self):
+        return f'<@{self.disc_id}>'
 
     def earned(self):
         cash = 0

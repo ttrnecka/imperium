@@ -1,8 +1,19 @@
 Season 2
-Coach can take 5 cards up to 30 value to season 2
+Coach can take up to 5 cards up to 30 value to season 2
     add active flag to coach, when new coach joins they can use newcoach using bot or web will fire up the newcoach flow, otherwise it fires the rejoin flow
-    migration to new models
+
+Migration to new models
     
+Reactions
+    New Card type, they should not be visible in the bot report (just as "Reaction Card"), neither visible in the collection by anyone but the coach. They should not be visible
+    in the deck until the Reaction phase either
+
+Hidden quests
+    automated 
+        - collect 3 legends (at the given time have 3 legends)
+        - build your own legend
+        - collect all legends from given base race
+
 VERY HIGH
 
 MEDIUM

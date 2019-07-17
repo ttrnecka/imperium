@@ -3,7 +3,7 @@
 if __name__ == "__main__":
     from sqlalchemy.orm.attributes import flag_modified
 
-    from models.achievements_template import achievements_template
+    from models.achievements import achievements_template
     from models.general import MIXED_TEAMS
     from models.data_models import Coach
     from web import db, app
@@ -25,6 +25,17 @@ if __name__ == "__main__":
                     for key, ach in achievements_template['team'][str(team['idraces'])][metric].items():
                         for attr in ['desc', 'award_text', 'award', 'target']:
                             coach.achievements['team'][str(team['idraces'])][metric][key][attr] = ach[attr]
+
+            # quests
+            if 'quests' not in coach.achievements:
+                coach.achievements['quests'] = achievements_template['quests']
+            else:
+                for key, ach in achievements_template['quests'].items():
+                    if key not in coach.achievements['quests']:
+                        coach.achievements['quests'][key] = achievements_template['quests']['key']
+                    else:
+                        for attr in ['desc', 'award_text', 'award', 'target']:
+                            coach.achievements['quests'][key][attr] = ach[attr]
 
         flag_modified(coach, "achievements")
 

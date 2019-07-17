@@ -12,7 +12,7 @@ from models.data_models import Coach, Pack, Transaction
 from models.data_models import TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
 from misc.helpers import represents_int
-from services import PackService, CardService, TournamentService
+from services import PackService, CardService, TournamentService, CoachService
 from services import DusterService, RegistrationError, DustingError
 
 ROOT = os.path.dirname(__file__)
@@ -839,6 +839,7 @@ class DiscordCommand:
                 ]
                 await self.reply(msg)
                 await self.auto_cards(pack)
+                CoachService.check_collect_three_legends_quest(coach)
 
                 return
         else:
@@ -992,7 +993,7 @@ class DiscordCommand:
                         msg.append(f"{card}: {found_msg}")
                     await self.reply(msg)
                     return
-                reason = f"{self.args[1].capitalize()} {';'.join([card.name for card in pack.cards])} - by " + str(self.message.author.name)
+                reason = f"{self.args[1].capitalize()} {';'.join([str(card.name) for card in pack.cards])} - by " + str(self.message.author.name)
 
                 tran = Transaction(pack=pack, description=reason, price=0)
                 try:
@@ -1008,6 +1009,7 @@ class DiscordCommand:
                     await self.reply(msg)
                     await self.bank_notification(f"Card(s) **{', '.join([card.name for card in pack.cards])}** added to your collection by {str(self.message.author.name)}", coach)
                     await self.auto_cards(pack)
+                    CoachService.check_collect_three_legends_quest(coach)
                     return
 
             if self.args[1] == "remove":

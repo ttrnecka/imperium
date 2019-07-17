@@ -1,8 +1,11 @@
 """Coach service helpers"""
+from sqlalchemy.orm.attributes import flag_modified
+
 from models.data_models import Coach, Deck
 from models.base_model import db
 from .pack_service import PackService
 from .deck_service import DeckService
+from .notification_service import AchievementNotificationService, NotificationService
 
 class CoachService:
     """CoachService helpers namespace"""
@@ -56,3 +59,52 @@ class CoachService:
             else:
                 return None
         return None
+
+    @classmethod
+    def check_achievement(cls, coach, achievement_keys=None):
+        if achievement_keys is None:
+            achievement_keys = []
+
+        achievement = coach.achievements
+        for key in achievement_keys:
+            if key in achievement:
+                achievement = achievement[key]
+            else:
+                raise Exception("Achievement missing key %s" % key)
+
+        if achievement['target'] <= achievement['best'] and not achievement['completed']:
+            achievement_bank_text = f"{achievement['award_text']} awarded - {achievement['desc']}"
+            AchievementNotificationService.notify(
+                f"{coach.short_name()}: {achievement['desc']} - completed"
+            )
+
+            call, arg = achievement['award'].split(",")
+            res, error = getattr(coach, call)(arg, achievement['desc'])
+
+            if res:
+                NotificationService.notify(
+                    f"{coach.mention()}: {achievement_bank_text}"
+                )
+                return True
+            else:
+                NotificationService.notify(
+                    f"{coach.mention()}: {achievement['award_text']} " +
+                    f"could not be awarded - {error}"
+                )
+        return False
+
+    @classmethod
+    def check_collect_three_legends_quest(cls, coach):
+        achievement = coach.achievements['quests']['collect3legends']
+        legends = [card for card in coach.cards if card.subtype == "REBBL Legend"]
+        legends_count = len(legends)
+        if achievement['best'] < legends_count: 
+            achievement['best'] = legends_count
+            flag_modified(coach, "achievements")
+
+        if cls.check_achievement(coach, ["quests","collect3legends"]):
+            # need to refer through coach as the check may have commited the session
+            coach.achievements['quests']['collect3legends']['completed'] = True
+            flag_modified(coach, "achievements")
+        
+        db.session.commit()

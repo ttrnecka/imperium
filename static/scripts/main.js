@@ -618,6 +618,12 @@ var app = new Vue({
         }
         return [];
       },
+      quest_achievements(coach) {
+        if (coach.achievements['quests']) {
+          return ['collect3legends','buildyourownlegend'].map((e) => coach.achievements.quests[e])
+        }
+        return [];
+      },
       progress(number) {
         if(number > 1) {
           return 100;
