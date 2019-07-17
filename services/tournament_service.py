@@ -209,3 +209,9 @@ class TournamentService:
             raise RegistrationError(str(exp))
 
         return True
+
+    @classmethod
+    def release_reserves(cls,tournament):
+        reserves = tournament.coaches.filter(TournamentSignups.mode == 'reserve')
+        for coach in reserves:
+            cls.unregister(tournament, coach, admin=True, refund=False)

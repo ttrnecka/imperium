@@ -1119,6 +1119,7 @@ class DiscordCommand:
 
                 tourn.phase = "deck_building"
                 db.session.commit()
+                TournamentService.release_reserves(tourn)
 
                 submit_deck_channel = discord.utils.get(self.client.get_all_channels(), name='submit-a-deck')
 

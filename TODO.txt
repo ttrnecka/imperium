@@ -10,9 +10,10 @@ Reactions
 
 Hidden quests
     automated 
-        - collect 3 legends (at the given time have 3 legends)
         - build your own legend
         - collect all legends from given base race
+
+Autoresign reserves when tournament is started
 
 VERY HIGH
 
