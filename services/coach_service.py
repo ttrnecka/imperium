@@ -73,7 +73,7 @@ class CoachService:
             else:
                 raise Exception("Achievement missing key %s" % key)
         achievement['completed'] = value
-        if best
+        if best:
             achievement['best'] = best
         else:
             achievement['best'] = achievement['target']
