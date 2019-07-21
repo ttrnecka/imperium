@@ -17,6 +17,7 @@ from models.marsh_models import tournaments_schema, tournament_schema, duster_sc
 from models.marsh_models import leaderboard_coach_schema, deck_schema
 from services import PackService, CoachService, NotificationService
 from services import LedgerNotificationService, AchievementNotificationService
+from services import AdminNotificationService
 from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError
 from services import TransactionService, DeckService, DeckError
@@ -43,6 +44,9 @@ def create_app():
     LedgerNotificationService.register_notifier(WebHook(fapp.config['DISCORD_WEBHOOK_LEDGER']).send)
     AchievementNotificationService.register_notifier(
         WebHook(fapp.config['DISCORD_WEBHOOK_ACHIEVEMENTS']).send
+    )
+    AdminNotificationService.register_notifier(
+        WebHook(fapp.config['DISCORD_WEBHOOK_ADMIN']).send
     )
     BB2Service.register_agent(bb2.api.Agent(fapp.config['BB2_API_KEY']))
     return fapp
@@ -208,7 +212,7 @@ def tournament_close(tournament_id):
 
         for coach in tourn.coaches:
             TournamentService.unregister(tourn, coach, admin=True, refund=False)
-        tourn.phase = "deck_building"
+        TournamentService.reset_phase(tourn)
         db.session.commit()
 
         result = tournament_schema.dump(tourn)
@@ -224,14 +228,12 @@ def tournament_set_phase(tournament_id):
     try:
         tourn = Tournament.query.get(tournament_id)
         phase = request.get_json()['phase']
-        if phase not in ["deck_building", "locked", "special_play", "inducement"]:
-            raise InvalidUsage(f"Incorrect phase - {phase}", status_code=403)
-        tourn.phase = phase
+        TournamentService.set_phase(tourn, phase)
         db.session.commit()
 
         result = tournament_schema.dump(tourn)
         return jsonify(result.data)
-    except (RegistrationError, TransactionError) as exc:
+    except (RegistrationError, TransactionError, TypeError) as exc:
         raise InvalidUsage(str(exc), status_code=403)
 
 @app.route("/tournaments/<int:tournament_id>/sign", methods=["GET"])
@@ -353,7 +355,7 @@ def get_team(teamname):
 
 def locked(deck):
     """check if tournament the deck is in is locked"""
-    return deck.tournament_signup.tournament.phase == "locked"
+    return deck.tournament_signup.tournament.phase in ["locked", "blood_bowl"]
 
 def get_deck_or_abort(deck_id):
     """Returns deck or aborts"""

@@ -4,6 +4,7 @@ from models.data_models import Tournament, TournamentSignups, Transaction, Deck
 from models.base_model import db
 from .notification_service import NotificationService
 from .imperium_sheet_service import ImperiumSheetService
+from .deck_service import DeckService
 
 class RegistrationError(Exception):
     """Exception to raise for tournament registration issues"""
@@ -215,3 +216,66 @@ class TournamentService:
         reserves = tournament.coaches.filter(TournamentSignups.mode == 'reserve')
         for coach in reserves:
             cls.unregister(tournament, coach, admin=True, refund=False)
+
+    @classmethod
+    def reset_phase(cls, tournament):
+        return cls.set_phase(tournament, Tournament.PHASES[0])
+
+    @classmethod
+    def set_phase(cls, tournament, phase):
+        if phase not in Tournament.PHASES:
+            raise TypeError("%s is not correct phase" % phase)
+        tournament.phase = phase
+        return tournament
+
+    @classmethod
+    def special_play_msg(cls, tournament):
+
+        msg = ["__**Special Play Phase**__:"," "]
+        decks = []
+        max_special_plays = 0
+        for signup in tournament.tournament_signups:
+            special_plays = [card for card in signup.deck.cards if card.card_type == "Special Play"]
+            if len(special_plays) > max_special_plays:
+                max_special_plays = len(special_plays)
+
+            decks.append((signup.coach.mention(), DeckService.value(signup.deck), special_plays))
+        
+        sorted_decks = sorted(decks, key=lambda d: d[1])
+
+        for deck in sorted_decks:
+            msg.append(f"{deck[0]}: deck value - {deck[1]}")
+
+        msg.extend([" ", "__Order of Play__:", " "])
+
+        for index in range(max_special_plays):
+            for deck in sorted_decks:
+                if len(deck[2]) >= index + 1:
+                    msg.append(f"{deck[0]} plays **{deck[2][index].name}**:")
+                    msg.append(deck[2][index].description)
+            msg.append(" ")
+        
+        msg.append("**Note**: No Inducement shopping in this phase")
+        return msg
+            
+
+    @classmethod
+    def inducement_msg(cls, tournament):
+        
+        msg = ["__**Inducement Phase**__:"," "]
+        decks = []
+        for signup in tournament.tournament_signups:
+            decks.append((signup.coach.mention(), DeckService.value(signup.deck)))
+
+        sorted_decks = sorted(decks, key=lambda d: d[1])
+
+        highest_value = sorted_decks[-1][1]
+
+        msg.extend([" ", "__Order of Play__:", " "])
+
+        for deck in sorted_decks:
+            if deck[1] < highest_value:
+                msg.append(f"{deck[0]} has **{highest_value - deck[1]}** value of inducements:")
+        msg.append(" ")
+
+        return msg

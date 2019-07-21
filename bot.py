@@ -222,6 +222,7 @@ class DiscordCommand:
         msg += "!adminsign      - sign specified coach to tournament\n"
         msg += "!adminresign    - resign specified coach from tournament\n"
         msg += "!adminrole      - manage admin roles for web/bot\n"
+        msg += "!adminquest     - marks quests are achieved or not achieved\n"
         msg += "```"
         return msg
 
@@ -425,16 +426,31 @@ class DiscordCommand:
         return msg
 
     @classmethod
+    def adminquest_help(cls):
+        """help message"""
+        msg = "```"
+        msg += "Manually marks the quest as achieved or not. Does not award the prize\n"
+        msg += "USAGE:\n"
+        msg += "!adminquest <on|off> <coach> <quest>\n"
+        msg += "\t<on|off>: on to mark, off the clear flag\n"
+        msg += "\t<coach>: coach discord name or its part, must be unique\n"
+        msg += "\t<quest>: *collect3legends* or *buildyourownlegend*\n"
+        msg += "```"
+        return msg
+
+    @classmethod
     def admincomp_help(cls):
         """help message"""
         msg = "```"
         msg += "Tournament helper\n"
         msg += "USAGE:\n"
-        msg += "!admincomp start|stop|update <id>\n"
+        msg += "!admincomp start|stop|update|special_play|inducements <id>\n"
         msg += "\tstart: Notifies all registered coaches that tournament started "
         msg += "in the tournament channel and links the ledger\n"
         msg += "\tstop: Resigns all coaches from the tournament\n"
         msg += "\tupdate: Updates data from Tournament sheet\n"
+        msg += "\tspecial_play: Initiates special play phase\n"
+        msg += "\tinducement: Initiates inducement phase\n"
         msg += "\t<id>: id of tournament from Tournamet master sheet\n"
         msg += "```"
         return msg
@@ -934,6 +950,32 @@ class DiscordCommand:
             await self.reply([f"Role updated for {coach.short_name()}: {self.args[3]} - {coach.web_admin}"])
             return
 
+        if self.message.content.startswith('!adminquest'):
+            if len(self.args) != 4:
+                await self.reply([self.__class__.adminquest_help()])
+                return
+
+            if self.args[1] not in ["on", "off"]:
+                await self.reply(["Specify **on** or **off** operation!!!\n"])
+                return
+
+            if self.args[3] not in ["collect3legends", "buildyourownlegend"]:
+                await self.reply(["Specify **collect3legends** or **buildyourownlegend** quest!!!\n"])
+                return
+
+            coach = await self.coach_unique(self.args[2])
+            if coach is None:
+                return
+
+            if self.args[1] == "on":
+                value = True
+            if self.args[1] == "off":
+                value = False
+            CoachService.set_achievement(coach, ["quests",self.args[3]], value)
+            db.session.commit()
+            await self.reply([f"Quest updated for {coach.short_name()}: {self.args[3]} - {self.args[1]}"])
+            return
+
         if self.message.content.startswith('!adminreset'):
             # require username argument
             if len(self.args) != 2:
@@ -1073,10 +1115,10 @@ class DiscordCommand:
                 await self.reply(["Incorrect number of arguments!!!", self.__class__.admincomp_help()])
                 return
 
-            if self.args[1] not in ["start", "stop", "update"]:
+            if self.args[1] not in ["start", "stop", "update", "special_play", "inducement"]:
                 await self.reply(["Incorrect arguments!!!", self.__class__.admincomp_help()])
 
-            if self.args[1] in ["start", "stop"]:
+            if self.args[1] in ["start", "stop", "special_play", "inducement"]:
                 if not represents_int(self.args[2]):
                     await self.reply([f"**{self.args[2]}** is not a number!!!\n"])
                     return
@@ -1093,12 +1135,12 @@ class DiscordCommand:
             if self.args[1] == "stop":
                 for coach in tourn.coaches:
                     TournamentService.unregister(tourn, coach, admin=True, refund=False)
-                tourn.phase = "deck_building"
+                TournamentService.reset_phase(tourn)
                 db.session.commit()
                 await self.reply([f"Coaches have been resigned from {tourn.name}!!!\n"])
                 return
 
-            if self.args[1] == "start":
+            if self.args[1] in ["start", "special_play", "inducement"]:
                 if not tourn.discord_channel:
                     await self.reply([f"Discord channel is not defined, please update it in Tournament sheet and run **!admincomp update**!\n"])
                     return
@@ -1117,28 +1159,34 @@ class DiscordCommand:
                     await self.reply([f"Tournament admin {tourn.admin} was not found on the discord server, check name in the Tournament sheet and run **!admincomp update**!\n"])
                     return
 
-                tourn.phase = "deck_building"
-                db.session.commit()
-                TournamentService.release_reserves(tourn)
+                if self.args[1] == "start":
+                    TournamentService.reset_phase(tourn)
+                    db.session.commit()
+                    TournamentService.release_reserves(tourn)
 
-                submit_deck_channel = discord.utils.get(self.client.get_all_channels(), name='submit-a-deck')
+                    submit_deck_channel = discord.utils.get(self.client.get_all_channels(), name='submit-a-deck')
 
-                members = [discord.utils.get(self.message.guild.members, id=coach.disc_id) for coach in tourn.coaches.filter(TournamentSignups.mode == "active")]
-                msg = [member.mention for member in members if member]
-                msg.append(f"This will be scheduling channel for your {tourn.name}")
-                if submit_deck_channel:
-                    msg.append(f"Please submit decks as instructed in {submit_deck_channel.mention}")
-                msg.append(f"We start on {tourn.expected_start_date}!")
-                msg.append(f"Your tournament admin is {admin.mention}")
-                msg.append(f"**Deck Limit:** {tourn.deck_limit}")
-                msg.append(f"**Tournament Sponsor:** {tourn.sponsor}")
-                msg.append(f"{tourn.sponsor_description}")
-                msg.append(f"**Special Rules:**")
-                msg.append(f"{tourn.special_rules}")
-                msg.append(f"**Prizes:**")
-                msg.append(f"{tourn.prizes}")
-                msg.append(f"**Unique Prize:**")
-                msg.append(f"{tourn.unique_prize}")
+                    members = [discord.utils.get(self.message.guild.members, id=coach.disc_id) for coach in tourn.coaches.filter(TournamentSignups.mode == "active")]
+                    msg = [member.mention for member in members if member]
+                    msg.append(f"This will be scheduling channel for your {tourn.name}")
+                    if submit_deck_channel:
+                        msg.append(f"Please submit decks as instructed in {submit_deck_channel.mention}")
+                    msg.append(f"We start on {tourn.expected_start_date}!")
+                    msg.append(f"Your tournament admin is {admin.mention}")
+                    msg.append(f"**Deck Limit:** {tourn.deck_limit}")
+                    msg.append(f"**Tournament Sponsor:** {tourn.sponsor}")
+                    msg.append(f"{tourn.sponsor_description}")
+                    msg.append(f"**Special Rules:**")
+                    msg.append(f"{tourn.special_rules}")
+                    msg.append(f"**Prizes:**")
+                    msg.append(f"{tourn.prizes}")
+                    msg.append(f"**Unique Prize:**")
+                    msg.append(f"{tourn.unique_prize}")
+                
+                if self.args[1] == "special_play":
+                    msg = TournamentService.special_play_msg(tourn)
+                if self.args[1] == "inducement":
+                    msg = TournamentService.inducement_msg(tourn)
                 await self.send_message(channel, msg)
             return
 

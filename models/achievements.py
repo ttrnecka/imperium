@@ -1,6 +1,5 @@
 """achievements template"""
 from .general import MIXED_TEAMS
-#from services.notification_service import NotificationService, AchievementNotificationService
 
 achievements_template = {
     'team':{

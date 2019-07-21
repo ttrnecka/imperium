@@ -1,10 +1,13 @@
 """CardsService helpers"""
+import re
+
 from models.data_models import Card, Coach
 from models.base_model import db
 from misc.helpers import represents_int
 from .imperium_sheet_service import ImperiumSheetService
 
 class CardService:
+    skillreg = r"(Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off)( |,|\.|$)"
     """CardService helper namespace"""
     @classmethod
     def init_card_model_from_card(cls, card):
@@ -90,3 +93,19 @@ class CardService:
                 scard.update(**c_dict)
 
         db.session.commit()
+
+    @classmethod
+    def builtin_skills_for(cls, card):
+        if isinstance(card, Card):
+            if card.rarity in ["Unique","Legendary","Inducement"]:
+                string = card.description
+            else:
+                string = card.name
+        else:
+            if card['rarity'] in ["Unique","Legendary","Inducement"]:
+                string = card['description']
+            else:
+                string = card['name']
+
+        skills = re.findall(cls.skillreg,string)
+        return [skill[0] for skill in skills]

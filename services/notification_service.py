@@ -29,3 +29,4 @@ class Notificator:
 NotificationService = Notificator("bank")
 LedgerNotificationService = Notificator("ledger")
 AchievementNotificationService = Notificator("achievement")
+AdminNotificationService = Notificator("admin")

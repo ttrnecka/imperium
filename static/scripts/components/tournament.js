@@ -1,4 +1,4 @@
-import deck from './deck.js?1.8';
+import deck from './deck.js?1.9';
 export default {
     name: 'tournament',
     components: {
@@ -20,6 +20,7 @@ export default {
               {"name":"locked", "desc":"Locked"},
               {"name":"special_play", "desc":"Special Play"},
               {"name":"inducement", "desc":"Inducement"},
+              {"name":"blood_bowl", "desc":"Blood Bowl"},
           ]
       }
     },

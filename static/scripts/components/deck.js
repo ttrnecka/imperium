@@ -503,7 +503,7 @@ export default {
             return true;
         },
         locked() {
-            return this.tournament.phase=="locked";
+            return this.tournament.phase=="locked" || this.tournament.phase=="blood_bowl";
         },
         sorted_roster() {
             if ('roster' in this.team) {

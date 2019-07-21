@@ -325,6 +325,14 @@ class TournamentSignups(Base):
 class Tournament(Base):
     __tablename__ = 'tournaments'
 
+    PHASES = [
+        "deck_building",
+        "locked",
+        "special_play",
+        "inducement",
+        "blood_bowl"
+    ]
+
     tournament_id = db.Column(db.Integer,nullable=False, index=True, unique=True)
     name = db.Column(db.String(255),nullable=False, index=True)
     discord_channel = db.Column(db.String(255),nullable=True)
@@ -401,3 +409,4 @@ def log_deck_cards_append(target, value, initiator):
 @event.listens_for(Deck.cards, 'remove', propagate=True)
 def log_deck_cards_remove(target, value, initiator):
     target.to_log(f"{date_now()}: Card {value.name} removed from the deck")
+

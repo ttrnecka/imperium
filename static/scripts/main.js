@@ -1,5 +1,5 @@
 window.starter_cards = [];
-import tournament from './components/tournament.js?1.10';
+import tournament from './components/tournament.js?1.11';
 import VueFlashMessage from './components/VueFlashMessage/index.js?1.1';
 Vue.use(VueFlashMessage);
 

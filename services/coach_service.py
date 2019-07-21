@@ -1,7 +1,8 @@
 """Coach service helpers"""
 from sqlalchemy.orm.attributes import flag_modified
+from sqlalchemy import event
 
-from models.data_models import Coach, Deck
+from models.data_models import Coach, Deck, Tournament
 from models.base_model import db
 from .pack_service import PackService
 from .deck_service import DeckService
@@ -60,6 +61,20 @@ class CoachService:
                 return None
         return None
 
+    @classmethod
+    def set_achievement(cls, coach, achievement_keys=None, value=True):
+        if achievement_keys is None:
+            achievement_keys = []
+
+        achievement = coach.achievements
+        for key in achievement_keys:
+            if key in achievement:
+                achievement = achievement[key]
+            else:
+                raise Exception("Achievement missing key %s" % key)
+        achievement['completed'] = value
+        flag_modified(coach, "achievements")
+        
     @classmethod
     def check_achievement(cls, coach, achievement_keys=None):
         if achievement_keys is None:

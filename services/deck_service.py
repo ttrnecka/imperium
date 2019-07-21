@@ -1,13 +1,16 @@
 """DeckService helper module"""
 import uuid
 from sqlalchemy.orm.attributes import flag_modified
+from sqlalchemy import event
 
 from models.base_model import db
 from models.marsh_models import card_schema
-from models.data_models import date_now, Card, Coach
+from models.data_models import date_now, Card, Coach, Tournament
+from models.general import MIXED_TEAMS
 
 from .card_service import CardService
 from .notification_service import LedgerNotificationService
+
 
 class DeckService:
     """DeckeService namespace"""
@@ -41,7 +44,7 @@ class DeckService:
         if card:
             tmp_card = CardService.init_card_model_from_card(card)
             # cards added in inducement phase can count towards double
-            if deck.tournament_signup.tournament.phase == "inducement":
+            if deck.tournament_signup.tournament.phase == Tournament.PHASES[3]:
                 tmp_card.deck_type = "extra_inducement"
             # any other type is ignored
             else:
@@ -256,6 +259,46 @@ class DeckService:
             tournament.phase = "locked"
             db.session.commit()
         return deck
+
+    @classmethod
+    def assigned_cards(cls, deck):
+        """Returns all cards that are assigned"""
+        assigned_cards = [card for card in deck.cards if card.assigned_to_array[str(deck.id)]]
+        assigned_extra_cards = [card for card in deck.extra_cards if card['assigned_to_array'][str(deck.id)]]
+        return assigned_cards, assigned_extra_cards
+
+    @classmethod
+    def assigned_cards_to(cls, deck, card):
+        """Returns all cards that are assigned to given card"""
+        assigned_cards, assigned_extra_cards = cls.assigned_cards(deck)
+        # normal cards
+        if isinstance(card, Card):
+            return [tcard for tcard in assigned_cards if str(card.id) in getattr(tcard, 'assigned_to_array')[str(deck.id)]], [tcard for tcard in assigned_extra_cards if str(card.id) in tcard['assigned_to_array'][str(deck.id)]]
+        else:
+            return [tcard for tcard in assigned_cards if str(card['uuid']) in getattr(tcard, 'assigned_to_array')[str(deck.id)]], [tcard for tcard in assigned_extra_cards if str(card['uuid']) in tcard['assigned_to_array'][str(deck.id)]]
+
+    @classmethod
+    def skills_for(cls, deck, card):
+        original_cards, extra_cards = cls.assigned_cards_to(deck, card)
+        printed_skills = CardService.builtin_skills_for(card)
+        return printed_skills + [card.name for card in original_cards] + [card['name'] for card in extra_cards]
+
+    @classmethod
+    def legends_in_deck(cls, deck):
+        """Returns all cards with 6 skills"""
+        legends = []
+        for card in list(deck.cards) + deck.extra_cards:
+            skills = cls.skills_for(deck, card)
+            if len(skills) == 6:
+                legends.append((card, skills))
+        return legends
+
+    @classmethod
+    def value(cls, deck):
+        team = next((t for t in MIXED_TEAMS if t['name'] == deck.mixed_team), {'tier_tax':0})
+        return sum(c.value for c in deck.cards) + \
+            sum(c['value'] for c in deck.starter_cards) + \
+            team['tier_tax']
 
 class DeckError(Exception):
     """Exception for Deck related issues"""
