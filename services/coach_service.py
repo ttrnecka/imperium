@@ -62,7 +62,7 @@ class CoachService:
         return None
 
     @classmethod
-    def set_achievement(cls, coach, achievement_keys=None, value=True):
+    def set_achievement(cls, coach, achievement_keys=None, value=True, best = None):
         if achievement_keys is None:
             achievement_keys = []
 
@@ -73,6 +73,10 @@ class CoachService:
             else:
                 raise Exception("Achievement missing key %s" % key)
         achievement['completed'] = value
+        if best
+            achievement['best'] = best
+        else:
+            achievement['best'] = achievement['target']
         flag_modified(coach, "achievements")
         
     @classmethod
