@@ -608,7 +608,7 @@ class DiscordCommand:
             if card.name in AUTO_CARDS.keys():
                 reason = "Autoprocessing "+card.name
                 amount = AUTO_CARDS[card.name]
-                msg = f"You card {card.name} has been processed. You were granted {amount} coins"
+                msg = f"Your card {card.name} has been processed. You were granted {amount} coins"
                 tran = Transaction(description=reason, price=-1*amount)
                 try:
                     db.session.delete(card)

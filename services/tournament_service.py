@@ -275,7 +275,7 @@ class TournamentService:
 
         for deck in sorted_decks:
             if deck[1] < highest_value:
-                msg.append(f"{deck[0]} has **{highest_value - deck[1]}** value of inducements:")
+                msg.append(f"{deck[0]} has **{highest_value - deck[1]}** points of inducements")
         msg.append(" ")
 
         return msg

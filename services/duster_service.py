@@ -125,7 +125,7 @@ class DusterService:
         duster.status = "COMMITTED"
         coach.make_transaction(tran)
         NotificationService.notify(
-            f"<@{coach.disc_id}>: Card(s) **{' ,'.join([card.name for card in cards])}** " +
+            f"<@{coach.disc_id}>: Card(s) **{', '.join([card.name for card in cards])}** " +
             f"removed from your collection by {duster.type}"
         )
         return True
