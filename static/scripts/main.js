@@ -303,7 +303,7 @@ Vue.mixin({
           skills = ["MVPCondition"];
           break;
         case "I Didn't Read The Rules":
-          skills = ["MVPCondition"];
+          skills = ["MVPCondition","MVPCondition","MVPCondition"];
           break;
         case "Training Wildcard":
           skills = ["MVPCondition2"];
