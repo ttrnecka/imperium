@@ -162,7 +162,7 @@ class DiscordCommand:
             msg += cls.number_emoji(quantity)
             msg += " x "
             msg += cls.rarity_emoji(card.rarity)
-            msg += f' **{card.name}** ({card.rarity} {card.race} '
+            msg += f' **{card.name}** ({card.subtype} {card.race} '
             msg += f'{card.card_type} Card) ({card.value})\n'
 
         msg += f"\n \n__Total value__: {value}\n \n"
