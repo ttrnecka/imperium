@@ -2,7 +2,7 @@
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import event
 
-from models.data_models import Coach, Deck, Tournament
+from models.data_models import Coach, Deck, Tournament, Card, Transaction
 from models.base_model import db
 from .pack_service import PackService
 from .deck_service import DeckService
@@ -10,6 +10,41 @@ from .notification_service import AchievementNotificationService, NotificationSe
 
 class CoachService:
     """CoachService helpers namespace"""
+
+    @staticmethod
+    def activate_coach(coach = None, card_ids = None):
+        """Activates coach and copies cards in card_ids list to new season"""
+        if not coach:
+            raise ValueError("coach argument is empty")
+
+        if not isinstance(coach, Coach):
+            raise TypeError("coach is not of class Coach")
+
+        if coach.active():
+            raise ValueError("coach is already active")
+        
+        if not isinstance(card_ids, list):
+            card_ids = []
+
+        selected_cards = Card.query.join(Card.coach).\
+                filter(Coach.id == coach.id, Card.id.in_(card_ids)).\
+                all()
+        selected_card_ids = [card.id for card in selected_cards]
+        missing = [id for id in card_ids if id not in selected_card_ids]
+
+        if missing:
+            raise ValueError(f"Not all card IDs were found - {str(missing)[1:-1]}")
+
+        selected_card_names = [card.template.name for card in selected_cards]
+        pack = PackService.admin_pack(card_names=selected_card_names)
+        reason = "Account activation"
+        tran = Transaction(pack=pack, description=reason, price=0)
+
+        coach.activate()
+        coach.account.reset()
+        coach.make_transaction(tran)
+        return True
+
     @classmethod
     def remove_softdeletes(cls):
         """Removes all softdeleted Coaches from DB"""
