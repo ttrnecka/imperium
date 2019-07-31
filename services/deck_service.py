@@ -39,10 +39,12 @@ class DeckService:
     @classmethod
     def addextracard(cls, deck, name):
         """Adds extra card defined by `name` to `deck`"""
-        card = CardService.get_card_from_sheet(name.strip())
+        card = CardService.get_card_by_name(name.strip())
 
         if card:
-            tmp_card = CardService.init_card_model_from_card(card)
+            tmp_card = Card.from_template(card)
+            # remove the card from session
+            db.session.expunge(tmp_card)
             # cards added in inducement phase can count towards double
             if deck.tournament_signup.tournament.phase == Tournament.PHASES[3]:
                 tmp_card.deck_type = "extra_inducement"
@@ -53,7 +55,7 @@ class DeckService:
             tmp_card.uuid = str(uuid.uuid4())
             deck.unused_extra_cards.append(card_schema.dump(tmp_card).data)
             flag_modified(deck, "unused_extra_cards")
-            deck.to_log(f"{date_now()}: Extra Card {tmp_card.name} inserted to the collection")
+            deck.to_log(f"{date_now()}: Extra Card {tmp_card.template.name} inserted into the collection")
             db.session.commit()
             return deck
         else:
@@ -63,12 +65,17 @@ class DeckService:
     def removeextracard(cls, deck, card):
         """Removes extra `card` from `deck`"""
         if card:
-            deck.unused_extra_cards.remove(card)
-            if card in deck.extra_cards:
-                deck.extra_cards.remove(card)
+            tcard = next((c for c in deck.unused_extra_cards
+                              if c['uuid'] == card['uuid']), None)
+            deck.unused_extra_cards.remove(tcard)
+
+            tcard = next((c for c in deck.extra_cards
+                              if c['uuid'] == card['uuid']), None)
+            if tcard:
+                deck.extra_cards.remove(tcard)
                 flag_modified(deck, "extra_cards")
             flag_modified(deck, "unused_extra_cards")
-            deck.to_log(f"{date_now()}: Extra Card {card['name']} removed from the collection")
+            deck.to_log(f"{date_now()}: Extra Card {card['template']['name']} removed from the collection")
             db.session.commit()
             return deck
         else:
@@ -77,39 +84,35 @@ class DeckService:
     @classmethod
     def assigncard(cls, deck, card):
         """Assign assignable `card` in `deck`"""
-        if card['card_type'] != "Training" and card['name'] != "Bodyguard":
-            raise DeckError(f"{card['name']} is not assignable!")
+        if card['template']['card_type'] != "Training" and card['template']['name'] != "Bodyguard":
+            raise DeckError(f"{card['template']['name']} is not assignable!")
         if card["id"]:
             tmp_card = Card.query.get(card["id"])
             tmp_card.assigned_to_array = card["assigned_to_array"]
-            deck.to_log(f"{date_now()}: Card {card['name']} assignment changed")
+            deck.to_log(f"{date_now()}: Card {card['template']['name']} assignment changed")
             db.session.commit()
         else:
-            # starting pack handling - there should not be any training starter card
-            if card["deck_type"] in ["base", None]:
-                raise DeckError(f"Unexpected card type!")
-            else:
-                #only other assignable cards can be extra cards
-                #find it my uuid in the holder array
-                tcard = next((c for c in deck.unused_extra_cards
-                              if c['uuid'] == card['uuid']), None)
-                if tcard:
-                    # remove the card from both arrays, update it and stick it back
-                    deck.unused_extra_cards.remove(tcard)
-                    deck.extra_cards.remove(tcard)
-                    if cls.deck_type(deck) == "Development":
-                        tcard['in_development_deck'] = True
-                    else:
-                        tcard['in_imperium_deck'] = True
-
-                    tcard['assigned_to_array'] = card['assigned_to_array']
-                    deck.extra_cards.append(tcard)
-                    deck.unused_extra_cards.append(tcard)
-                    deck.to_log(f"{date_now()}: Card {card['name']} assignment changed")
-                    flag_modified(deck, "extra_cards")
-                    flag_modified(deck, "unused_extra_cards")
+            # extra cards
+            # find it my uuid in the holder array
+            tcard = next((c for c in deck.unused_extra_cards
+                            if c['uuid'] == card['uuid']), None)
+            if tcard:
+                # remove the card from both arrays, update it and stick it back
+                deck.unused_extra_cards.remove(tcard)
+                deck.extra_cards.remove(tcard)
+                if cls.deck_type(deck) == "Development":
+                    tcard['in_development_deck'] = True
                 else:
-                    raise DeckError("Extra card not found")
+                    tcard['in_imperium_deck'] = True
+
+                tcard['assigned_to_array'] = card['assigned_to_array']
+                deck.extra_cards.append(tcard)
+                deck.unused_extra_cards.append(tcard)
+                deck.to_log(f"{date_now()}: Card {card['template']['name']} assignment changed")
+                flag_modified(deck, "extra_cards")
+                flag_modified(deck, "unused_extra_cards")
+            else:
+                raise DeckError("Extra card not found")
             db.session.commit()
         return deck
 
@@ -136,39 +139,24 @@ class DeckService:
             else:
                 raise DeckError("Card not found")
         else:
-            # add starting pack handling
-            if card["deck_type"] in ["base", None]:
+            #extra cards
+            tcard = next((c for c in deck.unused_extra_cards
+                            if c['uuid'] == card['uuid']), None)
+            if tcard:
+                deck.unused_extra_cards.remove(tcard)
                 if cls.deck_type(deck) == "Development":
-                    # since starting cards do not have real instance we need to switch the other deck type, otherwise it could be stuck
-                    # if the card is in both decks, it will be marked as in both decks in the other deck instance and while that exists
-                    # the cards are not usable
-                    card['in_development_deck'] = True
-                    card['in_imperium_deck'] = False
+                    tcard['in_development_deck'] = True
                 else:
-                    card['in_imperium_deck'] = True
-                    card['in_development_deck'] = False
-                card['uuid'] = str(uuid.uuid4())
+                    tcard['in_imperium_deck'] = True
                 # set the deck id in assignment array
-                card['assigned_to_array'][deck.id] = []
-                deck.starter_cards.append(card)
-                flag_modified(deck, "starter_cards")
+                tcard['assigned_to_array'][deck.id] = []
+                deck.extra_cards.append(tcard)
+                deck.unused_extra_cards.append(tcard)
+                flag_modified(deck, "extra_cards")
+                flag_modified(deck, "unused_extra_cards")
             else:
-                #extra cards
-                if card in deck.unused_extra_cards:
-                    deck.unused_extra_cards.remove(card)
-                    if cls.deck_type(deck) == "Development":
-                        card['in_development_deck'] = True
-                    else:
-                        card['in_imperium_deck'] = True
-                    # set the deck id in assignment array
-                    card['assigned_to_array'][deck.id] = []
-                    deck.extra_cards.append(card)
-                    deck.unused_extra_cards.append(card)
-                    flag_modified(deck, "extra_cards")
-                    flag_modified(deck, "unused_extra_cards")
-                else:
-                    raise DeckError("Extra card not found")
-            deck.to_log(f"{date_now()}: Card {card['name']} added to the deck")
+                raise DeckError("Extra card not found")
+            deck.to_log(f"{date_now()}: Card {card['template']['name']} added to the deck")
             db.session.commit()
         return deck
 
@@ -193,34 +181,23 @@ class DeckService:
             else:
                 raise DeckError("Card not found")
         else:
-            # remove starting pack handling
-            if card["deck_type"] in ["base", None]:
-                deck.starter_cards.remove(card)
-                flag_modified(deck, "starter_cards")
-            else:
-                #extra cards
-                if card in deck.unused_extra_cards:
-                    deck.unused_extra_cards.remove(card)
-                    deck.extra_cards.remove(card)
-                    if cls.deck_type(deck) == "Development":
-                        card['in_development_deck'] = False
-                    else:
-                        card['in_imperium_deck'] = False
-                    card['assigned_to_array'][deck.id] = []
-                    deck.unused_extra_cards.append(card)
-                    flag_modified(deck, "extra_cards")
-                    flag_modified(deck, "unused_extra_cards")
+            #extra cards
+            if card in deck.unused_extra_cards:
+                deck.unused_extra_cards.remove(card)
+                deck.extra_cards.remove(card)
+                if cls.deck_type(deck) == "Development":
+                    card['in_development_deck'] = False
                 else:
-                    raise DeckError("Extra card not found")
-            deck.to_log(f"{date_now()}: Card {card['name']} removed from the deck")
+                    card['in_imperium_deck'] = False
+                card['assigned_to_array'][deck.id] = []
+                deck.unused_extra_cards.append(card)
+                flag_modified(deck, "extra_cards")
+                flag_modified(deck, "unused_extra_cards")
+            else:
+                raise DeckError("Extra card not found")
+            deck.to_log(f"{date_now()}: Card {card['template']['name']} removed from the deck")
             db.session.commit()
         return deck
-
-    @classmethod
-    def get_used_starter_cards(cls, coach):
-        """Return starter cards for `coach` that are used in any of their decks"""
-        decks = [ts.deck for ts in coach.tournament_signups]
-        return sum([deck.starter_cards for deck in decks], [])
 
     @classmethod
     def commit(cls, deck):
@@ -281,7 +258,7 @@ class DeckService:
     def skills_for(cls, deck, card):
         original_cards, extra_cards = cls.assigned_cards_to(deck, card)
         printed_skills = CardService.builtin_skills_for(card)
-        return printed_skills + [card.name for card in original_cards] + [card['name'] for card in extra_cards]
+        return printed_skills + [card.get('name') for card in original_cards] + [card['template']['name'] for card in extra_cards]
 
     @classmethod
     def legends_in_deck(cls, deck):
@@ -296,9 +273,7 @@ class DeckService:
     @classmethod
     def value(cls, deck):
         team = next((t for t in MIXED_TEAMS if t['name'] == deck.mixed_team), {'tier_tax':0})
-        return sum(c.value for c in deck.cards) + \
-            sum(c['value'] for c in deck.starter_cards) + \
-            team['tier_tax']
+        return sum(c.value for c in deck.cards) + team['tier_tax']
 
 class DeckError(Exception):
     """Exception for Deck related issues"""

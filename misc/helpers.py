@@ -11,19 +11,19 @@ class CardHelper:
     @classmethod
     def sort_cards_by_rarity(cls, cards):
         """sorts cards by rarity"""
-        return sorted(cards, key=lambda x: (cls.rarityorder[x.rarity], x.name))
+        return sorted(cards, key=lambda x: (cls.rarityorder[x.get('rarity')], x.get('name')))
 
     @classmethod
     def sort_cards_by_rarity_with_quatity(cls, cards):
         """sorts cards by rarity and sums the same cards"""
         new_collection = {}
         for card in cls.sort_cards_by_rarity(cards):
-            if card.name in new_collection:
-                new_collection[card.name]["quantity"] += 1
+            if card.get('name') in new_collection:
+                new_collection[card.get('name')]["quantity"] += 1
             else:
-                new_collection[card.name] = {}
-                new_collection[card.name]["card"] = card
-                new_collection[card.name]["quantity"] = 1
+                new_collection[card.get('name')] = {}
+                new_collection[card.get('name')]["card"] = card
+                new_collection[card.get('name')]["quantity"] = 1
 
         return [(card["card"], card["quantity"]) for card in list(new_collection.values())]
 

@@ -158,18 +158,18 @@ class DiscordCommand:
         msg = ""
         value = 0
         for card, quantity in cards:
-            value += card.value * quantity
+            value += card.get('value') * quantity
             msg += cls.number_emoji(quantity)
             msg += " x "
-            msg += cls.rarity_emoji(card.rarity)
-            msg += f' **{card.name}** ({card.subtype} {card.race} '
-            msg += f'{card.card_type} Card) ({card.value})\n'
+            msg += cls.rarity_emoji(card.get('rarity'))
+            msg += f' **{card.get("name")}** ({card.get("subtype")} {card.get("race")} '
+            msg += f'{card.get("card_type")} Card) ({card.get("value")})\n'
 
         msg += f"\n \n__Total value__: {value}\n \n"
         msg += "__Description__:\n \n"
         for card, quantity in cards:
-            if card.description != "":
-                msg += f"**{card.name}**: {card.description}\n"
+            if card.get('description') != "":
+                msg += f"**{card.get('name')}**: {card.get('description')}\n"
         return msg.strip("\n")
 
     @classmethod
@@ -605,10 +605,10 @@ class DiscordCommand:
     async def auto_cards(self, pack):
         """Routine to process auto cards from the pack"""
         for card in pack.cards:
-            if card.name in AUTO_CARDS.keys():
-                reason = "Autoprocessing "+card.name
-                amount = AUTO_CARDS[card.name]
-                msg = f"Your card {card.name} has been processed. You were granted {amount} coins"
+            if card.get('name') in AUTO_CARDS.keys():
+                reason = "Autoprocessing "+card.get('name')
+                amount = AUTO_CARDS[card.get('name')]
+                msg = f"Your card {card.get('name')} has been processed. You were granted {amount} coins"
                 tran = Transaction(description=reason, price=-1*amount)
                 try:
                     db.session.delete(card)
@@ -708,6 +708,9 @@ class DiscordCommand:
             await self.reply([f"**{self.message.author.mention}** account exists already\n"])
         else:
             coach = Coach.create(str(self.message.author), self.message.author.id)
+            pack = PackService.new_starter_pack(coach = coach)
+            tran = Transaction(pack=pack, price=pack.price, description=PackService.description(pack))
+            coach.make_transaction(tran)
             msg = [
                 f"**{self.message.author.mention}** account created\n",
                 f"**Bank:** {coach.account.amount} coins",
@@ -716,49 +719,49 @@ class DiscordCommand:
             await self.reply(msg)
 
     async def __run_list(self):
-        coach = Coach.get_by_discord_id(self.message.author.id)
-        show_starter = True if len(self.args) > 1 and self.args[1] == "all" else False
+        with db.session.no_autoflush:
+            coach = Coach.get_by_discord_id(self.message.author.id)
+            show_starter = True if len(self.args) > 1 and self.args[1] == "all" else False
 
-        if coach is None:
-            await self.reply(
-                [(f"Coach {self.message.author.mention} does not exist."
-                  "Use !newcoach to create coach first.")]
-            )
-            return
+            if coach is None:
+                await self.reply(
+                    [(f"Coach {self.message.author.mention} does not exist."
+                    "Use !newcoach to create coach first.")]
+                )
+                return
 
-        if show_starter:
-            all_cards = coach.cards + PackService.generate("starter").cards
-            sp_msg = " (with Starter Pack)"
-        else:
             all_cards = coach.cards
-            sp_msg = ""
+            sp_msg = " (with Starter Pack)"
+            if not show_starter:
+                all_cards = [card for card in all_cards if not card.is_starter]
+                sp_msg = ""
 
-        msg = [
-            f"**Bank:** {coach.account.amount} coins\n",
-            f"**Tournaments:**",
-            *[f'{t.tournament_id}. {t.name}, status: {t.status}, expected start: {t.expected_start_date}' for t in coach.tournaments],
-            f"\n**Collection**{sp_msg}:",
-            "-" * 65 + "",
-            self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(all_cards)),
-            "-" * 65 + "\n"
-        ]
+            msg = [
+                f"**Bank:** {coach.account.amount} coins\n",
+                f"**Tournaments:**",
+                *[f'{t.tournament_id}. {t.name}, status: {t.status}, expected start: {t.expected_start_date}' for t in coach.tournaments],
+                f"\n**Collection**{sp_msg}:",
+                "-" * 65 + "",
+                self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(all_cards)),
+                "-" * 65 + "\n"
+            ]
 
-        if coach.duster:
-            msg.append(f"**Dusting** - {coach.duster.type} - {coach.duster.status}")
+            if coach.duster:
+                msg.append(f"**Dusting** - {coach.duster.type} - {coach.duster.status}")
 
-        admin_in = Tournament.query.filter(Tournament.admin == coach.short_name(), Tournament.status.in_(("OPEN", "RUNNING"))).all()
+            admin_in = Tournament.query.filter(Tournament.admin == coach.short_name(), Tournament.status.in_(("OPEN", "RUNNING"))).all()
 
-        if admin_in:
-            msg.append(f"**Tournament Admin:**")
-            msg.extend([f'{t.tournament_id}. {t.name}, status: {t.status}, channel: {t.discord_channel}' for t in admin_in])
+            if admin_in:
+                msg.append(f"**Tournament Admin:**")
+                msg.extend([f'{t.tournament_id}. {t.name}, status: {t.status}, channel: {t.discord_channel}' for t in admin_in])
 
-        free_packs = coach.get_freepacks()
-        if free_packs:
-            msg.append(f"**Free Packs:**")
-            msg.append((', ').join(free_packs))
+            free_packs = coach.get_freepacks()
+            if free_packs:
+                msg.append(f"**Free Packs:**")
+                msg.append((', ').join(free_packs))
 
-        await self.send_message(self.message.author, msg)
-        await self.short_reply("Info sent to PM")
+            await self.send_message(self.message.author, msg)
+            await self.short_reply("Info sent to PM")
 
     async def __run_genpacktemp(self):
         if self.__class__.check_gentemp_command(self.cmd):
@@ -771,7 +774,7 @@ class DiscordCommand:
 
             if ptype in ["player", "positional"]:
                 team = self.args[2]
-                pack = PackService.generate(ptype, team)
+                pack = PackService.generate(ptype, team=team)
             elif ptype in ["training", "special", "skill", "coaching"]:
                 pack = PackService.generate(ptype)
             elif ptype == "booster":
@@ -800,12 +803,12 @@ class DiscordCommand:
             if ptype == "player":
                 team = self.args[2]
                 first = True if pp_count == 0 else False
-                pack = PackService.generate(ptype, team, first)
+                pack = PackService.generate(ptype, team=team, first=first, coach=coach)
             elif ptype == "training" or ptype == "special":
-                pack = PackService.generate(ptype)
+                pack = PackService.generate(ptype, coach=coach)
             elif ptype == "booster":
                 ptype = "booster_budget" if len(self.args) < 3 else f"booster_{self.args[2]}"
-                pack = PackService.generate(ptype)
+                pack = PackService.generate(ptype, coach=coach)
 
             try:
                 duster = coach.duster
@@ -1021,13 +1024,13 @@ class DiscordCommand:
                 card_names = [card.strip() for card in " ".join(self.args[3:]).split(";")]
 
             if self.args[1] == "add":
-                pack = PackService.admin_pack(0, card_names)
+                pack = PackService.admin_pack(0, card_names, coach)
                 # situation when some of the cards could not be found
                 if len(card_names) != len(pack.cards):
                     msg = []
                     msg.append(f"Not all cards were found, check the names!!!\n")
                     for card in card_names:
-                        if card in [card.name.lower() for card in pack.cards]:
+                        if card in [card.get('name').lower() for card in pack.cards]:
                             found = True
                         else:
                             found = False
@@ -1035,7 +1038,7 @@ class DiscordCommand:
                         msg.append(f"{card}: {found_msg}")
                     await self.reply(msg)
                     return
-                reason = f"{self.args[1].capitalize()} {';'.join([str(card.name) for card in pack.cards])} - by " + str(self.message.author.name)
+                reason = f"{self.args[1].capitalize()} {';'.join([str(card.get('name')) for card in pack.cards])} - by " + str(self.message.author.name)
 
                 tran = Transaction(pack=pack, description=reason, price=0)
                 try:
@@ -1049,7 +1052,7 @@ class DiscordCommand:
                     msg.append(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
                     msg.append(f"**Bank:** {coach.account.amount} coins")
                     await self.reply(msg)
-                    await self.bank_notification(f"Card(s) **{', '.join([card.name for card in pack.cards])}** added to your collection by {str(self.message.author.name)}", coach)
+                    await self.bank_notification(f"Card(s) **{', '.join([card.get('name') for card in pack.cards])}** added to your collection by {str(self.message.author.name)}", coach)
                     await self.auto_cards(pack)
                     CoachService.check_collect_three_legends_quest(coach)
                     return
@@ -1067,7 +1070,7 @@ class DiscordCommand:
                             db.session.expire(coach, ['cards'])
                         else:
                             unknown_cards.append(name)
-                    reason = f"{self.args[1].capitalize()} {';'.join([card.name for card in removed_cards])} - by " + str(self.message.author.name)
+                    reason = f"{self.args[1].capitalize()} {';'.join([card.get('name') for card in removed_cards])} - by " + str(self.message.author.name)
                     tran = Transaction(description=reason, price=0)
                     coach.make_transaction(tran)
                 except TransactionError as e:
@@ -1079,7 +1082,7 @@ class DiscordCommand:
                         msg.append(f"Cards removed from @{coach.name} collection:\n")
                         msg.append(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(removed_cards))}\n")
                         await self.reply(msg)
-                        await self.bank_notification(f"Card(s) **{', '.join([card.name for card in removed_cards])}** removed from your collection by {str(self.message.author.name)}", coach)
+                        await self.bank_notification(f"Card(s) **{', '.join([card.get('name') for card in removed_cards])}** removed from your collection by {str(self.message.author.name)}", coach)
 
                     if unknown_cards:
                         msg = ["**Warning** - these cards have been skipped:"]
@@ -1316,7 +1319,7 @@ class DiscordCommand:
             count = len(duster.cards)
             msg = [f"**{duster.type}** ({count}/10):"]
             for card in duster.cards:
-                msg.append(card.name)
+                msg.append(card.get('name'))
             if count == 10:
                 msg.append(" \nList full. You can commit the dusting now!!!")
             await self.reply(msg)

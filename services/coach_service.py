@@ -18,34 +18,6 @@ class CoachService:
         db.session.commit()
 
     @classmethod
-    def get_starter_cards(cls, coach):
-        """Returns all starter cards for coach indicating their use in decks"""
-        used_starter_cards = DeckService.get_used_starter_cards(coach)
-        starter_cards = PackService.generate("starter").cards
-
-        for card in used_starter_cards:
-            if card['in_development_deck']:
-                try:
-                    gen = (i for i, acard in enumerate(starter_cards)
-                           if not getattr(acard, 'in_development_deck')
-                           and acard.name == card['name'])
-                    index = next(gen)
-                    setattr(starter_cards[index], 'in_development_deck', True)
-                except StopIteration:
-                    pass
-            if card['in_imperium_deck']:
-                try:
-                    gen = (i for i, acard in enumerate(starter_cards)
-                           if not getattr(acard, 'in_imperium_deck')
-                           and acard.name == card['name'])
-                    index = next(gen)
-                    setattr(starter_cards[index], 'in_imperium_deck', True)
-                except StopIteration:
-                    pass
-
-        return starter_cards
-
-    @classmethod
     def link_bb2_coach(cls,bb2_name,team_name):
         """Links coach bb2 name to Coach account
         If the coach is already linked or the team does not exists then return None"""
@@ -115,7 +87,7 @@ class CoachService:
     @classmethod
     def check_collect_three_legends_quest(cls, coach):
         achievement = coach.achievements['quests']['collect3legends']
-        legends = [card for card in coach.cards if card.subtype == "REBBL Legend"]
+        legends = [card for card in coach.cards if card.get('subtype') == "REBBL Legend"]
         legends_count = len(legends)
         if achievement['best'] < legends_count: 
             achievement['best'] = legends_count

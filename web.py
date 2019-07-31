@@ -17,7 +17,7 @@ from models.marsh_models import tournaments_schema, tournament_schema, duster_sc
 from models.marsh_models import leaderboard_coach_schema, deck_schema
 from services import PackService, CoachService, NotificationService
 from services import LedgerNotificationService, AchievementNotificationService
-from services import AdminNotificationService
+from services import AdminNotificationService, CardService
 from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError
 from services import TransactionService, DeckService, DeckError
@@ -337,13 +337,6 @@ def update_coach(coach_id):
     result = coach_schema.dump(coach)
     return jsonify(result.data)
 
-@app.route("/cards/starter", methods=["GET"])
-def get_starter_cards():
-    """loads starter cards as json"""
-    starter_cards = PackService.generate("starter").cards
-    result = cards_schema.dump(starter_cards)
-    return jsonify(result.data)
-
 # BB teams
 @app.route("/teams/<teamname>", methods=["GET"])
 @authenticated
@@ -404,10 +397,8 @@ def get_deck(deck_id):
             status_code=403
         )
 
-    starter_cards = CoachService.get_starter_cards(deck.tournament_signup.coach)
     result = deck_schema.dump(deck)
-    result2 = cards_schema.dump(starter_cards)
-    return jsonify({'deck':result.data, 'starter_cards':result2.data})
+    return jsonify(result.data)
 
 @app.route("/decks/<int:deck_id>", methods=["POST"])
 @authenticated

@@ -9,6 +9,7 @@ from sqlalchemy import UniqueConstraint, event
 from sqlalchemy.dialects import mysql 
 from sqlalchemy.types import TypeDecorator
 
+
 ROOT = os.path.dirname(__file__)
 
 logger = logging.getLogger('transaction')
@@ -44,6 +45,29 @@ class TextPickleType(TypeDecorator):
             value = json.loads(value)
         return value
 
+class CardTemplate(Base):
+    __tablename__ = 'card_templates'
+
+    name = db.Column(db.String(80), nullable=False, index=True)
+    description = db.Column(db.Text())
+    race = db.Column(db.String(20), nullable=False)
+    rarity = db.Column(db.String(20), nullable=False, index=True)
+    card_type = db.Column(db.String(20), nullable=False, index=True)
+    subtype = db.Column(db.String(30), nullable=False)
+    notes = db.Column(db.String(255))
+    value = db.Column(db.Integer, nullable=False, default=1)
+    skill_access = db.Column(db.String(20))
+    multiplier = db.Column(db.Integer(), nullable=False, default=1)
+    starter_multiplier = db.Column(db.Integer(), nullable=False, default=0)
+
+    cards = db.relationship('Card', backref=db.backref('template', lazy=False), cascade="all, delete-orphan",lazy=True)
+
+    def __init__(self,**kwargs):
+        super(CardTemplate, self).__init__(**kwargs)
+        
+    def __repr__(self):
+        return f'<CardTemplate {self.id}. {self.name}, rarity: {self.rarity}, type: {self.card_type}>'
+
 class Card(Base):
     __tablename__ = 'cards'
 
@@ -67,12 +91,31 @@ class Card(Base):
     uuid = db.Column(db.String(255),default="", index=True)
     skill_access = db.Column(db.String(20))
 
+    card_template_id = db.Column(db.Integer, db.ForeignKey('card_templates.id'), index=True, nullable=True)
+
+    is_starter = db.Column(db.Boolean(), default=False)
+
+    def get(self,name):
+        return getattr(self.template,name)
+
     def __init__(self,**kwargs):
         super(Card, self).__init__(**kwargs)
         self.assigned_to_array = {}
-        
+    
+    def _template(self, template):
+        """When using template clear the other values, they will be removed in later phase TODO"""
+        for attribute in ["name", "description", "race", "rarity", "card_type", "subtype", "notes", "value", "skill_access"]:
+            setattr(self, attribute, "")
+        self.template = template
+
     def __repr__(self):
         return f'<Card {self.name}, rarity: {self.rarity}, pack_id: {self.pack_id}>'
+
+    @classmethod
+    def from_template(cls, template):
+        model = cls()
+        model._template(template)
+        return model
 
 class Pack(Base):
     __tablename__ = 'packs'
@@ -121,7 +164,7 @@ class Coach(Base):
         return self.name[:-5]
 
     def collection_value(self):
-        return sum([card.value for card in self.cards])
+        return sum([card.get('value') for card in self.cards])
 
     # id behind #
     def discord_id(self):
@@ -295,7 +338,6 @@ class Deck(Base):
     commited = db.Column(db.Boolean(), default=False)
     extra_cards = db.Column(TextPickleType(), nullable=False)
     unused_extra_cards = db.Column(TextPickleType(), nullable=False)
-    starter_cards = db.Column(TextPickleType(), nullable=False)
     comment = db.Column(db.Text(),nullable=False, default="")
     log = db.Column(db.Text(),nullable=False, default="")
 

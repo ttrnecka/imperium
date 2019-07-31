@@ -216,6 +216,12 @@ class TournamentService:
         reserves = tournament.coaches.filter(TournamentSignups.mode == 'reserve')
         for coach in reserves:
             cls.unregister(tournament, coach, admin=True, refund=False)
+    
+    @classmethod
+    def release_actives(cls,tournament):
+        actives = tournament.coaches.filter(TournamentSignups.mode == 'active')
+        for coach in actives:
+            cls.unregister(tournament, coach, admin=True, refund=False)
 
     @classmethod
     def reset_phase(cls, tournament):
@@ -235,7 +241,7 @@ class TournamentService:
         decks = []
         max_special_plays = 0
         for signup in tournament.tournament_signups:
-            special_plays = [card for card in signup.deck.cards if card.card_type == "Special Play"]
+            special_plays = [card for card in signup.deck.cards if card.get('card_type') == "Special Play"]
             if len(special_plays) > max_special_plays:
                 max_special_plays = len(special_plays)
 

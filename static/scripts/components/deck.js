@@ -6,17 +6,14 @@ export default {
           selected_team:"All",
           show_starter: 1,
           rarity_order: 1,
-          coach_starter_cards:[],
           extra_card:"",
           deck: {
               cards:[],
-              starter_cards:[],
               extra_cards:[],
               unused_extra_cards:[],
               mixed_team:"",
               team_name:"",
               comment:"",
-              packs:[],
               search_timeout: null,
               id:null,
               log:""
@@ -43,7 +40,7 @@ export default {
             }
 
             if(this.deck_size==this.tournament.deck_limit && (card.deck_type!="extra" && card.deck_type!="extra_inducement")) {
-                if (card.card_type!="Special Play" || this.user_special_plays.length!=0) {
+                if (card.template.card_type!="Special Play" || this.user_special_plays.length!=0) {
                     this.flash("Cannot add card - deck limit reached!", 'error',{timeout: 3000});
                     return false;
                 }
@@ -52,7 +49,7 @@ export default {
                 this.flash("Cannot add card - team not selected!", 'error',{timeout: 3000});
                 return false;
             }
-            if(this.deck_player_size>=16 && card.card_type=="Player") {
+            if(this.deck_player_size>=16 && card.template.card_type=="Player") {
                 this.flash("Cannot add card - 16 Player cards are already in the deck!", 'error',{timeout: 3000});
                 return false;
             }
@@ -103,8 +100,7 @@ export default {
             const processingMsg = this.flash("Loading deck...", 'info');
             axios.get(path)
             .then((res) => {
-                this.deck=res.data.deck;
-                this.coach_starter_cards = res.data.starter_cards;
+                this.deck=res.data;
                 this.selected_team = (this.deck.mixed_team=="") ? "All" : this.deck.mixed_team;
                 this.modal().modal('show');
             })
@@ -284,13 +280,9 @@ export default {
                 let ccard;
                 this.flash(msg, 'success',{timeout: 1000});
                 this.deck = res.data;
-                if(card.deck_type!="extra") {
+                if(card.id && card.deck_type!="extra" && card.deck_type!="extra_inducement") {
                     const check = (this.development) ? "in_development_deck" : "in_imperium_deck";
-                    if(card.id) {
-                        ccard = this.coach.cards.find((c) => c.id == card.id);
-                    } else {
-                        ccard = this.coach_starter_cards.find((c) => c.name == card.name && c[check]==true);
-                    }
+                    ccard = this.coach.cards.find((c) => c.id == card.id);
                     ccard[check] = false;
                 }
             })
@@ -357,7 +349,7 @@ export default {
             }
         },
         deck_size_for(type) {
-            return this.deck_cards.filter((e) => e.card_type==type).length;
+            return this.deck_cards.filter((e) => e.template.card_type==type).length;
         },
         card_id_or_uuid(card) {
             if(card.id) {
@@ -408,10 +400,10 @@ export default {
             return doubles;
         },
         is_guarded(card) {
-            if (card.card_type!="Player")
+            if (card.template.card_type!="Player")
               return false;
             const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
-            if (assigned_cards.find((c) => c.name=='Bodyguard')!=undefined)
+            if (assigned_cards.find((c) => c.template.name=='Bodyguard')!=undefined)
               return true;
             return false;
         }
@@ -439,15 +431,15 @@ export default {
 
         // cards in deck that belong to user collection
         user_deck_cards() {
-            return this.deck.cards.concat(this.deck.starter_cards);
+            return this.deck.cards;
         },
 
         assignable_deck_player_cards() {
-            return this.deck_player_cards.filter((e) => !["Legendary","Inducement","Unique"].includes(e.rarity));
+            return this.deck_player_cards.filter((e) => !["Legendary","Inducement","Unique"].includes(e.template.rarity));
         },
 
         deck_player_cards() {
-            return this.deck_cards.filter((e) => e.card_type=="Player");
+            return this.deck_cards.filter((e) => e.template.card_type=="Player");
         },
 
         deck_player_size() {
@@ -456,17 +448,17 @@ export default {
 
         // all cards in deck
         deck_cards() {
-            return this.deck.cards.concat(this.deck.starter_cards,this.deck.extra_cards);
+            return this.deck.cards.concat(this.deck.extra_cards);
         },
 
-        // user collection + starter + extra cards
+        // user collection + extra cards
         collection_cards() {
-            return this.coach.cards.concat(this.coach_starter_cards,this.deck.unused_extra_cards);
+            return this.coach.cards.concat(this.deck.unused_extra_cards);
         },
 
         // special cards in deck that belong to user
         user_special_plays() {
-            return this.user_deck_cards.filter((e) => e.card_type=="Special Play");
+            return this.user_deck_cards.filter((e) => e.template.card_type=="Special Play");
         },
 
         // size of user cards in deck
@@ -515,7 +507,7 @@ export default {
         deck_doubles_count() {
             let count = 0;
             this.deck_cards.forEach((card) => {
-                if(card.card_type=="Player") {
+                if(card.template.card_type=="Player") {
                     count += this.doubles_count(card);
                 }
             });
@@ -657,7 +649,7 @@ export default {
                                                 </div>
                                                 <template v-for="card in deck.unused_extra_cards">
                                                     <div class="col-md-6 pt-1 pl-4">
-                                                    <h6 class="extra_card">[[card.name]]</h6>
+                                                    <h6 class="extra_card">[[card.template.name]]</h6>
                                                     </div>
                                                     <div class="col-md-6">
                                                         <button type="button" :disabled="processing || !is_owner || locked" class="btn-sm mb-1 btn btn-danger btn-block" @click="removeExtraCard(card)">Remove</button>
@@ -725,13 +717,13 @@ export default {
                                                         </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <tr v-if="!isInDeck(card)" @click="addToDeck(card)" v-for="card in sortedCardsWithoutQuantity(collection_cards,ctype)" :key="card.id" :class="[rarityclass(card.rarity), extra_type(card.deck_type)]">
-                                                            <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
-                                                            <td>[[ card.value ]]</td>
-                                                            <td :title="card.description">[[ card.name ]]</td>
+                                                        <tr v-if="!isInDeck(card)" @click="addToDeck(card)" v-for="card in sortedCardsWithoutQuantity(collection_cards,ctype)" :key="card.id" :class="[rarityclass(card.template.rarity), extra_type(card.deck_type)]">
+                                                            <td><img class="rarity" :src="'static/images/'+card.template.rarity+'.jpg'" :alt="card.template.rarity" :title="card.template.rarity" width="20" height="25" /></td>
+                                                            <td>[[ card.template.value ]]</td>
+                                                            <td :title="card.template.description">[[ card.template.name ]]</td>
                                                             <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
-                                                            <td v-if="ctype=='Player'">[[ card.race ]]</td>
-                                                            <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
+                                                            <td v-if="ctype=='Player'">[[ card.template.race ]]</td>
+                                                            <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">[[ card.template.subtype ]]</td>
                                                         </tr>
                                                         </tbody>
                                                     </table>
@@ -784,29 +776,29 @@ export default {
                                                         </thead>
                                                         <tbody>
                                                         <template v-for="(card,index) in sortedCardsWithoutQuantity(deck_cards,ctype,false)">
-                                                        <tr @click="removeFromDeck(card)" :key="card.id" :class="[rarityclass(card.rarity), extra_type(card.deck_type)]">
-                                                            <td><img class="rarity" :src="'static/images/'+card.rarity+'.jpg'" :alt="card.rarity" :title="card.rarity" width="20" height="25" /></td>
-                                                            <td>[[ card.value ]]</td>
-                                                            <td :title="card.description">[[ card.name ]]<span v-if="is_guarded(card)" title="Bodyguard">&#128170;</span></td>
+                                                        <tr @click="removeFromDeck(card)" :key="card.id" :class="[rarityclass(card.template.rarity), extra_type(card.deck_type)]">
+                                                            <td><img class="rarity" :src="'static/images/'+card.template.rarity+'.jpg'" :alt="card.template.rarity" :title="card.template.rarity" width="20" height="25" /></td>
+                                                            <td>[[ card.template.value ]]</td>
+                                                            <td :title="card.template.description">[[ card.template.name ]]<span v-if="is_guarded(card)" title="Bodyguard">&#128170;</span></td>
                                                             <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
-                                                            <td v-if="ctype=='Player'">[[ card.race ]]</td>
-                                                            <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">[[ card.subtype ]]</td>
+                                                            <td v-if="ctype=='Player'">[[ card.template.race ]]</td>
+                                                            <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">[[ card.template.subtype ]]</td>
                                                         </tr>
-                                                        <tr :class="[rarityclass(card.rarity)]" v-for="idx in number_of_assignments(card)">
+                                                        <tr :class="[rarityclass(card.template.rarity)]" v-for="idx in number_of_assignments(card)">
                                                             <th colspan="1">Assigned to:</th>
                                                             <td colspan="3">
                                                                 <select v-if="ctype=='Training'" class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
                                                                     <option default :value="null">Select Player</option>
-                                                                    <option v-for="(card,index) in assignable_deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.name ]]</option>
+                                                                    <option v-for="(card,index) in assignable_deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.template.name ]]</option>
                                                                 </select>
                                                                 <select v-else class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
                                                                     <option default :value="null">Select Player</option>
-                                                                    <option v-for="(card,index) in deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.name ]]</option>
+                                                                    <option v-for="(card,index) in deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.template.name ]]</option>
                                                                 </select>
                                                             </td>
                                                             <td class="d-none d-sm-table-cell"></td>
                                                         </tr>
-                                                        <tr v-if="ctype=='Player'" :class="[rarityclass(card.rarity)]">
+                                                        <tr v-if="ctype=='Player'" :class="[rarityclass(card.template.rarity)]">
                                                             <th colspan="1">Skills:</th>
                                                             <td colspan="3">
                                                                 <span v-html="skills_for(card)"></span>

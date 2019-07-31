@@ -39,7 +39,7 @@ Vue.mixin({
       if (["Strength Up!", "Agility Up!", "Movement Up!", "Armour Up!"].includes(skill)) {
         return false;
       }
-      if (player_card.skill_access.indexOf(this.skill_to_group_map[skill]) > -1 ) {
+      if (player_card.template.skill_access.indexOf(this.skill_to_group_map[skill]) > -1 ) {
         // single
         return false;
       } else {
@@ -120,7 +120,7 @@ Vue.mixin({
       return klass;
     },
     cardsValue(cards) {
-      return cards.reduce((total, e)=> { return total+e.value},0);
+      return cards.reduce((total, e)=> { return total+e.template.value},0);
     },
     starter_cards() {
       return window.starter_cards;
@@ -131,7 +131,7 @@ Vue.mixin({
       }
       var order = this.rarityorder;
       function compare(a,b) {
-        return (order[a.rarity] - order[b.rarity]) || a.name.localeCompare(b.name);
+        return (order[a.template.rarity] - order[b.template.rarity]) || a.template.name.localeCompare(b.template.name);
       }
       return cards.slice().sort(compare);
     },
@@ -139,18 +139,18 @@ Vue.mixin({
     sortedCardsWithoutQuantity(cards,filter="",mixed_filter=true) {
       let tmp_cards;
       if (!this.show_starter) {
-        tmp_cards =  cards.filter(function(i) { return i.id != null});
+        tmp_cards =  cards.filter(function(i) { return !i.is_starter});
       }
       else {
         tmp_cards =  cards
       }
       if (filter!="") {
-        tmp_cards =  tmp_cards.filter(function(i) { return i.card_type == filter});
+        tmp_cards =  tmp_cards.filter(function(i) { return i.template.card_type == filter});
       }
 
       if (this.selected_team!="All" && filter=="Player" && mixed_filter) {
         const races = this.mixed_teams.find((e) => { return e.name == this.selected_team }).races;
-        tmp_cards =  tmp_cards.filter(function(i) { return i.race.split("/").some((r) => races.includes(r))});
+        tmp_cards =  tmp_cards.filter(function(i) { return i.template.race.split("/").some((r) => races.includes(r))});
       }
       return this.sortedCards(tmp_cards);
     },
@@ -159,19 +159,20 @@ Vue.mixin({
       let new_collection = {}
       const sorted = this.sortedCardsWithoutQuantity(cards,filter);
       for (let i=0, len = sorted.length; i<len; i++) {
-        if (new_collection.hasOwnProperty(sorted[i].name)) {
-          new_collection[sorted[i].name]['quantity'] += 1
+        let name = sorted[i].template.name;
+        if (new_collection.hasOwnProperty(name)) {
+          new_collection[name]['quantity'] += 1
         }
         else {
-          new_collection[sorted[i].name] = {}
-          new_collection[sorted[i].name]["card"] = sorted[i]
-          new_collection[sorted[i].name]["quantity"] = 1
+          new_collection[name] = {}
+          new_collection[name]["card"] = sorted[i]
+          new_collection[name]["quantity"] = 1
         }
       }
       return new_collection;
     },
     is_locked(card) {
-      if(card.card.in_development_deck || card.card.in_imperium_deck)
+      if(card.in_development_deck || card.in_imperium_deck)
         return true
       else
         return false
@@ -215,14 +216,14 @@ Vue.mixin({
     },
 
     skills_for_player(card) {
-      if(card.card_type!="Player") {
+      if(card.template.card_type!="Player") {
         return card.name;
       }
       let str;
-      if(["Unique","Legendary","Inducement"].includes(card.rarity)) {
-        str = card.description
+      if(["Unique","Legendary","Inducement"].includes(card.template.rarity)) {
+        str = card.template.description
       } else {
-        str = card.name
+        str = card.template.name
       }
       let matches=[];
       let match;
@@ -242,10 +243,10 @@ Vue.mixin({
       return matches.map((s) => this.imgs_for_skill(s)).join("");
     },
     skills_for_special_and_staff(card) {
-      if(!["Special Play","Staff"].includes(card.card_type)) {
-        return card.name;
+      if(!["Special Play","Staff"].includes(card.template.card_type)) {
+        return card.template.name;
       }
-      let str = card.description
+      let str = card.template.description
       let matches=[];
       let match;
       while (match = this.skillreg.exec(str)) {
@@ -265,7 +266,7 @@ Vue.mixin({
     },
     skill_names_for(card) {
       let skills=[];
-      switch(card.name) {
+      switch(card.template.name) {
         case "Block Party":
           skills = ["Block"];
           break;
@@ -315,15 +316,15 @@ Vue.mixin({
           skills = [];
           break;
         default:
-          skills = [card.name]
+          skills = [card.template.name]
       }
       return skills;
     },
     skills_for(card,double=false) {
-      if(card.card_type=="Player") {
+      if(card.template.card_type=="Player") {
         return this.skills_for_player(card);
       }
-      if(["Special Play", "Staff"].includes(card.card_type)) {
+      if(["Special Play", "Staff"].includes(card.template.card_type)) {
         return this.skills_for_special_and_staff(card);
       } 
       let skills = this.skill_names_for(card);
@@ -333,18 +334,18 @@ Vue.mixin({
       return imgs.join("");
     },
     number_of_assignments(card) {
-      if(card.name=="Bodyguard")
+      if(card.template.name=="Bodyguard")
         return 1;
-      if(card.card_type!="Training") {
+      if(card.template.card_type!="Training") {
         return 0;
       }
-      if(card.name=="Super Wildcard") {
+      if(card.template.name=="Super Wildcard") {
         return 3;
       }
-      if(card.description.match(/ one /)) {
+      if(card.template.description.match(/ one /)) {
         return 1;
       }
-      if(card.description.match(/ three /)) {
+      if(card.template.description.match(/ three /)) {
         return 3;
       }
       return 1;
@@ -498,16 +499,6 @@ var app = new Vue({
             console.error(error);
           });
       },
-      getStarterCards() {
-        const path = "/cards/starter";
-        axios.get(path)
-          .then((res) => {
-            window.starter_cards = res.data;
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      },
       debounceCoachSearch(val){
         if(this.search_timeout) clearTimeout(this.search_timeout);
         var that=this;
@@ -565,10 +556,10 @@ var app = new Vue({
         axios.get(path)
         .then((res) => {
             if(method=="add") {
-                msg = "Card "+card.name+" flagged for dusting";
+                msg = "Card "+card.template.name+" flagged for dusting";
             } 
             else if(method=="remove") {
-                msg = "Card "+card.name+" - dusting flag removed";
+                msg = "Card "+card.template.name+" - dusting flag removed";
             }
             else if(method=="cancel") {
               msg = "Dusting cancelled";
@@ -831,6 +822,5 @@ var app = new Vue({
       this.getUser();
       this.getCoaches();
       this.getTournaments();
-      this.getStarterCards();
     },
 });

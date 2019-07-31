@@ -1,5 +1,6 @@
 from flask_marshmallow import Marshmallow
 from .data_models import Transaction, Account, Card, Coach, Tournament, TournamentSignups, Duster, Deck
+from .data_models import CardTemplate
 
 ma = Marshmallow()
 
@@ -12,10 +13,15 @@ class AccountSchema(ma.ModelSchema):
         model = Account
     transactions = ma.Nested(TransactionSchema, many=True)
 
+class CardTemplateSchema(ma.ModelSchema):
+    class Meta:
+        model = CardTemplate
+
 class CardSchema(ma.ModelSchema):
     class Meta:
         model = Card
     assigned_to_array = ma.Dict(ma.List(ma.String))
+    template = ma.Nested(CardTemplateSchema)
 
 class TournamentSignupSchema(ma.ModelSchema):
     class Meta:
@@ -55,9 +61,9 @@ class DeckSchema(ma.ModelSchema):
     class Meta:
         model = Deck
     
-    extra_cards = ma.List(ma.Nested(CardSchema))
-    unused_extra_cards = ma.List(ma.Nested(CardSchema))
-    starter_cards = ma.List(ma.Nested(CardSchema))
+    extra_cards = ma.Nested(CardSchema, many=True)
+    unused_extra_cards = ma.Nested(CardSchema, many=True)
+    starter_cards = ma.Nested(CardSchema, many=True)
     cards = ma.Nested(CardSchema, many=True)
 
 cards_schema = CardSchema(many=True)

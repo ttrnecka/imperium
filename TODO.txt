@@ -1,8 +1,10 @@
 Season 2
+Add injuries as assignable to deck
 Coach can take up to 5 cards up to 30 value to season 2
     add active flag to coach, when new coach joins they can use newcoach using bot or web will fire up the newcoach flow, otherwise it fires the rejoin flow
 
-Migration to new models
+Sseason migration should remove starte pack and assign a new one
+Migration to new template model
     
 Reactions
     New Card type, they should not be visible in the bot report (just as "Reaction Card"), neither visible in the collection by anyone but the coach. They should not be visible
@@ -10,11 +12,12 @@ Reactions
 
 Hidden quests
     automated 
-        - build your own legend
         - collect all legends from given base race
 
 Autoresign reserves when tournament is started
+Autoresign signups when tournament is moved to finished
 
+Achievements - win game where you are down 500TV+ - booster as award
 VERY HIGH
 
 MEDIUM

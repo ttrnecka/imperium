@@ -1,7 +1,7 @@
 """Pack Service helpers"""
 import random
 from models.general import MIXED_TEAMS
-from models.data_models import Pack
+from models.data_models import Pack, Card, CardTemplate
 from .card_service import CardService
 from .imperium_sheet_service import ImperiumSheetService
 
@@ -110,21 +110,22 @@ class PackService:
     @classmethod
     def filter_cards(cls, rarity, ctype=None, races=None, subtype=None):
         """Pull cards of given rarity, ctype, races and subtype from All cards"""
+        pool = CardService.template_pool()
         if subtype is not None:
-            return [card for card in ImperiumSheetService.cards()
-                    if card["Rarity"] == rarity and card["Type"] == ctype
-                    and card["Race"] in races and card["Subtype"] == subtype]
+            return [card for card in pool
+                    if card.rarity == rarity and card.card_type == ctype
+                    and card.race in races and card.subtype == subtype]
         if races is not None:
-            return [card for card in ImperiumSheetService.cards()
-                    if card["Rarity"] == rarity and card["Type"] == ctype
-                    and card["Race"] in races]
+            return [card for card in pool
+                    if card.rarity == rarity and card.card_type == ctype
+                    and card.race in races]
         if ctype is not None:
-            return [card for card in ImperiumSheetService.cards()
-                    if card["Rarity"] == rarity and card["Type"] == ctype]
-        return [card for card in ImperiumSheetService.cards() if card["Rarity"] == rarity]
+            return [card for card in pool
+                    if card.rarity == rarity and card.card_type == ctype]
+        return [card for card in pool if card.rarity == rarity]
 
     @classmethod
-    def generate(cls, ptype="booster_budget", team=None, first=False):
+    def generate(cls, ptype="booster_budget", team=None, first=False, coach = None):
         """Generate pack of ptype, for team, flag if that is first pack"""
         if ptype not in cls.PACK_PRICES:
             raise InvalidPackType(ptype)
@@ -141,10 +142,10 @@ class PackService:
                 team = team.lower()
         price = cls.PACK_PRICES[ptype]
 
-        pack = Pack(price=price, pack_type=ptype, team=team)
+        pack = Pack(price=price, pack_type=ptype, team=team, coach=coach)
         cards = []
         if ptype == "starter":
-            cards.extend(ImperiumSheetService.starter_cards())
+            cards.extend(CardService.starter_template_pool())
         else:
             if ptype in ["player", "positional"]:
                 combos = cls.PLAYER_COMBOS
@@ -177,19 +178,26 @@ class PackService:
                 cards.append(random.choice(fcards))
 
         for card in cards:
-            pack.cards.append(CardService.init_card_model_from_card(card))
+            pack.cards.append(Card.from_template(card))
         return pack
 
     @classmethod
-    def admin_pack(cls, price=0, card_names=None):
+    def new_starter_pack(cls, coach = None):
+        pack = cls.generate("starter", coach=coach)
+        for card in pack.cards:
+            card.is_starter = True
+        return pack
+
+    @classmethod
+    def admin_pack(cls, price=0, card_names=None, coach = None):
         """Generate admin pack from card_name"""
         if card_names is None:
             card_names = []
-        pack = Pack(price=price, pack_type="admin")
+        pack = Pack(price=price, pack_type="admin", coach=coach)
         for name in card_names:
-            card = CardService.get_card_from_sheet(name)
+            card = CardTemplate.query.filter_by(name=name).one_or_none()
             if card:
-                pack.cards.append(CardService.init_card_model_from_card(card))
+                pack.cards.append(Card.from_template(card))
         return pack
 
     @classmethod

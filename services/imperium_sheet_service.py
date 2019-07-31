@@ -10,7 +10,6 @@ SCOPE = ['https://spreadsheets.google.com/feeds']
 CREDS = ServiceAccountCredentials.from_json_keyfile_name(
     os.path.join(ROOT, '../config/client_secret.json'), SCOPE)
 
-
 class ImperiumSheetService:
     """Namespace class"""
     SPREADSHEET_ID = "1t5IoiIjPAS2CD63P6xI4hWwx9c1SEzW9AL1LJ4LK6og"
@@ -34,36 +33,44 @@ class ImperiumSheetService:
     ]
 
     @classmethod
+    def __load(cls,sheet_id):
+        client = gspread.authorize(CREDS)
+        sheet = client.open_by_key(cls.SPREADSHEET_ID).worksheet(sheet_id)
+        return sheet.get_all_records()
+
+
+    @classmethod
+    def templates(cls):
+        """Load card templates from the sheet"""
+        return cls.__load(cls.ALL_CARDS_SHEET)
+
+    # TODO this has to be removed after the cards are put into DB
+    @classmethod
     def cards(cls, reload=False):
         """Returns all cards from the sheet"""
         if not reload and hasattr(cls, "_cards"):
             return cls._cards
         # if they are not leaded yet do it
-        client = gspread.authorize(CREDS)
-        sheet = client.open_by_key(cls.SPREADSHEET_ID).worksheet(cls.ALL_CARDS_SHEET)
-        tmp_cards = sheet.get_all_records()
+        tmp_cards = cls.__load(cls.ALL_CARDS_SHEET)
         cls._cards = []
         for card in tmp_cards:
             for _ in range(int(card['Multiplier'])):
                 cls._cards.append(card)
         return cls._cards
 
+    # TODO this has to be removed after the cards are put into DB
     @classmethod
     def starter_cards(cls):
         """Returns starter cards from the sheet"""
         if hasattr(cls, "_starter_cards"):
             return cls._starter_cards
         # if they are not loaded yet do it
-        client = gspread.authorize(CREDS)
-        sheet = client.open_by_key(cls.SPREADSHEET_ID).worksheet(cls.STARTER_PACK_SHEET)
-        cls._starter_cards = sheet.get_all_records()
+        cls._starter_cards = cls.__load(cls.STARTER_PACK_SHEET)
         return cls._starter_cards
 
     @classmethod
     def tournaments(cls):
         """Returns torunaments from the sheet"""
-        client = gspread.authorize(CREDS)
-        sheet = client.open_by_key(cls.SPREADSHEET_ID).worksheet(cls.TOURNAMENT_SHEET)
-        return sheet.get_all_records()
+        return cls.__load(cls.TOURNAMENT_SHEET)
 
 #if __name__ == "__main__":

@@ -23,7 +23,7 @@ class DusterService:
     def dust_card(cls, duster, card):
         """Dust `card` model"""
         if not duster.cards:
-            if card.card_type == "Player":
+            if card.get('card_type') == "Player":
                 duster.type = "Tryouts"
             else:
                 duster.type = "Drills"
@@ -32,6 +32,7 @@ class DusterService:
 
     @classmethod
     def check_and_dust(cls, coach, card):
+        card_name = card.get('name')
         """Check if `card` can be dusted and dust it, raise error otherwise"""
         if card.in_development_deck or card.in_imperium_deck:
             raise DustingError("Cannot dust card that is used in the deck!!!")
@@ -42,14 +43,14 @@ class DusterService:
             raise DustingError(f"Dusting has been already committed, \
                                 please generate the pack before dusting again")
         if len(duster.cards) == 10:
-            raise DustingError(f"Card **{card.name}** - cannot be dusted, duster is full")
-        if duster.type == "Tryouts" and card.card_type != "Player":
-            raise DustingError(f"Card **{card.name}** - cannot be used in {duster.type}")
-        if duster.type == "Drills" and card.card_type == "Player":
-            raise DustingError(f"Card **{card.name}** - cannot be used in {duster.type}")
+            raise DustingError(f"Card **{card_name}** - cannot be dusted, duster is full")
+        if duster.type == "Tryouts" and card.get('card_type') != "Player":
+            raise DustingError(f"Card **{card_name}** - cannot be used in {duster.type}")
+        if duster.type == "Drills" and card.get('card_type') == "Player":
+            raise DustingError(f"Card **{card_name}** - cannot be used in {duster.type}")
 
         cls.dust_card(duster, card)
-        return f"Card **{card.name}** - flagged for dusting"
+        return f"Card **{card_name}** - flagged for dusting"
 
     @classmethod
     def check_and_undust(cls, coach, card):
@@ -62,15 +63,14 @@ class DusterService:
         duster = cls.get_duster(coach)
         if not duster.cards:
             cls.cancel_duster(coach)
-        return f"Card **{card.name}** - dusting flag removed"
+        return f"Card **{card.get('name')}** - dusting flag removed"
 
     @classmethod
     def dust_card_by_name(cls, coach, card_name):
         """Dust undusted coach's card by name"""
         card = CardService.get_undusted_card_from_coach(coach, card_name)
         if card is None:
-            raise DustingError(f"Card **{card_name}** - not found, check spelling, \
-                                or maybe it is already dusted or used in deck")
+            raise DustingError(f"Card **{card_name}** - not found, check spelling, or maybe it is already dusted or used in deck")
         return cls.check_and_dust(coach, card)
 
     @classmethod
@@ -88,7 +88,7 @@ class DusterService:
         if card is None:
             raise DustingError(f"Card not found")
         if card.duster_id is not None:
-            raise DustingError(f"Card **{card.name}** is already flagged for dusting")
+            raise DustingError(f"Card **{card.get('name')}** is already flagged for dusting")
         return cls.check_and_dust(coach, card)
 
     @classmethod
@@ -98,7 +98,7 @@ class DusterService:
         if card is None:
             raise DustingError(f"Card not found")
         if card.duster_id is None:
-            raise DustingError(f"Card **{card.name}** is not flagged for dusting")
+            raise DustingError(f"Card **{card.get('name')}** is not flagged for dusting")
         return cls.check_and_undust(coach, card)
 
     @classmethod
@@ -117,7 +117,7 @@ class DusterService:
         if len(duster.cards) < 10:
             raise DustingError("Not enough cards flagged for dusting. Need 10!!!")
 
-        reason = f"{duster.type}: {';'.join([card.name for card in duster.cards])}"
+        reason = f"{duster.type}: {';'.join([card.get('name') for card in duster.cards])}"
         tran = Transaction(description=reason, price=0)
         cards = duster.cards
         for card in cards:
@@ -125,7 +125,7 @@ class DusterService:
         duster.status = "COMMITTED"
         coach.make_transaction(tran)
         NotificationService.notify(
-            f"<@{coach.disc_id}>: Card(s) **{', '.join([card.name for card in cards])}** " +
+            f"<@{coach.disc_id}>: Card(s) **{', '.join([card.get('name') for card in cards])}** " +
             f"removed from your collection by {duster.type}"
         )
         return True
