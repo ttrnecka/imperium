@@ -13,10 +13,21 @@ def authenticated(func):
     return wrapper_authenticated
 
 def registered(func):
-    """Raises exception if coach is not registered through discord bot"""
+    """Raises exception if coach is not registered through discord bot and is inactive"""
     @functools.wraps(func)
     def wrapper_registered(*args, **kwargs):
         coach = current_coach()
+        if not coach:
+            raise InvalidUsage("Coach not found", status_code=403)
+        kwargs['coach'] = coach
+        return func(*args, **kwargs)
+    return wrapper_registered
+
+def registered_with_inactive(func):
+    """Raises exception if coach is not registered through discord bot"""
+    @functools.wraps(func)
+    def wrapper_registered(*args, **kwargs):
+        coach = current_coach_with_inactive()
         if not coach:
             raise InvalidUsage("Coach not found", status_code=403)
         kwargs['coach'] = coach

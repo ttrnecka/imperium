@@ -22,7 +22,7 @@ from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError
 from services import TransactionService, DeckService, DeckError
 from misc.helpers import InvalidUsage, current_coach
-from misc.decorators import authenticated, registered, webadmin
+from misc.decorators import authenticated, registered, webadmin, registered_with_inactive
 import bb2
 
 
@@ -334,6 +334,22 @@ def update_coach(coach_id):
     bb2_name = request.get_json()['name']
     coach.bb2_name = bb2_name
     db.session.commit()
+    result = coach_schema.dump(coach)
+    return jsonify(result.data)
+
+@app.route("/coaches/<int:coach_id/activate", methods=["PUT"])
+@authenticated
+@registered_with_inactive
+def activate_coach(coach_id):
+    """Activates coach"""
+    coach = Coach.query.with_deleted.get(coach_id)
+    if coach is None:
+        abort(404)
+    try:
+        card_ids = request.get_json()['card_ids']
+        CoachService.activate_coach(coach=coach,card_ids=card_ids)
+    except (ValueError,TypeError,TransactionError) as exc:
+        raise InvalidUsage(str(exc), status_code=403)
     result = coach_schema.dump(coach)
     return jsonify(result.data)
 

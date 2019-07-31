@@ -160,6 +160,12 @@ class Coach(Base):
     def __repr__(self):
         return '<Coach %r>' % self.name
 
+    def active(self):
+        return not self.deleted
+
+    def activate(self):
+        self.deleted = False
+
     def short_name(self):
         return self.name[:-5]
 
@@ -308,6 +314,9 @@ class Account(Base):
 
     def __repr__(self):
         return '<Account %r>' % self.amount
+
+    def reset(self):
+        self.amount = self.__class__.INIT_CASH
 
 class Transaction(Base):
     __tablename__ = 'transactions'
