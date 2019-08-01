@@ -58,16 +58,6 @@ class ImperiumSheetService:
                 cls._cards.append(card)
         return cls._cards
 
-    # TODO this has to be removed after the cards are put into DB
-    @classmethod
-    def starter_cards(cls):
-        """Returns starter cards from the sheet"""
-        if hasattr(cls, "_starter_cards"):
-            return cls._starter_cards
-        # if they are not loaded yet do it
-        cls._starter_cards = cls.__load(cls.STARTER_PACK_SHEET)
-        return cls._starter_cards
-
     @classmethod
     def tournaments(cls):
         """Returns torunaments from the sheet"""

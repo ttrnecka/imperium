@@ -255,6 +255,10 @@ def main(argv):
             coach1_stats['max']['max_cas_win'] = 0
         if not 'max_cas_win' in coach2_stats['max']:
             coach2_stats['max']['max_cas_win'] = 0
+        if not 'max_tvdiff_win' in coach1_stats['max']:
+            coach1_stats['max']['max_tvdiff_win'] = 0
+        if not 'max_tvdiff_win' in coach2_stats['max']:
+            coach2_stats['max']['max_tvdiff_win'] = 0
         # wins/drawslosses
         if team1['inflictedtouchdowns'] > team2['inflictedtouchdowns']:
             coach1_stats['wins'] += 1
@@ -273,6 +277,11 @@ def main(argv):
             if team1['sustainedcasualties'] > coach1_stats['max']['max_cas_win']:
                 coach1_stats['max']['max_cas_win'] = team1['sustainedcasualties']
 
+            # down TV achievement check
+            tv_diff = team2['value'] - team1['value']
+            if tv_diff > coach1_stats['max']['max_tvdiff_win']:
+                coach1_stats['max']['max_tvdiff_win'] = tv_diff
+
         elif team1['inflictedtouchdowns'] < team2['inflictedtouchdowns']:
             coach2_stats['wins'] += 1
             coach2_stats['points'] += 3
@@ -290,6 +299,10 @@ def main(argv):
             if team2['sustainedcasualties'] > coach2_stats['max']['max_cas_win']:
                 coach2_stats['max']['max_cas_win'] = team2['sustainedcasualties']
 
+            # down TV achievement check
+            tv_diff = team1['value'] - team2['value']
+            if tv_diff > coach2_stats['max']['max_tvdiff_win']:
+                coach2_stats['max']['max_tvdiff_win'] = tv_diff
         else:
             coach1_stats['draws'] += 1
             coach1_stats['points'] += 1
@@ -382,6 +395,8 @@ def main(argv):
 
         coach.achievements['match']['sufferandwin1']['best'] = coach_stats['max']['max_cas_win']
         coach.achievements['match']['sufferandwin2']['best'] = coach_stats['max']['max_cas_win']
+
+        coach.achievements['match']['win500down']['best'] = coach_stats['max']['max_tvdiff_win']
 
         flag_modified(coach, "achievements")
         db.session.commit()

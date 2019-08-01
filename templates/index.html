@@ -183,7 +183,7 @@
                                                         </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <tr v-for="card in sortedCardsWithQuantity(selectedCoach.cards.concat(starter_cards()),ctype)" :key="card.card.id" :class="rarityclass(card.card.template.rarity)">
+                                                        <tr v-for="card in sortedCardsWithQuantity(selectedCoach.cards,ctype)" :key="card.card.id" :class="rarityclass(card.card.template.rarity)">
                                                             <td><i v-if="is_locked(card.card) && is_loggedcoach(selectedCoach.short_name)" class="fas fa-lock"></i></td>
                                                             <td><img class="rarity" :src="'static/images/'+card.card.template.rarity+'.jpg'" :alt="card.card.template.rarity" :title="card.card.template.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.card.template.value ]]</td>

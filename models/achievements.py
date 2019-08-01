@@ -167,6 +167,14 @@ achievements_template = {
             'best':0,
             'target':11
         },
+        'win500down': {
+            'desc': "Win match while being 500TV+ down",
+            'completed': False,
+            'award_text': "Booster Pack",
+            'award': 'grant,booster_budget',
+            'best':0,
+            'target':500
+        },
     }
 }
 
@@ -176,12 +184,12 @@ for team in MIXED_TEAMS:
     achievements_template['team'][id] = {}
     achievements_template['team'][id]['played'] = {
         '1': {
-            'desc': f"Play 3 matches with {team['name']}",
+            'desc': f"Play 4 matches with {team['name']}",
             'completed': False,
             'award_text': "5 Coins",
             'award': 'grant,5',
             'best':0,
-            'target':3
+            'target':4
         },
         '2': {
             'desc': f"Play 10 matches with {team['name']}",
@@ -236,30 +244,30 @@ for team in MIXED_TEAMS:
             'target':10
         },
         '2': {
-            'desc': f"Complete 25 passes with {team['name']}",
+            'desc': f"Complete 20 passes with {team['name']}",
             'completed': False,
             'award_text': "10 Coins",
             'award': 'grant,10',
             'best':0,
-            'target':25
+            'target':20
         },
         '3': {
-            'desc': f"Complete 50 passes with {team['name']}",
+            'desc': f"Complete 40 passes with {team['name']}",
             'completed': False,
             'award_text': "15 Coins",
             'award': 'grant,15',
             'best':0,
-            'target':50
+            'target':40
         },
     }
     achievements_template['team'][id]['touchdowns'] = {
         '1': {
-            'desc': f"Score 5 touchdowns with {team['name']}",
+            'desc': f"Score 7 touchdowns with {team['name']}",
             'completed': False,
             'award_text': "Booster Pack",
             'award': 'grant,booster_budget',
             'best':0,
-            'target':5
+            'target':7
         },
         '2': {
             'desc': f"Score 15 touchdowns with {team['name']}",

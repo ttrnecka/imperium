@@ -53,7 +53,7 @@ def check_build_own_legend_quest(target, value, oldvalue, initiator):
 
 @event.listens_for(Tournament.status,'set')
 def release_signups_when_finished(target, value, oldvalue, initiator):
-    """After tournament is put into BB mode, the decks are evaluated for self create legend and achievements granted based on that"""
-    if value!=oldvalue and value=="FINISHED":
+    """Release all signups from FINISHED tournament"""
+    if target.id and value!=oldvalue and value=="FINISHED":
         TournamentService.release_reserves(target)
         TournamentService.release_actives(target)

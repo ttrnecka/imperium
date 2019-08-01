@@ -1,10 +1,10 @@
 Season 2
+Ay - add Special Play players
 Add injuries as assignable to deck
+
 Coach can take up to 5 cards up to 30 value to season 2
     add active flag to coach, when new coach joins they can use newcoach using bot or web will fire up the newcoach flow, otherwise it fires the rejoin flow
 
-Sseason migration should remove starte pack and assign a new one
-Migration to new template model
     
 Reactions
     New Card type, they should not be visible in the bot report (just as "Reaction Card"), neither visible in the collection by anyone but the coach. They should not be visible
@@ -17,7 +17,9 @@ Hidden quests
 Autoresign reserves when tournament is started
 Autoresign signups when tournament is moved to finished
 
-Achievements - win game where you are down 500TV+ - booster as award
+Resgination from tournament - pop up for confirmation
+Tournamnets - do not show signed coaches until the tournament kicks off (aka being OPEN)
+
 VERY HIGH
 
 MEDIUM
@@ -34,6 +36,12 @@ test code
 
 
 DONE
+Achievements - win game where you are down 500TV+ - booster as award
+cards are migrated to template model
+coach api now returns only active cards (from current season packs)
+pack now has a season flag
+coach activation routine (assings new starter pack and transfer pack if cards are specified)
+season2 reset script
 pack list sorting
 adminlist - separate coaches
 long message sending

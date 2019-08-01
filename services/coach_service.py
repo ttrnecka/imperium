@@ -36,21 +36,19 @@ class CoachService:
             raise ValueError(f"Not all card IDs were found - {str(missing)[1:-1]}")
 
         selected_card_names = [card.template.name for card in selected_cards]
-        pack = PackService.admin_pack(card_names=selected_card_names)
-        reason = "Account activation"
+        pack = PackService.admin_pack(card_names=selected_card_names, coach=coach)
+        reason = "Account activation - Admin Transfer Pack"
         tran = Transaction(pack=pack, description=reason, price=0)
 
         coach.activate()
         coach.account.reset()
         coach.make_transaction(tran)
-        return True
 
-    @classmethod
-    def remove_softdeletes(cls):
-        """Removes all softdeleted Coaches from DB"""
-        for coach in Coach.query.with_deleted().filter_by(deleted=True):
-            db.session.delete(coach)
-        db.session.commit()
+        pack = PackService.new_starter_pack(coach=coach)
+        reason = "Account activation - Starter Pack"
+        tran = Transaction(pack=pack, description=reason, price=0)
+        coach.make_transaction(tran)
+        return True
 
     @classmethod
     def link_bb2_coach(cls,bb2_name,team_name):
@@ -70,6 +68,7 @@ class CoachService:
 
     @classmethod
     def set_achievement(cls, coach, achievement_keys=None, value=True, best = None):
+        """Sets achievement to value and record to best, if best is not provided best is set to achievement target"""
         if achievement_keys is None:
             achievement_keys = []
 
@@ -88,6 +87,7 @@ class CoachService:
         
     @classmethod
     def check_achievement(cls, coach, achievement_keys=None):
+        """Checks if achievement has been reached and grants the prize"""
         if achievement_keys is None:
             achievement_keys = []
 
@@ -121,6 +121,7 @@ class CoachService:
 
     @classmethod
     def check_collect_three_legends_quest(cls, coach):
+        """callback method to check if hidden quest collect 3 legends has been achieved. Should be called after packs are generated"""
         achievement = coach.achievements['quests']['collect3legends']
         legends = [card for card in coach.cards if card.get('subtype') == "REBBL Legend"]
         legends_count = len(legends)

@@ -215,13 +215,13 @@ class TournamentService:
     def release_reserves(cls,tournament):
         reserves = tournament.coaches.filter(TournamentSignups.mode == 'reserve')
         for coach in reserves:
-            cls.unregister(tournament, coach, admin=True, refund=False)
+            cls.unregister(tournament, coach, admin=True, refund=True)
     
     @classmethod
     def release_actives(cls,tournament):
         actives = tournament.coaches.filter(TournamentSignups.mode == 'active')
         for coach in actives:
-            cls.unregister(tournament, coach, admin=True, refund=False)
+            cls.unregister(tournament, coach, admin=True, refund=True)
 
     @classmethod
     def reset_phase(cls, tournament):

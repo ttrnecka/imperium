@@ -109,7 +109,7 @@ class Card(Base):
         self.template = template
 
     def __repr__(self):
-        return f'<Card {self.name}, rarity: {self.rarity}, pack_id: {self.pack_id}>'
+        return f'<Card {self.template.name}, rarity: {self.template.rarity}, pack_id: {self.pack_id}>'
 
     @classmethod
     def from_template(cls, template):
@@ -123,6 +123,7 @@ class Pack(Base):
     pack_type = db.Column(db.String(20), nullable=False)
     price = db.Column(db.Integer, default=0, nullable=False)
     team = db.Column(db.String(20))
+    season = db.Column(db.String(20), default="0", nullable=False, index=True)
 
     coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
 
@@ -131,6 +132,10 @@ class Pack(Base):
 
     def __repr__(self):
         return f'<Pack {self.pack_type}>'
+
+    def __init__(self,**kwargs):
+        super(Pack, self).__init__(**kwargs)
+        self.season = db.get_app().config["SEASON"]
 
 class Coach(Base):  
     __tablename__ = 'coaches'
@@ -190,11 +195,15 @@ class Coach(Base):
         app = db.get_app()
         store = os.path.join(ROOT, '..', 'data', f"season{app.config['SEASON']}")
         stats_file = os.path.join(store,"stats.json")
-        f = open(stats_file, "r")
-        data = json.loads(f.read())
-        if self.bb2_name:
-            return data['coaches'][self.bb2_name]
+        if os.path.isfile(stats_file):
+            f = open(stats_file, "r")
+            data = json.loads(f.read())
+            if self.bb2_name:
+                return data['coaches'][self.bb2_name]
         return {}
+
+    def active_cards(self):
+        return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["SEASON"]).all()
 
     def make_transaction(self,transaction):
         # do nothing

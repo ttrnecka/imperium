@@ -40,14 +40,15 @@ class DusterSchema(ma.ModelSchema):
 class CoachSchema(ma.ModelSchema):
     class Meta:
         model = Coach
+        exclude = ["packs"]
     
-    cards = ma.Nested(CardSchema, many=True)
     account = ma.Nested(AccountSchema)
     duster = ma.Nested(DusterSchema)
     short_name = ma.String()
     achievements = ma.Dict()
     stats = ma.Dict()
     free_packs = ma.String()
+    cards = ma.Nested(CardSchema, many=True, attribute = 'active_cards')
 
 class CoachLeaderboardSchema(ma.Schema):
     class Meta:

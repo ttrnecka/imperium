@@ -16,8 +16,11 @@ if __name__ == "__main__":
         else:
             # match achievements
             for key, ach in achievements_template['match'].items():
-                for attr in ['desc', 'award_text', 'award', 'target']:
-                    coach.achievements['match'][key][attr] = ach[attr]
+                if key not in coach.achievements['match']:
+                    coach.achievements['match'][key] = achievements_template['match'][key]
+                else:
+                    for attr in ['desc', 'award_text', 'award', 'target']:
+                        coach.achievements['match'][key][attr] = ach[attr]
 
           # team achievements
             for team in MIXED_TEAMS:
@@ -32,7 +35,7 @@ if __name__ == "__main__":
             else:
                 for key, ach in achievements_template['quests'].items():
                     if key not in coach.achievements['quests']:
-                        coach.achievements['quests'][key] = achievements_template['quests']['key']
+                        coach.achievements['quests'][key] = achievements_template['quests'][key]
                     else:
                         for attr in ['desc', 'award_text', 'award', 'target']:
                             coach.achievements['quests'][key][attr] = ach[attr]

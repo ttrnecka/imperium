@@ -1,4 +1,3 @@
-window.starter_cards = [];
 import tournament from './components/tournament.js?1.11';
 import VueFlashMessage from './components/VueFlashMessage/index.js?1.1';
 Vue.use(VueFlashMessage);
@@ -120,10 +119,12 @@ Vue.mixin({
       return klass;
     },
     cardsValue(cards) {
-      return cards.reduce((total, e)=> { return total+e.template.value},0);
-    },
-    starter_cards() {
-      return window.starter_cards;
+      return cards.reduce((total, e)=> { 
+        if (e.is_starter)
+          return total+0;
+        else 
+          return total+e.template.value;
+      },0);
     },
     sortedCards(cards) {
       if (this.rarity_order==0) {
@@ -608,7 +609,7 @@ var app = new Vue({
         if (coach.achievements['match']) {
           return ['passingtotal1','passingtotal2','runningtotal1','runningtotal2','surfstotal1','surfstotal2','blocks1game1','blocks1game2',
                   'breaks1game1','breaks1game2','cas1game1','cas1game2','int1game1','score1game1','score1game2',
-                  'sufferandwin1','sufferandwin2','winwithall'].map((e) => coach.achievements.match[e])
+                  'sufferandwin1','sufferandwin2','winwithall','win500down'].map((e) => coach.achievements.match[e])
         }
         return [];
       },

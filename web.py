@@ -337,7 +337,7 @@ def update_coach(coach_id):
     result = coach_schema.dump(coach)
     return jsonify(result.data)
 
-@app.route("/coaches/<int:coach_id/activate", methods=["PUT"])
+@app.route("/coaches/<int:coach_id>/activate", methods=["PUT"])
 @authenticated
 @registered_with_inactive
 def activate_coach(coach_id):
