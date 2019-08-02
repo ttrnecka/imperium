@@ -1,8 +1,11 @@
 import deck from './deck.js?1.9';
+import confirmationButton from './confirmation-button.js';
+
 export default {
     name: 'tournament',
     components: {
-        deck
+        deck: deck,
+        'confirmation-button': confirmationButton,
     },
     data () {
       return {
@@ -238,20 +241,29 @@ export default {
         signed() {
             return this.tournament.tournament_signups.filter((e) => { return e.mode=="active"});
         },
+        reserved() {
+            return this.tournament.tournament_signups.filter((e) => { return e.mode!="active"});
+        },
         signed_ids() {
             return this.signed.map((e) => {return e.coach})
+        },
+        reserved_ids() {
+            return this.reserved.map((e) => {return e.coach})
         },
         signed_coaches() {
             return this.coaches.filter((e)=> {return this.signed_ids.includes(e.id)})
         },
+        reserved_coaches() {
+            return this.coaches.filter((e)=> {return this.reserved_ids.includes(e.id)})
+        },
         signed_coaches_names() {
             return this.signed_coaches.map((e)=>{return e.short_name})
         },
-        reserved() {
-            return this.tournament.tournament_signups.filter((e) => { return e.mode!="active"});
+        reserved_coaches_names() {
+            return this.reserved_coaches.map((e)=>{return e.short_name})
         },
         is_user_signed() {
-            if (this.user.username && this.signed_coaches.map((e)=>{ return e.short_name }).includes(this.user.username)) {
+            if (this.user.username && this.signed_coaches_names.concat(this.reserved_coaches_names).includes(this.user.username)) {
                 return true;
             }
             return false;
@@ -323,7 +335,12 @@ export default {
                             </div>
                         </button>
                         <div class="col-md-3 text-right">
-                            <button v-if="is_user_signed && !is_running" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="resign()">Resign</button>
+                            <template v-if="is_user_signed && !is_running" :disabled="processing">
+                                <confirmation-button
+                                  :messages="['Resign','Are you sure?', 'Ok']"
+                                  v-on:confirmation-success="resign()"
+                                >Resign</confirmation-button>
+                            </template>
                             <button v-if="!is_user_signed && !is_full && !is_running" type="button" :disabled="processing" class="col-12 m-1 btn btn-success" @click="sign()">Sign</button>
                             <button v-if="is_user_signed" type="button" class="btn col-12 m-1 btn-primary"  @click="showDeck(loggedCoach)">My Deck</button>
                             <button v-if="!is_user_signed && is_full && !is_running" disabled type="button" class="col-12 m-1 btn btn-info">Full</button>
