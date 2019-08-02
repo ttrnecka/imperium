@@ -1,5 +1,5 @@
 Season 2
-season reset resets Achievements
+
 Ay - add Special Play players
 Add injuries as assignable to deck
 
@@ -16,7 +16,6 @@ Hidden quests
         - collect all legends from given base race
 
 
-Resgination from tournament - pop up for confirmation
 
 VERY HIGH
 
@@ -34,6 +33,8 @@ test code
 
 
 DONE
+season reset resets Achievements
+Resgination from tournament - pop up for confirmation
 Autoresign reserves when tournament is started
 Autoresign signups when tournament is moved to finished
 Tournamnets - do not show signed coaches until the tournament kicks off (aka being OPEN)

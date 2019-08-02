@@ -21,7 +21,7 @@ from services import AdminNotificationService, CardService
 from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError
 from services import TransactionService, DeckService, DeckError
-from misc.helpers import InvalidUsage, current_coach
+from misc.helpers import InvalidUsage, current_coach, current_user, current_coach_with_inactive
 from misc.decorators import authenticated, registered, webadmin, registered_with_inactive
 import bb2
 
@@ -141,7 +141,8 @@ def before_request():
 @app.route('/me')
 def me():
     """returns user from session"""
-    return jsonify(user=session.get('discord_user', {'code':0}))
+    result = coach_schema.dump(current_coach_with_inactive())
+    return jsonify(user=session.get('discord_user', {'code':0}), coach=result.data)
 
 @app.route("/")
 def index():
@@ -154,6 +155,20 @@ def get_coaches():
     """returns all coaches as json"""
     all_coaches = Coach.query.options(raiseload(Coach.cards), raiseload(Coach.packs)).all()
     result = coaches_schema.dump(all_coaches)
+    return jsonify(result.data)
+
+@authenticated
+@app.route("/coaches", methods=["POST"])
+def new_coach():
+    """creates new coach"""
+    try:
+        user = current_user()
+        name = user['username']+"#"+user['discriminator']
+        coach = CoachService.new_coach(name,user['id'])
+    except TransactionError as exc:
+        raise InvalidUsage(str(exc), status_code=403)
+
+    result = coach_schema.dump(coach)
     return jsonify(result.data)
 
 @app.route("/coaches/leaderboard", methods=["GET"])

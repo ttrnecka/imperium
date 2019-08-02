@@ -707,10 +707,11 @@ class DiscordCommand:
         if Coach.get_by_discord_id(self.message.author.id):
             await self.reply([f"**{self.message.author.mention}** account exists already\n"])
         else:
-            coach = Coach.create(str(self.message.author), self.message.author.id)
-            pack = PackService.new_starter_pack(coach = coach)
-            tran = Transaction(pack=pack, price=pack.price, description=PackService.description(pack))
-            coach.make_transaction(tran)
+            try:
+                coach = CoachService.new_coach(self.message.author, self.message.author.id)
+            except TransactionError as e:
+                await self.transaction_error(e)
+                return
             msg = [
                 f"**{self.message.author.mention}** account created\n",
                 f"**Bank:** {coach.account.amount} coins",

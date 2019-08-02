@@ -1,4 +1,5 @@
-import tournament from './components/tournament.js?1.11';
+import tournament from './components/tournament.js?1.12';
+import signupModal from './components/signup-modal.js?1.0';
 import VueFlashMessage from './components/VueFlashMessage/index.js?1.1';
 Vue.use(VueFlashMessage);
 
@@ -396,6 +397,8 @@ var app = new Vue({
         menu: "Coaches",
         search_timeout: null,
         user:{},
+        loaded_user:false,
+        loaded_coaches:false,
         processing: false,
         leaderboard_loaded:false,
         leaderboard:{
@@ -408,6 +411,7 @@ var app = new Vue({
     },
     components: {
       tournament,
+      'signup-modal': signupModal,
     },
     delimiters: ['[[',']]'],
     methods: {
@@ -454,6 +458,7 @@ var app = new Vue({
         axios.get(path)
           .then((res) => {
             this.user = res.data.user;
+            this.loaded_user = true;
             this.$emit('loadedUser');
           })
           .catch((error) => {
@@ -471,6 +476,7 @@ var app = new Vue({
               res.data[i].account.transactions = [];
             }
             this.coaches = res.data;
+            this.loaded_coaches = true;
             this.$nextTick(function() {
               this.$emit('loadedCoaches');
             })
@@ -748,6 +754,19 @@ var app = new Vue({
           return undefined;
         }
       },
+
+      loaded_user_and_coaches() {
+        if(this.loaded_user && this.loaded_coaches) {
+          return true;
+        }
+        return false;
+      },
+      is_active() {
+        if (this.user.id && this.loggedCoach && !this.loggedCoach.deleted) {
+          return true;
+        }
+        return false;
+      },
       is_webadmin() {
         if(this.loggedCoach && this.loggedCoach.web_admin) {
             return true;
@@ -811,11 +830,17 @@ var app = new Vue({
             $('[data-toggle="popover"]').popover();
           })
         }
+      },
+      loaded_user_and_coaches: function(value) {
+        if (value == true && !this.is_active) {
+          this.$refs.signupModal.open();
+        }
       }
     },
     mounted() {
       this.$on('loadedUser', this.selectCoach);
       this.$on('loadedCoaches', this.selectCoach);
+      this.$on('signedUpCoach', this.getCoaches);
       this.$on('updateTournament', this.updateTournament);
       this.$on('updateTournaments', this.getTournaments);
     },

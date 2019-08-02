@@ -1,8 +1,11 @@
 import deck from './deck.js?1.9';
+import confirmationButton from './confirmation-button.js';
+
 export default {
     name: 'tournament',
     components: {
-        deck
+        deck: deck,
+        'confirmation-button': confirmationButton,
     },
     data () {
       return {
@@ -244,11 +247,11 @@ export default {
         signed_ids() {
             return this.signed.map((e) => {return e.coach})
         },
-        signed_coaches() {
-            return this.coaches.filter((e)=> {return this.signed_ids.includes(e.id)})
-        },
         reserved_ids() {
             return this.reserved.map((e) => {return e.coach})
+        },
+        signed_coaches() {
+            return this.coaches.filter((e)=> {return this.signed_ids.includes(e.id)})
         },
         reserved_coaches() {
             return this.coaches.filter((e)=> {return this.reserved_ids.includes(e.id)})
@@ -333,7 +336,12 @@ export default {
                             </div>
                         </button>
                         <div class="col-md-3 text-right">
-                            <button v-if="is_user_signed && !is_running" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="resign()">Resign</button>
+                            <template v-if="is_user_signed && !is_running" :disabled="processing">
+                                <confirmation-button
+                                  :messages="['Resign','Are you sure?', 'Ok']"
+                                  v-on:confirmation-success="resign()"
+                                >Resign</confirmation-button>
+                            </template>
                             <button v-if="!is_user_signed && !is_full && !is_running" type="button" :disabled="processing" class="col-12 m-1 btn btn-success" @click="sign()">Sign</button>
                             <button v-if="is_user_signed" type="button" class="btn col-12 m-1 btn-primary"  @click="showDeck(loggedCoach)">My Deck</button>
                             <button v-if="!is_user_signed && is_full && !is_running" disabled type="button" class="col-12 m-1 btn btn-info">Full</button>
