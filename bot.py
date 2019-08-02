@@ -1229,12 +1229,19 @@ class DiscordCommand:
                 f"**Unique Prize**: {tourn.unique_prize}",
                 f"**Channel**: {tourn.discord_channel}",
                 f"**Admin**: {tourn.admin}",
-                f"**Signups**: {count}/{tourn.coach_limit} {', '.join([coach.short_name() for coach in coaches])}",
             ]
+            if tourn.status == "RUNNING":
+                msg.append(f"**Signups**: {count}/{tourn.coach_limit} {', '.join([coach.short_name() for coach in coaches])}")
+            else:
+                msg.append(f"**Signups**: {count}/{tourn.coach_limit}")
+
             if tourn.reserve_limit > 0:
                 reserves = tourn.coaches.filter(TournamentSignups.mode == "reserve").all()
                 count_res = len(reserves)
-                msg.append(f"**Reserves**: {count_res}/{tourn.reserve_limit} {', '.join([coach.short_name() for coach in reserves])}")
+                if tourn.status == "RUNNING":
+                    msg.append(f"**Reserves**: {count_res}/{tourn.reserve_limit} {', '.join([coach.short_name() for coach in reserves])}")
+                else:
+                    msg.append(f"**Reserves**: {count_res}/{tourn.reserve_limit}")
 
             await self.reply(msg)
             return

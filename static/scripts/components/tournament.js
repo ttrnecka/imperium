@@ -238,20 +238,30 @@ export default {
         signed() {
             return this.tournament.tournament_signups.filter((e) => { return e.mode=="active"});
         },
+        reserved() {
+            return this.tournament.tournament_signups.filter((e) => { return e.mode!="active"});
+        },
         signed_ids() {
             return this.signed.map((e) => {return e.coach})
         },
         signed_coaches() {
             return this.coaches.filter((e)=> {return this.signed_ids.includes(e.id)})
         },
+        reserved_ids() {
+            return this.reserved.map((e) => {return e.coach})
+        },
+        reserved_coaches() {
+            return this.coaches.filter((e)=> {return this.reserved_ids.includes(e.id)})
+        },
         signed_coaches_names() {
             return this.signed_coaches.map((e)=>{return e.short_name})
         },
-        reserved() {
-            return this.tournament.tournament_signups.filter((e) => { return e.mode!="active"});
+        reserved_coaches_names() {
+            return this.reserved_coaches.map((e)=>{return e.short_name})
         },
+    
         is_user_signed() {
-            if (this.user.username && this.signed_coaches.map((e)=>{ return e.short_name }).includes(this.user.username)) {
+            if (this.user.username && (this.signed_coaches_names.concat(this.reserved_coaches_names)).includes(this.user.username)) {
                 return true;
             }
             return false;
@@ -362,8 +372,11 @@ export default {
                             </select>
                         </div>
                     </div>
-                    <div class="row tournament_info_line">
+                    <div v-if="is_webadmin || is_running" class="row tournament_info_line">
                         <div class="col-12"><b>Signed</b>: <span v-for="coach in signed_coaches" :key="coach.id">[[coach.short_name]] (<a href="#" @click="showDeck(coach)">Deck</a>) </span></div>
+                    </div>
+                    <div v-if="is_webadmin || is_running" class="row tournament_info_line">
+                        <div class="col-12"><b>Reserves</b>: <span v-for="coach in reserved_coaches" :key="coach.id">[[coach.short_name]] (<a href="#" @click="showDeck(coach)">Deck</a>) </span></div>
                     </div>
                     <div class="row tournament_info_line">
                         <div class="col-12"><b>Prizes</b>:</div>

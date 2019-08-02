@@ -162,8 +162,8 @@ achievements_template = {
         'winwithall': {
             'desc': "Win one match with every mixed team",
             'completed': False,
-            'award_text': "10 Coins",
-            'award': 'grant,10',
+            'award_text': "50 Coins",
+            'award': 'grant,50',
             'best':0,
             'target':11
         },

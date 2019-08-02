@@ -1,4 +1,5 @@
 Season 2
+season reset resets Achievements
 Ay - add Special Play players
 Add injuries as assignable to deck
 
@@ -14,11 +15,8 @@ Hidden quests
     automated 
         - collect all legends from given base race
 
-Autoresign reserves when tournament is started
-Autoresign signups when tournament is moved to finished
 
 Resgination from tournament - pop up for confirmation
-Tournamnets - do not show signed coaches until the tournament kicks off (aka being OPEN)
 
 VERY HIGH
 
@@ -36,6 +34,9 @@ test code
 
 
 DONE
+Autoresign reserves when tournament is started
+Autoresign signups when tournament is moved to finished
+Tournamnets - do not show signed coaches until the tournament kicks off (aka being OPEN)
 Achievements - win game where you are down 500TV+ - booster as award
 cards are migrated to template model
 coach api now returns only active cards (from current season packs)
