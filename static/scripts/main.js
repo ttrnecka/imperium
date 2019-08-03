@@ -1,4 +1,4 @@
-import tournament from './components/tournament.js?1.12';
+import tournament from './components/tournament.js?1.13';
 import signupModal from './components/signup-modal.js?1.0';
 import VueFlashMessage from './components/VueFlashMessage/index.js?1.1';
 Vue.use(VueFlashMessage);
@@ -28,7 +28,7 @@ Vue.mixin({
         S: ["Break Tackle","Grab","Juggernaut","Multiple Block","Piling On","Stand Firm","Strong Arm","Thick Skull","Guard","Mighty Blow"],
         M: ["Big Hand","Disturbing Presence","Extra Arms","Foul Appearance","Horns","Prehensile Tail","Tentacles","Two Heads","Very Long Legs","Claw"]
       },
-      card_types: ["Player","Training","Special Play","Staff"],
+      card_types: ["Player","Training","Special Play","Staff","Upgrade"],
       show_starter:1,
       rarity_order:1,
       skillreg: /(Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off)( |,|\.|$)/g,
@@ -245,7 +245,7 @@ Vue.mixin({
       return matches.map((s) => this.imgs_for_skill(s)).join("");
     },
     skills_for_special_and_staff(card) {
-      if(!["Special Play","Staff"].includes(card.template.card_type)) {
+      if(!["Special Play","Staff","Upgrade"].includes(card.card_type)) {
         return card.template.name;
       }
       let str = card.template.description
@@ -326,7 +326,7 @@ Vue.mixin({
       if(card.template.card_type=="Player") {
         return this.skills_for_player(card);
       }
-      if(["Special Play", "Staff"].includes(card.template.card_type)) {
+      if(["Special Play", "Staff","Upgrade"].includes(card.template.card_type)) {
         return this.skills_for_special_and_staff(card);
       } 
       let skills = this.skill_names_for(card);
