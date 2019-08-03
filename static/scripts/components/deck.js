@@ -687,6 +687,8 @@ export default {
                                     </div>
                                 </div>
                             </div>
+                            <div v-if="has_deck_upgrade" class="row">
+                            </div>
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="row mt-1">
