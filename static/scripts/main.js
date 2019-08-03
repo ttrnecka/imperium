@@ -744,11 +744,8 @@ var app = new Vue({
         return filtered;
       },
       loggedCoach() {
-        if (this.user.id) {
-          const coach = this.coaches.find((e) => {
-            return e.disc_id == this.user.id;
-          })
-          return coach;
+        if (this.user.id && this.user.coach && this.user.coach.id) {
+          return this.user.coach;
         }
         else {
           return undefined;

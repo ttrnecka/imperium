@@ -141,8 +141,10 @@ def before_request():
 @app.route('/me')
 def me():
     """returns user from session"""
+    user = session.get('discord_user', {'code':0})
     result = coach_schema.dump(current_coach_with_inactive())
-    return jsonify(user=session.get('discord_user', {'code':0}), coach=result.data)
+    user['coach'] = result.data
+    return jsonify(user=user)
 
 @app.route("/")
 def index():

@@ -1,7 +1,7 @@
 export default {
     name: 'singup-modal',
     delimiters: ['[[',']]'],
-    props: ['coach','user'],
+    props: ['user'],
     data () {
       return {
           processing:false,
@@ -65,13 +65,13 @@ export default {
             return false;
         },
         is_coach() {
-            if(this.coach == undefined) {
-                return false;
+            if(this.user.coach && this.user.coach.id) {
+                return true;
             }
-            return true;
+            return false;
         },
         is_active() {
-            if(this.is_coach && this.coach.deleted == false) {
+            if(this.is_coach && this.user.coach.deleted == false) {
                 return true;
             }
             return false;
