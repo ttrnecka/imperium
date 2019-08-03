@@ -521,6 +521,12 @@ export default {
             });
             return count;
         },
+        has_deck_upgrade() {
+            return this.deck_upgrades.length > 0;
+        },
+        deck_upgrades() {
+            return this.coach.cards.filter((c) => c.subtype == "Deck Upgrade");
+        }
     },
     beforeMount() {
         this.getDeck();
@@ -685,9 +691,28 @@ export default {
                                         </div>
                                     </div>
                                     </div>
+                                    <div v-if="has_deck_upgrade" class="card">
+                                    <div class="card-header" :id="'deck_upgrade'+id">
+                                        <h5 class="mb-0">
+                                            <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapsedeckupgrade'+id" aria-expanded="true" aria-controls="collapsedeckupgrade">
+                                            Deck Upgrade
+                                            </button>
+                                        </h5>
+                                    </div>
+                                    <div v-if="has_deck_upgrade" :id="'collapsedeckupgrade'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
+                                        <div class="card-body">
+                                            <div class="row" v-for="card in deck_upgrades">
+                                                <div class="col-md-3">
+                                                    <b>[[card.name]]:</b>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    [[card.description]]
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div v-if="has_deck_upgrade" class="row">
                             </div>
                             <div class="row">
                                 <div class="col-lg-6">
