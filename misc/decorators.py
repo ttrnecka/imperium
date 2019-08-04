@@ -1,7 +1,7 @@
 """Web decorators"""
 import functools
 
-from misc.helpers import current_user, InvalidUsage, current_coach
+from misc.helpers import current_user, InvalidUsage, current_coach, current_coach_with_inactive
 
 def authenticated(func):
     """Raises exception if not authenticated"""

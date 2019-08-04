@@ -170,6 +170,7 @@ class Coach(Base):
 
     def activate(self):
         self.deleted = False
+        self.free_packs = "player"
 
     def short_name(self):
         return self.name[:-5]
@@ -204,6 +205,9 @@ class Coach(Base):
 
     def active_cards(self):
         return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["SEASON"]).all()
+
+    def inactive_cards(self):
+        return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["PREVIOUS_SEASON"]).all()
 
     def make_transaction(self,transaction):
         # do nothing

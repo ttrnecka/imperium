@@ -49,13 +49,15 @@ class CoachService:
         tran = Transaction(pack=pack, description=reason, price=0)
 
         coach.activate()
-        coach.account.reset()
         coach.make_transaction(tran)
 
         pack = PackService.new_starter_pack(coach=coach)
         reason = "Account activation - Starter Pack"
         tran = Transaction(pack=pack, description=reason, price=0)
         coach.make_transaction(tran)
+
+        coach.account.reset()
+        db.session.commit()
         return True
 
     @classmethod

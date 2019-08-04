@@ -207,8 +207,11 @@ Vue.mixin({
           name = "NervesOfSteel";
           break;
         case "Sidestep":
-            name = "SideStep";
-            break;
+          name = "SideStep";
+          break;
+        case "Mutant Roshi's Scare School":
+          return "";
+          break;
         default:
           name = skill.replace(/[\s-]/g, '')
       }
@@ -515,7 +518,7 @@ var app = new Vue({
       },
       selectCoach() {
         const c = this.loggedCoach;
-        if(c) {
+        if(c && c.deleted == false) {
           this.getCoach(this.loggedCoach.id);
         }
         else if(this.coaches.length>0){
@@ -688,6 +691,11 @@ var app = new Vue({
           }
         }).join(", ");
       },
+      signedCallback(coach) {
+        this.user.coach = coach;
+        this.getCoaches();
+
+      }
     },
     computed: {
       duster_type() {
@@ -837,7 +845,7 @@ var app = new Vue({
     mounted() {
       this.$on('loadedUser', this.selectCoach);
       this.$on('loadedCoaches', this.selectCoach);
-      this.$on('signedUpCoach', this.getCoaches);
+      this.$on('signedUpCoach', this.signedCallback);
       this.$on('updateTournament', this.updateTournament);
       this.$on('updateTournaments', this.getTournaments);
     },

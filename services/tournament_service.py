@@ -151,12 +151,14 @@ class TournamentService:
             # db.session.commit()
             if tournament.fee > 0:
                 coach_mention = f'<@{coach.disc_id}>'
+                fee_msg = f'Fee: {tournament.fee} coins'
             else:
                 coach_mention = coach.short_name()
+                fee_msg = ""
 
             NotificationService.notify(
-                f'{coach_mention} successfuly signed to {tournament.tournament_id}.' +
-                f' {tournament.name} - fee {tournament.fee} coins')
+                f'{coach_mention} successfuly signed to tournament. {fee_msg}'
+            )
         except Exception as exc:
             raise RegistrationError(str(exc))
 
@@ -196,14 +198,13 @@ class TournamentService:
 
             if refund and tournament.fee > 0:
                 coach_mention = f'<@{coach.disc_id}>'
-                fee_msg = f" - refund {tournament.fee} coins"
+                fee_msg = f"Refund: {tournament.fee} coins"
             else:
                 coach_mention = coach.short_name()
                 fee_msg = ""
 
             NotificationService.notify(
-                f'{coach_mention} successfuly resigned from' +
-                f' {tournament.tournament_id}. {tournament.name}{fee_msg}'
+                f'{coach_mention} successfuly resigned from tournament. {fee_msg}'
             )
 
         except Exception as exp:

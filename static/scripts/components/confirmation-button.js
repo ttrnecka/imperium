@@ -48,7 +48,7 @@ export default {
         },
     },
     template: `<button type="button"
-        :class="[ 'btn', 'btn-danger', 'col-12', 'm-1']"
+        :class="[ 'btn', 'btn-danger']"
         :disabled='stepsComplete'
         v-on:click='incrementStep()'>
         [[ currentMessage ]]

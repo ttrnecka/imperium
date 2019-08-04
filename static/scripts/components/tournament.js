@@ -337,7 +337,7 @@ export default {
                         </button>
                         <div class="col-md-3 text-right">
                             <template v-if="is_user_signed && !is_running" :disabled="processing">
-                                <confirmation-button
+                                <confirmation-button class="col-12 m-1"
                                   :messages="['Resign','Are you sure?', 'Ok']"
                                   v-on:confirmation-success="resign()"
                                 >Resign</confirmation-button>

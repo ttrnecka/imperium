@@ -142,8 +142,11 @@ def before_request():
 def me():
     """returns user from session"""
     user = session.get('discord_user', {'code':0})
-    result = coach_schema.dump(current_coach_with_inactive())
-    user['coach'] = result.data
+    if current_user():
+        result = coach_schema.dump(current_coach_with_inactive())
+        user['coach'] = result.data
+    else:
+        user['coach'] = {}
     return jsonify(user=user)
 
 @app.route("/")
@@ -357,9 +360,9 @@ def update_coach(coach_id):
 @app.route("/coaches/<int:coach_id>/activate", methods=["PUT"])
 @authenticated
 @registered_with_inactive
-def activate_coach(coach_id):
+def activate_coach(coach_id, **kwargs):
     """Activates coach"""
-    coach = Coach.query.with_deleted.get(coach_id)
+    coach = kwargs['coach']
     if coach is None:
         abort(404)
     try:
@@ -368,6 +371,17 @@ def activate_coach(coach_id):
     except (ValueError,TypeError,TransactionError) as exc:
         raise InvalidUsage(str(exc), status_code=403)
     result = coach_schema.dump(coach)
+    return jsonify(result.data)
+
+@app.route("/coaches/<int:coach_id>/cards/inactive", methods=["GET"])
+@authenticated
+@registered_with_inactive
+def inactive_coach_cards(coach_id, **kwargs):
+    """Activates coach"""
+    coach = kwargs['coach']
+    if coach is None:
+        abort(404)
+    result = cards_schema.dump(coach.inactive_cards())
     return jsonify(result.data)
 
 # BB teams
