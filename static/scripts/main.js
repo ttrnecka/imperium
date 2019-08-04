@@ -360,6 +360,13 @@ Vue.mixin({
       const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'};
       return jdate.toLocaleDateString('default',options);
     },
+    per_game(total, games) {
+      // at least minimum of 6 games
+      if(games>=6) {
+        return total/games;
+      }
+      return 0;
+    }
   },
   computed: {
     skill_to_group_map() {
@@ -797,19 +804,19 @@ var app = new Vue({
         return this.leaderboard.stats.slice().sort((a,b) => b.points - a.points);
       },
       ppg_sorted() {
-        return this.leaderboard.stats.slice().sort((a,b) => b.points/b.matches - a.points/a.matches);
+        return this.leaderboard.stats.slice().sort((a,b) => this.per_game(b.points,b.matches) - this.per_game(a.points,a.matches));
       },
       scorers_sorted() {
         return this.leaderboard.stats.slice().sort((a,b) => b.inflictedtouchdowns - a.inflictedtouchdowns);
       },
       tpg_sorted() {
-        return this.leaderboard.stats.slice().sort((a,b) => b.inflictedtouchdowns/b.matches - a.inflictedtouchdowns/a.matches);
+        return this.leaderboard.stats.slice().sort((a,b) => this.per_game(b.inflictedtouchdowns,b.matches) - this.per_game(a.inflictedtouchdowns,a.matches));
       },
       bashers_sorted() {
         return this.leaderboard.stats.slice().sort((a,b) => b.inflictedcasualties - a.inflictedcasualties);
       },
       cpg_sorted() {
-        return this.leaderboard.stats.slice().sort((a,b) => b.inflictedcasualties/b.matches - a.inflictedcasualties/a.matches);
+        return this.leaderboard.stats.slice().sort((a,b) => this.per_game(b.inflictedcasualties,b.matches) - this.per_game(a.inflictedcasualties,a.matches));
       },
       hitmen_sorted() {
         return this.leaderboard.stats.slice().sort((a,b) => b.inflicteddead - a.inflicteddead);

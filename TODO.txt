@@ -8,7 +8,7 @@ achievement_insert
 season2_reset
 
 Season 2
-Leaderboard - per game Achievements - limit minimum of games
+Leaderboard - timing
 Ay - add Special Play players
 Add injuries as assignable to deck
 
@@ -19,8 +19,6 @@ Reactions
 Hidden quests
     automated 
         - collect all legends from given base race
-
-Tournamnet signups - do not advertise them on discord
 
 VERY HIGH
 
@@ -38,6 +36,8 @@ test code
 
 
 DONE
+Leaderboard - per game Achievements - limit minimum of 6 games
+Tournamnet signups - do not advertise them on discord
 Coach can take up to 5 cards up to 30 value to season 2
     add active flag to coach, when new coach joins they can use newcoach using bot or web will fire up the newcoach flow, otherwise it fires the rejoin flow
 added Deck Upgrade cards and display them in deck by default

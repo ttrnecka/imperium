@@ -551,7 +551,7 @@
                 </table>
             </div>
             <div class="col-12 col-md-6 col-lg-4 table-responsive">
-                <h4> TOP 10 Points Per Game </h4>
+                <h4> TOP 10 Points Per Game (min. 6 games) </h4>
                 <table id="leaderboard" class="table table-hover">
                     <thead class="thead-dark">
                         <tr>
@@ -564,12 +564,12 @@
                         <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in ppg_sorted.slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
-                            <td class="text-right">[[ (coach.points/coach.matches).toFixed(2) ]]</td>
+                            <td class="text-right">[[ per_game(coach.points,coach.matches).toFixed(2) ]]</td>
                         </tr>
                         <tr v-if="stats_coach!=undefined && ppg_sorted.indexOf(stats_coach) > 9" :class="leaderboard_class(stats_coach.name)">
                             <th scope="row">[[ ppg_sorted.indexOf(stats_coach)+1 ]].</th>
                             <td>[[ stats_coach.name ]]</td>
-                            <td class="text-right">[[ (stats_coach.points/stats_coach.matches).toFixed(2)]]</td>
+                            <td class="text-right">[[ per_game(stats_coach.points,stats_coach.matches).toFixed(2)]]</td>
                         </tr>
                     </tbody>
                 </table>
@@ -599,7 +599,7 @@
                 </table>
             </div>
             <div class="col-12 col-md-6 col-lg-4 table-responsive">
-                <h4> TOP 10 Touchdowns Per Game </h4>
+                <h4> TOP 10 Touchdowns Per Game (min. 6 games) </h4>
                 <table id="leaderboard" class="table table-hover">
                     <thead class="thead-dark">
                         <tr>
@@ -612,12 +612,12 @@
                         <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in tpg_sorted.slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
-                            <td class="text-right">[[ (coach.inflictedtouchdowns/coach.matches).toFixed(2) ]]</td>
+                            <td class="text-right">[[ per_game(coach.inflictedtouchdowns,coach.matches).toFixed(2) ]]</td>
                         </tr>
                         <tr v-if="stats_coach!=undefined && tpg_sorted.indexOf(stats_coach) > 9" :class="leaderboard_class(stats_coach.name)">
                             <th scope="row">[[ tpg_sorted.indexOf(stats_coach)+1 ]].</th>
                             <td>[[ stats_coach.name ]]</td>
-                            <td class="text-right">[[(stats_coach.inflictedtouchdowns/stats_coach.matches).toFixed(2)]]</td>
+                            <td class="text-right">[[per_game(stats_coach.inflictedtouchdowns,stats_coach.matches).toFixed(2)]]</td>
                         </tr>
                     </tbody>
                 </table>
@@ -647,7 +647,7 @@
                 </table>
             </div>
             <div class="col-12 col-md-6 col-lg-4 table-responsive">
-                <h4> TOP 10 Casualties Per Game </h4>
+                <h4>TOP 10 Casualties Per Game (min. 6 games)</h4>
                 <table id="leaderboard" class="table table-hover">
                     <thead class="thead-dark">
                         <tr>
@@ -660,12 +660,12 @@
                         <tr :class="leaderboard_class(coach.name)" v-for="(coach,index) in cpg_sorted.slice(0,10)" :key="coach.name">
                             <th scope="row">[[ index+1 ]].</th>
                             <td>[[ coach.name ]]</td>
-                            <td class="text-right">[[ (coach.inflictedcasualties/coach.matches).toFixed(2) ]]</td>
+                            <td class="text-right">[[ per_game(coach.inflictedcasualties,coach.matches).toFixed(2) ]]</td>
                         </tr>
                         <tr v-if="stats_coach!=undefined && cpg_sorted.indexOf(stats_coach) > 9" :class="leaderboard_class(stats_coach.name)">
                             <th scope="row">[[ cpg_sorted.indexOf(stats_coach)+1 ]].</th>
                             <td>[[ stats_coach.name ]]</td>
-                            <td class="text-right">[[(stats_coach.inflictedcasualties/stats_coach.matches).toFixed(2)]]</td>
+                            <td class="text-right">[[per_game(stats_coach.inflictedcasualties,stats_coach.matches).toFixed(2)]]</td>
                         </tr>
                     </tbody>
                 </table>
