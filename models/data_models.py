@@ -95,7 +95,10 @@ class Card(Base):
 
     is_starter = db.Column(db.Boolean(), default=False)
 
-    def get(self,name):
+    def get(self, name, show_hidden=True):
+        if not show_hidden and self.template.card_type == "Reaction" and \
+                name in ["name","description"]:
+            return "Reaction"
         return getattr(self.template,name)
 
     def __init__(self,**kwargs):
@@ -394,6 +397,7 @@ class Tournament(Base):
         "locked",
         "special_play",
         "inducement",
+        "reaction",
         "blood_bowl"
     ]
 

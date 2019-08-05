@@ -23,6 +23,7 @@ export default {
               {"name":"locked", "desc":"Locked"},
               {"name":"special_play", "desc":"Special Play"},
               {"name":"inducement", "desc":"Inducement"},
+              {"name":"reaction", "desc":"Reaction"},
               {"name":"blood_bowl", "desc":"Blood Bowl"},
           ]
       }

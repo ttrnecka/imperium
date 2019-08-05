@@ -258,8 +258,8 @@ class TournamentService:
         for index in range(max_special_plays):
             for deck in sorted_decks:
                 if len(deck[2]) >= index + 1:
-                    msg.append(f"{deck[0]} plays **{deck[2][index].name}**:")
-                    msg.append(deck[2][index].description)
+                    msg.append(f"{deck[0]} plays **{deck[2][index].get('name')}**:")
+                    msg.append(deck[2][index].get('description'))
             msg.append(" ")
         
         msg.append("**Note**: No Inducement shopping in this phase")
@@ -285,4 +285,30 @@ class TournamentService:
                 msg.append(f"{deck[0]} has **{highest_value - deck[1]}** points of inducements")
         msg.append(" ")
 
+        return msg
+    
+    @classmethod
+    def reaction_msg(cls, tournament):
+        
+        msg = ["__**Reaction Phase**__:"," "]
+        decks = []
+        max_reaction_plays = 0
+        for signup in tournament.tournament_signups:
+            reactions = [card for card in signup.deck.cards if card.get('card_type') == "Reaction"]
+            if len(reactions) > max_reaction_plays:
+                max_reaction_plays = len(reactions)
+
+            decks.append((signup.coach.mention(), DeckService.value(signup.deck), reactions))
+        
+        sorted_decks = sorted(decks, key=lambda d: d[1])
+
+        msg.extend(["__Order of Play__:", " "])
+
+        for index in range(max_reaction_plays):
+            for deck in sorted_decks:
+                if len(deck[2]) >= index + 1:
+                    msg.append(f"{deck[0]} plays **{deck[2][index].get('name')}**:")
+                    msg.append(deck[2][index].get('description'))
+            msg.append(" ")
+        
         return msg

@@ -21,7 +21,8 @@ from services import AdminNotificationService, CardService
 from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError
 from services import TransactionService, DeckService, DeckError
-from misc.helpers import InvalidUsage, current_coach, current_user, current_coach_with_inactive
+from misc.helpers import InvalidUsage, current_coach, current_user, current_coach_with_inactive, CardHelper
+from misc.helpers import owning_coach
 from misc.decorators import authenticated, registered, webadmin, registered_with_inactive
 import bb2
 
@@ -340,6 +341,8 @@ def get_coach(coach_id):
     if coach is None:
         abort(404)
     result = coach_schema.dump(coach)
+    if not owning_coach(coach):
+        CardHelper.censor_cards(result.data['cards'])
     return jsonify(result.data)
 
 @app.route("/coaches/<int:coach_id>", methods=["PUT"])
@@ -365,6 +368,8 @@ def activate_coach(coach_id, **kwargs):
     coach = kwargs['coach']
     if coach is None:
         abort(404)
+    if not owning_coach(coach):
+        raise InvalidUsage("Unauthorized access!!!!", status_code=403)
     try:
         card_ids = request.get_json()['card_ids']
         CoachService.activate_coach(coach=coach,card_ids=card_ids)
@@ -420,6 +425,12 @@ def can_edit_deck(deck):
 def deck_response(deck):
     """Turns deck into JSON response"""
     result = deck_schema.dump(deck)
+    # censoring Reactions
+    coach = current_coach()
+    tournament = deck.tournament_signup.tournament
+    if not (coach.id == deck.tournament_signup.coach.id) and \
+            not tournament.phase in ["reaction","blood_bowl"]:
+        CardHelper.censor_cards(result.data['cards'])
     return jsonify(result.data)
 
 @app.route("/decks/<int:deck_id>", methods=["GET"])
@@ -444,8 +455,7 @@ def get_deck(deck_id):
             status_code=403
         )
 
-    result = deck_schema.dump(deck)
-    return jsonify(result.data)
+    return deck_response(deck)
 
 @app.route("/decks/<int:deck_id>", methods=["POST"])
 @authenticated

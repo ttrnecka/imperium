@@ -18,7 +18,8 @@ export default {
               id:null,
               log:""
           },
-          team:{}
+          team:{},
+          initial_load:false,
       }
     },
     methods: {
@@ -102,6 +103,7 @@ export default {
             .then((res) => {
                 this.deck=res.data;
                 this.selected_team = (this.deck.mixed_team=="") ? "All" : this.deck.mixed_team;
+                this.initial_load = true;
                 this.modal().modal('show');
             })
             .catch(this.async_error)
@@ -411,7 +413,12 @@ export default {
     watch: {
         selected_team: function(newValue,oldValue) {
             this.deck.mixed_team = newValue;
-            this.updateDeck();
+            if (this.initial_load) {
+                this.initial_load=false;
+            }
+            else {
+                this.updateDeck();
+            }
         },
         deck_id: function(newValue,oldValue) { 
             this.getDeck();
@@ -476,6 +483,9 @@ export default {
                 return "Type exact name of Card and click Add";
             }
             if(this.tournament.phase=="inducement") {
+                return "Type exact name of Inducement Card and click Add";
+            }
+            if(this.tournament.phase=="reaction") {
                 return "Type exact name of Card and click Add";
             }
             return ""
@@ -640,7 +650,7 @@ export default {
                                     <div class="card-header" :id="'extraCards'+id">
                                         <h5 class="mb-0">
                                             <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseExtraCards'+id" aria-expanded="true" aria-controls="collapseExtraCards">
-                                            <span data-toggle="tooltip" data-placement="top" title="Use this to add Sponsor Cards or Inducement Cards to the collection for this tournament only">Sponsor & Extra Cards</span>
+                                            <span data-toggle="tooltip" data-placement="top" title="Use this to add Sponsor, Inducement or Reaction Cards to the collection for this tournament only">Sponsor & Extra Cards</span>
                                             </button>
                                         </h5>
                                     </div>

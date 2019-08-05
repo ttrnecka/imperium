@@ -12,9 +12,7 @@ Leaderboard - timing
 Ay - add Special Play players
 Add injuries as assignable to deck
 
-Reactions
-    New Card type, they should not be visible in the bot report (just as "Reaction Card"), neither visible in the collection by anyone but the coach. They should not be visible
-    in the deck until the Reaction phase either
+Tournamnet moves automatically to next phase once each coach confirms they are DONE with that phase
 
 Hidden quests
     automated 
@@ -36,6 +34,7 @@ test code
 
 
 DONE
+Added Reactions - they are not visible in the deck untul reaction phase,     hide it in Bot report, hide it in collection for anyone bu the coach, Automate Reaction phase
 Leaderboard - per game Achievements - limit minimum of 6 games
 Tournamnet signups - do not advertise them on discord
 Coach can take up to 5 cards up to 30 value to season 2

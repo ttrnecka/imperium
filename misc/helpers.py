@@ -2,7 +2,7 @@
 from flask import session
 from sqlalchemy.orm import raiseload
 
-from models.data_models import Coach
+from models.data_models import Coach, Card
 
 class CardHelper:
     """CardHelper namespace"""
@@ -26,6 +26,24 @@ class CardHelper:
                 new_collection[card.get('name')]["quantity"] = 1
 
         return [(card["card"], card["quantity"]) for card in list(new_collection.values())]
+    
+    @staticmethod
+    def dummy_template_dict():
+        template = {
+            'name': "Hidden",
+            'description': "",
+            'card_type': "Reaction",
+            'rarity': "Common",
+        }
+        return template
+
+    @classmethod
+    def censor_cards(cls, cards):
+        for card in cards:
+            if isinstance(card, dict):
+                if card['template']['card_type']=="Reaction":
+                    card['template'] = cls.dummy_template_dict()
+        return cards
 
 def represents_int(string):
     """Check if the `s` is int"""
@@ -44,6 +62,12 @@ def current_coach():
     return Coach.query.options(
         raiseload(Coach.cards), raiseload(Coach.packs)
     ).filter_by(disc_id=current_user()['id']).one_or_none()
+
+def owning_coach(coach):
+    current = current_coach_with_inactive()
+    if current and current.id == coach.id:
+        return True
+    return False
 
 def current_coach_with_inactive():
     """Returns current coach or None"""

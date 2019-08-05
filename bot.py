@@ -153,23 +153,36 @@ class DiscordCommand:
         return False
 
     @classmethod
-    def format_pack(cls, cards):
+    def format_pack(cls, cards, show_hidden=False):
         """formats response message for pack"""
         msg = ""
         value = 0
+        def display():
+            if not show_hidden and card.get('card_type') == "Reaction":
+                return False
+            return True
+
         for card, quantity in cards:
             value += card.get('value') * quantity
             msg += cls.number_emoji(quantity)
             msg += " x "
             msg += cls.rarity_emoji(card.get('rarity'))
-            msg += f' **{card.get("name")}** ({card.get("subtype")} {card.get("race")} '
-            msg += f'{card.get("card_type")} Card) ({card.get("value")})\n'
+            if not display():
+                name = "Reaction Card"
+                cvalue = "?"
+            else:
+                name = card.get("name")
+                cvalue = card.get("value")
+            msg += f' **{name}** ({card.get("subtype")} {card.get("race")} '
+            msg += f'{card.get("card_type")} Card) ({cvalue})\n'
 
         msg += f"\n \n__Total value__: {value}\n \n"
         msg += "__Description__:\n \n"
         for card, quantity in cards:
-            if card.get('description') != "":
+            if display() and card.get('description') != "":
                 msg += f"**{card.get('name')}**: {card.get('description')}\n"
+            elif card.get('card_type') == "Reaction":
+                msg += f"**Reaction**: owner can use !list or web to see the card detail\n"
         return msg.strip("\n")
 
     @classmethod
@@ -183,7 +196,7 @@ class DiscordCommand:
               f'expected start: {t.expected_start_date}' for t in coach.tournaments],
             "\n**Collection**:",
             "-" * 65 + "",
-            f"{cls.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.cards))}",
+            f"{cls.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.cards), show_hidden=True)}",
             "-" * 65 + "\n"
         ]
 
@@ -444,13 +457,14 @@ class DiscordCommand:
         msg = "```"
         msg += "Tournament helper\n"
         msg += "USAGE:\n"
-        msg += "!admincomp start|stop|update|special_play|inducements <id>\n"
+        msg += "!admincomp start|stop|update|special_play|inducements|reaction <id>\n"
         msg += "\tstart: Notifies all registered coaches that tournament started "
         msg += "in the tournament channel and links the ledger\n"
         msg += "\tstop: Resigns all coaches from the tournament\n"
         msg += "\tupdate: Updates data from Tournament sheet\n"
         msg += "\tspecial_play: Initiates special play phase\n"
         msg += "\tinducement: Initiates inducement phase\n"
+        msg += "\treaction: Initiates reaction phase\n"
         msg += "\t<id>: id of tournament from Tournamet master sheet\n"
         msg += "```"
         return msg
@@ -743,7 +757,7 @@ class DiscordCommand:
                 *[f'{t.tournament_id}. {t.name}, status: {t.status}, expected start: {t.expected_start_date}' for t in coach.tournaments],
                 f"\n**Collection**{sp_msg}:",
                 "-" * 65 + "",
-                self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(all_cards)),
+                self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(all_cards), show_hidden=True),
                 "-" * 65 + "\n"
             ]
 
@@ -784,7 +798,7 @@ class DiscordCommand:
 
             msg = [
                 f"**Temporary {PackService.description(pack)}**:\n",
-                f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n",
+                f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)}\n",
                 "**Note**: This is one time pack for Special Play or Inducement purposes only!!!"]
             await self.reply(msg)
         else:
@@ -1050,10 +1064,12 @@ class DiscordCommand:
                 else:
                     msg = []
                     msg.append(f"**{PackService.description(pack)}** for @{coach.name} - **{pack.price}** coins:\n")
-                    msg.append(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n")
+                    # message sent to admin so display the hidden cards
+                    msg.append(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)}\n")
                     msg.append(f"**Bank:** {coach.account.amount} coins")
                     await self.reply(msg)
-                    await self.bank_notification(f"Card(s) **{', '.join([card.get('name') for card in pack.cards])}** added to your collection by {str(self.message.author.name)}", coach)
+                    # message sent to discord so hide the names
+                    await self.bank_notification(f"Card(s) **{', '.join([card.get('name', show_hidden=False) for card in pack.cards])}** added to your collection by {str(self.message.author.name)}", coach)
                     await self.auto_cards(pack)
                     CoachService.check_collect_three_legends_quest(coach)
                     return
@@ -1081,7 +1097,7 @@ class DiscordCommand:
                     if removed_cards:
                         msg = []
                         msg.append(f"Cards removed from @{coach.name} collection:\n")
-                        msg.append(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(removed_cards))}\n")
+                        msg.append(f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(removed_cards), show_hidden=True)}\n")
                         await self.reply(msg)
                         await self.bank_notification(f"Card(s) **{', '.join([card.get('name') for card in removed_cards])}** removed from your collection by {str(self.message.author.name)}", coach)
 
@@ -1119,10 +1135,10 @@ class DiscordCommand:
                 await self.reply(["Incorrect number of arguments!!!", self.__class__.admincomp_help()])
                 return
 
-            if self.args[1] not in ["start", "stop", "update", "special_play", "inducement"]:
+            if self.args[1] not in ["start", "stop", "update", "special_play", "inducement", "reaction"]:
                 await self.reply(["Incorrect arguments!!!", self.__class__.admincomp_help()])
 
-            if self.args[1] in ["start", "stop", "special_play", "inducement"]:
+            if self.args[1] in ["start", "stop", "special_play", "inducement", "reaction"]:
                 if not represents_int(self.args[2]):
                     await self.reply([f"**{self.args[2]}** is not a number!!!\n"])
                     return
@@ -1144,7 +1160,7 @@ class DiscordCommand:
                 await self.reply([f"Coaches have been resigned from {tourn.name}!!!\n"])
                 return
 
-            if self.args[1] in ["start", "special_play", "inducement"]:
+            if self.args[1] in ["start", "special_play", "inducement", "reaction"]:
                 if not tourn.discord_channel:
                     await self.reply([f"Discord channel is not defined, please update it in Tournament sheet and run **!admincomp update**!\n"])
                     return
@@ -1191,6 +1207,8 @@ class DiscordCommand:
                     msg = TournamentService.special_play_msg(tourn)
                 if self.args[1] == "inducement":
                     msg = TournamentService.inducement_msg(tourn)
+                if self.args[1] == "reaction":
+                    msg = TournamentService.reaction_msg(tourn)
                 await self.send_message(channel, msg)
             return
 

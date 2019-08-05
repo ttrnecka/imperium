@@ -22,11 +22,11 @@ from .deck_service import DeckService, DeckError
 def check_build_own_legend_quest(target, value, oldvalue, initiator):
     """After tournament is put into BB mode, the decks are evaluated for self create legend and achievements granted based on that"""
     if value!=oldvalue:
-        if value in Tournament.PHASES[2:4]:
+        if value in Tournament.PHASES[2:5]:
             AdminNotificationService.notify(
                 f"!admincomp {value} {target.tournament_id}"
             )
-        if value == Tournament.PHASES[4]:
+        if value == Tournament.PHASES[5]:
             decks = [signup.deck for signup in target.tournament_signups]
             for deck in decks:
                 coach = deck.tournament_signup.coach
