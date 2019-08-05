@@ -29,6 +29,7 @@ class DeckService:
             "team_name":params["team_name"],
             "mixed_team":params["mixed_team"],
             "comment":params["comment"],
+            "injury_map":params["injury_map"]
         }
 
     @classmethod

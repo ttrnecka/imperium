@@ -1,5 +1,10 @@
+import injuryPicker from './injury_picker.js';
+
 export default {
     name: 'deck',
+    components: {
+        'injury-picker': injuryPicker,
+    },
     data () {
       return {
           processing:false,
@@ -19,7 +24,6 @@ export default {
               log:""
           },
           team:{},
-          initial_load:false,
       }
     },
     methods: {
@@ -103,7 +107,6 @@ export default {
             .then((res) => {
                 this.deck=res.data;
                 this.selected_team = (this.deck.mixed_team=="") ? "All" : this.deck.mixed_team;
-                this.initial_load = true;
                 this.modal().modal('show');
             })
             .catch(this.async_error)
@@ -167,6 +170,7 @@ export default {
                 let msg = "Extra card removed!";
                 this.flash(msg, 'success',{timeout: 1000});
                 this.deck = res.data;
+                this.removeAllInjuries(card);
             })
             .catch(this.async_error)
             .then(() => {
@@ -287,6 +291,7 @@ export default {
                     ccard = this.coach.cards.find((c) => c.id == card.id);
                     ccard[check] = false;
                 }
+                this.removeAllInjuries(card);
             })
             .catch(this.async_error)
             .then(() => {
@@ -309,6 +314,7 @@ export default {
                 team_name:this.deck.team_name,
                 mixed_team:this.deck.mixed_team,
                 comment:this.deck.comment,
+                injury_map:this.deck.injury_map,
             }
             axios.post(path,{deck:send_deck})
             .then((res) => {
@@ -362,6 +368,12 @@ export default {
         },
         deck_skills_for(card) {
             const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
+            let injuries;
+            if (this.deck.injury_map[this.card_id_or_uuid(card)]) {
+                injuries = this.deck.injury_map[this.card_id_or_uuid(card)];
+            } else {
+                injuries = [];
+            }
             return assigned_cards.map((c) => {
                 let double = false; 
                 let skills = this.skill_names_for(c);
@@ -371,7 +383,7 @@ export default {
                     }
                 })
                 return this.skills_for(c,double);
-            }).join("");
+            }).join("") + injuries.map((c) => this.imgs_for_skill(c)).join('');
         },
         get_card_assignment(card) {
             if (card.assigned_to_array[this.deck.id]) {
@@ -408,17 +420,44 @@ export default {
             if (assigned_cards.find((c) => c.template.name=='Bodyguard')!=undefined)
               return true;
             return false;
+        },
+        injuryPickerOpened(card) {
+            if (card.cas_pick) {
+                return false;
+            }
+            return true;
+        },
+        openInjuryPicker(card) {
+            card.cas_pick = true;
+            this.$forceUpdate();
+        },
+        addInjury(card,injury) {
+            let id = this.card_id_or_uuid(card);
+            if(this.deck.injury_map[id]) {
+
+            } else {
+                this.deck.injury_map[id] = [];
+            }
+            if(injury!="" && injury!="X") {
+                this.deck.injury_map[id].push(injury);
+            }
+            card.cas_pick = false;
+            if(injury=="X") {
+                this.removeAllInjuries(card);
+            } else {
+                this.updateDeck();
+            }
+        },
+        removeAllInjuries(card) {
+            let id = this.card_id_or_uuid(card);
+            this.deck.injury_map[id] = [];
+            this.updateDeck();
         }
     },
     watch: {
         selected_team: function(newValue,oldValue) {
             this.deck.mixed_team = newValue;
-            if (this.initial_load) {
-                this.initial_load=false;
-            }
-            else {
-                this.updateDeck();
-            }
+            this.updateDeck();
         },
         deck_id: function(newValue,oldValue) { 
             this.getDeck();
@@ -837,9 +876,13 @@ export default {
                                                         </tr>
                                                         <tr v-if="ctype=='Player'" :class="[rarityclass(card.template.rarity)]">
                                                             <th colspan="1">Skills:</th>
-                                                            <td colspan="3">
+                                                            <td colspan="2">
                                                                 <span v-html="skills_for(card)"></span>
                                                                 <span v-html="deck_skills_for(card)"></span>
+                                                            </td>
+                                                            <td>
+                                                                <img v-if="injuryPickerOpened(card)" @click="openInjuryPicker(card)" class="skill_icon skill_single" src="https://cdn2.rebbl.net/images/skills/SmashedHand.png" title="Add Injury">
+                                                                <injury-picker v-else v-on:injured="addInjury(card,$event)"></injury-picker>
                                                             </td>
                                                             <td class="d-none d-sm-table-cell"><b>Doubles:</b> [[doubles_count(card)]]</td>
                                                         </tr>

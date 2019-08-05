@@ -66,6 +66,7 @@ class DeckSchema(ma.ModelSchema):
     unused_extra_cards = ma.Nested(CardSchema, many=True)
     starter_cards = ma.Nested(CardSchema, many=True)
     cards = ma.Nested(CardSchema, many=True)
+    injury_map = ma.Dict()
 
 cards_schema = CardSchema(many=True)
 card_schema = CardSchema()

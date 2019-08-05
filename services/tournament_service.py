@@ -144,7 +144,7 @@ class TournamentService:
 
             # deck
             deck = Deck(team_name="", mixed_team="", tournament_signup=signup,
-                        extra_cards=[], unused_extra_cards=[])
+                        extra_cards=[], unused_extra_cards=[], injury_map = {})
             db.session.add(deck)
 
             coach.make_transaction(tran)

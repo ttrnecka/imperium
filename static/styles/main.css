@@ -210,10 +210,8 @@ img.skill_icon {
   border-radius: 5px;
 }
 img.skill_single, img.skill_double {
-  width: 32px !important;
-  height: 32px !important;
   border-style: ridge;
-  border-width: 2px;
+  border-width: 1px;
   border-color: transparent;
 }
 

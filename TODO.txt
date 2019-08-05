@@ -11,6 +11,7 @@ Season 2
 Leaderboard - timing
 Ay - add Special Play players
 Add injuries as assignable to deck
+Automate removal of one time cards 
 
 Tournamnet moves automatically to next phase once each coach confirms they are DONE with that phase
 

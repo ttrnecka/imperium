@@ -365,6 +365,8 @@ class Deck(Base):
     unused_extra_cards = db.Column(TextPickleType(), nullable=False)
     comment = db.Column(db.Text(),nullable=False, default="")
     log = db.Column(db.Text(),nullable=False, default="")
+    injury_map = db.Column(TextPickleType(), nullable=False)
+    phase_done = db.Column(db.Boolean(), default=False)
 
     def to_log(self,msg):
         if self.commited:
