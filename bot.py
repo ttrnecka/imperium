@@ -13,7 +13,7 @@ from models.data_models import TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
 from misc.helpers import represents_int
 from services import PackService, CardService, TournamentService, CoachService
-from services import DusterService, RegistrationError, DustingError
+from services import DusterService, RegistrationError, DustingError, TournamentError
 
 ROOT = os.path.dirname(__file__)
 logger = logging.getLogger('discord')
@@ -457,7 +457,7 @@ class DiscordCommand:
         msg = "```"
         msg += "Tournament helper\n"
         msg += "USAGE:\n"
-        msg += "!admincomp start|stop|update|special_play|inducements|reaction <id>\n"
+        msg += "!admincomp start|stop|update|special_play|inducements|reaction|blood_bowl <id>\n"
         msg += "\tstart: Notifies all registered coaches that tournament started "
         msg += "in the tournament channel and links the ledger\n"
         msg += "\tstop: Resigns all coaches from the tournament\n"
@@ -465,6 +465,7 @@ class DiscordCommand:
         msg += "\tspecial_play: Initiates special play phase\n"
         msg += "\tinducement: Initiates inducement phase\n"
         msg += "\treaction: Initiates reaction phase\n"
+        msg += "\tblood_bowl: Initiates blood bowl phase\n"
         msg += "\t<id>: id of tournament from Tournamet master sheet\n"
         msg += "```"
         return msg
@@ -572,6 +573,10 @@ class DiscordCommand:
                 await self.__run_resign()
             elif self.cmd.startswith('!dust'):
                 await self.__run_dust()
+            elif self.cmd.startswith('!done'):
+                await self.__run_done()
+            elif self.cmd.startswith('!left'):
+                await self.__run_left()
         except (ValueError, TransactionError, RegistrationError) as e:
             await self.transaction_error(e)
         except Exception as e:
@@ -777,7 +782,39 @@ class DiscordCommand:
 
             await self.send_message(self.message.author, msg)
             await self.short_reply("Info sent to PM")
+    
+    async def __run_done(self):
+        coach = Coach.get_by_discord_id(self.message.author.id)
+        room = self.message.channel.name
 
+        if coach is None:
+            await self.reply(
+                [(f"Coach {self.message.author.mention} does not exist."
+                "Use !newcoach to create coach first.")]
+            )
+            return
+        try:
+            if TournamentService.confirm_phase(coach,room):
+                msg = f"Phase confirmed for {coach.short_name()}"
+            else:
+                msg = "No deck found!"
+        except TournamentError as e:
+            await self.transaction_error(e)
+            return
+        await self.short_reply(msg)
+
+    async def __run_left(self):
+        room = self.message.channel.name
+        try:
+            coaches = TournamentService.left_phase(room)
+            msg = ["**Left:**"]
+            for coach in coaches:
+                msg.append(coach.short_name())
+        except TournamentError as e:
+            await self.transaction_error(e)
+            return
+        await self.reply(msg)
+        
     async def __run_genpacktemp(self):
         if self.__class__.check_gentemp_command(self.cmd):
             ptype = self.args[1]
@@ -1135,10 +1172,10 @@ class DiscordCommand:
                 await self.reply(["Incorrect number of arguments!!!", self.__class__.admincomp_help()])
                 return
 
-            if self.args[1] not in ["start", "stop", "update", "special_play", "inducement", "reaction"]:
+            if self.args[1] not in ["start", "stop", "update", "special_play", "inducement", "reaction","blood_bowl"]:
                 await self.reply(["Incorrect arguments!!!", self.__class__.admincomp_help()])
 
-            if self.args[1] in ["start", "stop", "special_play", "inducement", "reaction"]:
+            if self.args[1] in ["start", "stop", "special_play", "inducement", "reaction","blood_bowl"]:
                 if not represents_int(self.args[2]):
                     await self.reply([f"**{self.args[2]}** is not a number!!!\n"])
                     return
@@ -1160,7 +1197,7 @@ class DiscordCommand:
                 await self.reply([f"Coaches have been resigned from {tourn.name}!!!\n"])
                 return
 
-            if self.args[1] in ["start", "special_play", "inducement", "reaction"]:
+            if self.args[1] in ["start", "special_play", "inducement", "reaction","blood_bowl"]:
                 if not tourn.discord_channel:
                     await self.reply([f"Discord channel is not defined, please update it in Tournament sheet and run **!admincomp update**!\n"])
                     return
@@ -1209,6 +1246,8 @@ class DiscordCommand:
                     msg = TournamentService.inducement_msg(tourn)
                 if self.args[1] == "reaction":
                     msg = TournamentService.reaction_msg(tourn)
+                if self.args[1] == "blood_bowl":
+                    msg = TournamentService.blood_bowl_msg(tourn)
                 await self.send_message(channel, msg)
             return
 

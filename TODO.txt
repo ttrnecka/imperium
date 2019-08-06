@@ -8,12 +8,9 @@ achievement_insert
 season2_reset
 
 Season 2
-Leaderboard - timing
+Leaderboard - timing when all coaches are loaded
 Ay - add Special Play players
-Add injuries as assignable to deck
 Automate removal of one time cards 
-
-Tournamnet moves automatically to next phase once each coach confirms they are DONE with that phase
 
 Hidden quests
     automated 
@@ -35,6 +32,9 @@ test code
 
 
 DONE
+!left command
+Tournamnet moves automatically to next phase once each coach confirms they are DONE with that phase
+Add injuries as assignable to deck
 Added Reactions - they are not visible in the deck untul reaction phase,     hide it in Bot report, hide it in collection for anyone bu the coach, Automate Reaction phase
 Leaderboard - per game Achievements - limit minimum of 6 games
 Tournamnet signups - do not advertise them on discord

@@ -2,7 +2,7 @@
 from sqlalchemy import event
 from sqlalchemy.orm.attributes import flag_modified
 
-from models.data_models import Tournament, Card
+from models.data_models import Tournament, Card, Deck
 from models.base_model import db
 
 from .pack_service import PackService
@@ -12,7 +12,7 @@ from .transaction_service import TransactionService
 from .imperium_sheet_service import ImperiumSheetService
 from .notification_service import NotificationService, LedgerNotificationService, AdminNotificationService
 from .notification_service import AchievementNotificationService, Notificator, NotificationRegister
-from .tournament_service import RegistrationError, TournamentService
+from .tournament_service import RegistrationError, TournamentService, TournamentError
 from .bb2_service import BB2Service
 from .web_hook_service import WebHook
 from .duster_service import DusterService, DustingError
@@ -22,10 +22,14 @@ from .deck_service import DeckService, DeckError
 def check_build_own_legend_quest(target, value, oldvalue, initiator):
     """After tournament is put into BB mode, the decks are evaluated for self create legend and achievements granted based on that"""
     if value!=oldvalue:
-        if value in Tournament.PHASES[2:5]:
+        if value in Tournament.PHASES[2:]:
             AdminNotificationService.notify(
                 f"!admincomp {value} {target.tournament_id}"
             )
+            decks = [signup.deck for signup in target.tournament_signups]
+            for deck in decks:
+                deck.phase_done = False
+            db.session.commit()
         if value == Tournament.PHASES[5]:
             decks = [signup.deck for signup in target.tournament_signups]
             for deck in decks:
@@ -57,3 +61,15 @@ def release_signups_when_finished(target, value, oldvalue, initiator):
     if target.id and value!=oldvalue and value=="FINISHED":
         TournamentService.release_reserves(target)
         TournamentService.release_actives(target)
+
+@event.listens_for(Deck.phase_done,'set')
+def check_if_phase_is_done(target, value, oldvalue, initiator):
+    """Check if all coaches finished the phase"""
+    if value:
+        tourn = target.tournament_signup.tournament
+        signups = tourn.tournament_signups
+        decks = [ts.deck for ts in signups]
+        decks.remove(target)
+        if tourn.phase in Tournament.PHASES[2:] and (len(decks) == 0 or all(deck.phase_done for deck in decks)):
+            TournamentService.next_phase(tourn)
+            db.session.commit()

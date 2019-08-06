@@ -1,12 +1,15 @@
 """TournamentService helpers"""
 from sqlalchemy import asc
-from models.data_models import Tournament, TournamentSignups, Transaction, Deck
+from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach
 from models.base_model import db
 from .notification_service import NotificationService
 from .imperium_sheet_service import ImperiumSheetService
 from .deck_service import DeckService
 
 class RegistrationError(Exception):
+    """Exception to raise for tournament registration issues"""
+
+class TournamentError(Exception):
     """Exception to raise for tournament registration issues"""
 
 class TournamentService:
@@ -236,6 +239,14 @@ class TournamentService:
         return tournament
 
     @classmethod
+    def next_phase(cls, tournament):
+        i = Tournament.PHASES.index(tournament.phase)
+        max = len(Tournament.PHASES)
+        next = i + 1
+        if max > next:
+            tournament.phase = Tournament.PHASES[next]
+
+    @classmethod
     def special_play_msg(cls, tournament):
 
         msg = ["__**Special Play Phase**__:"," "]
@@ -263,6 +274,7 @@ class TournamentService:
             msg.append(" ")
         
         msg.append("**Note**: No Inducement shopping in this phase")
+        msg.append("**Note 2**: Use !done to confirm you are done with the phase, use !left to see who is left")
         return msg
             
 
@@ -312,3 +324,44 @@ class TournamentService:
             msg.append(" ")
         
         return msg
+
+    @classmethod
+    def blood_bowl_msg(cls, tournament):
+        msg = ["**You have to play Blood Bowl now, we apologize for the inconvenience!**"]
+        return msg
+
+    @staticmethod
+    def confirm_phase(coach,room):
+        if not room:
+            raise TournamentError(f"Discord room not defined!")
+        tourn = Tournament.query.join(Tournament.tournament_signups,TournamentSignups.coach).filter(Coach.id == coach.id).filter(Tournament.discord_channel==room).all()
+        if not tourn:
+            raise TournamentError(f"Tournament with {coach.short_name()} using room {room} was not found!")
+        if len(tourn)>1:
+            raise TournamentError(f"Unable to identify unique tournament for {coach.short_name()} using room {room}. Contact admin!")
+
+        signups = tourn[0].tournament_signups
+        deck = [ts.deck for ts in signups if ts.coach_id == coach.id]
+
+        if deck:
+            deck[0].phase_done = True
+            db.session.commit()
+            return True
+        return False
+
+    @staticmethod
+    def left_phase(room):
+        if not room:
+            raise TournamentError(f"Discord room not defined!")
+        tourn = Tournament.query.join(Tournament.tournament_signups).filter(Tournament.status!="FINISHED").filter(Tournament.discord_channel==room).all()
+        if not tourn:
+            raise TournamentError(f"Tournament using room {room} was not found!")
+        if len(tourn)>1:
+            raise TournamentError(f"Unable to identify unique tournament using room {room}. Contact admin!")
+
+        signups = tourn[0].tournament_signups
+        coaches = [ts.deck.tournament_signup.coach for ts in signups if not ts.deck.phase_done]
+
+        return coaches
+
+
