@@ -231,6 +231,8 @@ def tournament_close(tournament_id):
             reason = prize['reason']+" by "+coach.short_name()
             TransactionService.process(tmp_coach, int(prize['amount'])*-1, reason)
 
+        TournamentService.release_one_time_cards(tourn)
+        
         for coach in tourn.coaches:
             TournamentService.unregister(tourn, coach, admin=True, refund=False)
         TournamentService.reset_phase(tourn)

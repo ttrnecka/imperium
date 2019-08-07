@@ -14,24 +14,12 @@ class ImperiumSheetService:
     """Namespace class"""
     SPREADSHEET_ID = "1t5IoiIjPAS2CD63P6xI4hWwx9c1SEzW9AL1LJ4LK6og"
     # dev spreadsheet below
-    SPREADSHEET_ID = "1z59ftfIYxsSZ_OwQs2KaFGzSuYizSMdSCdW6DGAj4Ms"
+    #SPREADSHEET_ID = "1z59ftfIYxsSZ_OwQs2KaFGzSuYizSMdSCdW6DGAj4Ms"
     ALL_CARDS_SHEET = "All Cards"
     TRAINING_CARDS_SHEET = "Training Cards"
     STARTER_PACK_SHEET = "Starter Pack"
     TOURNAMENT_SHEET = "Tournaments"
-
-    CARD_HEADER = [
-        "Rarity",
-        "Type",
-        "Subtype",
-        "Card Name",
-        "Race",
-        "Description",
-        "Card Value",
-        "Notes",
-        "Skill Access"
-    ]
-
+    
     @classmethod
     def __load(cls,sheet_id):
         client = gspread.authorize(CREDS)

@@ -1,4 +1,6 @@
 """TournamentService helpers"""
+import itertools
+
 from sqlalchemy import asc
 from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach
 from models.base_model import db
@@ -214,6 +216,20 @@ class TournamentService:
             raise RegistrationError(str(exp))
 
         return True
+
+    @classmethod
+    def release_one_time_cards(cls, tournament):
+        cards_list = [ts.deck.cards for ts in tournament.tournament_signups]
+        cards = list(itertools.chain.from_iterable(cards_list))
+
+        for card in cards:
+            if card.get('one_time_use'):
+                coach_mention = card.coach.mention()
+                db.session.delete(card)
+                db.session.commit()
+                NotificationService.notify(
+                    f'Card {card.get("name")} removed from {coach_mention} collection - one time use.'
+                )
 
     @classmethod
     def release_reserves(cls,tournament):

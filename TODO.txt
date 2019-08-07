@@ -10,17 +10,16 @@ season2_reset
 Season 2
 Leaderboard - timing when all coaches are loaded
 Ay - add Special Play players
-Automate removal of one time cards 
 
+VERY HIGH
+add deck templates
+
+MEDIUM
 Hidden quests
     automated 
         - collect all legends from given base race
 
-VERY HIGH
-
-MEDIUM
 backend validation for decks
-add deck templates
 Collect tournament data from cyanide API and display on page
 JS transpiling/packaging tool
 
@@ -32,6 +31,7 @@ test code
 
 
 DONE
+Automate removal of one time cards 
 !left command
 Tournamnet moves automatically to next phase once each coach confirms they are DONE with that phase
 Add injuries as assignable to deck

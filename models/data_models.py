@@ -59,6 +59,7 @@ class CardTemplate(Base):
     skill_access = db.Column(db.String(20))
     multiplier = db.Column(db.Integer(), nullable=False, default=1)
     starter_multiplier = db.Column(db.Integer(), nullable=False, default=0)
+    one_time_use = db.Column(db.Boolean(), default=False, nullable=False)
 
     cards = db.relationship('Card', backref=db.backref('template', lazy=False), cascade="all, delete-orphan",lazy=True)
 
