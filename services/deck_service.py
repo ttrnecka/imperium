@@ -29,7 +29,8 @@ class DeckService:
             "team_name":params["team_name"],
             "mixed_team":params["mixed_team"],
             "comment":params["comment"],
-            "injury_map":params["injury_map"]
+            "injury_map":params["injury_map"],
+            "phase_done":params['phase_done'],
         }
 
     @classmethod
@@ -85,7 +86,7 @@ class DeckService:
     @classmethod
     def assigncard(cls, deck, card):
         """Assign assignable `card` in `deck`"""
-        if card['template']['card_type'] != "Training" and card['template']['name'] != "Bodyguard":
+        if card['template']['card_type'] != "Training" and card['template']['name'] not in ["Bodyguard", "Hired Muscle", "Personal Army"]:
             raise DeckError(f"{card['template']['name']} is not assignable!")
         if card["id"]:
             tmp_card = Card.query.get(card["id"])

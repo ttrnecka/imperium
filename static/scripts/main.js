@@ -248,7 +248,7 @@ Vue.mixin({
       return matches.map((s) => this.imgs_for_skill(s)).join("");
     },
     skills_for_special_and_staff(card) {
-      if(!["Special Play","Staff","Upgrade","Reaction"].includes(card.card_type)) {
+      if(!["Special Play","Staff","Upgrade","Reaction"].includes(card.template.card_type)) {
         return card.template.name;
       }
       let str = card.template.description
@@ -318,6 +318,8 @@ Vue.mixin({
           skills = ["SideStep"];
           break;
         case "Bodyguard":
+        case "Hired Muscle":
+        case "Personal Army":
           skills = [];
           break;
         default:
@@ -341,6 +343,10 @@ Vue.mixin({
     number_of_assignments(card) {
       if(card.template.name=="Bodyguard")
         return 1;
+      if(card.template.name=="Hired Muscle")
+        return 2;
+      if(card.template.name=="Personal Army")
+        return 3;
       if(card.template.card_type!="Training") {
         return 0;
       }

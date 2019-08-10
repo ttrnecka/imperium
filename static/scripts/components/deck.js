@@ -24,6 +24,14 @@ export default {
               log:""
           },
           team:{},
+          phases: {
+            deck_building:"Deck Building",
+            locked:"Locked",
+            special_play:"Special Play",
+            inducement:"Inducement",
+            reaction:"Reaction",
+            blood_bowl:"Blood Bowl",
+          }
       }
     },
     methods: {
@@ -299,6 +307,10 @@ export default {
                 this.processing=false;
             });
         },
+        phaseDone() {
+            this.deck.phase_done = true;
+            this.updateDeck();
+        },
         updateDeck() {
             if(!this.is_owner) {
                 return;
@@ -315,6 +327,7 @@ export default {
                 mixed_team:this.deck.mixed_team,
                 comment:this.deck.comment,
                 injury_map:this.deck.injury_map,
+                phase_done:this.deck.phase_done,
             }
             axios.post(path,{deck:send_deck})
             .then((res) => {
@@ -392,10 +405,29 @@ export default {
                 return [];
             }
         },
-
+        is_tr_card_assigned_as_double(tr_card) {
+            let assigned_to = this.get_card_assignment(tr_card);
+            let is_double = false;
+            assigned_to.forEach((id) => {
+                const p_card = this.deck_cards.find((c) => {
+                    if (String(c.id) == String(id) || String(c.uuid) == String(id))
+                      return true;
+                });
+                if (p_card) {
+                    let skills = this.skill_names_for(tr_card);
+                    skills.forEach((skill) => {
+                        if(this.is_skill_double(p_card,skill)) {
+                            is_double = true;
+                        }
+                    })
+                }
+            });
+            return is_double;
+        },
         doubles_count(card) {
             const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
             let doubles = 0;
+
             assigned_cards.forEach((tcard) => {
                 // ignore extra cards
                 if(tcard.deck_type=="extra") {
@@ -417,7 +449,7 @@ export default {
             if (card.template.card_type!="Player")
               return false;
             const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
-            if (assigned_cards.find((c) => c.template.name=='Bodyguard')!=undefined)
+            if (assigned_cards.find((c) => ["Bodyguard", "Hired Muscle", "Personal Army"].includes(c.template.name))!=undefined)
               return true;
             return false;
         },
@@ -556,8 +588,8 @@ export default {
         deck_doubles_count() {
             let count = 0;
             this.deck_cards.forEach((card) => {
-                if(card.template.card_type=="Player") {
-                    count += this.doubles_count(card);
+                if(card.template.card_type=="Training") {
+                    count += this.is_tr_card_assigned_as_double(card) ? 1 : 0;
                 }
             });
             return count;
@@ -585,7 +617,10 @@ export default {
                     <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header deck_header">
-                            <h5 class="modal-title">Deck for [[coach.short_name]] in [[tournament.name ]]</h5>
+                            <h5 class="modal-title">Deck for [[coach.short_name]] in [[tournament.name]] - Phase: [[ phases[tournament.phase] ]]
+                                <button v-if="deck.phase_done" type="button" disabled class="btn btn-success">Done</button>
+                                <button v-else type="button" class="btn btn-danger" @click="phaseDone()">Done</button>
+                            </h5>
                             <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked && started" @click="commit()">Commit</button>
                             <button type="button" disabled class="btn btn-success" v-if="deck.commited && !locked">Committed</button>
                             <button type="button" disabled class="btn btn-info" v-if="locked">Locked</button>
@@ -855,7 +890,7 @@ export default {
                                                         <tr @click="removeFromDeck(card)" :key="card.id" :class="[rarityclass(card.template.rarity), extra_type(card.deck_type)]">
                                                             <td><img class="rarity" :src="'static/images/'+card.template.rarity+'.jpg'" :alt="card.template.rarity" :title="card.template.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.template.value ]]</td>
-                                                            <td :title="card.template.description">[[ card.template.name ]]<span v-if="is_guarded(card)" title="Bodyguard">&#128170;</span></td>
+                                                            <td :title="card.template.description">[[ card.template.name ]]<span v-if="is_guarded(card)" title="No Special Play effects possible">&#128170;</span></td>
                                                             <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
                                                             <td v-if="ctype=='Player'">[[ card.template.race ]]</td>
                                                             <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">[[ card.template.subtype ]]</td>
