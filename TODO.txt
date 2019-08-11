@@ -1,11 +1,12 @@
 Season 2 upgrade steps:
 PATCH
-update config.py
+update config.py (with season old seasons)
 upgrade db
 admincard update
 card_template_init
 achievement_insert
 season2_reset
+update config.py (with season old seasons)
 
 Season 2
 TOP

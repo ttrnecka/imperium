@@ -61,7 +61,7 @@ class CardTemplate(Base):
     starter_multiplier = db.Column(db.Integer(), nullable=False, default=0)
     one_time_use = db.Column(db.Boolean(), default=False, nullable=False)
 
-    cards = db.relationship('Card', backref=db.backref('template', lazy=False), cascade="all, delete-orphan",lazy=True)
+    cards = db.relationship('Card', backref=db.backref('template', lazy="selectin"), cascade="all, delete-orphan",lazy=True)
 
     def __init__(self,**kwargs):
         super(CardTemplate, self).__init__(**kwargs)
@@ -127,12 +127,12 @@ class Pack(Base):
     pack_type = db.Column(db.String(20), nullable=False)
     price = db.Column(db.Integer, default=0, nullable=False)
     team = db.Column(db.String(20))
-    season = db.Column(db.String(20), default="0", nullable=False, index=True)
+    season = db.Column(db.String(20), default="1", nullable=False, index=True)
 
     coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
 
-    transaction = db.relationship('Transaction',uselist=False, backref=db.backref('pack', lazy=True), cascade="all, delete-orphan",lazy=False)
-    cards = db.relationship('Card', backref=db.backref('pack', lazy=False), cascade="all, delete-orphan",lazy=False)
+    transaction = db.relationship('Transaction',uselist=False, backref=db.backref('pack', lazy="select"), cascade="all, delete-orphan",lazy="select")
+    cards = db.relationship('Card', backref=db.backref('pack', lazy="select"), cascade="all, delete-orphan",lazy="selectin")
 
     def __repr__(self):
         return f'<Pack {self.pack_type}>'
@@ -147,9 +147,9 @@ class Coach(Base):
     disc_id = db.Column(db.BigInteger(),nullable=False,index=True)
     name = db.Column(db.String(80), unique=True, nullable=False, index=True)
     deleted_name = db.Column(db.String(80), unique=False, nullable=True)
-    account = db.relationship('Account', uselist=False, backref=db.backref('coach', lazy=True), cascade="all, delete-orphan")
-    packs = db.relationship('Pack', backref=db.backref('coach', lazy=True),cascade="all, delete-orphan",lazy="subquery")
-    cards = db.relationship('Card', secondary="packs",backref=db.backref('coach', lazy=True, uselist=False), viewonly=True,lazy="subquery")
+    account = db.relationship('Account', uselist=False, backref=db.backref('coach', lazy=True), cascade="all, delete-orphan",lazy="selectin")
+    packs = db.relationship('Pack', backref=db.backref('coach', lazy=True),cascade="all, delete-orphan",lazy="selectin")
+    cards = db.relationship('Card', secondary="packs",backref=db.backref('coach', lazy=True, uselist=False), viewonly=True,lazy="selectin")
     deleted = db.Column(db.Boolean(), default=False)
     duster = db.relationship("Duster", backref=db.backref('coach'), cascade="all, delete-orphan",uselist=False)
     web_admin = db.Column(db.Boolean(), default=False)
@@ -180,7 +180,7 @@ class Coach(Base):
         return self.name[:-5]
 
     def collection_value(self):
-        return sum([card.get('value') for card in self.cards])
+        return sum([card.get('value') for card in self.active_cards() if not card.is_starter])
 
     # id behind #
     def discord_id(self):
@@ -192,7 +192,7 @@ class Coach(Base):
     def earned(self):
         cash = 0
         for tr in self.account.transactions:
-            if tr.price<0:
+            if tr.price<0 and tr.season==db.get_app().config['SEASON']:
                 cash += -1*tr.price
         return cash
 
@@ -208,7 +208,12 @@ class Coach(Base):
         return {}
 
     def active_cards(self):
-        return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["SEASON"]).all()
+        #return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["SEASON"]).all()
+        cards = []
+        for card in self.cards:
+            if card.pack.season==db.get_app().config['SEASON']:
+                cards.append(card)
+        return cards
 
     def inactive_cards(self):
         return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["PREVIOUS_SEASON"]).all()
@@ -327,7 +332,7 @@ class Account(Base):
     amount = db.Column(db.Integer, default=INIT_CASH, nullable=False)
     coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
 
-    transactions = db.relationship('Transaction', backref=db.backref('account', lazy=False), cascade="all, delete-orphan",lazy=False)
+    transactions = db.relationship('Transaction', backref=db.backref('account', lazy=False), cascade="all, delete-orphan", lazy='select')
 
     def __repr__(self):
         return '<Account %r>' % self.amount
@@ -344,10 +349,15 @@ class Transaction(Base):
     confirmed = db.Column(db.Boolean, default = False, nullable=False)
     description = db.Column(db.String(255), nullable=False)
     account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'))
+    season = db.Column(db.String(20), default="1", nullable=False, index=True)
 
     def confirm(self):
         self.confirmed = True
         self.date_confirmed = datetime.datetime.now()
+
+    def __init__(self,**kwargs):
+        super(Transaction, self).__init__(**kwargs)
+        self.season = db.get_app().config["SEASON"]
 
 deck_card_table = db.Table('deck_cards', Base.metadata,
     db.Column('deck_id', db.Integer, db.ForeignKey('decks.id')),

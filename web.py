@@ -144,7 +144,8 @@ def me():
     """returns user from session"""
     user = session.get('discord_user', {'code':0})
     if current_user():
-        result = coach_schema.dump(current_coach_with_inactive())
+        coach = Coach.query.with_deleted().filter_by(disc_id=current_user()['id']).one_or_none()
+        result = coach_schema.dump(coach)
         user['coach'] = result.data
     else:
         user['coach'] = {}
