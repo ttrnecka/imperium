@@ -72,7 +72,7 @@ def owning_coach(coach):
 def current_coach_with_inactive():
     """Returns current coach or None"""
     return Coach.query.with_deleted().options(
-        raiseload(Coach.cards), raiseload(Coach.packs)
+        raiseload(Coach.packs)
     ).filter_by(disc_id=current_user()['id']).one_or_none()
 
 class InvalidUsage(Exception):

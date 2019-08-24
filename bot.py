@@ -29,7 +29,8 @@ app.app_context().push()
 
 RULES_LINK = "https://bit.ly/2P9Y07F"
 GEN_QUALITY = ["premium", "budget"]
-GEN_PACKS = ["player", "training", "booster", "special", "skill", "coaching", "positional"]
+GEN_PACKS = ["player", "training", "booster", "special"]
+GEN_PACKS_TMP = ["player", "training", "booster", "special", "skill", "coaching", "positional"]
 
 AUTO_CARDS = {
     'Loose Change!':5,
@@ -526,7 +527,7 @@ class DiscordCommand:
         if length not in [2, 3]:
             return False
 
-        if args[1] not in GEN_PACKS:
+        if args[1] not in GEN_PACKS_TMP:
             return False
         # skill/coaching/special/booster without quality
         if length == 2 and args[1] not in ["skill", "coaching", "special", "booster", "training"]:

@@ -26,6 +26,7 @@ class CardSchema(ma.ModelSchema):
 class TournamentSignupSchema(ma.ModelSchema):
     class Meta:
         model = TournamentSignups
+        exclude = ["deck"]
 
 class TournamentSchema(ma.ModelSchema):
     class Meta:

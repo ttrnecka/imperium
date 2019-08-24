@@ -119,6 +119,13 @@ class TournamentService:
                     raise RegistrationError(
                         f"Coach cannot be registered to more than \
                         1 Fast Track Development tournament!!!")
+            
+            if tournament.mode == "Boot Camp":
+                singups = coach.tournaments.filter(
+                    Tournament.type == "Development", Tournament.mode == "Regular").all()
+                if singups:
+                    raise RegistrationError(f"Coach cannot be registered to Boot Camp \
+                        and Regular Development tournament at the same time!!!")
 
             if tournament.mode == "Regular":
                 singups = coach.tournaments.filter(
@@ -126,6 +133,12 @@ class TournamentService:
                 if len(singups)>1:
                     raise RegistrationError(f"Coach cannot be registered to more \
                         than 2 Regular Development tournaments!!!")
+
+                singups = coach.tournaments.filter(
+                    Tournament.type == "Development", Tournament.mode == "Boot Camp").all()
+                if singups:
+                    raise RegistrationError(f"Coach cannot be registered to Boot Camp \
+                        and Regular Development tournament at the same time!!!")
 
         # check for free slots
         signups = tournament.coaches.filter(TournamentSignups.mode != 'reserve').all()

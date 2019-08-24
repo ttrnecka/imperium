@@ -398,8 +398,8 @@ class TournamentSignups(Base):
         UniqueConstraint('tournament_id', 'coach_id', name='uix_tournament_id_coach_id'),
     )
 
-    tournament = db.relationship("Tournament", backref=db.backref('tournament_signups', cascade="all, delete-orphan"),foreign_keys=[tournament_id])
-    coach = db.relationship("Coach", backref=db.backref('tournament_signups', cascade="all, delete-orphan"), foreign_keys=[coach_id])
+    tournament = db.relationship("Tournament", backref=db.backref('tournament_signups', cascade="all, delete-orphan"), foreign_keys=[tournament_id])
+    coach = db.relationship("Coach", backref=db.backref('tournament_signups', cascade="all, delete-orphan", lazy=False) ,foreign_keys=[coach_id])
     deck = db.relationship("Deck", backref=db.backref('tournament_signup',uselist=False), single_parent=True, cascade="all, delete-orphan", foreign_keys=[deck_id])
 
 class Tournament(Base):

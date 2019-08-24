@@ -10,8 +10,13 @@ update config.py (with season old seasons)
 
 Season 2
 TOP
-Leaderboard - timing when all coaches are loaded
 Ay - add Special Play players
+Tournamnet load speed
+Send message if tournament fills(daily)
+!genpacktemp positional cpp - fucked up - positionals missing legends
+tournament deck value limit
+max 2 regulars
+
 
 VERY HIGH
 add deck templates
@@ -27,6 +32,7 @@ Collect tournament data from cyanide API and display on page
 JS transpiling/packaging tool
 
 LOW:
+Leaderboard - timing when all coaches are loaded
 randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is not bound to a Session; lazy load operation of attribute 'cards' cannot proceed (Background on this error at: http://sqlalche.me/e/bhk3)
 
 VERY LOW:
@@ -34,6 +40,7 @@ test code
 
 
 DONE
+!genpack positional cpp - fucked up
 DONE button in the deck
 Doubles counting per training card and not players
 Automate removal of one time cards 
