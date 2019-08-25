@@ -399,7 +399,7 @@ class TournamentSignups(Base):
     )
 
     tournament = db.relationship("Tournament", backref=db.backref('tournament_signups', cascade="all, delete-orphan"), foreign_keys=[tournament_id])
-    coach = db.relationship("Coach", backref=db.backref('tournament_signups', cascade="all, delete-orphan", lazy=False) ,foreign_keys=[coach_id])
+    coach = db.relationship("Coach", backref=db.backref('tournament_signups', cascade="all, delete-orphan", lazy=False) ,foreign_keys=[coach_id], lazy='select')
     deck = db.relationship("Deck", backref=db.backref('tournament_signup',uselist=False), single_parent=True, cascade="all, delete-orphan", foreign_keys=[deck_id])
 
 class Tournament(Base):

@@ -12,10 +12,8 @@ Season 2
 TOP
 Ay - add Special Play players
 Tournamnet load speed
-Send message if tournament fills(daily)
 !genpacktemp positional cpp - fucked up - positionals missing legends
 tournament deck value limit
-max 2 regulars
 
 
 VERY HIGH
@@ -40,6 +38,8 @@ test code
 
 
 DONE
+Send message if tournament fills(daily)
+max 2 regulars, no regular and boot camp mix
 !genpack positional cpp - fucked up
 DONE button in the deck
 Doubles counting per training card and not players
