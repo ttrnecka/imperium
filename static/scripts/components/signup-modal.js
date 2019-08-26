@@ -16,7 +16,7 @@ export default {
           selected_team:"All",
           show_starter:false,
           rarity_order:1,
-          max_value: 30,
+          max_value: 35,
           max_cards: 5,
           max_legends:1,
           migrated:false,
@@ -167,7 +167,7 @@ export default {
             return this.pack_cards.concat(this.uniques).map((c) => c.id);
         }
     },  
-    template:   `<div class="modal fade" id="signup_modal" tabindex="-1" role="dialog" aria-labelledby="signup_modal" aria-hidden="true">
+    template:   `<div class="modal fade signup" id="signup_modal" tabindex="-1" role="dialog" aria-labelledby="signup_modal" aria-hidden="true">
                     <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">

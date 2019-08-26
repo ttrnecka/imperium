@@ -8,3 +8,5 @@ data/
 imperium.code-workspace
 config/config.py
 pylintrc
+bot.bat
+cleanup.py

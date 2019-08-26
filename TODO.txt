@@ -8,11 +8,29 @@ achievement_insert
 season2_reset
 update config.py (with season old seasons)
 
+Video
+- new signup
+- card migration(value)
+- reaction cards
+- deck upgrade cards
+
+- achievements - new achievement
+- achievements tuning
+
+- tournament - value limit
+- tournament - signup date ignored
+
+= deck signup - no regular and boot camp mixing
+- deck - value limit
+- deck tier tax
+- deck upgrade
+- deck injury selection
+- deck - DONE - automatic phase move
+- special cards
+
 Season 2
 TOP
 Ay - add Special Play players
-Tournamnet load speed
-!genpacktemp positional cpp - fucked up - positionals missing legends
 tournament deck value limit
 
 
@@ -38,6 +56,9 @@ test code
 
 
 DONE
+legendary pack
+!genpacktemp positional cpp - fucked up - positionals missing legends
+Tournamnet load speed
 Send message if tournament fills(daily)
 max 2 regulars, no regular and boot camp mix
 !genpack positional cpp - fucked up

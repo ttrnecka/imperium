@@ -30,7 +30,7 @@ app.app_context().push()
 RULES_LINK = "https://bit.ly/2P9Y07F"
 GEN_QUALITY = ["premium", "budget"]
 GEN_PACKS = ["player", "training", "booster", "special"]
-GEN_PACKS_TMP = ["player", "training", "booster", "special", "skill", "coaching", "positional"]
+GEN_PACKS_TMP = ["player", "training", "booster", "special", "skill", "coaching", "positional", "legendary"]
 
 AUTO_CARDS = {
     'Loose Change!':5,
@@ -332,6 +332,11 @@ class DiscordCommand:
         msg += "Rarity: Rare or higher\n"
         msg += "Command: !genpacktemp positional <team>\n \n"
 
+        msg += "= Legendary pack =\n"
+        msg += "Content: 1 legendary player type cards\n"
+        msg += "Rarity: Legendary\n"
+        msg += "Command: !genpacktemp legendary <team>\n \n"
+
         msg += "where <team> is one of following:\n"
         for team in PackService.MIXED_TEAMS:
             msg += "\t"+team["code"] +" - "+ team["name"] +f" ({', '.join(team['races'])})\n"
@@ -539,7 +544,7 @@ class DiscordCommand:
         if length == 3 and args[1] == "booster" and args[2] not in GEN_QUALITY:
             return False
         # player with teams
-        if (length == 3 and args[1] in ["player", "positional"]
+        if (length == 3 and args[1] in ["player", "positional", "legendary"]
                 and args[2] not in PackService.team_codes()):
             return False
         if length > 3:
@@ -825,7 +830,7 @@ class DiscordCommand:
                 await self.reply([f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
                 return
 
-            if ptype in ["player", "positional"]:
+            if ptype in ["player", "positional", "legendary"]:
                 team = self.args[2]
                 pack = PackService.generate(ptype, team=team)
             elif ptype in ["training", "special", "skill", "coaching"]:

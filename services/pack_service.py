@@ -28,6 +28,7 @@ class PackService:
         "positional":0,
         "coaching":0,
         "skill":0,
+        "legendary":0,
     }
 
     BUDGET_COMBOS = [
@@ -98,6 +99,17 @@ class PackService:
         {"roll":1, "rarities":["Legendary", "Epic", "Epic"]},
     ]
 
+    POSITIONAL_COMBOS = [
+        {"roll":0.35, "rarities":["Rare", "Rare", "Rare"]},
+        {"roll":0.6, "rarities":["Epic", "Rare", "Rare"]},
+        {"roll":0.8, "rarities":["Epic", "Epic", "Rare"]},
+        {"roll":0.1, "rarities":["Epic", "Epic", "Epic"]},
+    ]
+
+    LEGENDARY_COMBOS = [
+        {"roll":1, "rarities":["Legendary"]},
+    ]
+
     PLAYER_FIRST_COMBOS = [
         {"roll":0.6, "rarities":["Epic", "Rare", "Rare"]},
         {"roll":0.8, "rarities":["Epic", "Epic", "Rare"]},
@@ -133,7 +145,7 @@ class PackService:
         if team is not None and team not in cls.team_codes():
             raise InvalidTeam(team)
 
-        if ptype in ["player", "positional"]:
+        if ptype in ["player", "positional", "legendary"]:
             if not team:
                 raise  ValueError(f"Missing team value for {ptype} pack")
             elif team.lower() not in cls.team_codes():
@@ -147,16 +159,20 @@ class PackService:
         if ptype == "starter":
             cards.extend(CardService.starter_template_pool())
         else:
-            if ptype in ["player", "positional"]:
+            if ptype in ["player"]:
                 combos = cls.PLAYER_COMBOS
                 if first:
                     combos = cls.PLAYER_FIRST_COMBOS
+            elif ptype in ["positional"]:
+                combos = cls.POSITIONAL_COMBOS
             elif ptype in ["training", "special"]:
                 combos = cls.TRAINING_COMBOS
             elif ptype == "coaching":
                 combos = cls.COACHING_COMBOS
             elif ptype == "skill":
                 combos = cls.SKILL_COMBOS
+            elif ptype == "legendary":
+                combos = cls.LEGENDARY_COMBOS
             elif ptype == "booster_premium":
                 combos = cls.PREMIUM_COMBOS
             else:
@@ -165,7 +181,7 @@ class PackService:
             roll = random.random()
             rarities = [combo for combo in combos if combo['roll'] >= roll][0]['rarities']
             for rarity in rarities:
-                if ptype in ["player", "positional"]:
+                if ptype in ["player", "positional", "legendary"]:
                     races = cls.team_by_code(team)["races"]
                     subtype = "Positional" if ptype == "positional" else None
                     fcards = cls.filter_cards(rarity, "Player", races, subtype)

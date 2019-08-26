@@ -52,12 +52,21 @@ export default {
                     return false;
             }
 
-            if(this.deck_size==this.tournament.deck_limit && (card.deck_type!="extra" && card.deck_type!="extra_inducement")) {
+            // check limits if not added by extra cards interface
+            if((card.deck_type!="extra" && card.deck_type!="extra_inducement")) {
+                // ignore first SP card
                 if (card.template.card_type!="Special Play" || this.user_special_plays.length!=0) {
-                    this.flash("Cannot add card - deck limit reached!", 'error',{timeout: 3000});
+                    if(this.deck_size==this.tournament.deck_limit) {
+                        this.flash("Cannot add card - deck limit reached!", 'error',{timeout: 3000});
+                        return false;
+                    }
+                }
+                if(this.deck_value + card.template.value > this.tournament.deck_value_limit) {
+                    this.flash("Cannot add card - deck value limit reached!", 'error',{timeout: 3000});
                     return false;
                 }
             }
+
             if(this.selected_team=="All") {
                 this.flash("Cannot add card - team not selected!", 'error',{timeout: 3000});
                 return false;
@@ -594,6 +603,12 @@ export default {
             });
             return count;
         },
+        deck_value() {
+            let value = this.user_deck_cards.reduce((total, e)=> {  
+                return total+e.template.value;
+            },0);
+            return value + this.tier_tax;
+        },
         has_deck_upgrade() {
             return this.deck_upgrades.length > 0;
         },
@@ -632,7 +647,7 @@ export default {
                         <div class="modal-body">
                             <div class="row">
                                 <div class="col-12">
-                                    <h5 class="d-inline-block">Team:</h5>
+                                    <h6 class="d-inline-block">Team:</h6>
                                     <button v-if="deck.team_name" class="mb-2 ml-3 btn btn-sm btn-info" @click="getTeam(deck.team_name)">Load Team</button>
                                 </div>
                                 <div class="form-group col-lg-6">
@@ -649,11 +664,11 @@ export default {
                                 <div :id="'teamInfoAccordion'+id" class="col-12 mb-3 mt-3" v-if="extra_allowed && 'coach' in team">
                                     <div class="card">
                                     <div class="card-header" :id="'teamInfo'+id">
-                                        <h5 class="mb-0">
+                                        <h6 class="mb-0">
                                             <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseTeamInfo'+id" aria-expanded="true" aria-controls="collapseTeamInfo">
                                             BB2 Team Details
                                             </button>
-                                        </h5>
+                                        </h6>
                                     </div>
                                     <div :id="'collapseTeamInfo'+id" class="collapse hide" aria-labelledby="teamInfo'" :data-parent="'#teamInfoAccordion'+id">
                                         <div class="card-body table-responsive">
@@ -668,7 +683,7 @@ export default {
                                                 <div class="col-sm-4"><b>Cheerleaders:</b> [[team.team.cheerleaders]]</div>
                                                 <div class="col-sm-4"><b>Stadium Enhancement:</b> [[stadium_enhacement(team.team)]]</div>
                                             </div>
-                                            <h5 class="mt-2">Roster:</h5>
+                                            <h6 class="mt-2">Roster:</h6>
                                             <div class="row">
                                             <table class="table  table-striped table-hover">
                                                 <thead>
@@ -704,7 +719,7 @@ export default {
                             </div>
                             <div class="row mb-3">
                                 <div class="col-12">
-                                <h5>Sponsor: [[tournament.sponsor]]</h5>
+                                <h6>Sponsor: [[tournament.sponsor]]</h6>
                                 </div>
                                 <div class="col-12">
                                 [[tournament.special_rules]]
@@ -712,7 +727,7 @@ export default {
                             </div>
                             <div class="row mb-3">
                                 <div class="col-12">
-                                <h5>Comment:</h5>
+                                <h6>Comment:</h6>
                                 </div>
                                 <div class="col-12">
                                 <textarea class="form-control" :disabled="!is_owner || locked" rows="3" v-bind:value="deck.comment" v-on:input="debounceUpdateComment($event.target.value)"></textarea>
@@ -722,11 +737,11 @@ export default {
                                 <div :id="'extraCardsAccordion'+id" class="col-12 mb-3 mt-3">
                                     <div class="card" v-if="extra_allowed && is_owner">
                                     <div class="card-header" :id="'extraCards'+id">
-                                        <h5 class="mb-0">
+                                        <h6 class="mb-0">
                                             <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseExtraCards'+id" aria-expanded="true" aria-controls="collapseExtraCards">
                                             <span data-toggle="tooltip" data-placement="top" title="Use this to add Sponsor, Inducement or Reaction Cards to the collection for this tournament only">Sponsor & Extra Cards</span>
                                             </button>
-                                        </h5>
+                                        </h6>
                                     </div>
                                     <div :id="'collapseExtraCards'+id" class="collapse hide" aria-labelledby="extraCards'" :data-parent="'#extraCardsAccordion'+id">
                                         <div class="card-body">
@@ -751,11 +766,11 @@ export default {
                                     </div>
                                     <div class="card">
                                     <div class="card-header" :id="'log'+id">
-                                        <h5 class="mb-0">
+                                        <h6 class="mb-0">
                                             <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapselog'+id" aria-expanded="true" aria-controls="collapselog">
                                             Deck Log
                                             </button>
-                                        </h5>
+                                        </h6>
                                     </div>
                                     <div :id="'collapselog'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
                                         <div class="card-body">
@@ -769,11 +784,11 @@ export default {
                                     </div>
                                     <div v-if="has_deck_upgrade" class="card">
                                     <div class="card-header" :id="'deck_upgrade'+id">
-                                        <h5 class="mb-0">
+                                        <h6 class="mb-0">
                                             <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapsedeckupgrade'+id" aria-expanded="true" aria-controls="collapsedeckupgrade">
                                             Deck Upgrade
                                             </button>
-                                        </h5>
+                                        </h6>
                                     </div>
                                     <div v-if="has_deck_upgrade" :id="'collapsedeckupgrade'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
                                         <div class="card-body">
@@ -792,9 +807,9 @@ export default {
                             </div>
                             <div class="row">
                                 <div class="col-lg-6">
-                                    <div class="row mt-1">
+                                    <div class="row mt-1 deck_header">
                                     <div class="col-6">
-                                        <h5>Collection</h5>
+                                        <h6>Collection</h6>
                                     </div>
                                     <div class="col-6">
                                         <div class="custom-control custom-checkbox mr-sm-2 text-right">
@@ -806,11 +821,11 @@ export default {
                                     <div :id="'accordionCardsCollection'+id">
                                         <div class="card" v-for="ctype in card_types">
                                             <div class="card-header" :id="ctype.replace(/\\s/g, '')+'CardsCollection'+id">
-                                                <h5 class="mb-0">
+                                                <h6 class="mb-0">
                                                     <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseCollection'+ctype.replace(/\\s/g, '')+id" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\\s/g, '')">
                                                     [[ ctype ]] Cards
                                                     </button>
-                                                </h5>
+                                                </h6>
                                             </div>
                                             <div :id="'collapseCollection'+ctype.replace(/\\s/g, '')+id" class="deck_ctype collapse show" :aria-labelledby="ctype.replace(/\\s/g, '')+'Cards'" :data-parent="'#accordionCardsCollection'+id">
                                                 <div class="card-body table-responsive">
@@ -844,31 +859,31 @@ export default {
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <div class="row mt-1">
+                                    <div class="row mt-1 deck_header">
                                     <div class="col-3">
-                                        <h5>Deck [[deck_size]]/[[tournament.deck_limit]]</h5>
+                                        <h6>Deck [[deck_size]]/[[tournament.deck_limit]]</h6>
                                     </div>
                                     <div class="col-3 text-center">
-                                        <h5>Value: [[ cardsValue(user_deck_cards) + tier_tax ]]</h5>
+                                        <h6>Value: [[ deck_value ]]/[[ tournament.deck_value_limit ]]</h6>
                                     </div>
                                     <div class="col-3 text-center">
-                                        <h5>Doubles: [[ deck_doubles_count ]]</h5>
+                                        <h6>Doubles: [[ deck_doubles_count ]]</h6>
                                     </div>
                                     <div class="col-3">
                                         <div class="custom-control custom-checkbox mr-sm-2 text-right">
                                             <input type="checkbox" class="custom-control-input" :id="'raritytoggle'+id" v-model="rarity_order">
-                                            <label class="custom-control-label" :for="'raritytoggle'+id">Toggle rarity order</label>
+                                            <label class="custom-control-label" :for="'raritytoggle'+id">Rarity order</label>
                                         </div>
                                     </div>
                                     </div>
                                     <div :id="'accordionCardsDeck'+id">
                                         <div class="card" v-for="ctype in card_types">
                                             <div class="card-header" :id="ctype.replace(/\\s/g, '')+'CardsDeck'+id">
-                                                <h5 class="mb-0">
+                                                <h6 class="mb-0">
                                                     <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseDeck'+ctype.replace(/\\s/g, '')+id" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\\s/g, '')">
                                                     [[ ctype ]] Cards ([[deck_size_for(ctype)]])
                                                     </button>
-                                                </h5>
+                                                </h6>
                                             </div>
                                             <div :id="'collapseDeck'+ctype.replace(/\\s/g, '')+id" class="deck_ctype collapse show" :aria-labelledby="ctype.replace(/\\s/g, '')+'Cards'" :data-parent="'#accordionCardsDeck'+id">
                                                 <div class="card-body table-responsive">

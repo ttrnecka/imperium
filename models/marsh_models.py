@@ -26,8 +26,8 @@ class CardSchema(ma.ModelSchema):
 class TournamentSignupSchema(ma.ModelSchema):
     class Meta:
         model = TournamentSignups
-        exclude = ["deck"]
     coach = ma.Integer(attribute = 'coach_id')
+    deck = ma.Integer(attribute = 'deck_id')
 
 class TournamentSchema(ma.ModelSchema):
     class Meta:

@@ -35,6 +35,7 @@ class TournamentService:
             "reserve_limit":int(tournament["Reserve Count Limit"]),
             "region":tournament["Region Bias"],
             "deck_limit":int(tournament["Deck Size Limit"]),
+            "deck_value_limit":int(tournament["Deck Value Limit"]) if tournament["Deck Value Limit"] else 150,
             "admin":tournament["Tournament Admin"],
             "sponsor":tournament["Tournament Sponsor"],
             "special_rules":tournament["Special Rules"],

@@ -71,9 +71,11 @@ def owning_coach(coach):
 
 def current_coach_with_inactive():
     """Returns current coach or None"""
-    return Coach.query.with_deleted().options(
-        raiseload(Coach.packs)
-    ).filter_by(disc_id=current_user()['id']).one_or_none()
+    if current_user():
+        return Coach.query.with_deleted().options(
+            raiseload(Coach.packs)
+        ).filter_by(disc_id=current_user()['id']).one_or_none()
+    return None
 
 class InvalidUsage(Exception):
     """Error handling exception"""

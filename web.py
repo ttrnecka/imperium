@@ -146,10 +146,10 @@ def me():
     if current_user():
         coach = Coach.query.with_deleted().filter_by(disc_id=current_user()['id']).one_or_none()
         result = coach_schema.dump(coach)
-        user['coach'] = result.data
+        coach_data = result.data
     else:
-        user['coach'] = {}
-    return jsonify(user=user)
+        coach_data = {}
+    return jsonify(user=user, coach=coach_data)
 
 @app.route("/")
 def index():

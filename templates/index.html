@@ -79,7 +79,7 @@
                             <li class="nav-item">
                               <a class="nav-link" id="info-tab" data-toggle="tab" href="#coach_info" role="tab" aria-controls="coach_info" aria-selected="true">[[ selectedCoach.short_name]]'s Info</a>
                             </li>
-                            <li v-if="loggedCoach==selectedCoach" class="nav-item">
+                            <li v-if="is_owner" class="nav-item">
                                 <a class="nav-link" id="dusting-tab" data-toggle="tab" href="#coach_dusting" role="tab" aria-controls="coach_dusting" aria-selected="false">Dusting</a>
                             </li>
                             <li class="nav-item">
@@ -201,7 +201,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div v-if="loggedCoach==selectedCoach" class="tab-pane fade" id="coach_dusting" role="tabpanel" aria-labelledby="dusting-tab">
+                            <div v-if="is_owner" class="tab-pane fade" id="coach_dusting" role="tabpanel" aria-labelledby="dusting-tab">
                                 <div class="col-auto my-1">
                                     <div class="row duster_info">
                                         <div class="col-9 col-md-6"><h4>[[duster_type]]</h4></div>

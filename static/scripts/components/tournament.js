@@ -363,7 +363,9 @@ export default {
                         <div class="col-sm-3"><b>Region</b>: [[ tournament.region ]]</div>
                         <div class="col-sm-3"><b>Type</b>: [[ tournament.type ]]</div>
                         <div class="col-sm-3"><b>Mode</b>: [[ tournament.mode ]]</div>
-                        <div class="col-sm-3"><b>Deck Limit</b>: [[ tournament.deck_limit ]]</div>
+                        <div class="col-sm-3"><b>Deck Limits</b>: <span title="Card Limit">[[ tournament.deck_limit ]]</span>
+                            / <span title="Value Limit">[[ tournament.deck_value_limit ]]</span>
+                            </div>
                     </div>
                     <div class="row tournament_info_line">
                         <div class="col-sm-3"><b>Admin</b>: [[ tournament.admin ]]</div>
