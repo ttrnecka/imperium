@@ -7,6 +7,7 @@ card_template_init
 achievement_insert
 season2_reset
 update config.py (with season old seasons)
+schedule tournament full check
 
 Video
 - new signup

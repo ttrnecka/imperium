@@ -43,6 +43,11 @@ class CoachService:
         if missing:
             raise ValueError(f"Not all card IDs were found - {str(missing)[1:-1]}")
 
+        total_value = sum([card.template.value for card in selected_cards])
+        if total_value > 35:
+            raise ValueError(f"Total value is higher than 35!!!")
+        
+
         selected_card_names = [card.template.name for card in selected_cards]
         pack = PackService.admin_pack(card_names=selected_card_names, coach=coach)
         reason = "Account activation - Admin Transfer Pack"
