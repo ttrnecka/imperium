@@ -166,7 +166,7 @@ export default {
         to_migrate() {
             return this.pack_cards.concat(this.uniques).map((c) => c.id);
         }
-    },  
+    },
     template:   `<div class="modal fade signup" id="signup_modal" tabindex="-1" role="dialog" aria-labelledby="signup_modal" aria-hidden="true">
                     <div class="modal-dialog modal-xl">
                     <div class="modal-content">

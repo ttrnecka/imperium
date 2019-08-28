@@ -474,7 +474,7 @@ var app = new Vue({
         axios.get(path)
           .then((res) => {
             this.user = res.data.user;
-            this.user.coach = res.data.coach;
+            //this.user.coach = res.data.coach;
             this.loaded_user = true;
             this.$emit('loadedUser');
           })

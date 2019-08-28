@@ -2,6 +2,7 @@
 import os
 import json
 from datetime import timedelta
+from copy import deepcopy
 
 from flask import Flask, render_template, jsonify, abort, session, redirect, request, url_for
 from flask_fontawesome import FontAwesome
@@ -149,7 +150,9 @@ def me():
         coach_data = result.data
     else:
         coach_data = {}
-    return jsonify(user=user, coach=coach_data)
+    cuser = deepcopy(user)
+    cuser['coach'] = coach_data
+    return jsonify(user=cuser)
 
 @app.route("/")
 def index():

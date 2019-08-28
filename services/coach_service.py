@@ -43,7 +43,7 @@ class CoachService:
         if missing:
             raise ValueError(f"Not all card IDs were found - {str(missing)[1:-1]}")
 
-        total_value = sum([card.template.value for card in selected_cards])
+        total_value = sum([card.template.value for card in selected_cards if card.template.rarity!="Unique"])
         if total_value > 35:
             raise ValueError(f"Total value is higher than 35!!!")
         
