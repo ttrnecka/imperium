@@ -275,7 +275,7 @@ class DeckService:
     @classmethod
     def value(cls, deck):
         team = next((t for t in MIXED_TEAMS if t['name'] == deck.mixed_team), {'tier_tax':0})
-        return sum(c.value for c in deck.cards) + team['tier_tax']
+        return sum(c.template.value for c in deck.cards) + team['tier_tax']
 
 class DeckError(Exception):
     """Exception for Deck related issues"""

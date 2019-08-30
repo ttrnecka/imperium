@@ -570,7 +570,12 @@ export default {
             }
             return ""
         },
-
+        doneable_phase() {
+            if(["special_play","inducement"].includes(this.tournament.phase)) {
+                return true;
+            }
+            return false;
+        },
         // allows extra cards menu
         extra_allowed() {
             //if(this.tournament.status=="OPEN") {
@@ -613,7 +618,7 @@ export default {
             return this.deck_upgrades.length > 0;
         },
         deck_upgrades() {
-            return this.coach.cards.filter((c) => c.subtype == "Deck Upgrade");
+            return this.coach.cards.filter((c) => c.template.subtype == "Deck Upgrade");
         }
     },
     beforeMount() {
@@ -633,8 +638,10 @@ export default {
                     <div class="modal-content">
                         <div class="modal-header deck_header">
                             <h5 class="modal-title">Deck for [[coach.short_name]] in [[tournament.name]] - Phase: [[ phases[tournament.phase] ]]
-                                <button v-if="deck.phase_done" type="button" disabled class="btn btn-success">Done</button>
-                                <button v-else type="button" class="btn btn-danger" @click="phaseDone()">Done</button>
+                                <template v-if="doneable_phase">
+                                    <button v-if="deck.phase_done" type="button" disabled class="btn btn-success">Done</button>
+                                    <button v-else type="button" class="btn btn-danger" @click="phaseDone()">Done</button>
+                                </template>
                             </h5>
                             <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked && started" @click="commit()">Commit</button>
                             <button type="button" disabled class="btn btn-success" v-if="deck.commited && !locked">Committed</button>
@@ -794,10 +801,10 @@ export default {
                                         <div class="card-body">
                                             <div class="row" v-for="card in deck_upgrades">
                                                 <div class="col-md-3">
-                                                    <b>[[card.name]]:</b>
+                                                    <b>[[card.template.name]]:</b>
                                                 </div>
                                                 <div class="col-md-9">
-                                                    [[card.description]]
+                                                    [[card.template.description]]
                                                 </div>
                                             </div>
                                         </div>
@@ -819,7 +826,7 @@ export default {
                                     </div>
                                     </div>
                                     <div :id="'accordionCardsCollection'+id">
-                                        <div class="card" v-for="ctype in card_types">
+                                        <div class="card" v-for="ctype in deck_card_types">
                                             <div class="card-header" :id="ctype.replace(/\\s/g, '')+'CardsCollection'+id">
                                                 <h6 class="mb-0">
                                                     <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseCollection'+ctype.replace(/\\s/g, '')+id" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\\s/g, '')">
@@ -877,7 +884,7 @@ export default {
                                     </div>
                                     </div>
                                     <div :id="'accordionCardsDeck'+id">
-                                        <div class="card" v-for="ctype in card_types">
+                                        <div class="card" v-for="ctype in deck_card_types">
                                             <div class="card-header" :id="ctype.replace(/\\s/g, '')+'CardsDeck'+id">
                                                 <h6 class="mb-0">
                                                     <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseDeck'+ctype.replace(/\\s/g, '')+id" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\\s/g, '')">
