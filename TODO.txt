@@ -1,13 +1,13 @@
 Season 2 upgrade steps:
 PATCH
-update config.py (with season old seasons)
+update config.py (with season old seasons and tournament master admin)
 upgrade db
 admincard update
 card_template_init
 achievement_insert
 season2_reset
 update config.py (with season old seasons)
-schedule tournament full check
+schedule tournament full check at 18UTC
 
 Video
 - new signup

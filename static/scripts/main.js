@@ -181,7 +181,7 @@ Vue.mixin({
         return false
     },
 
-    imgs_for_skill(skill,double=false) {
+    skill_to_api_skill(skill) {
       let name;
       switch(skill) {
         case "Strength Up!":
@@ -216,12 +216,16 @@ Vue.mixin({
         default:
           name = skill.replace(/[\s-]/g, '')
       }
+      return name;
+    },
+    imgs_for_skill(skill,double=false) {
+      let name = this.skill_to_api_skill(skill);
+      
       const url = "https://cdn2.rebbl.net/images/skills/";
       const double_class = double ? "skill_double" : "skill_single"; 
       return "<img class=\"skill_icon "+double_class+"\" src=\""+url+name+".png\" title=\""+skill+"\"></img>";  
     },
-
-    skills_for_player(card) {
+    skill_names_for_player_card(card) {
       if(card.template.card_type!="Player") {
         return card.name;
       }
@@ -246,6 +250,10 @@ Vue.mixin({
           this.skillreg.lastIndex++;
         }
       }
+      return matches.map((s) => this.skill_to_api_skill(s));
+    },
+    skills_for_player(card) {
+      let matches = this.skill_names_for_player_card(card);
       return matches.map((s) => this.imgs_for_skill(s)).join("");
     },
     skills_for_special_and_staff(card) {
