@@ -245,3 +245,15 @@ h5.coach_info, select.coach_info {
 .table-inducement, .table-inducement>td, .table-inducement>th {
   background-color: #efb6d3;
 }
+
+.deck_valid_check, .deck_invalid_check {
+  font-weight: bold;
+}
+
+.deck_valid_check {
+  color: #3c763d;
+}
+
+.deck_invalid_check {
+  color: red;
+}

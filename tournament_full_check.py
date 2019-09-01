@@ -11,7 +11,7 @@ for tournament in tournaments:
     if len(tournament.tournament_signups) == tournament.coach_limit:
         full.append(tournament)
 
-c = Coach.find_all_by_name("TomasT")
+c = Coach.find_all_by_name(app.config['TOURNAMENT_MASTER_ADMIN'])
 if full:
     msg=f"{c[0].mention()}\nFull tournaments:\n"
     for t in full:

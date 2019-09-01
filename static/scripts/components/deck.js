@@ -24,6 +24,20 @@ export default {
               log:""
           },
           team:{},
+          team_check: {
+            apothecary: {
+                msg: "OK",
+                value: true
+            },
+            rerolls: {
+                msg: "OK",
+                value: true
+            },
+            roster: {
+                msg: "OK",
+                value: true
+            }
+          },
           phases: {
             deck_building:"Deck Building",
             locked:"Locked",
@@ -140,12 +154,139 @@ export default {
                     this.flash("Team "+name+" does not exist", 'error',{timeout: 3000});     
                 } else {
                     this.team=res.data;
+                    this.checkTeam();
                 }
             })
             .catch(this.async_error)
             .then(() => {
                 processingMsg.destroy();
             });
+        },
+        resetTeamCheck() {
+            this.team_check = {
+                apothecary: {
+                    msg: "OK",
+                    value: true
+                },
+                rerolls: {
+                    msg: "OK",
+                    value: true
+                },
+                roster: {
+                    msg: "OK",
+                    value: true
+                }
+              };
+        },
+        checkApo() {
+            if(this.team.team.apothecary != this.hasApo()) {
+                this.team_check['apothecary']['value'] = false;
+                if(this.team.team.apothecary) {
+                    this.team_check['apothecary']['msg'] = "Apothecary should not be included";
+                }
+                else {
+                    this.team_check['apothecary']['msg'] = "Apothecary is missing";
+                }
+            }
+        },
+        checkRRs() {
+            if(this.team.team.rerolls != this.numberOfRerolls()) {
+                this.team_check['rerolls']['value'] = false;
+                this.team_check['rerolls']['msg'] = "Number of RRs do not match";
+            }
+        },
+        checkRoster() {
+            // roster size
+            if(this.team.roster.length != this.deck_cards.filter(c => c.template.card_type=="Player").length) {
+                this.team_check['roster']['value'] = false;
+                this.team_check['roster']['msg'] = "Number of players does not match";
+            }
+            let ignore = [];
+
+            this.team.roster.forEach((player) => {
+                player.check = {
+                    value: false,
+                    msg: "Player not found"
+                }
+                this.deck_cards.forEach((c) => {
+                    // if the cards has been linked with another -> skip
+                    if (ignore.includes(this.card_id_or_uuid(c)))
+                      return
+                    // if the player is already valid -> skip
+                    if(player.check.value)
+                      return
+                    // is not a player card -> skip
+                    if(c.template.card_type!="Player")
+                      return
+                    // positional check
+                    //console.log(this.positional_from_api(player.type))
+                    //console.log(this.positional_mapping(c))
+                    if(this.positional_from_api(player.type) != this.positional_mapping(c))
+                      return
+                    // skill check
+                    //console.log(this.skill_names_for_player_card(c).concat(this.assigned_skills(c)));
+                    //console.log(player.skills)
+                    if(!this.equal_sets(this.skill_names_for_player_card(c).concat(this.assigned_skills(c)), player.skills))
+                        return
+                    // injury check
+                    if(!this.equal_sets(this.assigned_injuries(c), player.casualties_state))
+                        return
+                    
+                    // if we came this far the player is valid
+                    ignore.push(this.card_id_or_uuid(c))
+                    player.check = {
+                        value: true,
+                        msg: "Player found"
+                    }
+                })
+            })
+        },
+        checkTeam() {
+            this.resetTeamCheck();
+            // apo
+            this.checkApo();
+            // RRs
+            this.checkRRs();
+
+            // roster 
+            this.checkRoster();
+        },
+        valid(player) {
+            if(player.check.value)
+                return true
+            return false;
+        },
+        equal_sets(set1,set2) {
+            let BreakException = {};
+            if(set1.length != set2.length)
+              return false;
+            try {
+                set1.forEach((i1) => {
+                    let count1 = set1.filter((e) => e == i1).length;
+                    let count2 = set2.filter((e) => e == i1).length;
+                    if(count1!=count2) throw BreakException;
+                })
+            } catch (e) {
+                if (e !== BreakException) throw e;
+                return false;
+            }
+            return true
+        },
+        positional_mapping(card) {
+            let race = card.template.race;
+            race = race.replace(/\s/g, '');
+            let position = card.template.position;
+            position = position.replace(/\s/g, '');
+            return race + " " + position;
+        },
+        hasApo() {
+            if(this.deck.cards.find((c) => c.template.name == "Apothecary")!=undefined) {
+                return true;
+            }
+            return false;
+        },
+        numberOfRerolls() {
+            return this.deck.cards.filter((c) => c.template.name == "Re-roll").length;
         },
         addExtraCard(name) {
             if(!this.is_owner) {
@@ -388,8 +529,26 @@ export default {
                 return String(card.uuid);
             }
         },
+        assigned_cards(card) {
+            return this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
+        },
+        assigned_injuries(card) {
+            let injuries;
+            if (this.deck.injury_map[this.card_id_or_uuid(card)]) {
+                injuries = this.deck.injury_map[this.card_id_or_uuid(card)];
+            } else {
+                injuries = [];
+            }
+            return injuries;
+        },
+        assigned_skills(card) {
+            return this.assigned_cards(card).map((c) => { 
+                let skills = this.skill_names_for(c);
+                return skills.map((s) => this.skill_to_api_skill(s));
+            }).flat();
+        },
         deck_skills_for(card) {
-            const assigned_cards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
+            const assigned_cards = this.assigned_cards(card);
             let injuries;
             if (this.deck.injury_map[this.card_id_or_uuid(card)]) {
                 injuries = this.deck.injury_map[this.card_id_or_uuid(card)];
@@ -677,13 +836,23 @@ export default {
                                                 <div class="col-sm-4"><b>Race:</b> [[race(team.team.idraces)]]</div>
                                                 <div class="col-sm-4"><b>Coach:</b> [[team.coach.name]]</div>
                                                 <div class="col-sm-4"><b>TV:</b> [[team.team.value]]</div>
-                                                <div class="col-sm-4"><b>Apothecary:</b> [[ team.team.apothecary ? "Yes" : "No"]]</div>
-                                                <div class="col-sm-4"><b>Rerolls:</b> [[team.team.rerolls]]</div>
+                                                <div class="col-sm-4">
+                                                <b>Apothecary:</b> [[ team.team.apothecary ? "Yes" : "No"]]
+                                                    <span v-if="team_check.apothecary.value" class="deck_valid_check">✓</span>
+                                                    <span :title="team_check.apothecary.msg" v-else class="deck_invalid_check">✗</span>
+                                                </div>
+                                                <div class="col-sm-4"><b>Rerolls:</b> [[team.team.rerolls]]
+                                                    <span v-if="team_check.rerolls.value" class="deck_valid_check">✓</span>
+                                                    <span :title="team_check.rerolls.msg" v-else class="deck_invalid_check">✗</span>
+                                                </div>
                                                 <div class="col-sm-4"><b>Assistant Coaches:</b> [[team.team.assistantcoaches]]</div>
                                                 <div class="col-sm-4"><b>Cheerleaders:</b> [[team.team.cheerleaders]]</div>
                                                 <div class="col-sm-4"><b>Stadium Enhancement:</b> [[stadium_enhacement(team.team)]]</div>
                                             </div>
-                                            <h6 class="mt-2">Roster:</h6>
+                                            <h6 class="mt-2">Roster:
+                                                <span v-if="team_check.roster.value" class="deck_valid_check">✓</span>
+                                                <span :title="team_check.roster.msg" v-else class="deck_invalid_check">✗</span>
+                                            </h6>
                                             <div class="row">
                                             <table class="table  table-striped table-hover">
                                                 <thead>
@@ -696,6 +865,7 @@ export default {
                                                         <th>Position</th>
                                                         <th>Skills</th>
                                                         <th>Injuries</th>
+                                                        <th>Valid</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -708,6 +878,10 @@ export default {
                                                     <td>[[positional_from_api(player.type)]]</td>
                                                     <td><span v-html="player.skills.map((s) => imgs_for_skill(s)).join('')"></span></td>
                                                     <td><span v-html="player.casualties_state.map((c) => imgs_for_skill(c)).join('')"></span></td>
+                                                    <td>
+                                                        <span v-if="valid(player)" class="deck_valid_check">✓</span>
+                                                        <span v-else class="deck_invalid_check">✗</span>
+                                                    </td>
                                                 </tr>
                                                 </tbody>
                                             </table>

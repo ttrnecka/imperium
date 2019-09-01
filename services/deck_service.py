@@ -184,6 +184,8 @@ class DeckService:
                 raise DeckError("Card not found")
         else:
             #extra cards
+            print(card)
+            print(deck.unused_extra_cards)
             if card in deck.unused_extra_cards:
                 deck.unused_extra_cards.remove(card)
                 deck.extra_cards.remove(card)

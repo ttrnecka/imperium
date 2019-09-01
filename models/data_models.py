@@ -60,6 +60,7 @@ class CardTemplate(Base):
     multiplier = db.Column(db.Integer(), nullable=False, default=1)
     starter_multiplier = db.Column(db.Integer(), nullable=False, default=0)
     one_time_use = db.Column(db.Boolean(), default=False, nullable=False)
+    position = db.Column(db.String(50), nullable=False)
 
     cards = db.relationship('Card', backref=db.backref('template', lazy="selectin"), cascade="all, delete-orphan",lazy=True)
 

@@ -16,6 +16,9 @@ class AccountSchema(ma.ModelSchema):
 class CardTemplateSchema(ma.ModelSchema):
     class Meta:
         model = CardTemplate
+        exclude = ["cards"]
+    date_modified = ma.String()
+    date_created = ma.String()
 
 class CardSchema(ma.ModelSchema):
     class Meta:
