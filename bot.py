@@ -1196,6 +1196,7 @@ class DiscordCommand:
                 TournamentService.update()
                 await self.reply([f"Tournaments updated!!!\n"])
             if self.args[1] == "stop":
+                TournamentService.release_one_time_cards(tourn)
                 for coach in tourn.coaches:
                     TournamentService.unregister(tourn, coach, admin=True, refund=False)
                 TournamentService.reset_phase(tourn)
