@@ -23,6 +23,7 @@ class CardTemplateSchema(ma.ModelSchema):
 class CardSchema(ma.ModelSchema):
     class Meta:
         model = Card
+        exclude = ["decks", "coach"]
     assigned_to_array = ma.Dict(ma.List(ma.String))
     template = ma.Nested(CardTemplateSchema)
 
