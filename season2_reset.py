@@ -6,9 +6,9 @@ from services import CoachService
 
 app.app_context().push()
 
-#for coach in Coach.query.all():
-#    coach.deleted = True
-#    coach.achievements = achievements_template
+for coach in Coach.query.all():
+    coach.deleted = True
+    coach.achievements = achievements_template
 
 d = deck_card_table.delete()
 db.session.execute(d)
