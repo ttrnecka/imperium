@@ -9,31 +9,9 @@ season2_reset
 update config.py (with season old seasons)
 schedule tournament full check at 18UTC
 
-Video
-- new signup
-- card migration(value)
-- reaction cards
-- deck upgrade cards
-
-- achievements - new achievement
-- achievements tuning
-
-- tournament - value limit
-- tournament - signup date ignored
-
-= deck signup - no regular and boot camp mixing
-- deck - value limit
-- deck tier tax
-- deck upgrade
-- deck injury selection
-- deck - DONE - automatic phase move
-- special cards
-
 Season 2
 TOP
-Ay - add Special Play players
-tournament deck value limit
-
+user is loaded slowly (2s)
 
 VERY HIGH
 add deck templates
