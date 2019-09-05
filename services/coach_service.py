@@ -138,7 +138,7 @@ class CoachService:
     def check_collect_three_legends_quest(cls, coach):
         """callback method to check if hidden quest collect 3 legends has been achieved. Should be called after packs are generated"""
         achievement = coach.achievements['quests']['collect3legends']
-        legends = [card for card in coach.cards if card.get('subtype') == "REBBL Legend"]
+        legends = [card for card in coach.active_cards if card.get('subtype') == "REBBL Legend"]
         legends_count = len(legends)
         if achievement['best'] < legends_count: 
             achievement['best'] = legends_count
