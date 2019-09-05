@@ -324,13 +324,13 @@ Vue.mixin({
           skills = ["DivingTackle","DivingTackle","DivingTackle"];
           break;
         case "Laying the Smackdown":
-          skills = ["Wrestle","Wrestle","Wrestle"];
+          skills = ["Wrestle"];
           break;
         case "Need for Speed":
-          skills = ["IncreasedMovement","IncreasedMovement","IncreasedMovement"];
+          skills = ["IncreasedMovement"];
           break;
         case "The Great Wall":
-          skills = ["Guard","Guard","Guard"];
+          skills = ["Guard"];
           break;
         case "Tubthumping":
           skills = ["PilingOn","JumpUp","Dauntless"];
