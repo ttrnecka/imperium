@@ -205,7 +205,8 @@ class Coach(Base):
             f = open(stats_file, "r")
             data = json.loads(f.read())
             if self.bb2_name:
-                return data['coaches'][self.bb2_name]
+                stats = data['coaches'].get(self.bb2_name, {})
+                return stats
         return {}
 
     def active_cards(self):
