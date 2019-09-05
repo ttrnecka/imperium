@@ -320,6 +320,21 @@ Vue.mixin({
         case "I Didn't Read The Rules":
           skills = ["MVPCondition","MVPCondition","MVPCondition"];
           break;
+        case "Counterfeit Skill Shop":
+          skills = ["DivingTackle","DivingTackle","DivingTackle"];
+          break;
+        case "Laying the Smackdown":
+          skills = ["Wrestle","Wrestle","Wrestle"];
+          break;
+        case "Need for Speed":
+          skills = ["IncreasedMovement","IncreasedMovement","IncreasedMovement"];
+          break;
+        case "The Great Wall":
+          skills = ["Guard","Guard","Guard"];
+          break;
+        case "Tubthumping":
+          skills = ["PilingOn","JumpUp","Dauntless"];
+          break;
         case "Training Wildcard":
           skills = ["MVPCondition2"];
           break;
