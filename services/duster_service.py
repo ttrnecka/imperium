@@ -71,6 +71,8 @@ class DusterService:
         card = CardService.get_undusted_card_from_coach(coach, card_name)
         if card is None:
             raise DustingError(f"Card **{card_name}** - not found, check spelling, or maybe it is already dusted or used in deck")
+        if card.is_starter:
+            raise DustingError(f"Card **{card_name}** - cannot dust card from the starter pack")
         return cls.check_and_dust(coach, card)
 
     @classmethod
@@ -87,6 +89,8 @@ class DusterService:
         card = Card.query.get(card_id)
         if card is None:
             raise DustingError(f"Card not found")
+        if card.is_starter:
+            raise DustingError(f"Card **{card_name}** - cannot dust card from the starter pack")
         if card.duster_id is not None:
             raise DustingError(f"Card **{card.get('name')}** is already flagged for dusting")
         return cls.check_and_dust(coach, card)

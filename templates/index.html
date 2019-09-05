@@ -235,6 +235,7 @@
                                                         </thead>
                                                         <tbody>
                                                         <tr v-for="card in sortedCardsWithoutQuantity(selectedCoach.cards,ctype,false)" :key="card.id" :class="rarityclass(card.template.rarity)">
+                                                            <template v-if="!card.is_starter">
                                                             <td><img class="rarity" :src="'static/images/'+card.template.rarity+'.jpg'" :alt="card.template.rarity" :title="card.template.rarity" width="20" height="25" /></td>
                                                             <td class="d-none d-sm-table-cell">[[ card.template.value ]]</td>
                                                             <td :title="card.template.description">[[ card.template.name ]]</td>
@@ -245,6 +246,7 @@
                                                                 <button v-if="is_in_duster(card)" :disabled="processing" type="button" class="col-12 btn btn-danger" @click="dust_remove(card)">Remove</button>
                                                                 <button v-else type="button" :disabled="processing" class="col-12 btn btn-success" @click="dust_add(card)">Add</button>
                                                             </td>
+                                                            </template>
                                                         </tr>
                                                         </tbody>
                                                     </table>
