@@ -326,6 +326,7 @@ class TournamentService:
             if deck[1] < highest_value:
                 msg.append(f"{deck[0]} has **{highest_value - deck[1]}** points of inducements")
         msg.append(" ")
+        msg.append("**Note**: Use !done to confirm you are done with the phase, use !left to see who is left")
 
         return msg
     
@@ -353,6 +354,7 @@ class TournamentService:
                     msg.append(deck[2][index].get('description'))
             msg.append(" ")
         
+        msg.append("**Note**: Use !done to confirm you are done with the phase, use !left to see who is left")
         return msg
 
     @classmethod
