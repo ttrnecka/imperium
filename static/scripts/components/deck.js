@@ -761,7 +761,7 @@ export default {
         deck_doubles_count() {
             let count = 0;
             this.deck_cards.forEach((card) => {
-                if(card.template.card_type=="Training") {
+                if(card.template.card_type=="Training" && card.deck_type!="extra") {
                     count += this.is_tr_card_assigned_as_double(card) ? 1 : 0;
                 }
             });
