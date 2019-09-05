@@ -23,7 +23,7 @@ class CardService:
     @classmethod
     def get_card_from_coach(cls, coach, name):
         """returns card from coach by `name`"""
-        cards = list(filter(lambda card: card.get('name').lower() == name.lower(), coach.active_cards))
+        cards = list(filter(lambda card: card.get('name').lower() == name.lower(), coach.active_cards()))
 
         if not cards:
             return None
