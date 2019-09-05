@@ -197,7 +197,7 @@ class DiscordCommand:
               f'expected start: {t.expected_start_date}' for t in coach.tournaments],
             "\n**Collection**:",
             "-" * 65 + "",
-            f"{cls.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.cards), show_hidden=True)}",
+            f"{cls.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.active_cards()), show_hidden=True)}",
             "-" * 65 + "\n"
         ]
 
@@ -756,7 +756,7 @@ class DiscordCommand:
                 )
                 return
 
-            all_cards = coach.cards
+            all_cards = coach.active_cards()
             sp_msg = " (with Starter Pack)"
             if not show_starter:
                 all_cards = [card for card in all_cards if not card.is_starter]
