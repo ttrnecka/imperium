@@ -211,11 +211,11 @@ class Coach(Base):
 
     def active_cards(self):
         return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["SEASON"]).all()
-        cards = []
-        for card in self.cards:
-            if card.pack.season==db.get_app().config['SEASON']:
-                cards.append(card)
-        return cards
+        #cards = []
+        #for card in self.cards:
+        #    if card.pack.season==db.get_app().config['SEASON']:
+        #        cards.append(card)
+        #return cards
 
     def inactive_cards(self):
         return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["PREVIOUS_SEASON"]).all()
