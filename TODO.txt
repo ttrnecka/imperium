@@ -11,9 +11,8 @@ schedule tournament full check at 18UTC
 
 Season 2
 TOP
-Race conditions (load)
-new notification channel for tournament full messages
-
+!left to display phase 
+Extra added Special playes not triggered in SP phase
 
 VERY HIGH
 add deck templates
@@ -37,6 +36,8 @@ test code
 
 
 DONE
+notification to new channel
+race condition whne loading coaches
 Newcoach for inactive coaches
 Ledger submission notification for inactive admins
 legendary pack
