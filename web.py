@@ -473,7 +473,7 @@ def get_deck(deck_id):
         raise InvalidUsage(
             "Only tournament participants or admin can display the decks!",
             status_code=403
-            
+        )
     return deck_response(deck)
 
 @app.route("/decks/<int:deck_id>", methods=["POST"])
