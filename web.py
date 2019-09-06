@@ -468,7 +468,7 @@ def get_deck(deck_id):
     coach_ids = [ts.coach_id for ts in deck.tournament_signup.tournament.tournament_signups]
     if (coach.id not in coach_ids and
             not (coach.short_name() == deck.tournament_signup.tournament.admin or
-                 coach.short_name() == "TomasT"))
+                 coach.short_name() == "TomasT")
        ):
         raise InvalidUsage(
             "Only tournament participants or admin can display the decks!",
