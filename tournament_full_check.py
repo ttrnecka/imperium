@@ -1,7 +1,7 @@
 """resets coaches and tournaments in DB"""
 from web import db, app
 from models.data_models import Coach, Tournament
-from services import AdminNotificationService
+from services import TournamentNotificationService
 
 app.app_context().push()
 
@@ -16,4 +16,4 @@ if full:
     msg=f"{c[0].mention()}\nFull tournaments:\n"
     for t in full:
         msg += f"{t.tournament_id}. {t.name}\n"
-    AdminNotificationService.notify(msg)
+    TournamentNotificationService.notify(msg)

@@ -11,7 +11,9 @@ schedule tournament full check at 18UTC
 
 Season 2
 TOP
-user is loaded slowly (2s)
+Race conditions (load)
+new notification channel for tournament full messages
+
 
 VERY HIGH
 add deck templates
@@ -35,6 +37,8 @@ test code
 
 
 DONE
+Newcoach for inactive coaches
+Ledger submission notification for inactive admins
 legendary pack
 !genpacktemp positional cpp - fucked up - positionals missing legends
 Tournamnet load speed

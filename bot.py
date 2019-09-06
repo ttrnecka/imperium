@@ -731,6 +731,8 @@ class DiscordCommand:
     async def __run_newcoach(self):
         if Coach.get_by_discord_id(self.message.author.id):
             await self.reply([f"**{self.message.author.mention}** account exists already\n"])
+        elif Coach.get_by_discord_id(self.message.author.id, deleted=True):
+            await self.reply([f"**{self.message.author.mention}** account is inactive, use the web page to active it\n"])
         else:
             try:
                 coach = CoachService.new_coach(self.message.author, self.message.author.id)

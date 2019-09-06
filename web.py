@@ -18,7 +18,7 @@ from models.marsh_models import tournaments_schema, tournament_schema, duster_sc
 from models.marsh_models import leaderboard_coach_schema, deck_schema
 from services import PackService, CoachService, NotificationService
 from services import LedgerNotificationService, AchievementNotificationService
-from services import AdminNotificationService, CardService
+from services import AdminNotificationService, CardService, TournamentNotificationService
 from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError
 from services import TransactionService, DeckService, DeckError
@@ -49,6 +49,9 @@ def create_app():
     )
     AdminNotificationService.register_notifier(
         WebHook(fapp.config['DISCORD_WEBHOOK_ADMIN']).send
+    )
+    TournamentNotificationService.register_notifier(
+        WebHook(fapp.config['DISCORD_WEBHOOK_TOURNAMENT']).send
     )
     BB2Service.register_agent(bb2.api.Agent(fapp.config['BB2_API_KEY']))
     return fapp

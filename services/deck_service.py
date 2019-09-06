@@ -221,7 +221,7 @@ class DeckService:
             else:
                 admin_mention = "Unknown admin"
         else:
-            admin_mention = deck.tournament_signup.admin
+            admin_mention = deck.tournament_signup.tournament.admin
 
         coach_mention = coach.short_name()
 

@@ -314,8 +314,11 @@ class Coach(Base):
 
 
     @classmethod
-    def get_by_discord_id(cls,id):
-        return cls.query.filter_by(disc_id=id).one_or_none()
+    def get_by_discord_id(cls,id, deleted=False):
+        if deleted:
+            return cls.query.with_deleted().filter_by(disc_id=id).one_or_none()
+        else:
+            return cls.query.filter_by(disc_id=id).one_or_none()
 
     @classmethod
     def create(cls,name,disc_id):
