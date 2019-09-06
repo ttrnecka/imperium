@@ -347,8 +347,10 @@ def main(argv):
     for coach in Coach.query.all():
         if not coach.bb2_name:
             continue
+        coach_stats = stats['coaches'].get(coach.bb2_name, None)
+        if not coach_stats:
+            continue
         coach.achievements['match']['winwithall']['best'] = 0
-        coach_stats = stats['coaches'][coach.bb2_name]
         # team achievements
         for team_id, data in coach_stats['teams'].items():
             team_id = str(team_id)
