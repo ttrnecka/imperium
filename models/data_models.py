@@ -149,8 +149,8 @@ class Coach(Base):
     name = db.Column(db.String(80), unique=True, nullable=False, index=True)
     deleted_name = db.Column(db.String(80), unique=False, nullable=True)
     account = db.relationship('Account', uselist=False, backref=db.backref('coach', lazy=True), cascade="all, delete-orphan",lazy="selectin")
-    packs = db.relationship('Pack', backref=db.backref('coach', lazy=True),cascade="all, delete-orphan",lazy="selectin")
-    cards = db.relationship('Card', secondary="packs",backref=db.backref('coach', lazy=True, uselist=False), viewonly=True,lazy="selectin")
+    packs = db.relationship('Pack', backref=db.backref('coach', lazy=True),cascade="all, delete-orphan",lazy="select")
+    cards = db.relationship('Card', secondary="packs",backref=db.backref('coach', lazy=True, uselist=False), viewonly=True,lazy="select")
     deleted = db.Column(db.Boolean(), default=False)
     duster = db.relationship("Duster", backref=db.backref('coach'), cascade="all, delete-orphan",uselist=False)
     web_admin = db.Column(db.Boolean(), default=False)
@@ -210,7 +210,7 @@ class Coach(Base):
         return {}
 
     def active_cards(self):
-        #return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["SEASON"]).all()
+        return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["SEASON"]).all()
         cards = []
         for card in self.cards:
             if card.pack.season==db.get_app().config['SEASON']:
