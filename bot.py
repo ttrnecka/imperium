@@ -815,7 +815,8 @@ class DiscordCommand:
         room = self.message.channel.name
         try:
             coaches = TournamentService.left_phase(room)
-            msg = ["**Left:**"]
+            phase = TournamentService.get_phase(room)
+            msg = [f"**Phase:** {phase}","**Left:**"]
             for coach in coaches:
                 msg.append(coach.short_name())
         except TournamentError as e:

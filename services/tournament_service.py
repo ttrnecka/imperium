@@ -396,4 +396,15 @@ class TournamentService:
 
         return coaches
 
+    @staticmethod
+    def get_phase(room):
+        if not room:
+            raise TournamentError(f"Discord room not defined!")
+        tourn = Tournament.query.join(Tournament.tournament_signups).filter(Tournament.status!="FINISHED").filter(Tournament.discord_channel==room).all()
+        if not tourn:
+            raise TournamentError(f"Tournament using room {room} was not found!")
+        if len(tourn)>1:
+            raise TournamentError(f"Unable to identify unique tournament using room {room}. Contact admin!")
+
+        return tourn[0].phase
 
