@@ -164,7 +164,6 @@ class DiscordCommand:
             return True
 
         for card, quantity in cards:
-            value += card.get('value') * quantity
             msg += cls.number_emoji(quantity)
             msg += " x "
             msg += cls.rarity_emoji(card.get('rarity'))
@@ -172,6 +171,7 @@ class DiscordCommand:
                 name = "Reaction Card"
                 cvalue = "?"
             else:
+                value += card.get('value') * quantity
                 name = card.get("name")
                 cvalue = card.get("value")
             msg += f' **{name}** ({card.get("subtype")} {card.get("race")} '
