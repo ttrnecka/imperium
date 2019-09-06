@@ -210,7 +210,7 @@ class Coach(Base):
         return {}
 
     def active_cards(self):
-        return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["SEASON"]).all()
+        #return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["SEASON"]).all()
         cards = []
         for card in self.cards:
             if card.pack.season==db.get_app().config['SEASON']:
