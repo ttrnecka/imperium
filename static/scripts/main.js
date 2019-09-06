@@ -888,7 +888,7 @@ var app = new Vue({
     },
     mounted() {
       this.$on('loadedUser', this.selectCoach);
-      this.$on('loadedCoaches', this.selectCoach);
+      //this.$on('loadedCoaches', this.selectCoach);
       this.$on('signedUpCoach', this.signedCallback);
       this.$on('updateTournament', this.updateTournament);
       this.$on('updateTournaments', this.getTournaments);
