@@ -41,8 +41,8 @@ def check_build_own_legend_quest(target, value, oldvalue, initiator):
                 legends = DeckService.legends_in_deck(deck)
                 built_legends = []
                 for legend in legends:
-                    if isinstance(legend[0], Card) and not legend[0].rarity in ["Unique","Legendary","Inducement"] or \
-                        isinstance(legend[0], dict) and not legend[0]['rarity'] in ["Unique","Legendary","Inducement"]:
+                    if isinstance(legend[0], Card) and not legend[0].template.rarity in ["Unique","Legendary","Inducement"] or \
+                        isinstance(legend[0], dict) and not legend[0]['template']['rarity'] in ["Unique","Legendary","Inducement"]:
                             built_legends.append(legend[0])
                 if built_legends:
                     achievement['best'] = len(built_legends)

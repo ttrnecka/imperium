@@ -1,18 +1,5 @@
-Season 2 upgrade steps:
-PATCH
-update config.py (with season old seasons and tournament master admin)
-upgrade db
-admincard update
-card_template_init
-achievement_insert
-season2_reset
-update config.py (with season old seasons)
-schedule tournament full check at 18UTC
-
 Season 2
 TOP
-!left to display phase 
-Extra added Special playes not triggered in SP phase
 
 VERY HIGH
 add deck templates
@@ -36,6 +23,8 @@ test code
 
 
 DONE
+!left to display phase 
+Extra added Special playes not triggered in SP phase
 notification to new channel
 race condition whne loading coaches
 Newcoach for inactive coaches
@@ -168,3 +157,14 @@ Achievements - cas in stead of pass for 50
 Ignore Extra cards in the double calculation
 make obvious that you cannot submit deck while tournament is not started
 Hide signup button for full tournaments
+
+Season 2 upgrade steps:
+PATCH
+update config.py (with season old seasons and tournament master admin)
+upgrade db
+admincard update
+card_template_init
+achievement_insert
+season2_reset
+update config.py (with season old seasons)
+schedule tournament full check at 18UTC
