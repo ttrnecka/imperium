@@ -2,7 +2,7 @@
 import itertools
 
 from sqlalchemy import asc
-from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach
+from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card
 from models.base_model import db
 from .notification_service import NotificationService
 from .imperium_sheet_service import ImperiumSheetService
@@ -283,7 +283,9 @@ class TournamentService:
         decks = []
         max_special_plays = 0
         for signup in tournament.tournament_signups:
-            special_plays = [card for card in signup.deck.cards if card.get('card_type') == "Special Play"]
+            special_plays1 = [card for card in signup.deck.cards if card.get('card_type') == "Special Play"]
+            special_plays2 = [card for card in signup.deck.extra_cards if card.get('template').get('card_type') == "Special Play"]
+            special_plays = special_plays1 + special_plays2
             if len(special_plays) > max_special_plays:
                 max_special_plays = len(special_plays)
 
@@ -299,8 +301,12 @@ class TournamentService:
         for index in range(max_special_plays):
             for deck in sorted_decks:
                 if len(deck[2]) >= index + 1:
-                    msg.append(f"{deck[0]} plays **{deck[2][index].get('name')}**:")
-                    msg.append(deck[2][index].get('description'))
+                    if isinstance(deck[2][index], Card):
+                        msg.append(f"{deck[0]} plays **{deck[2][index].get('name')}**:")
+                        msg.append(deck[2][index].get('description'))
+                    else:
+                        msg.append(f"{deck[0]} plays **{deck[2][index]['template'].get('name')}**:")
+                        msg.append(deck[2][index]['template'].get('description'))
             msg.append(" ")
         
         msg.append("**Note**: No Inducement shopping in this phase")
