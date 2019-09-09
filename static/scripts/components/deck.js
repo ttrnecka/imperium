@@ -799,7 +799,7 @@ export default {
                             <h5 class="modal-title">Deck for [[coach.short_name]] in [[tournament.name]] - Phase: [[ phases[tournament.phase] ]]
                                 <template v-if="doneable_phase">
                                     <button v-if="deck.phase_done" type="button" disabled class="btn btn-success">Done</button>
-                                    <button v-else type="button" class="btn btn-danger" @click="phaseDone()">Done</button>
+                                    <button v-if="!deck.phase_done && is_owner" type="button" class="btn btn-danger" @click="phaseDone()">Done</button>
                                 </template>
                             </h5>
                             <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked && started" @click="commit()">Commit</button>
