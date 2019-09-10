@@ -321,7 +321,7 @@ Vue.mixin({
           skills = ["MVPCondition","MVPCondition","MVPCondition"];
           break;
         case "Counterfeit Skill Shop":
-          skills = ["DivingTackle","DivingTackle","DivingTackle"];
+          skills = ["DivingTackle"];
           break;
         case "Laying the Smackdown":
           skills = ["Wrestle"];
