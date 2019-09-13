@@ -275,6 +275,9 @@ export default {
         positional_mapping(card) {
             let race = card.template.race;
             race = race.replace(/\s/g, '');
+            if (race == "Bretonnian") {
+                race = "Bretonnia";
+            }
             let position = card.template.position;
             position = position.replace(/\s/g, '');
             return race + " " + position;
