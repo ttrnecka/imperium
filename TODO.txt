@@ -1,5 +1,6 @@
 Season 2
 TOP
+Add Start button from tournaments
 
 VERY HIGH
 add deck templates
@@ -23,10 +24,11 @@ test code
 
 
 DONE
-!left to display phase 
-Extra added Special playes not triggered in SP phase
-notification to new channel
-race condition whne loading coaches
+Reactions - NaN in coach collection
+Reactions - do not count value in the pack list
+
+Race conditions (load)
+new notification channel for tournament full messages
 Newcoach for inactive coaches
 Ledger submission notification for inactive admins
 legendary pack

@@ -12,7 +12,7 @@ name_map = {'Card ID':'id', 'Card Name':'name', 'Description':'description', 'Ra
     'Starter Multiplier':'starter_multiplier', 'One Time Use':'one_time_use', "Position":"position"}
 
 class CardService:
-    skillreg = r"(Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off)( |,|\.|$)"
+    skillreg = r"(Kick-Off Return|Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off)( |,|\.|$)"
     """CardService helper namespace"""
 
     @classmethod
@@ -78,6 +78,56 @@ class CardService:
 
         skills = re.findall(cls.skillreg,string)
         return [skill[0] for skill in skills]
+
+    @classmethod
+    def skills_for_training_card(cls, name):
+        skills = []
+        if name == "Block Party":
+          skills = ["Block"]
+        elif name == "Dodge like a Honeybadger, Sting like the Floor":
+          skills = ["Tackle"]
+        elif name == "Gengar Mode":
+          skills = ["DirtyPlayer"]
+        elif name == "Roger Dodger":
+          skills = ["Dodge"]
+        elif name == "Packing a Punch":
+          skills = ["MightyBlow"]
+        elif name == "Ballhawk":
+          skills = ["Wrestle","Tackle","StripBall"]
+        elif name == "Roadblock":
+          skills = ["Block","Dodge","StandFirm"]
+        elif name == "Cold-Blooded Killer":
+          skills = ["MightyBlow","PilingOn"]
+        elif name == "Sniper":
+          skills = ["Accurate","StrongArm"]
+        elif name == "A Real Nuisance":
+          skills = ["SideStep","DivingTackle"]
+        elif name == "Insect DNA":
+          skills = ["TwoHeads","ExtraArms"]
+        elif name == "Super Wildcard":
+          skills = ["MVPCondition"]
+        elif name == "I Didn't Read The Rules":
+          skills = ["MVPCondition","MVPCondition","MVPCondition"]
+        elif name == "Counterfeit Skill Shop":
+          skills = ["DivingTackle"]
+        elif name == "Laying the Smackdown":
+          skills = ["Wrestle"]
+        elif name == "Need for Speed":
+          skills = ["IncreasedMovement"]
+        elif name == "The Great Wall":
+          skills = ["Guard"]
+        elif name == "Tubthumping":
+          skills = ["PilingOn","JumpUp","Dauntless"]
+        elif name == "Training Wildcard":
+          skills = ["MVPCondition2"]
+        elif name == "Sidestep":
+          skills = ["SideStep"]
+        elif name == "Bodyguard" or name == "Hired Muscle" or name == "Personal Army":
+          skills = []
+        else:
+          skills = [name]
+        
+        return skills
 
     @classmethod
     def template_pool(cls):

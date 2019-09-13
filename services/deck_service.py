@@ -1,5 +1,6 @@
 """DeckService helper module"""
 import uuid
+from itertools import chain
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import event
 
@@ -261,8 +262,12 @@ class DeckService:
     @classmethod
     def skills_for(cls, deck, card):
         original_cards, extra_cards = cls.assigned_cards_to(deck, card)
+        names1 = [CardService.skills_for_training_card(tcard.template.name) for tcard in original_cards]
+        names1 = list(chain.from_iterable(names1))
+        names2 = [CardService.skills_for_training_card(tcard['template']['name']) for tcard in extra_cards]
+        names2 = list(chain.from_iterable(names2))
         printed_skills = CardService.builtin_skills_for(card)
-        return printed_skills + [card.get('name') for card in original_cards] + [card['template']['name'] for card in extra_cards]
+        return printed_skills + names1 + names2
 
     @classmethod
     def legends_in_deck(cls, deck):
