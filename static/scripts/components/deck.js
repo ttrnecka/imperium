@@ -280,13 +280,22 @@ export default {
             return race + " " + position;
         },
         hasApo() {
-            if(this.deck.cards.find((c) => c.template.name == "Apothecary")!=undefined) {
+            let race = this.race(this.team.team.idraces);
+            // AU has no apo
+            if(race == "Afterlife United") {
+                return false;
+            }
+            if(this.deck.cards.find((c) => ["Apothecary", "Clever Management", "Inspirational Boss"].includes(c.template.name))!=undefined) {
                 return true;
             }
             return false;
         },
         numberOfRerolls() {
-            return this.deck.cards.filter((c) => c.template.name == "Re-roll").length;
+            // harcoded
+            let r1 = this.deck.cards.filter((c) => c.template.name == "Inspirational Boss").length * 2;
+            let r2 = this.deck.cards.filter((c) => c.template.name == "Motivational Speaker").length * 2;
+            let r3 = this.deck.cards.filter((c) => c.template.name == "Clever Management").length * 1;
+            return this.deck.cards.filter((c) => c.template.name == "Re-roll").length + r1 + r2 + r3;
         },
         addExtraCard(name) {
             if(!this.is_owner) {
