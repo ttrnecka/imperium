@@ -221,7 +221,7 @@ export default {
                     // positional check
                     //console.log(this.positional_from_api(player.type))
                     //console.log(this.positional_mapping(c))
-                    if(this.positional_from_api(player.type) != this.positional_mapping(c))
+                    if(!this.positional_mapping(c).includes(this.positional_from_api(player.type)))
                       return
                     // skill check
                     //console.log(this.skill_names_for_player_card(c).concat(this.assigned_skills(c)));
@@ -273,14 +273,18 @@ export default {
             return true
         },
         positional_mapping(card) {
-            let race = card.template.race;
-            race = race.replace(/\s/g, '');
-            if (race == "Bretonnian") {
-                race = "Bretonnia";
-            }
-            let position = card.template.position;
-            position = position.replace(/\s/g, '');
-            return race + " " + position;
+            let races = card.template.race.split("/");
+            let positionals = races.map((race) => {
+                race = race.replace(/\s/g, '');
+                if (race == "Bretonnian") {
+                    race = "Bretonnia";
+                }
+                let position = card.template.position;
+                position = position.replace(/\s/g, '');
+                return race + " " + position;
+            });
+            console.log(positionals);
+            return positionals;
         },
         hasApo() {
             let race = this.race(this.team.team.idraces);
