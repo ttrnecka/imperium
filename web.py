@@ -403,6 +403,7 @@ def inactive_coach_cards(coach_id, **kwargs):
 @authenticated
 def get_team(teamname):
     """pulls team from BB2 api and returns it"""
+    print(teamname)
     result = BB2Service.team(teamname)
     return jsonify(result)
 # DECKS

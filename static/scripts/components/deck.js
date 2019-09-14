@@ -146,7 +146,7 @@ export default {
             });
         },
         getTeam(name) {
-            const path = "/teams/"+name;
+            const path = "/teams/"+encodeURIComponent(name);
             const processingMsg = this.flash("Loading team...", 'info');
             axios.get(path)
             .then((res) => {
