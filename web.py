@@ -278,7 +278,7 @@ def tournament_start(tournament_id):
             raise InvalidUsage(str(err), status_code=403)
         
         AdminNotificationService.notify(
-            f"!admincomp start {tournament_id}"
+            f"!admincomp start {tourn.tournament_id}"
         )
         return jsonify(True)
     except (RegistrationError, TransactionError, TypeError) as exc:
