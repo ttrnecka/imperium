@@ -1208,17 +1208,15 @@ class DiscordCommand:
                 return
 
             if self.args[1] in ["start", "special_play", "inducement", "reaction","blood_bowl"]:
-                if not tourn.discord_channel:
-                    await self.reply([f"Discord channel is not defined, please update it in Tournament sheet and run **!admincomp update**!\n"])
+                
+                result, err = TournamentService.start_check(tourn)
+                if err:
+                    await self.reply([err])
                     return
 
                 channel = discord.utils.get(self.client.get_all_channels(), name=tourn.discord_channel.lower())
                 if not channel:
                     await self.reply([f"Discord channel {tourn.discord_channel.lower()} does not exists, please create it and rerun this command!\n"])
-                    return
-
-                if not tourn.admin:
-                    await self.reply([f"Tournament admin is not defined, please update it in Tournament sheet and run **!admincomp update**!\n"])
                     return
 
                 admin = discord.utils.get(self.message.guild.members, name=tourn.admin)

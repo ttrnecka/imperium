@@ -1,7 +1,7 @@
 """Web decorators"""
 import functools
 
-from misc.helpers import current_user, InvalidUsage, current_coach, current_coach_with_inactive
+from misc.helpers import current_user, InvalidUsage, current_coach, current_coach_with_inactive, db
 
 def authenticated(func):
     """Raises exception if not authenticated"""
@@ -35,7 +35,7 @@ def registered_with_inactive(func):
     return wrapper_registered
 
 def webadmin(func):
-    """Raises exception if coach is webadmin"""
+    """Raises exception if coach is not webadmin"""
     @functools.wraps(func)
     def wrapper_webadmin(*args, **kwargs):
         coach = current_coach()
@@ -45,3 +45,16 @@ def webadmin(func):
             raise InvalidUsage("Coach does not have webadmin role", status_code=403)
         return func(*args, **kwargs)
     return wrapper_webadmin
+
+def masteradmin(func):
+    """Raises exception if coach is master admin"""
+    @functools.wraps(func)
+    def wrapper_masteradmin(*args, **kwargs):
+        coach = current_coach()
+        if not coach:
+            raise InvalidUsage("Coach not found", status_code=403)
+        if not coach.short_name() == db.get_app().config['TOURNAMENT_MASTER_ADMIN']:
+            raise InvalidUsage(f"Only {db.get_app().config['TOURNAMENT_MASTER_ADMIN']} can do this!", status_code=403)
+        return func(*args, **kwargs)
+    return wrapper_masteradmin
+

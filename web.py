@@ -24,7 +24,7 @@ from services import BB2Service, DusterService, WebHook, DustingError
 from services import TransactionService, DeckService, DeckError
 from misc.helpers import InvalidUsage, current_coach, current_user, current_coach_with_inactive, CardHelper
 from misc.helpers import owning_coach
-from misc.decorators import authenticated, registered, webadmin, registered_with_inactive
+from misc.decorators import authenticated, registered, webadmin, registered_with_inactive, masteradmin
 import bb2
 
 
@@ -212,7 +212,7 @@ def get_tournament(tournament_id):
 
 @app.route("/tournaments/update", methods=["GET"])
 @authenticated
-@webadmin
+@masteradmin
 def tournaments_update():
     """Update tournaments from sheet"""
     try:
@@ -263,6 +263,24 @@ def tournament_set_phase(tournament_id):
 
         result = tournament_schema.dump(tourn)
         return jsonify(result.data)
+    except (RegistrationError, TransactionError, TypeError) as exc:
+        raise InvalidUsage(str(exc), status_code=403)
+
+@app.route("/tournaments/<int:tournament_id>/start", methods=["GET"])
+@authenticated
+@masteradmin
+def tournament_start(tournament_id):
+    """Set tournament phase"""
+    try:
+        tourn = Tournament.query.get(tournament_id)
+        result, err = TournamentService.start_check(tourn)
+        if err:
+            raise InvalidUsage(str(err), status_code=403)
+        
+        AdminNotificationService.notify(
+            f"!admincomp start {tournament_id}"
+        )
+        return jsonify(True)
     except (RegistrationError, TransactionError, TypeError) as exc:
         raise InvalidUsage(str(exc), status_code=403)
 

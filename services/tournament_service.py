@@ -414,3 +414,19 @@ class TournamentService:
 
         return tourn[0].phase
 
+    @staticmethod
+    def start_check(tourn):
+        if not tourn.discord_channel:
+            err = "Discord channel is not defined, please update it in Tournament sheet and run **!admincomp update**!\n"
+            return False, err
+
+        if not tourn.admin:
+            err = f"Tournament admin is not defined, please update it in Tournament sheet and run **!admincomp update**!\n"
+            return False, err
+    
+        coaches = Coach.find_all_by_name(tourn.admin)
+        if not coaches:
+            er = f"Tournament admin {tourn.admin} was not found on the discord server, check name in the Tournament sheet and run **!admincomp update**!\n"
+            return False, err
+
+        return True, None

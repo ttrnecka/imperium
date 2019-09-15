@@ -157,6 +157,9 @@ export default {
                 this.processing=false;
             });
         },
+        start() {
+            this.call("start");
+        },
         sign() {
             this.call("sign");
         },
@@ -186,8 +189,12 @@ export default {
             .then((res) => {
                 if(method=="sign") {
                     msg = "Signup to "+this.tournament.name+" succeded";
-                } else if(method=="resign") {
+                } 
+                else if(method=="resign") {
                     msg = "Resignation from "+this.tournament.name+" succeded";
+                }
+                else if(method=="start") {
+                    msg = "Start of "+this.tournament.name+" initiated. Check discord!";
                 }
                 else if(method=="update") {
                     msg = "Tournaments updated";
@@ -417,8 +424,9 @@ export default {
                         <div class="col-12"><b>Management:</b></div>
                     </div>
                     <div v-if="is_webadmin" class="row tournament_webadmin tournament_info_line">
-                        <div class="col-sm-6"><button :disabled="processing" type="button" class="col-12 m-1 btn btn-info" @click="update()">Update</button></div>
-                        <div class="col-sm-6">
+                        <div class="col-sm-4"><button :disabled="processing" type="button" class="col-12 m-1 btn btn-info" @click="update()">Update</button></div>
+                        <div class="col-sm-4"><button :disabled="processing" type="button" class="col-12 m-1 btn btn-primary" @click="start()">Start</button></div>
+                        <div class="col-sm-4">
                             <button v-if="prize_menu" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="award_and_stop()">Award & Stop</button>
                             <button v-else :disabled="processing" type="button" class="col-12 m-1 btn btn-success" @click="setprizes()">Set Prizes</button>
                         </div>

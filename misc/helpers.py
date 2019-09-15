@@ -2,7 +2,7 @@
 from flask import session
 from sqlalchemy.orm import raiseload
 
-from models.data_models import Coach, Card
+from models.data_models import Coach, Card, db
 
 class CardHelper:
     """CardHelper namespace"""
