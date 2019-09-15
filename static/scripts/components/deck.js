@@ -283,7 +283,6 @@ export default {
                 position = position.replace(/\s/g, '');
                 return race + " " + position;
             });
-            console.log(positionals);
             return positionals;
         },
         hasApo() {
@@ -303,6 +302,9 @@ export default {
             let r2 = this.deck.cards.filter((c) => c.template.name == "Motivational Speaker").length * 2;
             let r3 = this.deck.cards.filter((c) => c.template.name == "Clever Management").length * 1;
             return this.deck.cards.filter((c) => c.template.name == "Re-roll").length + r1 + r2 + r3;
+        },
+        cloneExtraCard(card) {
+            this.addExtraCard(card.template.name);
         },
         addExtraCard(name) {
             if(!this.is_owner) {
@@ -953,7 +955,10 @@ export default {
                                                     <div class="col-md-6 pt-1 pl-4">
                                                     <h6 class="extra_card">[[card.template.name]]</h6>
                                                     </div>
-                                                    <div class="col-md-6">
+                                                    <div class="col-md-3">
+                                                        <button type="button" :disabled="processing || !is_owner || locked" class="btn-sm mb-1 btn btn-success btn-block" @click="cloneExtraCard(card)">Clone</button>
+                                                    </div>
+                                                    <div class="col-md-3">
                                                         <button type="button" :disabled="processing || !is_owner || locked" class="btn-sm mb-1 btn btn-danger btn-block" @click="removeExtraCard(card)">Remove</button>
                                                     </div>
                                                 </template>

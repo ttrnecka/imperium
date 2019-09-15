@@ -2,7 +2,6 @@ Season 2
 TOP
 Add Start button from tournaments
 Increment/Decrement extra cards
-Multi race cards in checker
 
 VERY HIGH
 add deck templates
@@ -26,6 +25,7 @@ test code
 
 
 DONE
+Multi race cards in checker
 Reactions - NaN in coach collection
 Reactions - do not count value in the pack list
 
