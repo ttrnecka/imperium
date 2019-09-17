@@ -993,7 +993,7 @@ export default {
                                         </h6>
                                     </div>
                                     <div v-if="has_deck_upgrade" :id="'collapsedeckupgrade'+id" class="collapse show" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
-                                        <div class="card-body">
+                                        <div class="card-body deck_upgrade">
                                             <div class="row" v-for="card in deck_upgrades">
                                                 <div class="col-md-3">
                                                     <b>[[card.template.name]]:</b>
