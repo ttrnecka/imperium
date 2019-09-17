@@ -987,7 +987,7 @@ export default {
                                     <div v-if="has_deck_upgrade" class="card">
                                     <div class="card-header" :id="'deck_upgrade'+id">
                                         <h6 class="mb-0">
-                                            <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapsedeckupgrade'+id" aria-expanded="true" aria-controls="collapsedeckupgrade">
+                                            <button class="btn btn-link" data-toggle="collapse show" :data-target="'#collapsedeckupgrade'+id" aria-expanded="true" aria-controls="collapsedeckupgrade">
                                             Deck Upgrade
                                             </button>
                                         </h6>
