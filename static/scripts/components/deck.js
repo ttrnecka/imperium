@@ -987,12 +987,12 @@ export default {
                                     <div v-if="has_deck_upgrade" class="card">
                                     <div class="card-header" :id="'deck_upgrade'+id">
                                         <h6 class="mb-0">
-                                            <button class="btn btn-link" data-toggle="collapse show" :data-target="'#collapsedeckupgrade'+id" aria-expanded="true" aria-controls="collapsedeckupgrade">
+                                            <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapsedeckupgrade'+id" aria-expanded="true" aria-controls="collapsedeckupgrade">
                                             Deck Upgrade
                                             </button>
                                         </h6>
                                     </div>
-                                    <div v-if="has_deck_upgrade" :id="'collapsedeckupgrade'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
+                                    <div v-if="has_deck_upgrade" :id="'collapsedeckupgrade'+id" class="collapse show" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
                                         <div class="card-body">
                                             <div class="row" v-for="card in deck_upgrades">
                                                 <div class="col-md-3">
