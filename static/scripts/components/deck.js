@@ -16,6 +16,7 @@ export default {
               cards:[],
               extra_cards:[],
               unused_extra_cards:[],
+              deck_upgrade_cards: [],
               mixed_team:"",
               team_name:"",
               comment:"",
@@ -795,7 +796,7 @@ export default {
             return this.deck_upgrades.length > 0;
         },
         deck_upgrades() {
-            return this.coach.cards.filter((c) => c.template.subtype == "Deck Upgrade");
+            return this.deck.deck_upgrade_cards;
         }
     },
     beforeMount() {

@@ -384,6 +384,9 @@ class Deck(Base):
     injury_map = db.Column(TextPickleType(), nullable=False)
     phase_done = db.Column(db.Boolean(), default=False)
 
+    def deck_upgrade_cards(self):
+        return [card for card in self.tournament_signup.coach.active_cards() if card.template.subtype=="Deck Upgrade"]
+
     def to_log(self,msg):
         if self.commited:
             self.log += msg

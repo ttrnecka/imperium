@@ -1,4 +1,4 @@
-import tournament from './components/tournament.js?1.26';
+import tournament from './components/tournament.js?1.27';
 import signupModal from './components/signup-modal.js?1.0';
 import VueFlashMessage from './components/VueFlashMessage/index.js?1.1';
 Vue.use(VueFlashMessage);
