@@ -37,7 +37,7 @@ Vue.mixin({
   },
   methods: {
     is_skill_double(player_card,skill) {
-      if (["Strength Up!", "Agility Up!", "Movement Up!", "Armour Up!"].includes(skill)) {
+      if (["Strength Up!", "Agility Up!", "Movement Up!", "Armour Up!", "IncreaseMovement", "IncreaseMovement","IncreaseStrength","IncreaseAgility"].includes(skill)) {
         return false;
       }
       if (player_card.template.skill_access.indexOf(this.skill_to_group_map[skill]) > -1 ) {
