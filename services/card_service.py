@@ -113,7 +113,7 @@ class CardService:
         elif name == "Laying the Smackdown":
           skills = ["Wrestle"]
         elif name == "Need for Speed":
-          skills = ["IncreasedMovement"]
+          skills = ["IncreaseMovement"]
         elif name == "The Great Wall":
           skills = ["Guard"]
         elif name == "Tubthumping":
