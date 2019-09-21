@@ -1,4 +1,4 @@
-import deck from './deck.js?1.18';
+import deck from './deck.js?1.23';
 import confirmationButton from './confirmation-button.js';
 
 export default {

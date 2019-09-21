@@ -16,6 +16,7 @@ export default {
               cards:[],
               extra_cards:[],
               unused_extra_cards:[],
+              deck_upgrade_cards: [],
               mixed_team:"",
               team_name:"",
               comment:"",
@@ -795,7 +796,7 @@ export default {
             return this.deck_upgrades.length > 0;
         },
         deck_upgrades() {
-            return this.coach.cards.filter((c) => c.template.subtype == "Deck Upgrade");
+            return this.deck.deck_upgrade_cards;
         }
     },
     beforeMount() {
@@ -874,7 +875,7 @@ export default {
                                                 <div class="col-sm-4"><b>Cheerleaders:</b> [[team.team.cheerleaders]]</div>
                                                 <div class="col-sm-4"><b>Stadium Enhancement:</b> [[stadium_enhacement(team.team)]]</div>
                                             </div>
-                                            <h6 class="mt-2">Roster:
+                                            <h6 class="mt-2">Roster size:
                                                 <span v-if="team_check.roster.value" class="deck_valid_check">✓</span>
                                                 <span :title="team_check.roster.msg" v-else class="deck_invalid_check">✗</span>
                                             </h6>
@@ -992,8 +993,8 @@ export default {
                                             </button>
                                         </h6>
                                     </div>
-                                    <div v-if="has_deck_upgrade" :id="'collapsedeckupgrade'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
-                                        <div class="card-body">
+                                    <div v-if="has_deck_upgrade" :id="'collapsedeckupgrade'+id" class="collapse show" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
+                                        <div class="card-body deck_upgrade">
                                             <div class="row" v-for="card in deck_upgrades">
                                                 <div class="col-md-3">
                                                     <b>[[card.template.name]]:</b>

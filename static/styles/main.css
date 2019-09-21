@@ -257,3 +257,27 @@ h5.coach_info, select.coach_info {
 .deck_invalid_check {
   color: red;
 }
+
+.deck_upgrade {
+  background: linear-gradient(227deg, #1cc69a, #2f92f3, #cce350);
+  background-size: 600% 600%;
+
+  -webkit-animation: ShinyDeck 5s ease infinite;
+  -moz-animation: ShinyDeck 5s ease infinite;
+animation: ShinyDeck 5s ease infinite;
+}
+@-webkit-keyframes ShinyDeck {
+  0%{background-position:0% 53%}
+  50%{background-position:100% 48%}
+  100%{background-position:0% 53%}
+}
+@-moz-keyframes ShinyDeck {
+  0%{background-position:0% 53%}
+  50%{background-position:100% 48%}
+  100%{background-position:0% 53%}
+}
+@keyframes ShinyDeck {
+  0%{background-position:0% 53%}
+  50%{background-position:100% 48%}
+  100%{background-position:0% 53%}
+}
