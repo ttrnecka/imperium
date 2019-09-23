@@ -1118,11 +1118,11 @@ export default {
                                                             <td colspan="3">
                                                                 <select v-if="ctype=='Training'" class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
                                                                     <option default :value="null">Select Player</option>
-                                                                    <option v-for="(card,index) in assignable_deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.template.name ]]</option>
+                                                                    <option v-for="(card,index) in sortedCards(assignable_deck_player_cards)" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.template.name ]]</option>
                                                                 </select>
                                                                 <select v-else class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
                                                                     <option default :value="null">Select Player</option>
-                                                                    <option v-for="(card,index) in deck_player_cards" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.template.name ]]</option>
+                                                                    <option v-for="(card,index) in sortedCards(deck_player_cards)" :key="index" :value="card_id_or_uuid(card)">[[index+1]]. [[ card.template.name ]]</option>
                                                                 </select>
                                                             </td>
                                                             <td class="d-none d-sm-table-cell"></td>
