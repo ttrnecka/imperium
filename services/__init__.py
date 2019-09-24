@@ -1,6 +1,7 @@
 """__init__"""
 from sqlalchemy import event
 from sqlalchemy.orm.attributes import flag_modified
+from sqlalchemy.orm.attributes import set_committed_value
 
 from models.data_models import Tournament, Card, Deck
 from models.base_model import db
@@ -23,13 +24,12 @@ def check_build_own_legend_quest(target, value, oldvalue, initiator):
     """After tournament is put into BB mode, the decks are evaluated for self create legend and achievements granted based on that"""
     if value!=oldvalue:
         if value in Tournament.PHASES[2:]:
-            AdminNotificationService.notify(
-                f"!admincomp {value} {target.tournament_id}"
-            )
             decks = [signup.deck for signup in target.tournament_signups]
             for deck in decks:
                 deck.phase_done = False
-            db.session.commit()
+            AdminNotificationService.notify(
+                f"!admincomp {value} {target.tournament_id}"
+            )
         if value == Tournament.PHASES[5]:
             decks = [signup.deck for signup in target.tournament_signups]
             for deck in decks:
@@ -52,8 +52,6 @@ def check_build_own_legend_quest(target, value, oldvalue, initiator):
                         # need to refer through coach as the check may have commited the session
                         coach.achievements['quests']['buildyourownlegend']['completed'] = True
                         flag_modified(coach, "achievements")
-            
-                    db.session.commit()
 
 @event.listens_for(Tournament.status,'set')
 def release_signups_when_finished(target, value, oldvalue, initiator):
@@ -62,14 +60,19 @@ def release_signups_when_finished(target, value, oldvalue, initiator):
         TournamentService.release_reserves(target)
         TournamentService.release_actives(target)
 
-@event.listens_for(Deck.phase_done,'set')
-def check_if_phase_is_done(target, value, oldvalue, initiator):
-    """Check if all coaches finished the phase"""
-    if value:
-        tourn = target.tournament_signup.tournament
-        signups = tourn.tournament_signups
-        decks = [ts.deck for ts in signups]
-        decks.remove(target)
-        if tourn.phase in Tournament.PHASES[2:] and (len(decks) == 0 or all(deck.phase_done for deck in decks)):
-            TournamentService.next_phase(tourn)
-            db.session.commit()
+@event.listens_for(db.session,'before_flush')
+def phase_done_handler(session, flush_context,isinstances):
+    # do it for every deck
+    for instance in session.dirty:
+        if not isinstance(instance, Deck):
+            continue
+        state = db.inspect(instance)
+        history = state.attrs.phase_done.load_history()
+        # if Deck phase_done was set to True
+        if history.added and history.added[0] == True:
+            tourn = instance.tournament_signup.tournament
+            signups = tourn.tournament_signups
+            decks = [ts.deck for ts in signups]
+            decks.remove(instance)
+            if tourn.phase in Tournament.PHASES[2:] and (len(decks) == 0 or all(deck.phase_done for deck in decks)):
+                TournamentService.next_phase(tourn)
