@@ -63,6 +63,7 @@ def release_signups_when_finished(target, value, oldvalue, initiator):
 @event.listens_for(db.session,'before_flush')
 def phase_done_handler(session, flush_context,isinstances):
     # do it for every deck
+    session.no_autoflush
     for instance in session.dirty:
         if not isinstance(instance, Deck):
             continue
