@@ -63,17 +63,17 @@ def release_signups_when_finished(target, value, oldvalue, initiator):
 @event.listens_for(db.session,'before_flush')
 def phase_done_handler(session, flush_context,isinstances):
     # do it for every deck
-    session.no_autoflush
-    for instance in session.dirty:
-        if not isinstance(instance, Deck):
-            continue
-        state = db.inspect(instance)
-        history = state.attrs.phase_done.load_history()
-        # if Deck phase_done was set to True
-        if history.added and history.added[0] == True:
-            tourn = instance.tournament_signup.tournament
-            signups = tourn.tournament_signups
-            decks = [ts.deck for ts in signups]
-            decks.remove(instance)
-            if tourn.phase in Tournament.PHASES[2:] and (len(decks) == 0 or all(deck.phase_done for deck in decks)):
-                TournamentService.next_phase(tourn)
+    with session.no_autoflush:
+        for instance in session.dirty:
+            if not isinstance(instance, Deck):
+                continue
+            state = db.inspect(instance)
+            history = state.attrs.phase_done.load_history()
+            # if Deck phase_done was set to True
+            if history.added and history.added[0] == True:
+                tourn = instance.tournament_signup.tournament
+                signups = tourn.tournament_signups
+                decks = [ts.deck for ts in signups]
+                decks.remove(instance)
+                if tourn.phase in Tournament.PHASES[2:] and (len(decks) == 0 or all(deck.phase_done for deck in decks)):
+                    TournamentService.next_phase(tourn)
