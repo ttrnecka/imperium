@@ -220,7 +220,7 @@ class Coach(Base):
     def inactive_cards(self):
         return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["PREVIOUS_SEASON"]).all()
 
-    def make_transaction(self,transaction):
+    def make_transaction(self,transaction, commit=True):
         # do nothing
         if self.account.amount < transaction.price:
             raise TransactionError("Insuficient Funds")
@@ -233,7 +233,8 @@ class Coach(Base):
             self.account.transactions.append(transaction)
             if transaction.pack is not None:
                 transaction.pack.coach = self
-            db.session.commit()
+            if commit:
+                db.session.commit()
         except Exception as e:
             raise TransactionError(str(e))
         else:
@@ -280,11 +281,11 @@ class Coach(Base):
             logger.info(f"{new_coach.name}: Coach reset")
         return new_coach
     
-    def grant(self,item=0,description=""):
+    def grant(self,item=0,description="", commit=True):
         if RepresentsInt(item):
             t = Transaction(description=description,price=-1*int(item))
             try:
-                self.make_transaction(t)
+                self.make_transaction(t, commit=commit)
             except TransactionError as e:
                 return False, e
             else:
@@ -292,7 +293,7 @@ class Coach(Base):
         else:
             t = Transaction(description=description,price=0)
             self.add_to_freepacks(item)
-            self.make_transaction(t)
+            self.make_transaction(t, commit=commit)
             return True, ""
 
     def get_freepacks(self):

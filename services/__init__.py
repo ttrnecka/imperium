@@ -30,6 +30,7 @@ def check_build_own_legend_quest(target, value, oldvalue, initiator):
             AdminNotificationService.notify(
                 f"!admincomp {value} {target.tournament_id}"
             )
+
         if value == Tournament.PHASES[5]:
             decks = [signup.deck for signup in target.tournament_signups]
             for deck in decks:
@@ -37,21 +38,22 @@ def check_build_own_legend_quest(target, value, oldvalue, initiator):
                 achievement = coach.achievements['quests']['buildyourownlegend']
                 if achievement['completed']:
                     continue
-
+                
                 legends = DeckService.legends_in_deck(deck)
+                
                 built_legends = []
                 for legend in legends:
                     if isinstance(legend[0], Card) and not legend[0].template.rarity in ["Unique","Legendary","Inducement"] or \
                         isinstance(legend[0], dict) and not legend[0]['template']['rarity'] in ["Unique","Legendary","Inducement"]:
                             built_legends.append(legend[0])
+                
                 if built_legends:
                     achievement['best'] = len(built_legends)
                     flag_modified(coach, "achievements")
-
+                
                     if CoachService.check_achievement(coach, ["quests","buildyourownlegend"]):
                         # need to refer through coach as the check may have commited the session
                         coach.achievements['quests']['buildyourownlegend']['completed'] = True
-                        flag_modified(coach, "achievements")
 
 @event.listens_for(Tournament.status,'set')
 def release_signups_when_finished(target, value, oldvalue, initiator):
@@ -60,8 +62,8 @@ def release_signups_when_finished(target, value, oldvalue, initiator):
         TournamentService.release_reserves(target)
         TournamentService.release_actives(target)
 
-@event.listens_for(db.session,'before_flush')
-def phase_done_handler(session, flush_context,isinstances):
+@event.listens_for(db.session,'before_commit')
+def phase_done_handler(session):
     # do it for every deck
     with session.no_autoflush:
         for instance in session.dirty:

@@ -101,7 +101,7 @@ class CoachService:
         flag_modified(coach, "achievements")
         
     @classmethod
-    def check_achievement(cls, coach, achievement_keys=None):
+    def check_achievement(cls, coach, achievement_keys=None, commit=False):
         """Checks if achievement has been reached and grants the prize"""
         if achievement_keys is None:
             achievement_keys = []
@@ -120,7 +120,7 @@ class CoachService:
             )
 
             call, arg = achievement['award'].split(",")
-            res, error = getattr(coach, call)(arg, achievement['desc'])
+            res, error = getattr(coach, call)(arg, achievement['desc'], commit=commit)
 
             if res:
                 NotificationService.notify(
