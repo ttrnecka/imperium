@@ -208,6 +208,7 @@ class DeckService:
     def commit(cls, deck):
         """Commit deck and notify admin"""
         deck.commited = True
+        deck.phase_done = True
         db.session.commit()
         coach = deck.tournament_signup.coach
         tournament = deck.tournament_signup.tournament
