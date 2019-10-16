@@ -298,10 +298,14 @@ export default {
             return false;
         },
         numberOfRerolls() {
-            // harcoded
-            let r1 = this.deck.cards.filter((c) => c.template.name == "Inspirational Boss").length * 2;
-            let r2 = this.deck.cards.filter((c) => c.template.name == "Motivational Speaker").length * 2;
-            let r3 = this.deck.cards.filter((c) => c.template.name == "Clever Management").length * 1;
+            let race = this.race(this.team.team.idraces);
+            let rrs = [2,2,1];
+            if(race == "Afterlife United") {
+                rrs = [3,2,2];
+            }
+            let r1 = this.deck.cards.filter((c) => c.template.name == "Inspirational Boss").length * rrs[0];
+            let r2 = this.deck.cards.filter((c) => c.template.name == "Motivational Speaker").length * rrs[1];
+            let r3 = this.deck.cards.filter((c) => c.template.name == "Clever Management").length * rrs[2];
             return this.deck.cards.filter((c) => c.template.name == "Re-roll").length + r1 + r2 + r3;
         },
         cloneExtraCard(card) {

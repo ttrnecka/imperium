@@ -21,6 +21,7 @@ class CoachService:
 
     @staticmethod
     def activate_coach(coach = None, card_ids = None):
+
         """Activates coach and copies cards in card_ids list to new season"""
         if not coach:
             raise ValueError("coach argument is empty")
