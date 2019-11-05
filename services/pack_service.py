@@ -29,6 +29,7 @@ class PackService:
         "coaching":0,
         "skill":0,
         "legendary":0,
+        "brawl":0
     }
 
     BUDGET_COMBOS = [
@@ -119,6 +120,10 @@ class PackService:
         {"roll":1, "rarities":["Legendary", "Epic", "Epic"]},
     ]
 
+    BRAWL_COMBOS = [
+        {"roll":1, "rarities" :["Common","Common","Common"]}
+    ]
+
     @classmethod
     def filter_cards(cls, rarity, ctype=None, races=None, subtype=None):
         """Pull cards of given rarity, ctype, races and subtype from All cards"""
@@ -175,6 +180,8 @@ class PackService:
                 combos = cls.LEGENDARY_COMBOS
             elif ptype == "booster_premium":
                 combos = cls.PREMIUM_COMBOS
+            elif ptype == "brawl":
+                combos = cls.BRAWL_COMBOS
             else:
                 combos = cls.BUDGET_COMBOS
 
@@ -189,6 +196,8 @@ class PackService:
                     fcards = cls.filter_cards(rarity, "Training")
                 elif ptype == "special":
                     fcards = cls.filter_cards(rarity, "Special Play")
+                elif ptype == "brawl":
+                    fcards = cls.filter_cards(rarity, "Bloodweiser")
                 else:
                     fcards = cls.filter_cards(rarity)
                 cards.append(random.choice(fcards))

@@ -30,7 +30,7 @@ app.app_context().push()
 RULES_LINK = "https://bit.ly/2P9Y07F"
 GEN_QUALITY = ["premium", "budget"]
 GEN_PACKS = ["player", "training", "booster", "special"]
-GEN_PACKS_TMP = ["player", "training", "booster", "special", "skill", "coaching", "positional", "legendary"]
+GEN_PACKS_TMP = ["player", "training", "booster", "special", "skill", "coaching", "positional", "legendary","brawl"]
 
 AUTO_CARDS = {
     'Loose Change!':5,
@@ -341,6 +341,11 @@ class DiscordCommand:
         for team in PackService.MIXED_TEAMS:
             msg += "\t"+team["code"] +" - "+ team["name"] +f" ({', '.join(team['races'])})\n"
 
+        msg += "= Bloodweiser pack =\n"
+        msg += "Content: 3 Bloodweiser Brawl Boost type cards\n"
+        msg += "Rarity: Common or higher\n"
+        msg += "Command: !genpacktemp brawl\n \n"
+
         msg += "```"
         return msg
 
@@ -535,10 +540,10 @@ class DiscordCommand:
         if args[1] not in GEN_PACKS_TMP:
             return False
         # skill/coaching/special/booster without quality
-        if length == 2 and args[1] not in ["skill", "coaching", "special", "booster", "training"]:
+        if length == 2 and args[1] not in ["skill", "coaching", "special", "booster", "training", "brawl"]:
             return False
         # skill/coaching/special takes not other parameter
-        if length > 2 and args[1] in ["skill", "coaching", "special", "training"]:
+        if length > 2 and args[1] in ["skill", "coaching", "special", "training", "brawl"]:
             return False
         # booster with allowed quality
         if length == 3 and args[1] == "booster" and args[2] not in GEN_QUALITY:
@@ -836,7 +841,7 @@ class DiscordCommand:
             if ptype in ["player", "positional", "legendary"]:
                 team = self.args[2]
                 pack = PackService.generate(ptype, team=team)
-            elif ptype in ["training", "special", "skill", "coaching"]:
+            elif ptype in ["training", "special", "skill", "coaching", "brawl"]:
                 pack = PackService.generate(ptype)
             elif ptype == "booster":
                 ptype = "booster_budget" if len(self.args) < 3 else f"booster_{self.args[2]}"
