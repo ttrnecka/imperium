@@ -293,23 +293,23 @@ class DiscordCommand:
         msg += "These packs are for one time use and are not assigned to coaches "
         msg += "permanent collection.\n \n"
         msg += "= Booster budget pack =\n"
-        msg += "Content: 5 cards of any type\n"
-        msg += "Rarity: 1 Rare and higher rarity, 4 Common and higher rarity\n"
+        msg += "Content: 5 cards\n"
+        msg += "Rarity: 1 Rare+, 4 Common+\n"
         msg += "Command: !genpacktemp booster\n \n"
 
         msg += "= Booster premium pack =\n"
         msg += "Content: 5 cards any type\n"
-        msg += "Rarity: Rare and higher\n"
+        msg += "Rarity: Rare+\n"
         msg += "Command: !genpacktemp booster premium\n \n"
 
         msg += "= Training pack =\n"
         msg += "Content: 3 training type cards\n"
-        msg += "Rarity: Common or higher\n"
+        msg += "Rarity: Common+\n"
         msg += "Command: !genpacktemp training\n \n"
 
         msg += "= Inducement Skill pack =\n"
         msg += "Content: 5 training type cards\n"
-        msg += "Rarity: Common or higher\n"
+        msg += "Rarity: Common+\n"
         msg += "Command: !genpacktemp skill\n \n"
 
         msg += "= Inducement Coaching pack =\n"
@@ -319,17 +319,17 @@ class DiscordCommand:
 
         msg += "= Special Play pack (incl. Inducement) =\n"
         msg += "Content: 3 special play type cards\n"
-        msg += "Rarity: Common or higher\n"
+        msg += "Rarity: Common+\n"
         msg += "Command: !genpacktemp special\n \n"
 
         msg += "= Player pack =\n"
         msg += "Content: 3 player type cards\n"
-        msg += "Rarity: Rare or higher\n"
+        msg += "Rarity: Rare+\n"
         msg += "Command: !genpacktemp player <team>\n \n"
 
         msg += "= Inducement Positional pack =\n"
         msg += "Content: 3 positional player type cards\n"
-        msg += "Rarity: Rare or higher\n"
+        msg += "Rarity: Rare+\n"
         msg += "Command: !genpacktemp positional <team>\n \n"
 
         msg += "= Legendary pack =\n"
@@ -341,9 +341,9 @@ class DiscordCommand:
         for team in PackService.MIXED_TEAMS:
             msg += "\t"+team["code"] +" - "+ team["name"] +f" ({', '.join(team['races'])})\n"
 
+        msg += " \n"
         msg += "= Bloodweiser pack =\n"
         msg += "Content: 3 Bloodweiser Brawl Boost type cards\n"
-        msg += "Rarity: Common or higher\n"
         msg += "Command: !genpacktemp brawl\n \n"
 
         msg += "```"
