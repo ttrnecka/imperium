@@ -121,7 +121,7 @@ class PackService:
     ]
 
     BRAWL_COMBOS = [
-        {"roll":1, "rarities" :["Common","Common","Common"]}
+        {"roll":1, "rarities" :["Unique","Unique","Unique"]}
     ]
 
     @classmethod
