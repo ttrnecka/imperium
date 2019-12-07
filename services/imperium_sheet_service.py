@@ -19,6 +19,9 @@ class ImperiumSheetService:
     TRAINING_CARDS_SHEET = "Training Cards"
     STARTER_PACK_SHEET = "Starter Pack"
     TOURNAMENT_SHEET = "Tournaments"
+
+    CRACKERSHEET_ID = "1muYufpLnNZueKjkawL3yuKwepnHCccQQWYUL4QNV-Tw"
+    CRACKER_TAB = "All Cards"
     
     @classmethod
     def __load(cls,sheet_id):
@@ -51,4 +54,14 @@ class ImperiumSheetService:
         """Returns torunaments from the sheet"""
         return cls.__load(cls.TOURNAMENT_SHEET)
 
+    @classmethod
+    def __cracker_load(cls,sheet_id):
+        client = gspread.authorize(CREDS)
+        sheet = client.open_by_key(cls.CRACKERSHEET_ID).worksheet(sheet_id)
+        return sheet.get_all_records()
+    
+    @classmethod
+    def cracker_templates(cls):
+        """Load card templates from the sheet"""
+        return cls.__cracker_load(cls.CRACKER_TAB)
 #if __name__ == "__main__":

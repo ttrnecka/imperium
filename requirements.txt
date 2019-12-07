@@ -9,3 +9,4 @@ marshmallow-sqlalchemy
 requests-oauthlib==1.2.0
 requests
 flask-fontawesome
+flask-swagger

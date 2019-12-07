@@ -7,6 +7,7 @@ from copy import deepcopy
 from flask import Flask, render_template, jsonify, abort, session, redirect, request, url_for
 from flask_fontawesome import FontAwesome
 from flask_migrate import Migrate
+from flask_swagger import swagger
 from sqlalchemy.orm import raiseload
 from requests_oauthlib import OAuth2Session
 
@@ -15,16 +16,16 @@ from models.data_models import Coach, Tournament
 from models.data_models import TransactionError, Deck
 from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema
 from models.marsh_models import tournaments_schema, tournament_schema, duster_schema
-from models.marsh_models import leaderboard_coach_schema, deck_schema
+from models.marsh_models import leaderboard_coach_schema, deck_schema, cracker_cards_schema
 from services import PackService, CoachService, NotificationService
 from services import LedgerNotificationService, AchievementNotificationService
-from services import AdminNotificationService, CardService, TournamentNotificationService
+from services import AdminNotificationService, CardService, TournamentNotificationService, CrackerService
 from services import TournamentService, RegistrationError
-from services import BB2Service, DusterService, WebHook, DustingError
+from services import BB2Service, DusterService, WebHook, DustingError, InvalidCrackerType, InvalidCrackerTeam
 from services import TransactionService, DeckService, DeckError
 from misc.helpers import InvalidUsage, current_coach, current_user, current_coach_with_inactive, CardHelper
 from misc.helpers import owning_coach
-from misc.decorators import authenticated, registered, webadmin, registered_with_inactive, masteradmin
+from misc.decorators import authenticated, registered, webadmin, registered_with_inactive, masteradmin, cracker_api_user
 import bb2
 
 
@@ -109,6 +110,10 @@ def handle_invalid_usage(error):
     response.status_code = error.status_code
     return response
 
+@app.route("/spec")
+def spec():
+    return jsonify(swagger(app))
+    
 @app.route('/signin')
 def signin():
     """sign using discord OAUTH"""
@@ -596,6 +601,57 @@ def commit_deck(deck_id):
         raise InvalidUsage(str(exc), status_code=403)
 
     return deck_response(deck)
+
+
+@app.route("/api/cracker/cards/<coach>", methods=["POST"])
+@cracker_api_user
+def generate_pack(coach):
+    data = request.get_json()
+
+    if 'pack_type' not in data.keys():
+        raise InvalidUsage("Missing 'pack_type' argument!", status_code=403)
+    if 'team' not in data.keys():
+        raise InvalidUsage("Missing 'team' argument!", status_code=403)
+
+    try:
+        with db.session.no_autoflush:
+            team = CrackerService.cracker_team(coach)
+            db.session.add(team)
+            db.session.commit()
+
+            cards = CrackerService.generate_pack(data['pack_type'],data['team'])
+            for card in cards:
+                db.session.add(card)
+                card.team_id = team.id
+        db.session.commit()
+        result = cracker_cards_schema.dump(cards)
+    except (InvalidCrackerTeam,InvalidCrackerType) as exc:
+        raise InvalidUsage(str(exc), status_code=403)
+    return jsonify(result.data)
+
+
+@app.route("/api/cracker/cards/<coach>", methods=["GET"])
+@cracker_api_user
+def cracker_coach_cards(coach):
+    cards = CrackerService.active_cards(coach)
+    result = cracker_cards_schema.dump(cards)
+    return jsonify(result.data)
+
+@app.route("/api/cracker/cards/<coach>", methods=["DELETE"])
+@cracker_api_user
+def cracker_coach_deactivate_team(coach):
+    team = CrackerService.cracker_team(coach)
+    if team.id:
+        team.active = False
+        db.session.commit()
+    return jsonify("OK")
+
+@app.route("/api/cracker/cards", methods=["GET"])
+@cracker_api_user
+def cracker_cards():
+    cards = CrackerService.active_cards()
+    result = cracker_cards_schema.dump(cards)
+    return jsonify(result.data)
 
 # run the application
 if __name__ == "__main__":

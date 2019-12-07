@@ -18,6 +18,7 @@ from .bb2_service import BB2Service
 from .web_hook_service import WebHook
 from .duster_service import DusterService, DustingError
 from .deck_service import DeckService, DeckError
+from .cracker_service import CrackerService, InvalidCrackerType, InvalidCrackerTeam
 
 @event.listens_for(Tournament.phase,'set')
 def check_build_own_legend_quest(target, value, oldvalue, initiator):

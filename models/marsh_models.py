@@ -1,5 +1,5 @@
 from flask_marshmallow import Marshmallow
-from .data_models import Transaction, Account, Card, Coach, Tournament, TournamentSignups, Duster, Deck
+from .data_models import Transaction, Account, Card, Coach, Tournament, TournamentSignups, Duster, Deck, CrackerCard, CrackerCardTemplate
 from .data_models import CardTemplate
 
 ma = Marshmallow()
@@ -75,7 +75,20 @@ class DeckSchema(ma.ModelSchema):
     injury_map = ma.Dict()
     deck_upgrade_cards = ma.Nested(CardSchema, many=True)
 
+class CrackerCardTemplateSchema(ma.ModelSchema):
+    class Meta:
+        model = CrackerCardTemplate
+        exclude = ["cards"]
+
+class CrackerCardSchema(ma.ModelSchema):
+    class Meta:
+        model = CrackerCard
+    
+    cracker_template = ma.Nested(CrackerCardTemplateSchema)
+    coach = ma.String()
+
 cards_schema = CardSchema(many=True)
+cracker_cards_schema = CrackerCardSchema(many=True)
 card_schema = CardSchema()
 coach_schema = CoachSchema()
 leaderboard_coach_schema = CoachLeaderboardSchema(many=True)

@@ -8,6 +8,7 @@ import os
 from sqlalchemy import UniqueConstraint, event
 from sqlalchemy.dialects import mysql 
 from sqlalchemy.types import TypeDecorator
+from sqlalchemy.sql.expression import func
 
 
 ROOT = os.path.dirname(__file__)
@@ -463,6 +464,69 @@ class Duster(Base):
     def __init__(self,status="OPEN"):
         self.status = status
     
+
+class CrackerCardTemplate(Base):
+    __tablename__ = 'cracker_card_templates'
+
+    name = db.Column(db.String(80), nullable=False, index=True)
+    description = db.Column(db.Text())
+    race = db.Column(db.String(20), nullable=False)
+    rarity = db.Column(db.String(20), nullable=False, index=True)
+    card_type = db.Column(db.String(20), nullable=False, index=True)
+    klass = db.Column(db.String(30), nullable=False)
+    notes = db.Column(db.String(255))
+    team = db.Column(db.String(30), nullable=False)
+    multiplier = db.Column(db.Integer(), nullable=False, default=1)
+    one_time_use = db.Column(db.Boolean(), default=False, nullable=False)
+    position = db.Column(db.String(50), nullable=False)
+    built_in_skill = db.Column(db.String(255))
+    
+    cards = db.relationship('CrackerCard', backref=db.backref('cracker_template', lazy="selectin"), cascade="all, delete-orphan",lazy=True)
+
+    def __init__(self,**kwargs):
+        super(CrackerCardTemplate, self).__init__(**kwargs)
+        
+    def __repr__(self):
+        return f'<CrackerCardTemplate {self.id}. {self.name}, rarity: {self.rarity}, type: {self.card_type}>'
+
+
+class CrackerCard(Base):
+    __tablename__ = 'cracker_cards'
+
+    team_id = db.Column(db.Integer, db.ForeignKey('cracker_team.id'), index=True, nullable=False)
+    pack_id = db.Column(db.Integer(), index=True, nullable=False)
+    template_id = db.Column(db.Integer, db.ForeignKey('cracker_card_templates.id'), index=True, nullable=False)
+
+    def __init__(self,**kwargs):
+        super(CrackerCard, self).__init__(**kwargs)
+
+    def __repr__(self):
+        return f'<Card {self.cracker_template.name}, rarity: {self.cracker_template.rarity}>'
+
+    def _template(self, template):
+        self.cracker_template = template
+
+    def coach(self):
+        return self.team.coach
+        
+    @classmethod
+    def from_template(cls, template):
+        model = cls()
+        model._template(template)
+        return model
+
+    @classmethod
+    def max_pack_id(cls):
+        return db.session.query(func.max(CrackerCard.pack_id)).scalar()
+
+class CrackerTeam(Base):
+    __tablename__ = 'cracker_team'
+    
+    coach = db.Column(db.String(255), index=True, nullable=False)
+    active = db.Column(db.Boolean(), default=True, nullable=False)
+
+    cards = db.relationship('CrackerCard', backref=db.backref('team', lazy=True), cascade="all, delete-orphan",lazy="selectin")
+        
 
 @event.listens_for(Card, 'after_delete')
 @event.listens_for(Duster, 'after_delete')
