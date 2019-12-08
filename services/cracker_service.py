@@ -79,7 +79,7 @@ class CrackerService:
         templates = CrackerCardTemplate.query.all()
         pool = []
         for template in templates:
-            if template.team.lower() == team and template.klass.lower() == ptype and template.rarity == rarity:
+            if (template.team.lower() == team or template.team.lower() == "all") and (template.klass.lower() == ptype or template.klass.lower() == "stocking filler") and template.rarity == rarity:
                 for _ in range(template.multiplier):
                     pool.append(template)
     
