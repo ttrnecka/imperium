@@ -56,7 +56,7 @@ class CrackerService:
         cards = []
         if ptype in ["nice", "naughty"]:
             combos = cls.CRACKER_COMBOS
-        elif ptype == "huge_bonus":
+        elif ptype == "huge bonus":
             combos = cls.HB_COMBOS
         else:
             combos = cls.IMMORTAL_COMBOS
