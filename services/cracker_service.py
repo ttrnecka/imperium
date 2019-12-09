@@ -14,10 +14,23 @@ class CrackerService:
     """Namespace for helpers"""
     MIXED_TEAMS = MIXED_TEAMS
 
-    PACKS = ["nice","naughty"]
+    PACKS = ["nice","naughty","huge_bonus","immortal"]
 
     CRACKER_COMBOS = [
-        {"roll":1, "rarities":["Rare", "Rare", "Common", "Common", "Common"]},
+        {"roll":0.4, "rarities":["Rare", "Common", "Common"]},
+        {"roll":0.6, "rarities":["Rare", "Rare", "Common"]},
+        {"roll":0.8, "rarities":["Epic", "Common", "Common"]},
+        {"roll":0.89, "rarities":["Rare", "Rare", "Rare"]},
+        {"roll":0.98, "rarities":["Epic", "Rare", "Common"]},
+        {"roll":1, "rarities":["Epic", "Rare", "Rare"]},
+    ]
+
+    HB_COMBOS = [
+        {"roll":1, "rarities":["Unique"]},
+    ]
+
+    IMMORTAL_COMBOS = [
+        {"roll":1, "rarities":["Legendary"]},
     ]
 
     @classmethod
@@ -41,7 +54,12 @@ class CrackerService:
             raise InvalidCrackerTeam(f"Invalid team {team}")
 
         cards = []
-        combos = cls.CRACKER_COMBOS
+        if ptype in ["nice", "naughty"]:
+            combos = cls.CRACKER_COMBOS
+        elif ptype == "huge_bonus":
+            combos = cls.HB_COMBOS
+        else:
+            combos = cls.IMMORTAL_COMBOS
 
         roll = random.random()
         rarities = [combo for combo in combos if combo['roll'] >= roll][0]['rarities']
