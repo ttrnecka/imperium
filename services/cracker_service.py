@@ -14,7 +14,7 @@ class CrackerService:
     """Namespace for helpers"""
     MIXED_TEAMS = MIXED_TEAMS
 
-    PACKS = ["nice","naughty","huge_bonus","immortal"]
+    PACKS = ["nice","naughty","huge bonus","immortal"]
 
     CRACKER_COMBOS = [
         {"roll":0.4, "rarities":["Rare", "Common", "Common"]},
