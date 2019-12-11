@@ -79,7 +79,6 @@ class CrackerCardTemplateSchema(ma.ModelSchema):
     class Meta:
         model = CrackerCardTemplate
         exclude = ["cards"]
-        
     cyanide_player_type = ma.String()
 
 class CrackerCardSchema(ma.ModelSchema):

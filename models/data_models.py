@@ -504,7 +504,9 @@ class CrackerCardTemplate(Base):
         return f'<CrackerCardTemplate {self.id}. {self.name}, rarity: {self.rarity}, type: {self.card_type}>'
 
     def cyanide_player_type(self):
-        return f"{self.cyanide_mixed_race_name()}_{self.cyanide_race_name()}_{self.cracker_template.position}"
+        if self.card_type == 'Positional':
+            return f"{self.cyanide_mixed_race_name()}_{self.cyanide_race_name()}_{self.cyanide_position_name()}"
+        return "not_applicable"
 
     def cyanide_position_name(self):
         return self.position.replace(" ","")
