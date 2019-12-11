@@ -468,6 +468,20 @@ class Duster(Base):
 class CrackerCardTemplate(Base):
     __tablename__ = 'cracker_card_templates'
 
+    RACE_DICT = {
+        "au": "MercenaryUndead",
+        "sbr": "MercenaryAristo",
+        "uosp": "MercenaryStunty",
+        "vt": "MercenarySavage",
+        "egc": "MercenaryElf",
+        "cgs": "MercenaryChaosGods",
+        "fea": "MercenaryEasterners",
+        "afs": "MercenaryExplorers",
+        "hl": "MercenaryHuman",
+        "aog": "MercenaryGoodGuys",
+        "cpp": "MercenaryChaos"
+    }
+
     name = db.Column(db.String(80), nullable=False, index=True)
     description = db.Column(db.Text())
     race = db.Column(db.String(20), nullable=False)
@@ -489,6 +503,21 @@ class CrackerCardTemplate(Base):
     def __repr__(self):
         return f'<CrackerCardTemplate {self.id}. {self.name}, rarity: {self.rarity}, type: {self.card_type}>'
 
+    def cyanide_player_type(self):
+        return f"{self.cyanide_mixed_race_name()}_{self.cyanide_race_name()}_{self.cracker_template.position}"
+
+    def cyanide_position_name(self):
+        return self.position.replace(" ","")
+
+    def cyanide_race_name(self):
+        race = self.race.replace(" ", "")
+        if race == "Bretonnian":
+            race = "Bretonnia"
+        return race
+        
+    def cyanide_mixed_race_name(self):
+        race = self.team.lower()
+        return self.RACE_DICT.get(race, "Unknown")
 
 class CrackerCard(Base):
     __tablename__ = 'cracker_cards'
@@ -497,19 +526,6 @@ class CrackerCard(Base):
     pack_id = db.Column(db.Integer(), index=True, nullable=False)
     template_id = db.Column(db.Integer, db.ForeignKey('cracker_card_templates.id'), index=True, nullable=False)
 
-    RACE_DICT = {
-        "au": "MercenaryUndead",
-        "sbr": "MercenaryAristo",
-        "uosp": "MercenaryStunty",
-        "vt": "MercenarySavage",
-        "egc": "MercenaryElf",
-        "cgs": "MercenaryChaosGods",
-        "fea": "MercenaryEasterners",
-        "afs": "MercenaryExplorers",
-        "hl": "MercenaryHuman",
-        "aog": "MercenaryGoodGuys",
-        "cpp": "MercenaryChaos"
-    }
     def __init__(self,**kwargs):
         super(CrackerCard, self).__init__(**kwargs)
 
@@ -522,21 +538,6 @@ class CrackerCard(Base):
     def coach(self):
         return self.team.coach
         
-    def cyanide_player_type(self):
-        return f"{self.cyanide_mixed_race_name()}_{self.cyanide_race_name()}_{self.cracker_template.position}"
-
-    def cyanide_position_name(self):
-        return self.cracker_template.position.replace(" ","")
-
-    def cyanide_race_name(self):
-        race = self.cracker_template.race.replace(" ", "")
-        if race == "Bretonnian":
-            race = "Bretonnia"
-        return race
-        
-    def cyanide_mixed_race_name(self):
-        race = self.cracker_template.team.lower()
-        return self.RACE_DICT.get(race, "Unknown")
     @classmethod
     def from_template(cls, template):
         model = cls()
