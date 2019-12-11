@@ -86,6 +86,7 @@ class CrackerCardSchema(ma.ModelSchema):
     
     cracker_template = ma.Nested(CrackerCardTemplateSchema)
     coach = ma.String()
+    cyanide_player_type = ma.String()
 
 cards_schema = CardSchema(many=True)
 cracker_cards_schema = CrackerCardSchema(many=True)
