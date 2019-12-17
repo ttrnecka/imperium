@@ -14,7 +14,7 @@ class CrackerService:
     """Namespace for helpers"""
     MIXED_TEAMS = MIXED_TEAMS
 
-    PACKS = ["nice","naughty","huge bonus","immortal"]
+    PACKS = ["nice","naughty","huge bonus","immortal","stocking filler"]
 
     CRACKER_COMBOS = [
         {"roll":0.4, "rarities":["Rare", "Common", "Common"]},
@@ -53,8 +53,12 @@ class CrackerService:
         if team not in cls.team_codes():
             raise InvalidCrackerTeam(f"Invalid team {team}")
 
+        #filler handling
+        if ptype == "stocking filler":
+            team = "all"
+
         cards = []
-        if ptype in ["nice", "naughty"]:
+        if ptype in ["nice", "naughty","stocking filler"]:
             combos = cls.CRACKER_COMBOS
         elif ptype == "huge bonus":
             combos = cls.HB_COMBOS
@@ -97,7 +101,7 @@ class CrackerService:
         templates = CrackerCardTemplate.query.all()
         pool = []
         for template in templates:
-            if (template.team.lower() == team or template.team.lower() == "all") and (template.klass.lower() == ptype or template.klass.lower() == "stocking filler") and template.rarity == rarity:
+            if template.team.lower() == team  and template.klass.lower() == ptype and template.rarity == rarity:
                 for _ in range(template.multiplier):
                     pool.append(template)
     
