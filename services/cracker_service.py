@@ -3,6 +3,7 @@ import random
 from models.general import MIXED_TEAMS
 from models.data_models import CrackerCard, CrackerCardTemplate, CrackerTeam
 from .imperium_sheet_service import ImperiumSheetService
+from sqlalchemy import desc
 
 class InvalidCrackerType(Exception):
     """Exception for Invalid pack type"""
@@ -113,3 +114,12 @@ class CrackerService:
             return CrackerCard.query.join(CrackerCard.team).filter(CrackerTeam.active == True, CrackerTeam.coach == coach).all()
         else:
             return CrackerCard.query.join(CrackerCard.team).filter(CrackerTeam.active == True).all()
+
+    @classmethod
+    def history_cards(cls,coach = None, history = 0):
+        team = CrackerTeam.query.filter(CrackerTeam.active == False, CrackerTeam.coach == coach).order_by(desc(CrackerTeam.id)).limit(1).offset(history).first()
+
+        if team:
+            return team.cards
+        else:
+            return []

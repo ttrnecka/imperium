@@ -25,6 +25,7 @@ from services import BB2Service, DusterService, WebHook, DustingError, InvalidCr
 from services import TransactionService, DeckService, DeckError
 from misc.helpers import InvalidUsage, current_coach, current_user, current_coach_with_inactive, CardHelper
 from misc.helpers import owning_coach
+from misc.helpers import represents_int
 from misc.decorators import authenticated, registered, webadmin, registered_with_inactive, masteradmin, cracker_api_user
 import bb2
 
@@ -633,7 +634,12 @@ def generate_pack(coach):
 @app.route("/api/cracker/cards/<coach>", methods=["GET"])
 @cracker_api_user
 def cracker_coach_cards(coach):
-    cards = CrackerService.active_cards(coach)
+    history = request.args.get('history')
+
+    if history and represents_int(history):
+        cards = CrackerService.history_cards(coach,int(history))
+    else:
+        cards = CrackerService.active_cards(coach)
     result = cracker_cards_schema.dump(cards)
     return jsonify(result.data)
 
