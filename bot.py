@@ -737,7 +737,7 @@ class DiscordCommand:
         if Coach.get_by_discord_id(self.message.author.id):
             await self.reply([f"**{self.message.author.mention}** account exists already\n"])
         elif Coach.get_by_discord_id(self.message.author.id, deleted=True):
-            await self.reply([f"**{self.message.author.mention}** account is inactive, use the web page to active it\n"])
+            await self.reply([f"**{self.message.author.mention}** account is inactive, use the web page to activate it\n"])
         else:
             try:
                 coach = CoachService.new_coach(self.message.author, self.message.author.id)
@@ -1292,7 +1292,7 @@ class DiscordCommand:
                 f"**Type**: {tourn.region} - {tourn.type} - {tourn.mode}",
                 f"**Dates**: Signup By/Start By/End By/Deadline  - {tourn.signup_close_date}/{tourn.expected_start_date}/{tourn.expected_end_date}/{tourn.deadline_date}",
                 f"**Entrance Fee**: {tourn.fee}",
-                f"**Deck Size**: {tourn.deck_limit}",
+                f"**Deck Size/Value**: {tourn.deck_limit}/{tourn.deck_value_limit}",
                 f"**Sponsor**: {tourn.sponsor}",
                 f"**Sponsor Description**: {tourn.sponsor_description}",
                 f"**Special Rules**: {tourn.special_rules}",

@@ -450,6 +450,24 @@ class Tournament(Base):
 
     coaches = db.relationship("Coach", secondary="tournaments_signups", backref=db.backref('tournaments', lazy="dynamic"), lazy="dynamic")
 
+    def is_full(self):
+        if len(self.tournament_signups) >= self.coach_limit + self.reserve_limit:
+            return True
+        else:
+            return False
+
+class TournamentTemplate(Base):
+    __tablename__ = 'tournament_templates'
+
+    active = db.Column(db.Boolean(),nullable=False, default=True)
+    type = db.Column(db.String(80),nullable=False)
+    mode = db.Column(db.String(80),nullable=False)
+    duration = db.Column(db.Integer(),default=7,nullable=False)
+    coach_limit = db.Column(db.Integer(),default=4, nullable=False)
+    deck_limit =  db.Column(db.Integer(), default=18, nullable=False)
+    deck_value_limit =  db.Column(db.Integer(), default=150, nullable=False)
+    prizes = db.Column(db.Text(),nullable=True)
+
 class TransactionError(Exception):
     pass
 

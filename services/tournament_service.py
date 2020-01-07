@@ -1,10 +1,10 @@
 """TournamentService helpers"""
 import itertools
 
-from sqlalchemy import asc
-from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card
+from sqlalchemy import asc, func
+from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card, TournamentTemplate
 from models.base_model import db
-from .notification_service import NotificationService
+from .notification_service import NotificationService, AdminNotificationService
 from .imperium_sheet_service import ImperiumSheetService
 from .deck_service import DeckService
 
@@ -45,7 +45,59 @@ class TournamentService:
         }
 
     @classmethod
+    def tournament_to_dict(cls, tournament):
+        """Change Tournament to tournament dict to update in sheet"""
+        return {
+            "Tournament ID": tournament.tournament_id,
+            "Tournament Name": tournament.name,
+            "Scheduling Room": tournament.discord_channel,
+            "Signup Close Date": tournament.signup_close_date,
+            "Expected Start Date": tournament.expected_start_date,
+            "Expected End Date": tournament.expected_end_date,
+            "Tournament Type": tournament.type,
+            "Tournament Mode": tournament.mode,
+            "Tournament Deadline": tournament.deadline_date,
+            "Entrance Fee": tournament.fee,
+            "Status": tournament.status,
+            "Coach Count Limit": tournament.coach_limit,
+            "Reserve Count Limit": tournament.reserve_limit,
+            "Region Bias": tournament.region,
+            "Deck Size Limit": tournament.deck_limit,
+            "Deck Value Limit": tournament.deck_value_limit,
+            "Tournament Admin": tournament.admin,
+            "Tournament Sponsor": tournament.sponsor,
+            "Special Rules": tournament.special_rules,
+            "Prizes": tournament.prizes,
+            "Unique Prize": tournament.unique_prize,
+            "Sponsor Description": tournament.sponsor_description,
+        }
+
+    @classmethod
+    def init_dict_from_tournament_template(cls, template):
+        """import sheet tournament template line into dict to update the TournamentTemplate record"""
+        return {
+            "active":int(template["Active"]),
+            "type":template["Tournament Type"],
+            "mode":template["Tournament Mode"],
+            "duration":int(template["Duration"]),
+            "coach_limit":int(template["Coach Count Limit"]),
+            "deck_limit":int(template["Deck Size Limit"]),
+            "deck_value_limit":int(template["Deck Value Limit"]) if template["Deck Value Limit"] else 150,
+            "prizes":template["Prizes"]
+        }
+
+    @classmethod
     def update(cls):
+        cls.update_templates()
+        # update tournaments first to reflect any closings
+        cls.update_tournaments()
+        # check if new tournamnets have to be opened
+        cls.init_new_tournaments()
+        # update the sheet again
+        cls.update_tournaments()
+
+    @classmethod
+    def update_tournaments(cls):
         """Updates tournaments from sheet into DB"""
         for tournament in ImperiumSheetService.tournaments():
             t_dict = cls.init_dict_from_tournament(tournament)
@@ -55,6 +107,19 @@ class TournamentService:
                 db.session.add(tourn)
             else:
                 tourn = tourns[0]
+            tourn.update(**t_dict)
+
+        db.session.commit()
+
+    @classmethod
+    def update_templates(cls):
+        """Updates tournament templates from sheet into DB"""
+        # delete outstanding templates
+        TournamentTemplate.query.delete()
+        for template in ImperiumSheetService.tournament_templates():
+            t_dict = cls.init_dict_from_tournament_template(template)
+            tourn = TournamentTemplate()
+            db.session.add(tourn)
             tourn.update(**t_dict)
 
         db.session.commit()
@@ -178,6 +243,11 @@ class TournamentService:
             NotificationService.notify(
                 f'{coach_mention} successfuly signed to tournament. {fee_msg}'
             )
+            # i tournament is full initiate updated in extra thread
+            
+            if tournament.is_full():
+                AdminNotificationService.notify("!admincomp update")
+
         except Exception as exc:
             raise RegistrationError(str(exc))
 
@@ -430,3 +500,62 @@ class TournamentService:
             return False, err
 
         return True, None
+
+    @classmethod
+    def new_tournaments(cls):
+        """Return new tournaments that should be created base on templates"""
+        new_tourns = []
+        # pull active templates:
+        templates = TournamentTemplate.query.filter_by(active=True).all()
+        for temp in templates:
+            for region in ["GMAN", "REL", "Big O"]:
+                # find free tournament
+                tourns = Tournament.query.outerjoin(Tournament.tournament_signups).filter( \
+                    Tournament.status == "OPEN", \
+                    Tournament.type == temp.type, \
+                    Tournament.mode == temp.mode, \
+                    Tournament.coach_limit == temp.coach_limit, \
+                    Tournament.deck_limit == temp.deck_limit, \
+                    Tournament.deck_value_limit == temp.deck_value_limit, \
+                    Tournament.region == region
+                ).group_by(Tournament).having(func.count_(Tournament.tournament_signups) < Tournament.coach_limit+Tournament.reserve_limit).all()
+                # create new one if there is not
+                if not tourns:
+                    new_tourns.append((region,temp))
+
+        return new_tourns
+
+    @classmethod
+    def init_new_tournaments(cls):
+        new_tournaments = cls.new_tournaments()
+        for i, (region, temp) in enumerate(new_tournaments):
+            temp = {
+                "Tournament ID": 0,
+                "Tournament Name": f"{region} {temp.type} {temp.mode}",
+                "Scheduling Room": "",
+                "Signup Close Date": "",
+                "Expected Start Date":"",
+                "Expected End Date":"",
+                "Tournament Type": temp.type,
+                "Tournament Mode": temp.mode,
+                "Tournament Deadline": "",
+                "Entrance Fee":0,
+                "Status": "OPEN",
+                "Coach Count Limit": temp.coach_limit,
+                "Reserve Count Limit": 0,
+                "Region Bias": region,
+                "Deck Size Limit": temp.deck_limit,
+                "Deck Value Limit": temp.deck_value_limit,
+                "Tournament Admin": "",
+                "Tournament Sponsor": "",
+                "Sponsor Description":"",
+                "Special Rules":"",
+                "Prizes": temp.prizes,
+                "Unique Prize": ""
+            }
+            new_tournaments[i] = list(temp.values())
+        ImperiumSheetService.append_tournaments(new_tournaments)
+
+    @classmethod
+    def update_tournament_in_sheet(cls, tournament):
+        ImperiumSheetService.update_tournament(cls.tournament_to_dict(tournament))
