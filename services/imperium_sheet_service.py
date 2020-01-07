@@ -23,19 +23,18 @@ class ImperiumSheetService:
     CRACKERSHEET_ID = "1muYufpLnNZueKjkawL3yuKwepnHCccQQWYUL4QNV-Tw"
     CRACKER_TAB = "All Cards"
     
+
+    @classmethod
+    def __client(cls):
+        return gspread.authorize(CREDS)
+
     @classmethod
     def __load(cls,sheet_id):
         return cls.__get_sheet(sheet_id).get_all_records()
 
     @classmethod
     def __get_sheet(cls,sheet_id):
-        client = gspread.authorize(CREDS)
-        return client.open_by_key(cls.SPREADSHEET_ID).worksheet(sheet_id)
-
-    @classmethod
-    def get_sheet(cls,sheet_id):
-        client = gspread.authorize(CREDS)
-        return client.open_by_key(cls.SPREADSHEET_ID).worksheet(sheet_id)
+        return cls.__client().open_by_key(cls.SPREADSHEET_ID).worksheet(sheet_id)
 
     @classmethod
     def templates(cls):
@@ -64,8 +63,7 @@ class ImperiumSheetService:
     def append_tournaments(cls,tournaments):
         """Adds new tournament to the Tournamnet sheet"""
         max_id = cls.max_tournament_id()
-        client = gspread.authorize(CREDS)
-        sheet = client.open_by_key(cls.SPREADSHEET_ID)
+        sheet = cls.__client().open_by_key(cls.SPREADSHEET_ID)
         for i,tournament in enumerate(tournaments,1):
             # ID
             tournament[0] = max_id + i
@@ -93,8 +91,7 @@ class ImperiumSheetService:
         
     @classmethod
     def __cracker_load(cls,sheet_id):
-        client = gspread.authorize(CREDS)
-        sheet = client.open_by_key(cls.CRACKERSHEET_ID).worksheet(sheet_id)
+        sheet = cls.__client().open_by_key(cls.CRACKERSHEET_ID).worksheet(sheet_id)
         return sheet.get_all_records()
     
     @classmethod
