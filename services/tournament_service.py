@@ -1,5 +1,6 @@
 """TournamentService helpers"""
 import itertools
+from datetime import date, timedelta
 
 from sqlalchemy import asc, func
 from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card, TournamentTemplate
@@ -559,3 +560,12 @@ class TournamentService:
     @classmethod
     def update_tournament_in_sheet(cls, tournament):
         ImperiumSheetService.update_tournament(cls.tournament_to_dict(tournament))
+
+    @classmethod
+    def kick_off(cls, tournament):
+        # set dates
+        start = date.today()
+        end = start + timedelta(days=t.duration)
+        tournament.expected_start_date = today.strftime("%b %-d")
+        tournament.expected_end_date = end.strftime("%b %-d")
+        tournament.deadline_date = end.strftime("%b %-d")
