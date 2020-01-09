@@ -19,6 +19,9 @@ class ImperiumSheetService:
     ALL_CARDS_SHEET = "All Cards"
     TOURNAMENT_SHEET = "Tournaments"
     TOURNAMENT_TEMPLATES_SHEET = "Tournament Templates"
+    SPONSOR_SHEET = "Tournament Sponsors"
+    ROOM_SHEET = "Tournament Rooms"
+    ADMIN_SHEET = "Admins"
 
     CRACKERSHEET_ID = "1muYufpLnNZueKjkawL3yuKwepnHCccQQWYUL4QNV-Tw"
     CRACKER_TAB = "All Cards"
@@ -50,6 +53,21 @@ class ImperiumSheetService:
     def tournaments(cls):
         """Returns torunaments from the sheet"""
         return cls.__load(cls.TOURNAMENT_SHEET)
+
+    @classmethod
+    def sponsors(cls):
+        """Returns sponsors from the sheet"""
+        return cls.__load(cls.SPONSOR_SHEET)
+
+    @classmethod
+    def admins(cls):
+        """Returns admins from the sheet"""
+        return cls.__load(cls.ADMIN_SHEET)
+
+    @classmethod
+    def rooms(cls):
+        """Returns rooms from the sheet"""
+        return cls.__load(cls.ROOM_SHEET)
 
     @classmethod
     def max_tournament_id(cls):

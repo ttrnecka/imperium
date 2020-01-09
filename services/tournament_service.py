@@ -1,6 +1,7 @@
 """TournamentService helpers"""
 import itertools
 from datetime import date, timedelta
+import random
 
 from sqlalchemy import asc, func
 from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card, TournamentTemplate
@@ -80,7 +81,6 @@ class TournamentService:
             "active":int(template["Active"]),
             "type":template["Tournament Type"],
             "mode":template["Tournament Mode"],
-            "duration":int(template["Duration"]),
             "coach_limit":int(template["Coach Count Limit"]),
             "deck_limit":int(template["Deck Size Limit"]),
             "deck_value_limit":int(template["Deck Value Limit"]) if template["Deck Value Limit"] else 150,
@@ -563,9 +563,65 @@ class TournamentService:
 
     @classmethod
     def kick_off(cls, tournament):
+        if tournament.type != "Development":
+            raise TournamentError(f"Cannot auto start {tournament.tournament_id}. {tournament.name}: Not development tournament!")
+        
         # set dates
-        start = date.today()
-        end = start + timedelta(days=t.duration)
-        tournament.expected_start_date = today.strftime("%b %-d")
-        tournament.expected_end_date = end.strftime("%b %-d")
-        tournament.deadline_date = end.strftime("%b %-d")
+        if not tournament.expected_start_date:
+            mode = tournament.mode.lower()
+            if mode == "regular":
+                duration = 21
+            elif mode == "boot camp":
+                duration == 7
+            elif mode == "fast track":
+                duration == 3
+            else:
+                raise TournamentError("Unknown tournament mode: {mode}")
+
+            start = date.today()
+            end = start + timedelta(days=duration)
+            tournament.expected_start_date = start.strftime("%b %-d")
+            tournament.expected_end_date = end.strftime("%b %-d")
+            tournament.deadline_date = end.strftime("%b %-d")
+
+        # set sponsor
+        if not tournament.sponsor:
+            sponsor = random.choice(ImperiumSheetService.sponsors())
+            tournament.sponsor = sponsor["Sponsor"]
+            tournament.sponsor_description = sponsor["Effect"]
+            tournament.special_rules = sponsor["Special Rules"]
+
+        # set admin
+        if not tournament.admin:
+            admins = ImperiumSheetService.admins()
+            regional_admins = [admin for admin in admins if tournament.region in admin["Region Bias"]]
+            available_admins = []
+            for admin in regional_admins:
+                if Tournament.query.filter_by(status="OPEN", admin=admin["Name"]).count() < admin["Load"]:
+                    available_admins.append(admin)
+
+            if not available_admins:
+                raise TournamentError("No admin available, update the Admin tab in master sheet, or configure admin manually")
+            tournament.admin = random.choice(available_admins)["Name"]
+
+        # set room
+        if not tournament.discord_channel:
+            rooms = ImperiumSheetService.rooms()
+            first_room = None
+            for room in rooms:
+                if Tournament.query.filter_by(status="OPEN", discord_channel=room["Name"]).count() == 0:
+                    first_room = room
+                    break
+
+            if not first_room:
+                raise TournamentError("No room available, release room or create new one and update Tournament Rooms tab, or configure room manually")
+            tournament.discord_channel = first_room
+
+
+        _, err = TournamentService.start_check(tournament)
+        if err:
+            raise TournamentError(err)
+        
+        AdminNotificationService.notify(
+            f"!admincomp start {tournament.tournament_id}"
+        )

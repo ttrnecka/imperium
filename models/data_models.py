@@ -456,13 +456,20 @@ class Tournament(Base):
         else:
             return False
 
+    def can_auto_start(self):
+        # can autostart just devs boot camps and regulars
+        typ = self.type.lower()
+        mode = self.mode.lower()
+        if typ == "development" and mode in ["boot camp", "regular"]:
+            return True
+        return False
+
 class TournamentTemplate(Base):
     __tablename__ = 'tournament_templates'
 
     active = db.Column(db.Boolean(),nullable=False, default=True)
     type = db.Column(db.String(80),nullable=False)
     mode = db.Column(db.String(80),nullable=False)
-    duration = db.Column(db.Integer(),default=7,nullable=False)
     coach_limit = db.Column(db.Integer(),default=4, nullable=False)
     deck_limit =  db.Column(db.Integer(), default=18, nullable=False)
     deck_value_limit =  db.Column(db.Integer(), default=150, nullable=False)

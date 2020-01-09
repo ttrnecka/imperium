@@ -7,12 +7,9 @@ app.app_context().push()
 
 tournaments = Tournament.query.filter_by(status="OPEN").all()
 manual = []
-auto = []
 for tournament in tournaments:
     if len(tournament.tournament_signups) == tournament.coach_limit:
-        if tournament.type == "Development":
-            auto.append(tournament)
-        else:
+        if not tournament.can_auto_start():
             manual.append(tournament)
 
 c = Coach.find_all_by_name(app.config['TOURNAMENT_MASTER_ADMIN'])
@@ -21,13 +18,3 @@ if manual:
     for t in manual:
         msg += f"{t.tournament_id}. {t.name}\n"
     TournamentNotificationService.notify(msg)
-
-# automatick kick off
-if auto:
-    msg=f"{Automatically started tournaments:\n"
-    for t in auto:
-        try:
-            TournamentService.kick_off(t)
-            TournamentNotificationService.notify(f"Tournament {t.tournament_id}. {t.name} kicked off: deadline {t.deadline_date}, admin {t.admin}, sponsor {t.sponsor}, room {t.discord_channel}}")
-        except TournamentError as e:
-            TournamentNotificationService.notify(f"{c[0].mention()}: {msg}")
