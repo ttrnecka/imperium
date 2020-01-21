@@ -32,7 +32,7 @@ def check_build_own_legend_quest(target, value, oldvalue, initiator):
                 f"!admincomp {value} {target.tournament_id}"
             )
 
-        if value == Tournament.PHASES[5]:
+        if value == Tournament.PHASES[-1]:
             decks = [signup.deck for signup in target.tournament_signups]
             for deck in decks:
                 coach = deck.tournament_signup.coach

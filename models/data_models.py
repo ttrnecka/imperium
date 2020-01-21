@@ -420,7 +420,6 @@ class Tournament(Base):
         "locked",
         "special_play",
         "inducement",
-        "reaction",
         "blood_bowl"
     ]
 

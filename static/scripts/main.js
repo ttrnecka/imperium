@@ -29,7 +29,7 @@ Vue.mixin({
         M: ["Big Hand","Disturbing Presence","Extra Arms","Foul Appearance","Horns","Prehensile Tail","Tentacles","Two Heads","Very Long Legs","Claw"]
       },
       card_types: ["Player","Training","Special Play","Reaction","Staff","Upgrade"],
-      deck_card_types: ["Player","Training","Special Play","Reaction","Staff"],
+      deck_card_types: ["Player","Training","Special Play","Staff"],
       show_starter:1,
       rarity_order:1,
       skillreg: /(Diving Catch|Kick-Off Return|Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off|Big Hand|Very Long Legs)( |,|\.|$)/g,

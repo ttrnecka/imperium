@@ -68,10 +68,10 @@ class TournamentService:
             "Deck Value Limit": tournament.deck_value_limit,
             "Tournament Admin": tournament.admin,
             "Tournament Sponsor": tournament.sponsor,
+            "Sponsor Description": tournament.sponsor_description,
             "Special Rules": tournament.special_rules,
             "Prizes": tournament.prizes,
             "Unique Prize": tournament.unique_prize,
-            "Sponsor Description": tournament.sponsor_description,
         }
 
     @classmethod
@@ -191,8 +191,7 @@ class TournamentService:
                 singups = coach.tournaments.filter(
                     Tournament.type == "Development", Tournament.mode == "Regular").all()
                 if singups:
-                    raise RegistrationError(f"Coach cannot be registered to Boot Camp \
-                        and Regular Development tournament at the same time!!!")
+                    raise RegistrationError(f"Coach cannot be registered to Boot Camp and Regular Development tournament at the same time!!!")
 
             if tournament.mode == "Regular":
                 singups = coach.tournaments.filter(
@@ -406,33 +405,6 @@ class TournamentService:
         msg.append("**Note**: Use !done to confirm you are done with the phase, use !left to see who is left")
 
         return msg
-    
-    @classmethod
-    def reaction_msg(cls, tournament):
-        
-        msg = ["__**Reaction Phase**__:"," "]
-        decks = []
-        max_reaction_plays = 0
-        for signup in tournament.tournament_signups:
-            reactions = [card for card in signup.deck.cards if card.get('card_type') == "Reaction"]
-            if len(reactions) > max_reaction_plays:
-                max_reaction_plays = len(reactions)
-
-            decks.append((signup.coach.mention(), DeckService.value(signup.deck), reactions))
-        
-        sorted_decks = sorted(decks, key=lambda d: d[1])
-
-        msg.extend(["__Order of Play__:", " "])
-
-        for index in range(max_reaction_plays):
-            for deck in sorted_decks:
-                if len(deck[2]) >= index + 1:
-                    msg.append(f"{deck[0]} plays **{deck[2][index].get('name')}**:")
-                    msg.append(deck[2][index].get('description'))
-            msg.append(" ")
-        
-        msg.append("**Note**: Use !done to confirm you are done with the phase, use !left to see who is left")
-        return msg
 
     @classmethod
     def blood_bowl_msg(cls, tournament):
@@ -497,7 +469,7 @@ class TournamentService:
     
         coaches = Coach.find_all_by_name(tourn.admin)
         if not coaches:
-            er = f"Tournament admin {tourn.admin} was not found on the discord server, check name in the Tournament sheet and run **!admincomp update**!\n"
+            err = f"Tournament admin {tourn.admin} was not found on the discord server, check name in the Tournament sheet and run **!admincomp update**!\n"
             return False, err
 
         return True, None
@@ -562,27 +534,24 @@ class TournamentService:
         ImperiumSheetService.update_tournament(cls.tournament_to_dict(tournament))
 
     @classmethod
-    def kick_off(cls, tournament):
-        if tournament.type != "Development":
-            raise TournamentError(f"Cannot auto start {tournament.tournament_id}. {tournament.name}: Not development tournament!")
-        
+    def kick_off(cls, tournament):  
         # set dates
         if not tournament.expected_start_date:
             mode = tournament.mode.lower()
             if mode == "regular":
                 duration = 21
             elif mode == "boot camp":
-                duration == 7
+                duration = 7
             elif mode == "fast track":
-                duration == 3
+                duration = 3
             else:
                 raise TournamentError("Unknown tournament mode: {mode}")
 
             start = date.today()
             end = start + timedelta(days=duration)
-            tournament.expected_start_date = start.strftime("%b %-d")
-            tournament.expected_end_date = end.strftime("%b %-d")
-            tournament.deadline_date = end.strftime("%b %-d")
+            tournament.expected_start_date = start.strftime("%b %d").lstrip("0").replace(" 0", " ")
+            tournament.expected_end_date = end.strftime("%b %d").lstrip("0").replace(" 0", " ")
+            tournament.deadline_date = end.strftime("%b %d").lstrip("0").replace(" 0", " ")
 
         # set sponsor
         if not tournament.sponsor:
@@ -609,14 +578,16 @@ class TournamentService:
             rooms = ImperiumSheetService.rooms()
             first_room = None
             for room in rooms:
-                if Tournament.query.filter_by(status="OPEN", discord_channel=room["Name"]).count() == 0:
+                if Tournament.query.filter(Tournament.status != "FINISHED", Tournament.discord_channel == room["Name"]).count() == 0:
                     first_room = room
                     break
 
             if not first_room:
                 raise TournamentError("No room available, release room or create new one and update Tournament Rooms tab, or configure room manually")
-            tournament.discord_channel = first_room
+            tournament.discord_channel = first_room["Name"]
 
+        TournamentService.update_tournament_in_sheet(tournament)
+        db.session.commit()
 
         _, err = TournamentService.start_check(tournament)
         if err:
@@ -625,3 +596,27 @@ class TournamentService:
         AdminNotificationService.notify(
             f"!admincomp start {tournament.tournament_id}"
         )
+        
+    @classmethod
+    def set_status(cls,tournament, status="RUNNING"):
+        tournament.status = status
+        cls.update_tournament_in_sheet(tournament)
+
+    @classmethod
+    def close_tournament(cls,tournament):
+        cls.release_one_time_cards(tournament)
+        
+        for coach in tournament.coaches:
+            cls.unregister(tournament, coach, admin=True, refund=False)
+        cls.reset_phase(tournament)
+        tournament.status = "FINISHED"
+        tournament.discord_channel = ""
+        tournament.expected_start_date = ""
+        tournament.expected_end_date = ""
+        tournament.deadline_date = ""
+        tournament.sponsor = ""
+        tournament.sponsor_description = ""
+        tournament.special_rules = ""
+        tournament.admin = ""
+        cls.update_tournament_in_sheet(tournament)
+        db.session.commit()

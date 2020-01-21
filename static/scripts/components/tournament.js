@@ -23,7 +23,6 @@ export default {
               {"name":"locked", "desc":"Locked"},
               {"name":"special_play", "desc":"Special Play"},
               {"name":"inducement", "desc":"Inducement"},
-              {"name":"reaction", "desc":"Reaction"},
               {"name":"blood_bowl", "desc":"Blood Bowl"},
           ]
       }
@@ -212,7 +211,7 @@ export default {
                     }
                     this.flash(msg, 'info',{timeout: 3000});
                 }
-                if(["sign","resign","get"].includes(method)) {
+                if(["sign","resign","get","start"].includes(method)) {
                     this.$parent.$emit('updateTournament', res.data);
                 } else if(method=="update") {
                     this.$parent.$emit('updateTournaments', res.data);

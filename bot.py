@@ -468,14 +468,13 @@ class DiscordCommand:
         msg = "```"
         msg += "Tournament helper\n"
         msg += "USAGE:\n"
-        msg += "!admincomp start|stop|update|special_play|inducements|reaction|blood_bowl <id>\n"
+        msg += "!admincomp start|stop|update|special_play|inducements|blood_bowl <id>\n"
         msg += "\tstart: Notifies all registered coaches that tournament started "
         msg += "in the tournament channel and links the ledger\n"
         msg += "\tstop: Resigns all coaches from the tournament\n"
         msg += "\tupdate: Updates data from Tournament sheet\n"
         msg += "\tspecial_play: Initiates special play phase\n"
         msg += "\tinducement: Initiates inducement phase\n"
-        msg += "\treaction: Initiates reaction phase\n"
         msg += "\tblood_bowl: Initiates blood bowl phase\n"
         msg += "\t<id>: id of tournament from Tournamet master sheet\n"
         msg += "```"
@@ -1186,10 +1185,10 @@ class DiscordCommand:
                 await self.reply(["Incorrect number of arguments!!!", self.__class__.admincomp_help()])
                 return
 
-            if self.args[1] not in ["start", "stop", "update", "special_play", "inducement", "reaction","blood_bowl"]:
+            if self.args[1] not in ["start", "stop", "update", "special_play", "inducement", "blood_bowl"]:
                 await self.reply(["Incorrect arguments!!!", self.__class__.admincomp_help()])
 
-            if self.args[1] in ["start", "stop", "special_play", "inducement", "reaction","blood_bowl"]:
+            if self.args[1] in ["start", "stop", "special_play", "inducement", "blood_bowl"]:
                 if not represents_int(self.args[2]):
                     await self.reply([f"**{self.args[2]}** is not a number!!!\n"])
                     return
@@ -1204,15 +1203,11 @@ class DiscordCommand:
                 TournamentService.update()
                 await self.reply([f"Tournaments updated!!!\n"])
             if self.args[1] == "stop":
-                TournamentService.release_one_time_cards(tourn)
-                for coach in tourn.coaches:
-                    TournamentService.unregister(tourn, coach, admin=True, refund=False)
-                TournamentService.reset_phase(tourn)
-                db.session.commit()
+                TournamentService.close_tournament(tourn)
                 await self.reply([f"Coaches have been resigned from {tourn.name}!!!\n"])
                 return
 
-            if self.args[1] in ["start", "special_play", "inducement", "reaction","blood_bowl"]:
+            if self.args[1] in ["start", "special_play", "inducement","blood_bowl"]:
                 
                 result, err = TournamentService.start_check(tourn)
                 if err:
@@ -1231,6 +1226,7 @@ class DiscordCommand:
 
                 if self.args[1] == "start":
                     TournamentService.reset_phase(tourn)
+                    TournamentService.set_status(tourn,status="RUNNING")
                     db.session.commit()
                     TournamentService.release_reserves(tourn)
 
@@ -1256,9 +1252,7 @@ class DiscordCommand:
                 if self.args[1] == "special_play":
                     msg = TournamentService.special_play_msg(tourn)
                 if self.args[1] == "inducement":
-                    msg = TournamentService.inducement_msg(tourn)
-                if self.args[1] == "reaction":
-                    msg = TournamentService.reaction_msg(tourn)
+                    msg = TournamentService.inducement_msg(tourn)ourn)
                 if self.args[1] == "blood_bowl":
                     msg = TournamentService.blood_bowl_msg(tourn)
                 await self.send_message(channel, msg)

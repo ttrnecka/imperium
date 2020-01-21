@@ -39,25 +39,25 @@ class PackService:
         {"roll":0.8, "rarities":["Rare", "Rare", "Rare", "Common", "Common"]},
         {"roll":0.85, "rarities":["Epic", "Rare", "Common", "Common", "Common"]},
         {"roll":0.9, "rarities":["Rare", "Rare", "Rare", "Rare", "Common"]},
-        {"roll":0.925, "rarities":["Epic", "Rare", "Rare", "Common", "Common"]},
-        {"roll":0.95, "rarities":["Epic", "Epic", "Common", "Common", "Common"]},
-        {"roll":0.975, "rarities":["Legendary", "Common", "Common", "Common", "Common"]},
-        {"roll":0.98125, "rarities":["Rare", "Rare", "Rare", "Rare", "Rare"]},
-        {"roll":0.9875, "rarities":["Epic", "Rare", "Rare", "Rare", "Common"]},
-        {"roll":0.99375, "rarities":["Epic", "Epic", "Rare", "Common", "Common"]},
+        {"roll":0.926, "rarities":["Epic", "Rare", "Rare", "Common", "Common"]},
+        {"roll":0.952, "rarities":["Epic", "Epic", "Common", "Common", "Common"]},
+        {"roll":0.978, "rarities":["Legendary", "Common", "Common", "Common", "Common"]},
+        {"roll":0.9843, "rarities":["Rare", "Rare", "Rare", "Rare", "Rare"]},
+        {"roll":0.9906, "rarities":["Epic", "Rare", "Rare", "Rare", "Common"]},
+        {"roll":0.996875, "rarities":["Epic", "Epic", "Rare", "Common", "Common"]},
         {"roll":1, "rarities":["Legendary", "Rare", "Common", "Common", "Common"]},
     ]
 
     PREMIUM_COMBOS = [
-        {"roll":0.25, "rarities":["Rare", "Rare", "Rare", "Rare", "Rare"]},
-        {"roll":0.5, "rarities":["Epic", "Rare", "Rare", "Rare", "Rare"]},
-        {"roll":0.65, "rarities":["Epic", "Epic", "Rare", "Rare", "Rare"]},
-        {"roll":0.75, "rarities":["Epic", "Epic", "Epic", "Rare", "Rare"]},
-        {"roll":0.85, "rarities":["Legendary", "Rare", "Rare", "Rare", "Rare"]},
-        {"roll":0.9, "rarities":["Epic", "Epic", "Epic", "Epic", "Rare"]},
-        {"roll":0.95, "rarities":["Legendary", "Epic", "Rare", "Rare", "Rare"]},
-        {"roll":0.97, "rarities":["Epic", "Epic", "Epic", "Epic", "Epic"]},
-        {"roll":0.99, "rarities":["Legendary", "Epic", "Epic", "Rare", "Rare"]},
+        {"roll":0.29, "rarities":["Rare", "Rare", "Rare", "Rare", "Rare"]},
+        {"roll":0.58, "rarities":["Epic", "Rare", "Rare", "Rare", "Rare"]},
+        {"roll":0.74, "rarities":["Epic", "Epic", "Rare", "Rare", "Rare"]},
+        {"roll":0.84, "rarities":["Epic", "Epic", "Epic", "Rare", "Rare"]},
+        {"roll":0.89, "rarities":["Legendary", "Rare", "Rare", "Rare", "Rare"]},
+        {"roll":0.94, "rarities":["Epic", "Epic", "Epic", "Epic", "Rare"]},
+        {"roll":0.965, "rarities":["Legendary", "Epic", "Rare", "Rare", "Rare"]},
+        {"roll":0.985, "rarities":["Epic", "Epic", "Epic", "Epic", "Epic"]},
+        {"roll":0.995, "rarities":["Legendary", "Epic", "Epic", "Rare", "Rare"]},
         {"roll":1, "rarities":["Legendary", "Epic", "Epic", "Epic", "Rare"]},
     ]
 
@@ -91,12 +91,12 @@ class PackService:
     ]
 
     PLAYER_COMBOS = [
-        {"roll":0.35, "rarities":["Rare", "Rare", "Rare"]},
-        {"roll":0.6, "rarities":["Epic", "Rare", "Rare"]},
-        {"roll":0.8, "rarities":["Epic", "Epic", "Rare"]},
-        {"roll":0.875, "rarities":["Epic", "Epic", "Epic"]},
-        {"roll":0.95, "rarities":["Legendary", "Rare", "Rare"]},
-        {"roll":0.99, "rarities":["Legendary", "Epic", "Rare"]},
+        {"roll":0.37, "rarities":["Rare", "Rare", "Rare"]},
+        {"roll":0.64, "rarities":["Epic", "Rare", "Rare"]},
+        {"roll":0.86, "rarities":["Epic", "Epic", "Rare"]},
+        {"roll":0.9375, "rarities":["Epic", "Epic", "Epic"]},
+        {"roll":0.975, "rarities":["Legendary", "Rare", "Rare"]},
+        {"roll":0.995, "rarities":["Legendary", "Epic", "Rare"]},
         {"roll":1, "rarities":["Legendary", "Epic", "Epic"]},
     ]
 
@@ -113,10 +113,10 @@ class PackService:
 
     PLAYER_FIRST_COMBOS = [
         {"roll":0.6, "rarities":["Epic", "Rare", "Rare"]},
-        {"roll":0.8, "rarities":["Epic", "Epic", "Rare"]},
-        {"roll":0.875, "rarities":["Epic", "Epic", "Epic"]},
-        {"roll":0.95, "rarities":["Legendary", "Rare", "Rare"]},
-        {"roll":0.99, "rarities":["Legendary", "Epic", "Rare"]},
+        {"roll":0.8625, "rarities":["Epic", "Epic", "Rare"]},
+        {"roll":0.9375, "rarities":["Epic", "Epic", "Epic"]},
+        {"roll":0.975, "rarities":["Legendary", "Rare", "Rare"]},
+        {"roll":0.995, "rarities":["Legendary", "Epic", "Rare"]},
         {"roll":1, "rarities":["Legendary", "Epic", "Epic"]},
     ]
 

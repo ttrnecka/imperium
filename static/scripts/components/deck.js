@@ -44,7 +44,6 @@ export default {
             locked:"Locked",
             special_play:"Special Play",
             inducement:"Inducement",
-            reaction:"Reaction",
             blood_bowl:"Blood Bowl",
           }
       }
@@ -747,9 +746,6 @@ export default {
             if(this.tournament.phase=="inducement") {
                 return "Type exact name of Inducement Card and click Add";
             }
-            if(this.tournament.phase=="reaction") {
-                return "Type exact name of Card and click Add";
-            }
             return ""
         },
         doneable_phase() {
@@ -943,7 +939,7 @@ export default {
                                     <div class="card-header" :id="'extraCards'+id">
                                         <h6 class="mb-0">
                                             <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseExtraCards'+id" aria-expanded="true" aria-controls="collapseExtraCards">
-                                            <span data-toggle="tooltip" data-placement="top" title="Use this to add Sponsor, Inducement or Reaction Cards to the collection for this tournament only">Sponsor & Extra Cards</span>
+                                            <span data-toggle="tooltip" data-placement="top" title="Use this to add extra cards to the collection for this tournament only">Sponsor & Extra Cards</span>
                                             </button>
                                         </h6>
                                     </div>

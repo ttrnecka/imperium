@@ -21,4 +21,4 @@ if auto:
             TournamentService.kick_off(t)
             TournamentNotificationService.notify(f"Tournament {t.tournament_id}. {t.name} kicked off: deadline {t.deadline_date}, admin {t.admin}, sponsor {t.sponsor}, room {t.discord_channel}")
         except TournamentError as e:
-            TournamentNotificationService.notify(f"{c[0].mention()}: {msg}")
+            TournamentNotificationService.notify(e)

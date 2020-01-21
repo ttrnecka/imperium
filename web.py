@@ -22,7 +22,7 @@ from services import LedgerNotificationService, AchievementNotificationService
 from services import AdminNotificationService, CardService, TournamentNotificationService, CrackerService
 from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError, InvalidCrackerType, InvalidCrackerTeam
-from services import TransactionService, DeckService, DeckError
+from services import TransactionService, DeckService, DeckError, TournamentError
 from misc.helpers import InvalidUsage, current_coach, current_user, current_coach_with_inactive, CardHelper
 from misc.helpers import owning_coach
 from misc.helpers import represents_int
@@ -244,12 +244,7 @@ def tournament_close(tournament_id):
             reason = prize['reason']+" by "+coach.short_name()
             TransactionService.process(tmp_coach, int(prize['amount'])*-1, reason)
 
-        TournamentService.release_one_time_cards(tourn)
-        
-        for coach in tourn.coaches:
-            TournamentService.unregister(tourn, coach, admin=True, refund=False)
-        TournamentService.reset_phase(tourn)
-        db.session.commit()
+        TournamentService.close_tournament(tourn)
 
         result = tournament_schema.dump(tourn)
         return jsonify(result.data)
@@ -279,15 +274,17 @@ def tournament_start(tournament_id):
     """Set tournament phase"""
     try:
         tourn = Tournament.query.get(tournament_id)
+        TournamentService.kick_off(tourn)
         result, err = TournamentService.start_check(tourn)
         if err:
             raise InvalidUsage(str(err), status_code=403)
-        
+
         AdminNotificationService.notify(
             f"!admincomp start {tourn.tournament_id}"
         )
-        return jsonify(True)
-    except (RegistrationError, TransactionError, TypeError) as exc:
+        result = tournament_schema.dump(tourn)
+        return jsonify(result.data)
+    except (RegistrationError, TransactionError, TypeError, TournamentError) as exc:
         raise InvalidUsage(str(exc), status_code=403)
 
 @app.route("/tournaments/<int:tournament_id>/sign", methods=["GET"])
@@ -459,12 +456,6 @@ def can_edit_deck(deck):
 def deck_response(deck):
     """Turns deck into JSON response"""
     result = deck_schema.dump(deck)
-    # censoring Reactions
-    coach = current_coach()
-    tournament = deck.tournament_signup.tournament
-    if not (coach.id == deck.tournament_signup.coach.id) and \
-            not tournament.phase in ["reaction","blood_bowl"]:
-        CardHelper.censor_cards(result.data['cards'])
     return jsonify(result.data)
 
 @app.route("/decks/<int:deck_id>", methods=["GET"])

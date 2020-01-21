@@ -1,3 +1,13 @@
+Season 3
+Tournamnets start error handling
+Infer injuries from deck
+Add triggers from blessing/curses and show them in special play phase
+Consecrations/Corruptions hidden until special play - then revealed
+
+TEST
+REmove reaction phase and hide reaction cards in deck 
+drop rates for legends down by half
+
 Season 2
 TOP
 Add Start button from tournaments
@@ -24,6 +34,8 @@ test code
 
 
 DONE
+starting tournament through web will autokick it - automatically updates the tournament on page
+starting and closing tournaments updates their status in sheet
 Cloning extra cards
 Multi race cards in checker
 Reactions - NaN in coach collection
