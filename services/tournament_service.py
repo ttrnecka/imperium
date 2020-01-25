@@ -4,7 +4,8 @@ from datetime import date, timedelta
 import random
 
 from sqlalchemy import asc, func
-from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card, TournamentTemplate
+from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card, TournamentTemplate, TournamentAdmin
+from models.data_models import TournamentSponsor, TournamentRoom, ConclaveRule
 from models.base_model import db
 from .notification_service import NotificationService, AdminNotificationService
 from .imperium_sheet_service import ImperiumSheetService
@@ -44,6 +45,8 @@ class TournamentService:
             "prizes":tournament["Prizes"],
             "unique_prize":tournament["Unique Prize"],
             "sponsor_description":tournament["Sponsor Description"],
+            "consecration":tournament["Consecration"],
+            "corruption":tournament["Corruption"]
         }
 
     @classmethod
@@ -72,6 +75,8 @@ class TournamentService:
             "Special Rules": tournament.special_rules,
             "Prizes": tournament.prizes,
             "Unique Prize": tournament.unique_prize,
+            "Consecration": tournament.consecration,
+            "Corruption": tournament.corruption
         }
 
     @classmethod
@@ -88,8 +93,52 @@ class TournamentService:
         }
 
     @classmethod
+    def init_dict_from_tournament_admin(cls, admin):
+        """import sheet tournament admin line into dict to update the TournamentAdmin record"""
+        return {
+            "name":admin["Name"],
+            "region":admin["Region Bias"],
+            "load":int(admin["Load"]),
+            "tournament_types":admin["Tournament Types"]
+        }
+
+    @classmethod
+    def init_dict_from_tournament_sponsor(cls, sponsor):
+        """import sheet tournament sponsor line into dict to update the TournamentSponsor record"""
+        return {
+            "name":sponsor["Sponsor"],
+            "effect":sponsor["Effect"],
+            "skill_pack_granted":sponsor["Skill Pack Granted"],
+            "special_rules":sponsor["Special Rules"]
+        }
+
+    @classmethod
+    def init_dict_from_tournament_room(cls, room):
+        """import sheet tournament room line into dict to update the TournamentRoom record"""
+        return {
+            "name":room["Name"],
+        }
+    
+    @classmethod
+    def init_dict_from_conclave_rule(cls, rule):
+        """import sheet tournament room line into dict to update the TournamentRoom record"""
+        return {
+            "type":rule["Type"],
+            "name":rule["Name"],
+            "description":rule["Description"],
+            "level1":int(rule["Trigger 1"]),
+            "level2":int(rule["Trigger 2"]),
+            "level3":int(rule["Trigger 3"]),
+            "notes":rule["Notes"]
+        }
+
+    @classmethod
     def update(cls):
         cls.update_templates()
+        cls.update_admins()
+        cls.update_sponsors()
+        cls.update_rooms()
+        cls.update_conclave()
         # update tournaments first to reflect any closings
         cls.update_tournaments()
         # check if new tournamnets have to be opened
@@ -113,15 +162,47 @@ class TournamentService:
         db.session.commit()
 
     @classmethod
+    def update_conclave(cls):
+        """Updates conclave rules from sheet into DB"""
+        for rule in ImperiumSheetService.conclave_rules():
+            r_dict = cls.init_dict_from_conclave_rule(rule)
+            d_rule = ConclaveRule.query.filter_by(name=r_dict['name']).one_or_none()
+            if not d_rule:
+                d_rule = ConclaveRule()
+                db.session.add(d_rule)
+
+            d_rule.update(**r_dict)
+
+        db.session.commit()
+
+    @classmethod
     def update_templates(cls):
         """Updates tournament templates from sheet into DB"""
-        # delete outstanding templates
-        TournamentTemplate.query.delete()
-        for template in ImperiumSheetService.tournament_templates():
-            t_dict = cls.init_dict_from_tournament_template(template)
-            tourn = TournamentTemplate()
-            db.session.add(tourn)
-            tourn.update(**t_dict)
+        cls.update_table(TournamentTemplate,ImperiumSheetService.tournament_templates(),cls.init_dict_from_tournament_template)
+
+    @classmethod
+    def update_admins(cls):
+        """Updates admins from sheet into DB"""
+        cls.update_table(TournamentAdmin,ImperiumSheetService.admins(),cls.init_dict_from_tournament_admin)
+
+    @classmethod
+    def update_sponsors(cls):
+        """Updates sponsors from sheet into DB"""
+        cls.update_table(TournamentSponsor,ImperiumSheetService.sponsors(),cls.init_dict_from_tournament_sponsor)
+
+    @classmethod
+    def update_rooms(cls):
+        """Updates rooms from sheet into DB"""
+        cls.update_table(TournamentRoom,ImperiumSheetService.rooms(),cls.init_dict_from_tournament_room)
+        
+    @classmethod
+    def update_table(cls, table, data, transfer_func):
+        table.query.delete()
+        for template in data:
+            r_dict = transfer_func(template)
+            item = table()
+            db.session.add(item)
+            item.update(**r_dict)
 
         db.session.commit()
 
@@ -555,36 +636,47 @@ class TournamentService:
 
         # set sponsor
         if not tournament.sponsor:
-            sponsor = random.choice(ImperiumSheetService.sponsors())
-            tournament.sponsor = sponsor["Sponsor"]
-            tournament.sponsor_description = sponsor["Effect"]
-            tournament.special_rules = sponsor["Special Rules"]
+            sponsor = random.choice(TournamentSponsor.query.all())
+            tournament.sponsor = sponsor.name
+            tournament.sponsor_description = sponsor.effect
+            tournament.special_rules = sponsor.special_rules
 
         # set admin
         if not tournament.admin:
-            admins = ImperiumSheetService.admins()
-            regional_admins = [admin for admin in admins if tournament.region in admin["Region Bias"]]
+            admins = TournamentAdmin.query.all()
+            regional_admins = [admin for admin in admins if tournament.region in admin.region]
             available_admins = []
             for admin in regional_admins:
-                if Tournament.query.filter_by(status="OPEN", admin=admin["Name"]).count() < admin["Load"]:
+                if Tournament.query.filter_by(status="OPEN", admin=admin.name).count() < admin.load:
                     available_admins.append(admin)
 
             if not available_admins:
                 raise TournamentError("No admin available, update the Admin tab in master sheet, or configure admin manually")
-            tournament.admin = random.choice(available_admins)["Name"]
+            tournament.admin = random.choice(available_admins).name
 
         # set room
         if not tournament.discord_channel:
-            rooms = ImperiumSheetService.rooms()
+            rooms = TournamentRoom.query.all()
             first_room = None
             for room in rooms:
-                if Tournament.query.filter(Tournament.status != "FINISHED", Tournament.discord_channel == room["Name"]).count() == 0:
+                if Tournament.query.filter(Tournament.status != "FINISHED", Tournament.discord_channel == room.name).count() == 0:
                     first_room = room
                     break
 
             if not first_room:
                 raise TournamentError("No room available, release room or create new one and update Tournament Rooms tab, or configure room manually")
-            tournament.discord_channel = first_room["Name"]
+            tournament.discord_channel = first_room.name
+
+        # set conclave
+        if not tournament.consecration:
+            consecration = random.choice(ConclaveRule.consecrations())
+            corruption = random.choice(ConclaveRule.corruptions())
+        
+            while consecration.same_class(corruption):
+                corruption = random.choice(ConclaveRule.corruptions())
+
+            tournament.consecration = consecration.name
+            tournament.corruption = corruption.name
 
         TournamentService.update_tournament_in_sheet(tournament)
         db.session.commit()
@@ -618,5 +710,7 @@ class TournamentService:
         tournament.sponsor_description = ""
         tournament.special_rules = ""
         tournament.admin = ""
+        tournament.consecration = ""
+        tournament.Corruption = ""
         cls.update_tournament_in_sheet(tournament)
         db.session.commit()

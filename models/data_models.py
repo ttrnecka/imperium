@@ -49,6 +49,20 @@ class TextPickleType(TypeDecorator):
 class CardTemplate(Base):
     __tablename__ = 'card_templates'
 
+    TYPE_PLAYER = "Player"
+    TYPE_TRAINING = "Training"
+    TYPE_SP = "Special Play"
+    TYPE_STAFF = "Staff"
+    RARITY_LEGEND = "Legendary"
+    RARITY_UNIQUE = "Unique"
+    RARITY_INDUCEMENT = "Inducement"
+    RARITY_COMMON = "Common"
+    RARITY_EPIC = "Epic"
+    SUBTYPE_LINEMAN = "Lineman"
+    SUBTYPE_BASIC = "Basic"
+    SUBTYPE_SPECIALIZED = "Specialized"
+    SUBTYPE_CORE = "Core"
+
     name = db.Column(db.String(80), nullable=False, index=True)
     description = db.Column(db.Text())
     race = db.Column(db.String(20), nullable=False)
@@ -62,6 +76,7 @@ class CardTemplate(Base):
     starter_multiplier = db.Column(db.Integer(), nullable=False, default=0)
     one_time_use = db.Column(db.Boolean(), default=False, nullable=False)
     position = db.Column(db.String(50), nullable=False)
+    base_statline = db.Column(db.String(5), nullable=True)
 
     cards = db.relationship('Card', backref=db.backref('template', lazy="selectin"), cascade="all, delete-orphan",lazy=True)
 
@@ -113,6 +128,26 @@ class Card(Base):
         for attribute in ["name", "description", "race", "rarity", "card_type", "subtype", "notes", "value", "skill_access"]:
             setattr(self, attribute, "")
         self.template = template
+        
+    def strength(self):
+        return self.stat(1)
+
+    def movement(self):
+        return self.stat(0)
+    
+    def agility(self):
+        return self.stat(2)
+    
+    def armour(self):
+        return self.stat(3)
+
+    def stunty(self):
+        if len(self.template.base_statline) == 5 and self.template.base_statline[4].lower() == "s":
+            return True
+        return False
+
+    def stat(self,index):
+        return int(self.template.base_statline[index]) if self.template.base_statline else None
 
     def __repr__(self):
         return f'<Card {self.template.name}, rarity: {self.template.rarity}, pack_id: {self.pack_id}>'
@@ -446,6 +481,8 @@ class Tournament(Base):
     unique_prize = db.Column(db.Text,nullable=True)
     phase = db.Column(db.String(255),nullable=False, default="deck_building")
     deck_value_limit =  db.Column(db.Integer(), default=150, nullable=False)
+    consecration =  db.Column(db.String(80),nullable=True)
+    corruption =  db.Column(db.String(80),nullable=True)
 
     coaches = db.relationship("Coach", secondary="tournaments_signups", backref=db.backref('tournaments', lazy="dynamic"), lazy="dynamic")
 
@@ -473,6 +510,69 @@ class TournamentTemplate(Base):
     deck_limit =  db.Column(db.Integer(), default=18, nullable=False)
     deck_value_limit =  db.Column(db.Integer(), default=150, nullable=False)
     prizes = db.Column(db.Text(),nullable=True)
+
+class TournamentAdmin(Base):
+    __tablename__ = 'tournament_admins'
+
+    name = db.Column(db.String(80),nullable=False)
+    region = db.Column(db.String(255),nullable=False)
+    load = db.Column(db.Integer(),default=2, nullable=False)
+    tournament_types = db.Column(db.String(255),nullable=False)
+
+class TournamentSponsor(Base):
+    __tablename__ = 'tournament_sponsors'
+
+    name = db.Column(db.String(80),nullable=False)
+    effect = db.Column(db.Text(),nullable=False)
+    skill_pack_granted = db.Column(db.String(255),nullable=True)
+    special_rules = db.Column(db.Text(),nullable=False)
+
+class TournamentRoom(Base):
+    __tablename__ = 'tournament_rooms'
+
+    name = db.Column(db.String(80),nullable=False)
+
+class ConclaveRule(Base):
+    __tablename__ = 'conclave_rules'
+
+    type = db.Column(db.String(80),nullable=False)
+    name = db.Column(db.String(80),nullable=False, unique=True)
+    description = db.Column(db.Text(), nullable=False)
+    level1 = db.Column(db.Integer(), nullable=False)
+    level2 = db.Column(db.Integer(), nullable=False)
+    level3 = db.Column(db.Integer(), nullable=False)
+    notes = db.Column(db.Text(), nullable=False)
+
+    @classmethod
+    def consecrations(cls):
+        return cls._get_type("Consecration")
+
+    @classmethod
+    def corruptions(cls):
+        return cls._get_type("Corruption")
+
+    @classmethod
+    def blessings(cls):
+        return cls._get_type("Blessing")
+
+    @classmethod
+    def curses(cls):
+        return cls._get_type("Curse")
+
+    @classmethod
+    def _get_type(cls,cr_type):
+        return cls.query.filter_by(type=cr_type).all()
+
+    def same_class(self,rule):
+        """Returns true if self is same class as the provided rule"""
+        if self.klass() == rule.klass():
+            return True
+        return False
+
+    def klass(self):
+        """Return the klass of the rule"""
+        return self.name.replace("Consecration of ","").replace("Corruption of ","").replace("Blessing of ","").replace("Curse of ","").replace("the ","").replace("-","_")
+    
 
 class TransactionError(Exception):
     pass

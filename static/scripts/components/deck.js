@@ -229,7 +229,7 @@ export default {
                     if(!this.equal_sets(this.skill_names_for_player_card(c).concat(this.assigned_skills(c)), player.skills))
                         return
                     // injury check
-                    if(!this.equal_sets(this.assigned_injuries(c), player.casualties_state))
+                    if(!this.equal_sets(this.player_injuries(c), player.casualties_state))
                         return
                     
                     // if we came this far the player is valid
@@ -554,6 +554,9 @@ export default {
         assigned_cards(card) {
             return this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
         },
+        player_injuries(card) {
+            return this.assigned_injuries(card).concat(this.injury_names_for_player_card(card));
+        },
         assigned_injuries(card) {
             let injuries;
             if (this.deck.injury_map[this.card_id_or_uuid(card)]) {
@@ -571,12 +574,8 @@ export default {
         },
         deck_skills_for(card) {
             const assigned_cards = this.assigned_cards(card);
-            let injuries;
-            if (this.deck.injury_map[this.card_id_or_uuid(card)]) {
-                injuries = this.deck.injury_map[this.card_id_or_uuid(card)];
-            } else {
-                injuries = [];
-            }
+            let injuries = this.player_injuries(card);
+            
             return assigned_cards.map((c) => {
                 let double = false; 
                 let skills = this.skill_names_for(c);

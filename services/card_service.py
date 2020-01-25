@@ -9,7 +9,7 @@ from .imperium_sheet_service import ImperiumSheetService
 
 name_map = {'Card ID':'id', 'Card Name':'name', 'Description':'description', 'Race':'race', 'Rarity':'rarity', 'Type':'card_type',
     'Subtype':'subtype', 'Notes':'notes', 'Card Value':'value', 'Skill Access':'skill_access', 'Multiplier':'multiplier',
-    'Starter Multiplier':'starter_multiplier', 'One Time Use':'one_time_use', "Position":"position"}
+    'Starter Multiplier':'starter_multiplier', 'One Time Use':'one_time_use', "Position":"position", "Base Statline":"base_statline"}
 
 cracker_name_map = {'Card ID':'id', 'Card Name':'name', 'Description':'description', 'Race':'race', 'Rarity':'rarity', 'Card Type':'card_type',
     'Team':'team', 'Notes':'notes', 'Class':'klass', 'Multiplier':'multiplier', 'One Time Use':'one_time_use', "Position":"position", "Built-In Skill":"built_in_skill"}

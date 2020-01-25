@@ -1,12 +1,9 @@
 Season 3
-Tournamnets start error handling
-Infer injuries from deck
 Add triggers from blessing/curses and show them in special play phase
 Consecrations/Corruptions hidden until special play - then revealed
 
 TEST
-REmove reaction phase and hide reaction cards in deck 
-drop rates for legends down by half
+Tournamnet starts with automation and manual kick off
 
 Season 2
 TOP
@@ -34,6 +31,10 @@ test code
 
 
 DONE
+Tournamnets start error handling
+Infer injuries from deck in the deck builder
+drop rates for legends down by half
+REmove reaction phase and hide reaction cards in deck 
 starting tournament through web will autokick it - automatically updates the tournament on page
 starting and closing tournaments updates their status in sheet
 Cloning extra cards

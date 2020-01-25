@@ -22,6 +22,7 @@ class ImperiumSheetService:
     SPONSOR_SHEET = "Tournament Sponsors"
     ROOM_SHEET = "Tournament Rooms"
     ADMIN_SHEET = "Admins"
+    CONCLAVE_SHEET = "Conclave"
 
     CRACKERSHEET_ID = "1muYufpLnNZueKjkawL3yuKwepnHCccQQWYUL4QNV-Tw"
     CRACKER_TAB = "All Cards"
@@ -68,6 +69,11 @@ class ImperiumSheetService:
     def rooms(cls):
         """Returns rooms from the sheet"""
         return cls.__load(cls.ROOM_SHEET)
+    
+    @classmethod
+    def conclave_rules(cls):
+        """Returns conclave rules from the sheet"""
+        return cls.__load(cls.CONCLAVE_SHEET)
 
     @classmethod
     def max_tournament_id(cls):

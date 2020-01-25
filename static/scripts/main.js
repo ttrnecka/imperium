@@ -33,6 +33,7 @@ Vue.mixin({
       show_starter:1,
       rarity_order:1,
       skillreg: /(Diving Catch|Kick-Off Return|Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off|Big Hand|Very Long Legs)( |,|\.|$)/g,
+      injuryreg: /(Smashed Knee|Damaged Back|Niggle|Smashed Ankle|Smashed Hip|Serious Concussion|Fractured Skull|Broken Neck|Smashed Collarbone)( |,|\.|$)/g,
     }
   },
   methods: {
@@ -181,6 +182,17 @@ Vue.mixin({
         return false
     },
 
+    injury_to_api_injury(injury) {
+      let name;
+      switch(injury) {
+        case "Smashed Collarbone":
+          name = "SmashedCollarBone";
+          break;
+        default:
+          name = injury.replace(/[\s-]/g, '')
+      }
+      return name;
+    },
     skill_to_api_skill(skill) {
       let name;
       switch(skill) {
@@ -227,7 +239,7 @@ Vue.mixin({
     },
     skill_names_for_player_card(card) {
       if(card.template.card_type!="Player") {
-        return card.name;
+        return card.template.name;
       }
       let str;
       if(["Unique","Legendary","Inducement"].includes(card.template.rarity)) {
@@ -251,6 +263,31 @@ Vue.mixin({
         }
       }
       return matches.map((s) => this.skill_to_api_skill(s));
+    },
+    injury_names_for_player_card(card) {
+      if(card.template.card_type!="Player") {
+        return card.name;
+      }
+      let str;
+      if(["Unique","Legendary","Inducement"].includes(card.template.rarity)) {
+        str = card.template.description
+      } else {
+        str = card.template.name
+      }
+      let matches=[];
+      let match;
+      while (match = this.injuryreg.exec(str)) {
+        if(match[1]) {
+          matches.push(match[1]);
+        } else if (match[2]) {
+          matches.push(match[2]);
+        }
+
+        if (this.injuryreg.lastIndex === match.index) {
+          this.injuryreg.lastIndex++;
+        }
+      }
+      return matches.map((s) => this.injury_to_api_injury(s));
     },
     skills_for_player(card) {
       let matches = this.skill_names_for_player_card(card);
