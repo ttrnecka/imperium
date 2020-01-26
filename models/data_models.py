@@ -61,7 +61,7 @@ class CardTemplate(Base):
     RARITY_EPIC = "Epic"
     SUBTYPE_LINEMAN = "Lineman"
     SUBTYPE_BASIC = "Basic"
-    SUBTYPE_SPECIALIZED = "Specialized"
+    SUBTYPE_SPECIALIZED = "Specialised"
     SUBTYPE_CORE = "Core"
 
     name = db.Column(db.String(80), nullable=False, index=True)

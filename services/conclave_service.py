@@ -9,7 +9,7 @@ SKILLREG = re.compile(r'(Diving Catch|Kick-Off Return|Safe Throw|Shadowing|Distu
 INJURYREG = re.compile(r'(Smashed Knee|Damaged Back|Niggle|Smashed Ankle|Smashed Hip|Serious Concussion|Fractured Skull|Broken Neck|Smashed Collarbone)( |,|\.|$)')
 
 MUTATIONS = [
-    "Disturbing Presence", "Horns", "Claw", "Two Heads", "Tentacles","Extra Arms", "Foul Appearance", "Prehensile Tail","Big Hand","Very Long Legs"
+    "DisturbingPresence", "Horns", "Claw", "TwoHeads", "Tentacles","ExtraArms", "FoulAppearance", "PrehensileTail","BigHand","VeryLongLegs"
 ]
 class ConclaveService:
     """ConclaveService helpers namespace"""
@@ -34,6 +34,7 @@ class ConclaveService:
         return ConclaveRule.query.filter_by(name=name).one_or_none()
 
     #conclave checkers
+    #TESTED
     @classmethod
     def strength(cls,deck):
         i = 0
@@ -42,6 +43,7 @@ class ConclaveService:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def agility(cls,deck):
         i = 0
@@ -58,26 +60,30 @@ class ConclaveService:
                 i+=1
         return i
 
-
+    #TESTED
     @classmethod
     def teachings(cls,deck):
         return len(training_cards(deck))
     
+    #TESTED
     @classmethod
     def efficiency(cls,deck):
         return deck.tournament_signup.tournament.deck_value_limit - deck_value(deck)
 
+    #TESTED
     @classmethod
     def chaos(cls,deck):
         return len(special_play_cards(deck))
 
+    #TODO Include Starter cards like APO and RR
     @classmethod
     def destitution(cls,deck):
-        return len([card for card in card if card.template.rarity == CardTemplate.RARITY_COMMON])
+        return len([card for card in deck.cards if card.template.rarity == CardTemplate.RARITY_COMMON])
     
+    #TESTED
     @classmethod
     def anonymous(cls,deck):
-        return len([card for card in card if card.template.subtype == CardTemplate.SUBTYPE_LINEMAN])
+        return len([card for card in deck.cards if card.template.subtype == CardTemplate.SUBTYPE_LINEMAN])
 
     @classmethod
     def teamwork(cls,deck):
@@ -87,6 +93,7 @@ class ConclaveService:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def mutants(cls,deck):
         i = 0
@@ -96,7 +103,7 @@ class ConclaveService:
                     i+=1
         return i
 
-
+    #TESTED
     @classmethod
     def violence(cls,deck):
         i = 0
@@ -105,6 +112,7 @@ class ConclaveService:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def balance(cls,deck):
         i = 0
@@ -113,10 +121,12 @@ class ConclaveService:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def situational(cls,deck):
         return len([card for card in training_cards(deck) if card.template.subtype == CardTemplate.SUBTYPE_BASIC])
 
+    #TESTED
     @classmethod
     def specialist(cls,deck):
         return len([card for card in training_cards(deck) if card.template.subtype == CardTemplate.SUBTYPE_SPECIALIZED])
@@ -125,14 +135,17 @@ class ConclaveService:
     def coach_o_matic(cls,deck):
         return 0
 
+    #TESTED
     @classmethod
     def unsung(cls,deck):
         return len(staff_cards(deck))
 
+    #TESTED 
     @classmethod
     def legends(cls,deck):
         return len([card for card in players(deck) if card.template.rarity == CardTemplate.RARITY_LEGEND])
 
+    #TESTED
     @classmethod
     def cripple(cls,deck):
         i = 0
@@ -140,6 +153,7 @@ class ConclaveService:
             i+=len(injury_names_for_player_card(player))
         return i
 
+    #TESTED
     @classmethod
     def crucial(cls,deck):
         return len([card for card in training_cards(deck) if card.template.subtype == CardTemplate.SUBTYPE_CORE])
@@ -152,6 +166,7 @@ class ConclaveService:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def preparation(cls,deck):
         i = 0
@@ -160,10 +175,12 @@ class ConclaveService:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def affluence(cls,deck):
-        return len([card for card in card if card.template.rarity == CardTemplate.RARITY_EPIC])
+        return len([card for card in deck.cards if card.template.rarity == CardTemplate.RARITY_EPIC])
 
+    #TESTED
     @classmethod
     def freaks(cls,deck):
         i = 0
@@ -321,8 +338,8 @@ def get_card_assignment(card,deck):
         if card["assigned_to_array"].get(str(deck.id),None):
             asgn = card["assigned_to_array"][str(deck.id)]
     else:        
-        if card.assigned_to_array.get(deck.id,None):
-            asgn = card.assigned_to_array[deck.id]
+        if card.assigned_to_array.get(str(deck.id),None):
+            asgn = card.assigned_to_array[str(deck.id)]
     return [str(a) for a in asgn]
 
 def card_id_or_uuid(card):
