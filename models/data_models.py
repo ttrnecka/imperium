@@ -9,6 +9,7 @@ from sqlalchemy import UniqueConstraint, event
 from sqlalchemy.dialects import mysql 
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.sql.expression import func
+from misc.base_statline import base_statline
 
 
 ROOT = os.path.dirname(__file__)
@@ -76,7 +77,6 @@ class CardTemplate(Base):
     starter_multiplier = db.Column(db.Integer(), nullable=False, default=0)
     one_time_use = db.Column(db.Boolean(), default=False, nullable=False)
     position = db.Column(db.String(50), nullable=False)
-    base_statline = db.Column(db.String(5), nullable=True)
 
     cards = db.relationship('Card', backref=db.backref('template', lazy="selectin"), cascade="all, delete-orphan",lazy=True)
 
@@ -129,6 +129,12 @@ class Card(Base):
             setattr(self, attribute, "")
         self.template = template
         
+    def statline(self):
+        return base_statline.get(f"{self.first_race()}_{self.template.position}","")
+    
+    def first_race(self):
+        return self.template.race.split('/')[0]
+
     def strength(self):
         return self.stat(1)
 
@@ -142,12 +148,12 @@ class Card(Base):
         return self.stat(3)
 
     def stunty(self):
-        if len(self.template.base_statline) == 5 and self.template.base_statline[4].lower() == "s":
+        if len(self.statline()) == 5 and self.statline()[4].lower() == "s":
             return True
         return False
 
     def stat(self,index):
-        return int(self.template.base_statline[index]) if self.template.base_statline else None
+        return int(self.statline()[index],16) if self.statline() else None
 
     def __repr__(self):
         return f'<Card {self.template.name}, rarity: {self.template.rarity}, pack_id: {self.pack_id}>'

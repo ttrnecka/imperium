@@ -266,7 +266,7 @@ Vue.mixin({
     },
     injury_names_for_player_card(card) {
       if(card.template.card_type!="Player") {
-        return card.name;
+        return card.template.name;
       }
       let str;
       if(["Unique","Legendary","Inducement"].includes(card.template.rarity)) {

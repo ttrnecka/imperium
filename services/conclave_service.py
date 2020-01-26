@@ -27,14 +27,7 @@ class ConclaveService:
         checker = rule.klass().lower()
         value = getattr(cls,checker)(deck)
 
-        if value >= rule.level1 and value < rule.level2:
-            return 1
-        elif value >= rule.level2 and value < rule.level3:
-            return 2
-        elif value >= rule.level3:
-            return 3
-        else:
-            return 0
+        return trigger_level(rule,value)
 
     @classmethod
     def get_conclave_rule(cls,name):
@@ -130,7 +123,7 @@ class ConclaveService:
 
     @classmethod
     def coach_o_matic(cls,deck):
-        pass
+        return 0
 
     @classmethod
     def unsung(cls,deck):
@@ -142,7 +135,10 @@ class ConclaveService:
 
     @classmethod
     def cripple(cls,deck):
-        pass
+        i = 0
+        for player in players(deck):
+            i+=len(injury_names_for_player_card(player))
+        return i
 
     @classmethod
     def crucial(cls,deck):
@@ -289,6 +285,28 @@ def skill_to_api_skill(skill):
         name = re.sub(r'[\s-]', '',skill)
     return name
 
+def injury_to_api_injury(injury):
+    if injury == "Smashed Collarbone":
+        name = "SmashedCollarBone"
+    else:
+        name = re.sub(r'[\s-]', '',injury)
+    return name
+
+def injury_names_for_player_card(card):
+    #return card descritpion for non player cards
+    if card.template.card_type!=CardTemplate.TYPE_PLAYER:
+        return card.template.name
+
+    string = ""
+    if card.template.rarity in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT]:
+        string = card.template.description
+    else:
+        string = card.template.name
+
+    matches = [match[0] for match in INJURYREG.findall(string)]
+    
+    return [injury_to_api_injury(match) for match in matches]
+
 def assigned_cards(card, deck):
     cards = []
     for c in (deck.cards.all()+deck.extra_cards):
@@ -314,3 +332,23 @@ def card_id_or_uuid(card):
 
 def deck_value(deck):
     return sum([card.template.value for card in deck.cards])
+
+def trigger_level(rule,value):
+    # order
+    level = 0
+    if rule.level1 < rule.level2:
+        if rule.level1 <= value < rule.level2:
+            level = 1
+        elif rule.level2 <= value < rule.level3:
+            level = 2
+        elif rule.level3 <= value:
+            level = 3
+    else:
+        if rule.level2 < value <= rule.level1:
+            level = 1
+        elif rule.level3 < value <= rule.level2:
+            level = 2
+        elif rule.level3 >= value:
+            level = 3
+
+    return level
