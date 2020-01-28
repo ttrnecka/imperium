@@ -22,6 +22,56 @@ achievements_template = {
             'target':1
         },
     },
+    'conclave': {
+        "getcursed1": {
+            'desc': "Get cursed 1 time",
+            'completed': False,
+            'award_text': "5 Coins",
+            'award': 'grant,5',
+            'best':0,
+            'target':1
+        },
+        "getcursed2": {
+            'desc': "Get cursed 10 times",
+            'completed': False,
+            'award_text': "10 Coins",
+            'award': 'grant,15',
+            'best':0,
+            'target':10
+        },
+        "getcursed3": {
+            'desc': "Get cursed 30 times",
+            'completed': False,
+            'award_text': "Booster Premium Pack",
+            'award': 'grant,booster_premium',
+            'best':0,
+            'target':30
+        },
+        "getblessed1": {
+            'desc': "Get blessed 1 time",
+            'completed': False,
+            'award_text': "5 Coins",
+            'award': 'grant,5',
+            'best':0,
+            'target':1
+        },
+        "getblessed2": {
+            'desc': "Get blessed 10 times",
+            'completed': False,
+            'award_text': "10 Coins",
+            'award': 'grant,15',
+            'best':0,
+            'target':10
+        },
+        "getblessed3": {
+            'desc': "Get blessed 30 times",
+            'completed': False,
+            'award_text': "Booster Premium Pack",
+            'award': 'grant,booster_premium',
+            'best':0,
+            'target':30
+        },
+    },
     'match':{
         'score1game1': {
             'desc': "Score 4+ touchdowns in one game",

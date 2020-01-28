@@ -1083,25 +1083,30 @@ class DiscordCommand(BotHelp):
         return
 
     async def __run_blessing(self):
-        if len(self.args) != 2 or not represents_int(self.args[1]) or int(self.args[1])>3 or int(self.args[1])<1:
-            await self.short_reply(self.__class__.blessing_help())
-            return
-
-        rule = random.choice(ConclaveRule.blessings())
-        level = int(self.args[1])
-        msg = [f"Conclave casts upon you **{rule.name}**: {rule.description}"]
-        await self.reply(msg)
-        return
+        await self.__conclave("blessing")
 
     async def __run_curse(self):
+        await self.__conclave("curse")
+
+    def __check_conclave_args(self):
         if len(self.args) != 2 or not represents_int(self.args[1]) or int(self.args[1])>3 or int(self.args[1])<1:
-            await self.short_reply(self.__class__.curse_help())
+            return False
+        return True
+
+    async def __conclave(self,ctype):
+        if not self.__check_conclave_args():
+            await self.short_reply(getattr(self,f'{ctype}_help')())
             return
 
-        rule = random.choice(ConclaveRule.curses())
+        rule = random.choice(getattr(ConclaveRule,f'{ctype}s')())
         level = int(self.args[1])
-        msg = [f"Conclave casts upon you **{rule.name}**: {rule.description}"]
-        await self.reply(msg)
+        c_file = rule.img(level)
+        if c_file:
+            d_file = discord.File(c_file, filename=os.path.basename(c_file))
+            await self.message.channel.send(file=d_file)
+        else:
+            #TODO change to level description
+            await self.reply([f"Conclave casts upon you **{rule.name}**: {rule.description}"])
         return
 
     async def __run_dust(self):

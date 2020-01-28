@@ -15,6 +15,11 @@ class ConclaveService:
     """ConclaveService helpers namespace"""
 
     @classmethod
+    def all_triggered(cls,deck):
+        """Returns all ConclaveRule that would trigger based on the deck"""
+        return [rule for rule in [*ConclaveRule.blessings(), *ConclaveRule.corruptions()] if cls.check_trigger(deck,name=rule.name)]
+
+    @classmethod
     def check_trigger(cls, deck, name=""):
         """Returns 0 if it does not trigger, otherwise returns 1 2 or 3 based on the trigger level
            Returns None if rule does not exists

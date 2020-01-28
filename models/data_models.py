@@ -456,12 +456,15 @@ class TournamentSignups(Base):
 class Tournament(Base):
     __tablename__ = 'tournaments'
 
+    SP_PHASE = "special_play"
+    BB_PHASE = "blood_bowl"
+    
     PHASES = [
         "deck_building",
         "locked",
-        "special_play",
+        SP_PHASE,
         "inducement",
-        "blood_bowl"
+        BB_PHASE
     ]
 
     tournament_id = db.Column(db.Integer,nullable=False, index=True, unique=True)
@@ -541,6 +544,8 @@ class TournamentRoom(Base):
 class ConclaveRule(Base):
     __tablename__ = 'conclave_rules'
 
+    IMAGE_FOLDER = os.path.join(ROOT, '..','static','images','conclave')
+
     type = db.Column(db.String(80),nullable=False)
     name = db.Column(db.String(80),nullable=False, unique=True)
     description = db.Column(db.Text(), nullable=False)
@@ -579,6 +584,16 @@ class ConclaveRule(Base):
         """Return the klass of the rule"""
         return self.name.replace("Consecration of ","").replace("Corruption of ","").replace("Blessing of ","").replace("Curse of ","").replace("the ","").replace("-","_")
     
+    def img(self,level):
+        #Returns image file if exists, otherwise returns None
+        file_name = self.img_file(level)
+        if os.path.isfile(file_name):
+            return file_name
+        return None
+
+    def img_file(self,level):
+        file_name = os.path.join(self.IMAGE_FOLDER,f"{self.name.replace(' ','_').replace('-','').replace('_the','')}_L{level}.png")
+        return file_name
 
 class TransactionError(Exception):
     pass
