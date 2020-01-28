@@ -703,6 +703,12 @@ var app = new Vue({
         }
         return [];
       },
+      conclave_achievements(coach) {
+        if (coach.achievements['conclave']) {
+          return ['getcursed1','getcursed2','getcursed3','getblessed1','getblessed2','getblessed3'].map((e) => coach.achievements.conclave[e])
+        }
+        return [];
+      },
       progress(number) {
         if(number > 1) {
           return 100;

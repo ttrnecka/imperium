@@ -40,6 +40,17 @@ if __name__ == "__main__":
                         for attr in ['desc', 'award_text', 'award', 'target']:
                             coach.achievements['quests'][key][attr] = ach[attr]
 
+            # quests
+            if 'conclave' not in coach.achievements:
+                coach.achievements['conclave'] = achievements_template['conclave']
+            else:
+                for key, ach in achievements_template['conclave'].items():
+                    if key not in coach.achievements['conclave']:
+                        coach.achievements['conclave'][key] = achievements_template['conclave'][key]
+                    else:
+                        for attr in ['desc', 'award_text', 'award', 'target']:
+                            coach.achievements['conclave'][key][attr] = ach[attr]
+
         flag_modified(coach, "achievements")
 
     db.session.commit()

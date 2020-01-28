@@ -1,13 +1,24 @@
 Season 3
-Add triggers from blessing/curses and show them in special play phase
-Consecrations/Corruptions hidden until special play - then revealed
+py -3.7 -m pip install discord.py --upgrade
+update js version in the templates
+change vue to mininifed version
+Update sheet
+SWITCH SHEET in code BEFORE GOING live
+PATCH
+upgrade db
+achievement_insert
+season_reset
+update config.py (with season old seasons)
+schedule tournament auto check for every hour
+
+TODO
+conclave achievement check trigger
+curse/blessing Level 1/2/3 message placeholder
+semi - targetted consecration/corruption selection - review all decks and select random triggered options
 
 TEST
 Tournamnet starts with automation and manual kick off
 
-Season 2
-TOP
-Add Start button from tournaments
 
 VERY HIGH
 add deck templates
@@ -31,6 +42,8 @@ test code
 
 
 DONE
+Add triggers from blessing/curses and show them in special play phase
+Consecrations/Corruptions hidden until special play - then revealed
 Tournamnets start error handling
 Infer injuries from deck in the deck builder
 drop rates for legends down by half
@@ -175,13 +188,10 @@ Ignore Extra cards in the double calculation
 make obvious that you cannot submit deck while tournament is not started
 Hide signup button for full tournaments
 
-Season 2 upgrade steps:
+Season 3 upgrade steps:
 PATCH
-update config.py (with season old seasons and tournament master admin)
 upgrade db
-admincard update
-card_template_init
 achievement_insert
-season2_reset
+season_reset
 update config.py (with season old seasons)
-schedule tournament full check at 18UTC
+schedule tournament auto check for every hour

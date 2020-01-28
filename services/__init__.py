@@ -22,9 +22,10 @@ from .cracker_service import CrackerService, InvalidCrackerType, InvalidCrackerT
 from .conclave_service import ConclaveService
 
 @event.listens_for(Tournament.phase,'set')
-def check_build_own_legend_quest(target, value, oldvalue, initiator):
+def after_phase_set_hook(target, value, oldvalue, initiator):
     """After tournament is put into BB mode, the decks are evaluated for self create legend and achievements granted based on that"""
     if value!=oldvalue:
+        # automatic phase move except for first 2 phases
         if value in Tournament.PHASES[2:]:
             decks = [signup.deck for signup in target.tournament_signups]
             for deck in decks:
@@ -32,8 +33,9 @@ def check_build_own_legend_quest(target, value, oldvalue, initiator):
             AdminNotificationService.notify(
                 f"!admincomp {value} {target.tournament_id}"
             )
-
-        if value == Tournament.PHASES[-1]:
+        
+        # when tournament reaches last phase check for buildyourownlegend achievements
+        if value == Tournament.BB_PHASE:
             decks = [signup.deck for signup in target.tournament_signups]
             for deck in decks:
                 coach = deck.tournament_signup.coach
