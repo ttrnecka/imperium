@@ -10,6 +10,7 @@ from models.base_model import db
 from .notification_service import NotificationService, AdminNotificationService
 from .imperium_sheet_service import ImperiumSheetService
 from .deck_service import DeckService
+from .conclave_service import ConclaveService
 
 class RegistrationError(Exception):
     """Exception to raise for tournament registration issues"""
@@ -431,9 +432,26 @@ class TournamentService:
     def special_play_msg(cls, tournament):
 
         msg = ["__**Special Play Phase**__:"," "]
+        msg.append("**Conclave rituals in place for this tournament:**")
+        consecration = ConclaveRule.query.filter_by(name=tournament.consecration).one()
+        corruption = ConclaveRule.query.filter_by(name=tournament.corruption).one()
+        
+        msg.append(f"{consecration.name} - {consecration.description}")
+        msg.append(f"{corruption.name} - {corruption.description}")
+        msg.append(" ")
+        msg.append("**Blessings & Curses:**")
+        
         decks = []
         max_special_plays = 0
         for signup in tournament.tournament_signups:
+            # conclave
+            cons_level = ConclaveService.check_trigger(signup.deck, consecration.name)
+            corr_level = ConclaveService.check_trigger(signup.deck, corruption.name)
+            if cons_level > 0:
+                msg.append(f"{signup.coach.mention()} triggered {consecration.name}: {getattr(consecration,f'level{cons_level}')}, run **!blessing {cons_level}**")
+            if corr_level > 0:
+                msg.append(f"{signup.coach.mention()} triggered {corruption.name}: {getattr(corruption,f'level{corr_level}')}, run **!curse {cons_level}**")
+            # special plays
             special_plays1 = [card for card in signup.deck.cards if card.get('card_type') == "Special Play"]
             special_plays2 = [card for card in signup.deck.extra_cards if card.get('template').get('card_type') == "Special Play"]
             special_plays = special_plays1 + special_plays2
@@ -443,7 +461,8 @@ class TournamentService:
             decks.append((signup.coach.mention(), DeckService.value(signup.deck), special_plays))
         
         sorted_decks = sorted(decks, key=lambda d: d[1])
-
+        msg.append(" ")
+        msg.append("**Special Plays:**")
         for deck in sorted_decks:
             msg.append(f"{deck[0]}: deck value - {deck[1]}")
 

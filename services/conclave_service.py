@@ -85,6 +85,7 @@ class ConclaveService:
     def anonymous(cls,deck):
         return len([card for card in deck.cards if card.template.subtype == CardTemplate.SUBTYPE_LINEMAN])
 
+    #TESTED
     @classmethod
     def teamwork(cls,deck):
         i = 0
