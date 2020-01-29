@@ -47,8 +47,7 @@ class TournamentService:
             "prizes":tournament["Prizes"],
             "unique_prize":tournament["Unique Prize"],
             "sponsor_description":tournament["Sponsor Description"],
-            "consecration":tournament["Consecration"],
-            "corruption":tournament["Corruption"]
+            "conclave_triggers":tournament["Conclave Triggers"]
         }
 
     @classmethod
@@ -77,8 +76,7 @@ class TournamentService:
             "Special Rules": tournament.special_rules,
             "Prizes": tournament.prizes,
             "Unique Prize": tournament.unique_prize,
-            "Consecration": tournament.consecration,
-            "Corruption": tournament.corruption
+            "Conclave Triggers": tournament.conclave_triggers
         }
 
     @classmethod
@@ -433,22 +431,33 @@ class TournamentService:
             tournament.phase = Tournament.PHASES[next]
 
     @classmethod
-    def special_play_msg(cls, tournament):
+    def generate_conclave_triggers(cls,tournament):
+        triggered_conclave_rules = []
+        if not tournament.conclave_triggers:
+            for signup in tournament.tournament_signups:
+                triggered_conclave_rules.append(ConclaveService.all_triggered(signup.deck))
+            #flatten and make it unique
+            triggered_conclave_rules = list(set(list(itertools.chain.from_iterable(triggered_conclave_rules))))
+            selected_conlave_rules = ConclaveService.select_rules(triggered_conclave_rules)
 
+            tournament.conclave_triggers = ",".join([rule.name for rule in selected_conlave_rules])
+            db.session.commit()
+            cls.update_tournament_in_sheet(tournament)
+        
+        rules = [ConclaveRule.query.filter_by(name=tr.strip()).one_or_none() for tr in tournament.conclave_triggers.split(",")]
+        rules = list(filter(lambda a: a != None, rules))
+        return rules
+
+    @classmethod
+    def special_play_msg(cls, tournament):
+        rules = cls.generate_conclave_triggers(tournament)
         msg = ["__**Special Play Phase**__:"," "]
         
         decks = []
         max_special_plays = 0
-        triggered_conclave_rules = []
-        for signup in tournament.tournament_signups:
-            # conclave
-            triggered_conclave_rules.append(ConclaveService.all_triggered(signup.deck))
-        #flatten and make it unique
-        triggered_conclave_rules = list(set(list(itertools.chain.from_iterable(triggered_conclave_rules))))
-        selected_conlave_rules = ConclaveService.select_rules(triggered_conclave_rules)
 
         msg.append("**Conclave rituals in place for this tournament:**")
-        for rule in selected_conlave_rules:
+        for rule in rules:
             msg.append(f"{rule.name} - {rule.description}")
         
         msg.append(" ")
@@ -456,15 +465,17 @@ class TournamentService:
         
         for signup in tournament.tournament_signups:
             #conclave
-            for rule in selected_conlave_rules:
+            for rule in rules:
                 rule_level = ConclaveService.check_trigger(signup.deck, rule.name)
                 if rule_level > 0:
                     if rule.type == "Consecration":
                         word = "blessing"
-                        CoachService.increment_blessings(signup.coach)
+                        if not tournament.conclave_triggered:
+                            CoachService.increment_blessings(signup.coach)
                     else:
                         word = "curse"
-                        CoachService.increment_curses(signup.coach)
+                        if not tournament.conclave_triggered:
+                            CoachService.increment_curses(signup.coach)
                     msg.append(f"{signup.coach.mention()} triggered {rule.name}: {getattr(rule,f'level{rule_level}')}, run **!{word} {rule_level}**")
             
             # special plays
@@ -497,6 +508,8 @@ class TournamentService:
         
         msg.append("**Note**: No Inducement shopping in this phase")
         msg.append("**Note 2**: Use !done to confirm you are done with the phase, use !left to see who is left")
+        tournament.conclave_triggered = True
+        db.session.commit()
         return msg
             
 

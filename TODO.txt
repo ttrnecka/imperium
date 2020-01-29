@@ -5,6 +5,7 @@ update js version in the templates
 change vue to mininifed version
 Update sheet
 SWITCH SHEET in code BEFORE GOING live
+review special plasy and specialized training cards
 PATCH
 upgrade db
 achievement_insert
@@ -14,8 +15,6 @@ schedule tournament auto check for every hour
 
 TODO
 coach-o-matic trigger logic
-conclave achievement check trigger - do not record when SP is replayed
-corruptions/consecration configurable in the sheet
 fix the consecration triggers once renamed
 
 TEST
@@ -45,6 +44,8 @@ test code
 
 
 DONE
+corruptions/consecration configurable in the sheet
+conclave achievement check trigger - do not record when SP is replayed
 check for **Payout** keyword during setting prizes
 **bold formatting** on web for card descriptions
 cripple injury - add assigned injuries

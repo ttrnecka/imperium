@@ -492,8 +492,9 @@ class Tournament(Base):
     unique_prize = db.Column(db.Text,nullable=True)
     phase = db.Column(db.String(255),nullable=False, default="deck_building")
     deck_value_limit =  db.Column(db.Integer(), default=150, nullable=False)
-    consecration =  db.Column(db.String(80),nullable=True)
-    corruption =  db.Column(db.String(80),nullable=True)
+    conclave_triggers =  db.Column(db.Text(),nullable=True)
+    conclave_triggered = db.Column(db.Boolean(),nullable=False, default=False)
+    
 
     coaches = db.relationship("Coach", secondary="tournaments_signups", backref=db.backref('tournaments', lazy="dynamic"), lazy="dynamic")
 
