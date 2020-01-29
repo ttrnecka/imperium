@@ -38,7 +38,6 @@ class TournamentSchema(ma.ModelSchema):
         model = Tournament
         exclude = ["coaches","consecration","corruption"]
     tournament_signups = ma.Nested(TournamentSignupSchema, many=True)
-    consecration = "You are a nosy one, aren't you?"
 
 class DusterSchema(ma.ModelSchema):
     class Meta:

@@ -3,7 +3,7 @@ from sqlalchemy import event
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.orm.attributes import set_committed_value
 
-from models.data_models import Tournament, Card, Deck
+from models.data_models import Tournament, Card, Deck, Coach
 from models.base_model import db
 
 from .pack_service import PackService
@@ -71,15 +71,14 @@ def phase_done_handler(session):
     # do it for every deck
     with session.no_autoflush:
         for instance in session.dirty:
-            if not isinstance(instance, Deck):
-                continue
-            state = db.inspect(instance)
-            history = state.attrs.phase_done.load_history()
-            # if Deck phase_done was set to True
-            if history.added and history.added[0] == True:
-                tourn = instance.tournament_signup.tournament
-                signups = tourn.tournament_signups
-                decks = [ts.deck for ts in signups]
-                decks.remove(instance)
-                if tourn.phase in Tournament.PHASES[2:] and (len(decks) == 0 or all(deck.phase_done for deck in decks)):
-                    TournamentService.next_phase(tourn)
+            if isinstance(instance, Deck):    
+                state = db.inspect(instance)
+                history = state.attrs.phase_done.load_history()
+                # if Deck phase_done was set to True
+                if history.added and history.added[0] == True:
+                    tourn = instance.tournament_signup.tournament
+                    signups = tourn.tournament_signups
+                    decks = [ts.deck for ts in signups]
+                    decks.remove(instance)
+                    if tourn.phase in Tournament.PHASES[2:] and (len(decks) == 0 or all(deck.phase_done for deck in decks)):
+                        TournamentService.next_phase(tourn)

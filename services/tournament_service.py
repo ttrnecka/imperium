@@ -11,6 +11,7 @@ from .notification_service import NotificationService, AdminNotificationService
 from .imperium_sheet_service import ImperiumSheetService
 from .deck_service import DeckService
 from .conclave_service import ConclaveService
+from .coach_service import CoachService
 
 class RegistrationError(Exception):
     """Exception to raise for tournament registration issues"""
@@ -128,8 +129,11 @@ class TournamentService:
             "name":rule["Name"],
             "description":rule["Description"],
             "level1":int(rule["Trigger 1"]),
+            "level1_description":rule["Level 1 Description"],
             "level2":int(rule["Trigger 2"]),
+            "level2_description":rule["Level 2 Description"],
             "level3":int(rule["Trigger 3"]),
+            "level3_description":rule["Level 3 Description"],
             "notes":rule["Notes"]
         }
 
@@ -432,25 +436,37 @@ class TournamentService:
     def special_play_msg(cls, tournament):
 
         msg = ["__**Special Play Phase**__:"," "]
-        msg.append("**Conclave rituals in place for this tournament:**")
-        consecration = ConclaveRule.query.filter_by(name=tournament.consecration).one()
-        corruption = ConclaveRule.query.filter_by(name=tournament.corruption).one()
-        
-        msg.append(f"{consecration.name} - {consecration.description}")
-        msg.append(f"{corruption.name} - {corruption.description}")
-        msg.append(" ")
-        msg.append("**Blessings & Curses:**")
         
         decks = []
         max_special_plays = 0
+        triggered_conclave_rules = []
         for signup in tournament.tournament_signups:
             # conclave
-            cons_level = ConclaveService.check_trigger(signup.deck, consecration.name)
-            corr_level = ConclaveService.check_trigger(signup.deck, corruption.name)
-            if cons_level > 0:
-                msg.append(f"{signup.coach.mention()} triggered {consecration.name}: {getattr(consecration,f'level{cons_level}')}, run **!blessing {cons_level}**")
-            if corr_level > 0:
-                msg.append(f"{signup.coach.mention()} triggered {corruption.name}: {getattr(corruption,f'level{corr_level}')}, run **!curse {cons_level}**")
+            triggered_conclave_rules.append(ConclaveService.all_triggered(signup.deck))
+        #flatten and make it unique
+        triggered_conclave_rules = list(set(list(itertools.chain.from_iterable(triggered_conclave_rules))))
+        selected_conlave_rules = ConclaveService.select_rules(triggered_conclave_rules)
+
+        msg.append("**Conclave rituals in place for this tournament:**")
+        for rule in selected_conlave_rules:
+            msg.append(f"{rule.name} - {rule.description}")
+        
+        msg.append(" ")
+        msg.append("**Blessings & Curses:**")
+        
+        for signup in tournament.tournament_signups:
+            #conclave
+            for rule in selected_conlave_rules:
+                rule_level = ConclaveService.check_trigger(signup.deck, rule.name)
+                if rule_level > 0:
+                    if rule.type == "Consecration":
+                        word = "blessing"
+                        CoachService.increment_blessings(signup.coach)
+                    else:
+                        word = "curse"
+                        CoachService.increment_curses(signup.coach)
+                    msg.append(f"{signup.coach.mention()} triggered {rule.name}: {getattr(rule,f'level{rule_level}')}, run **!{word} {rule_level}**")
+            
             # special plays
             special_plays1 = [card for card in signup.deck.cards if card.get('card_type') == "Special Play"]
             special_plays2 = [card for card in signup.deck.extra_cards if card.get('template').get('card_type') == "Special Play"]
@@ -685,17 +701,6 @@ class TournamentService:
             if not first_room:
                 raise TournamentError("No room available, release room or create new one and update Tournament Rooms tab, or configure room manually")
             tournament.discord_channel = first_room.name
-
-        # set conclave
-        if not tournament.consecration:
-            consecration = random.choice(ConclaveRule.consecrations())
-            corruption = random.choice(ConclaveRule.corruptions())
-        
-            while consecration.same_class(corruption):
-                corruption = random.choice(ConclaveRule.corruptions())
-
-            tournament.consecration = consecration.name
-            tournament.corruption = corruption.name
 
         TournamentService.update_tournament_in_sheet(tournament)
         db.session.commit()

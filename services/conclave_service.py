@@ -1,6 +1,7 @@
 """ConclaveService helpers"""
 import re
 import itertools
+import random
 
 from models.data_models import Deck, ConclaveRule, CardTemplate
 from models.base_model import db
@@ -11,14 +12,30 @@ INJURYREG = re.compile(r'(Smashed Knee|Damaged Back|Niggle|Smashed Ankle|Smashed
 MUTATIONS = [
     "DisturbingPresence", "Horns", "Claw", "TwoHeads", "Tentacles","ExtraArms", "FoulAppearance", "PrehensileTail","BigHand","VeryLongLegs"
 ]
+
 class ConclaveService:
     """ConclaveService helpers namespace"""
 
     @classmethod
     def all_triggered(cls,deck):
         """Returns all ConclaveRule that would trigger based on the deck"""
-        return [rule for rule in [*ConclaveRule.blessings(), *ConclaveRule.corruptions()] if cls.check_trigger(deck,name=rule.name)]
+        return [rule for rule in [*ConclaveRule.consecrations(), *ConclaveRule.corruptions()] if cls.check_trigger(deck,name=rule.name)]
 
+    @classmethod
+    def select_rules(cls,rules):
+        """Randomly select rules from the list"""
+        selected = []
+        i = 0
+        max_i = len(rules)*2
+        while len(selected) < 5 and i < max_i:
+            pick = random.choice(rules)
+            if pick not in selected and not any(pick.same_class(rule) for rule in selected) \
+                and not len([rule for rule in selected if rule.type == pick.type])>2:
+                selected.append(pick)
+            i+=1
+        
+        return selected
+        
     @classmethod
     def check_trigger(cls, deck, name=""):
         """Returns 0 if it does not trigger, otherwise returns 1 2 or 3 based on the trigger level
@@ -39,18 +56,16 @@ class ConclaveService:
         return ConclaveRule.query.filter_by(name=name).one_or_none()
 
     #conclave checkers
-    #TESTED
     @classmethod
-    def strength(cls,deck):
+    def power(cls,deck):
         i = 0
         for player in players(deck):
             if player.strength() + printed(player,"IncreaseStrength") + skill_ups(player,deck,"IncreaseStrength") >= 5:
                 i+=1
         return i
 
-    #TESTED
     @classmethod
-    def agility(cls,deck):
+    def deftness(cls,deck):
         i = 0
         for player in players(deck):
             if player.agility() + printed(player,"IncreaseAgility") + skill_ups(player,deck,"IncreaseAgility") >= 5:
@@ -58,14 +73,29 @@ class ConclaveService:
         return i
 
     @classmethod
-    def speed(cls,deck):
+    def lethargy(cls,deck):
+        i = 0
+        for player in players(deck):
+            if player.agility() + printed(player,"IncreaseAgility") + skill_ups(player,deck,"IncreaseAgility") <= 2:
+                i+=1
+        return i
+
+    @classmethod
+    def swiftness(cls,deck):
         i = 0
         for player in players(deck):
             if player.movement() + printed(player,"IncreaseMovement") + skill_ups(player,deck,"IncreaseMovement") >= 8:
                 i+=1
         return i
 
-    #TESTED
+    @classmethod
+    def idleness(cls,deck):
+        i = 0
+        for player in players(deck):
+            if player.movement() + printed(player,"IncreaseMovement") + skill_ups(player,deck,"IncreaseMovement") <= 5:
+                i+=1
+        return i
+
     @classmethod
     def teachings(cls,deck):
         return len(training_cards(deck))
@@ -75,6 +105,11 @@ class ConclaveService:
     def efficiency(cls,deck):
         return deck.tournament_signup.tournament.deck_value_limit - deck_value(deck)
 
+    @classmethod
+    def hero(cls,deck):
+        sorted_values = sorted([card.value for card in deck.cards],reverse=True)
+        return sorted_values[0] - sorted_values[1]
+
     #TESTED
     @classmethod
     def chaos(cls,deck):
@@ -83,7 +118,7 @@ class ConclaveService:
     #TODO Include Starter cards like APO and RR
     @classmethod
     def destitution(cls,deck):
-        return len([card for card in deck.cards if card.template.rarity == CardTemplate.RARITY_COMMON])
+        return len([card for card in deck.cards if card.template.rarity in [CardTemplate.RARITY_COMMON,CardTemplate.RARITY_STARTER]])
     
     #TESTED
     @classmethod
@@ -127,6 +162,14 @@ class ConclaveService:
                 i+=1
         return i
 
+    @classmethod
+    def foul_play(cls,deck):
+        i = 0
+        for player in players(deck):
+            if printed(player,"Dirty Player") + skill_ups(player,deck,"Dirty Player") >= 1:
+                i+=1
+        return i
+
     #TESTED
     @classmethod
     def situational(cls,deck):
@@ -146,24 +189,41 @@ class ConclaveService:
     def unsung(cls,deck):
         return len(staff_cards(deck))
 
+    @classmethod
+    def cautious(cls,deck):
+        return len([card for card in staff_cards(deck) if card.template.name == "Re-roll"])
+
     #TESTED 
     @classmethod
     def legends(cls,deck):
         return len([card for card in players(deck) if card.template.rarity == CardTemplate.RARITY_LEGEND])
+
+    @classmethod
+    def solitude(cls,deck):
+        return len([card for card in deck.cards if card.template.rarity == CardTemplate.RARITY_UNIQUE])
+
+    @classmethod
+    def popular(cls,deck):
+        return len([card for card in deck.cards if card.template.subtype == CardTemplate.SUBTYPE_POSITIONAL])
+
+    @classmethod
+    def commitment(cls,deck):
+        return len([card for card in deck.cards if card.template.one_time_use])
 
     #TESTED
     @classmethod
     def cripple(cls,deck):
         i = 0
         for player in players(deck):
-            i+=len(injury_names_for_player_card(player))
+            i+=len(injury_names_for_player_card(player)+assigned_injuries(player,deck))
         return i
 
     #TESTED
     @classmethod
-    def crucial(cls,deck):
+    def fundamentals(cls,deck):
         return len([card for card in training_cards(deck) if card.template.subtype == CardTemplate.SUBTYPE_CORE])
 
+    
     @classmethod
     def stunty(cls,deck):
         i = 0
@@ -337,6 +397,13 @@ def assigned_cards(card, deck):
             cards.append(c)
 
     return cards
+
+def assigned_injuries(card,deck):
+    injuries = []
+    uid = card_id_or_uuid(card)
+    if deck.injury_map.get(uid,None):
+        injuries.append(deck.injury_map[uid])
+    return injuries
 
 def get_card_assignment(card,deck):
     asgn = []

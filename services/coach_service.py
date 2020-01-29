@@ -100,7 +100,25 @@ class CoachService:
         else:
             achievement['best'] = achievement['target']
         flag_modified(coach, "achievements")
-        
+    
+    @classmethod
+    def increment_blessings(cls,coach):
+        for ach in ['getblessed1','getblessed2','getblessed3']:
+            coach.achievements['conclave'][ach]['best']+=1
+            if cls.check_achievement(coach,["conclave",ach]):
+                coach.achievements['conclave'][ach]['completed'] = True
+        flag_modified(coach, "achievements")
+        db.session.commit()
+
+    @classmethod
+    def increment_curses(cls,coach):
+        for ach in ['getcursed1','getcursed2','getcursed3']:
+            coach.achievements['conclave'][ach]['best']+=1
+            if cls.check_achievement(coach,["conclave",ach]):
+                coach.achievements['conclave'][ach]['completed'] = True
+        flag_modified(coach, "achievements")
+        db.session.commit()
+
     @classmethod
     def check_achievement(cls, coach, achievement_keys=None, commit=False):
         """Checks if achievement has been reached and grants the prize"""

@@ -8,7 +8,8 @@
         <link rel="stylesheet" href="/static/styles/main.css?1.22">
         <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32x32.png">
         <link rel="icon" type="image/png" sizes="16x16" href="/static/images//favicon-16x16.png">
-        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
         {{ fontawesome_html() }}
         <title>REBBL Imperium</title>
@@ -183,7 +184,7 @@
                                                         </tr>
                                                         </thead>
                                                         <tbody>
-                                                        <tr v-for="card in sortedCardsWithQuantity(selectedCoach.cards,ctype)" :key="card.card.id" :class="rarityclass(card.card.template.rarity)" data-toggle="popover" data-placement="top" :title="card.card.template.name" :data-content="card.card.template.description">
+                                                        <tr v-for="card in sortedCardsWithQuantity(selectedCoach.cards,ctype)" :key="card.card.id" :class="rarityclass(card.card.template.rarity)" data-toggle="popover" data-placement="top" :title="card.card.template.name" data-html="true" :data-content="markdown.makeHtml(card.card.template.description)">
                                                             <td><i v-if="is_locked(card.card) && is_loggedcoach(selectedCoach.short_name)" class="fas fa-lock"></i></td>
                                                             <td><img class="rarity" :src="'static/images/'+card.card.template.rarity+'.jpg'" :alt="card.card.template.rarity" :title="card.card.template.rarity" width="20" height="25" /></td>
                                                             <td>[[ card.card.template.value ]]</td>

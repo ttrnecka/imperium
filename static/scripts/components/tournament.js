@@ -35,7 +35,7 @@ export default {
         },
         setprizes() {
             this.prize_menu=true;
-            
+            this.call("cards");
             while(this.prizes.length<this.tournament.coach_limit) {
                 // test for 1st: X pattern
                 let reg = new RegExp("("+(this.prizes.length+1)+"\\S+):(\\s+\\d+)","g");
@@ -159,6 +159,9 @@ export default {
         start() {
             this.call("start");
         },
+        cards() {
+            this.call("cards");
+        },
         sign() {
             this.call("sign");
         },
@@ -198,7 +201,7 @@ export default {
                 else if(method=="update") {
                     msg = "Tournaments updated";
                 }
-                else if(method=="get") {
+                else if(method=="get" || method=="cards") {
                     display_flash = false;
                 }
                 if (display_flash)
@@ -215,6 +218,17 @@ export default {
                     this.$parent.$emit('updateTournament', res.data);
                 } else if(method=="update") {
                     this.$parent.$emit('updateTournaments', res.data);
+                }
+                else if(method=="cards") {
+                    res.data.forEach(card => {
+                        if (this.has_keyword(card,"Payout")) {
+                            this.add_prize({
+                                coach:'',
+                                amount: 0,
+                                reason: card.template.name
+                            });
+                        }   
+                    });
                 }
             })
             .catch((error) => {

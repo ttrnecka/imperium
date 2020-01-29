@@ -12,7 +12,7 @@ from web import db, app
 from models.data_models import Coach, Pack, Transaction, ConclaveRule
 from models.data_models import TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
-from misc.helpers import represents_int
+from misc.helpers import represents_int, image_merge
 from misc.bot_helpers import BotHelp
 from services import PackService, CardService, TournamentService, CoachService
 from services import DusterService, RegistrationError, DustingError, TournamentError
@@ -1097,16 +1097,36 @@ class DiscordCommand(BotHelp):
         if not self.__check_conclave_args():
             await self.short_reply(getattr(self,f'{ctype}_help')())
             return
+        rule1 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
+        rule2 = None
 
-        rule = random.choice(getattr(ConclaveRule,f'{ctype}s')())
+        if ctype == "blessing":
+            rule2 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
+            while rule1.same_class(rule2):
+                rule2 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
+
         level = int(self.args[1])
-        c_file = rule.img(level)
+
+        if ctype == "blessing":
+            r1_file = rule1.img(level)
+            r2_file = rule2.img(level)
+            if r1_file and r2_file:
+                c_file = image_merge([r1_file,ConclaveRule.divider_img(),r2_file], \
+                    os.path.join(ConclaveRule.IMAGE_FOLDER,"tmp_blessing.png"))
+            else:
+                c_file = None
+        else:
+            c_file = rule1.img(level)
+
         if c_file:
             d_file = discord.File(c_file, filename=os.path.basename(c_file))
+            await self.reply([f"Conclave is undergoing the ritual, please stand by..."])
             await self.message.channel.send(file=d_file)
         else:
-            #TODO change to level description
-            await self.reply([f"Conclave casts upon you **{rule.name}**: {rule.description}"])
+            if rule2:
+                await self.reply(["Conclave casts upon you:", f"**{rule1.name}**: {getattr(rule1,f'level{level}_description')}","OR", f"**{rule2.name}**: {getattr(rule2,f'level{level}_description')}"])
+            else:
+                await self.reply([f"Conclave casts upon you **{rule1.name}**: {getattr(rule1,f'level{level}_description')}"])
         return
 
     async def __run_dust(self):

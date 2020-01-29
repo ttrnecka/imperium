@@ -9,6 +9,7 @@ from sqlalchemy import UniqueConstraint, event
 from sqlalchemy.dialects import mysql 
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.sql.expression import func
+from sqlalchemy.orm.attributes import flag_modified
 from misc.base_statline import base_statline
 
 
@@ -58,8 +59,10 @@ class CardTemplate(Base):
     RARITY_UNIQUE = "Unique"
     RARITY_INDUCEMENT = "Inducement"
     RARITY_COMMON = "Common"
+    RARITY_STARTER = "Starter"
     RARITY_EPIC = "Epic"
     SUBTYPE_LINEMAN = "Lineman"
+    SUBTYPE_POSITIONAL = "Positional"
     SUBTYPE_BASIC = "Basic"
     SUBTYPE_SPECIALIZED = "Specialised"
     SUBTYPE_CORE = "Core"
@@ -355,7 +358,6 @@ class Coach(Base):
         packs.remove(pack)
         self.set_freepacks(packs)
 
-
     @classmethod
     def get_by_discord_id(cls,id, deleted=False):
         if deleted:
@@ -546,12 +548,15 @@ class ConclaveRule(Base):
 
     IMAGE_FOLDER = os.path.join(ROOT, '..','static','images','conclave')
 
-    type = db.Column(db.String(80),nullable=False)
+    type = db.Column(db.String(80),nullable=False, index=True)
     name = db.Column(db.String(80),nullable=False, unique=True)
     description = db.Column(db.Text(), nullable=False)
     level1 = db.Column(db.Integer(), nullable=False)
+    level1_description = db.Column(db.Text(), nullable=False)
     level2 = db.Column(db.Integer(), nullable=False)
+    level2_description = db.Column(db.Text(), nullable=False)
     level3 = db.Column(db.Integer(), nullable=False)
+    level3_description = db.Column(db.Text(), nullable=False)
     notes = db.Column(db.Text(), nullable=False)
 
     @classmethod
@@ -582,7 +587,7 @@ class ConclaveRule(Base):
 
     def klass(self):
         """Return the klass of the rule"""
-        return self.name.replace("Consecration of ","").replace("Corruption of ","").replace("Blessing of ","").replace("Curse of ","").replace("the ","").replace("-","_")
+        return self.name.replace("Consecration of ","").replace("Corruption of ","").replace("Blessing of ","").replace("Curse of ","").replace("the ","").replace("-","_").replace(' ','_')
     
     def img(self,level):
         #Returns image file if exists, otherwise returns None
@@ -592,7 +597,12 @@ class ConclaveRule(Base):
         return None
 
     def img_file(self,level):
-        file_name = os.path.join(self.IMAGE_FOLDER,f"{self.name.replace(' ','_').replace('-','').replace('_the','')}_L{level}.png")
+        file_name = os.path.join(self.IMAGE_FOLDER,f"{self.name.replace('-','').replace(' the','')} L{level}.png")
+        return file_name
+    
+    @classmethod
+    def divider_img(self):
+        file_name = os.path.join(self.IMAGE_FOLDER,"Choice_Divider.png")
         return file_name
 
 class TransactionError(Exception):

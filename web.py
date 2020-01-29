@@ -1,6 +1,7 @@
 """web process"""
 import os
 import json
+import itertools
 from datetime import timedelta
 from copy import deepcopy
 
@@ -215,6 +216,17 @@ def get_tournament(tournament_id):
     tourn = Tournament.query.get(tournament_id)
     result = tournament_schema.dump(tourn)
     return jsonify(result.data)
+
+@app.route("/tournaments/<int:tournament_id>/cards", methods=["GET"])
+@authenticated
+@webadmin
+def tournaments_cards(tournament_id):
+    """Update tournaments from sheet"""
+    tourn = Tournament.query.get(tournament_id)
+    cards = list(itertools.chain.from_iterable([ts.deck.cards for ts in tourn.tournament_signups]))
+    result = cards_schema.dump(cards)
+    return jsonify(result.data)
+
 
 @app.route("/tournaments/update", methods=["GET"])
 @authenticated

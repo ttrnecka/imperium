@@ -999,7 +999,7 @@ export default {
                                                     <b>[[card.template.name]]:</b>
                                                 </div>
                                                 <div class="col-md-9">
-                                                    [[card.template.description]]
+                                                    <span v-html="markdown.makeHtml(card.template.description)"></span>
                                                 </div>
                                             </div>
                                         </div>

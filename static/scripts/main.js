@@ -34,9 +34,17 @@ Vue.mixin({
       rarity_order:1,
       skillreg: /(Diving Catch|Kick-Off Return|Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off|Big Hand|Very Long Legs)( |,|\.|$)/g,
       injuryreg: /(Smashed Knee|Damaged Back|Niggle|Smashed Ankle|Smashed Hip|Serious Concussion|Fractured Skull|Broken Neck|Smashed Collarbone)( |,|\.|$)/g,
+      markdown: new showdown.Converter()
     }
   },
   methods: {
+    has_keyword(card,keyword) {
+      const payout_regex = new RegExp("\\*\\*" + keyword + "\\*\\*", 'i')
+      if (payout_regex.exec(card.template.description) !== null) {
+        return true;
+      }   
+      return false;
+    },
     is_skill_double(player_card,skill) {
       if (["Strength Up!", "Agility Up!", "Movement Up!", "Armour Up!", "IncreaseMovement", "IncreaseMovement","IncreaseStrength","IncreaseAgility"].includes(skill)) {
         return false;

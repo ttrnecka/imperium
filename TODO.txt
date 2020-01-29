@@ -1,5 +1,6 @@
 Season 3
 py -3.7 -m pip install discord.py --upgrade
+instal Pillow
 update js version in the templates
 change vue to mininifed version
 Update sheet
@@ -13,12 +14,13 @@ schedule tournament auto check for every hour
 
 TODO
 coach-o-matic trigger logic
-conclave achievement check trigger
-curse/blessing Level 1/2/3 message placeholder
-semi - targetted consecration/corruption selection - review all decks and select random triggered options
+conclave achievement check trigger - do not record when SP is replayed
+corruptions/consecration configurable in the sheet
+fix the consecration triggers once renamed
 
 TEST
 Tournamnet starts with automation and manual kick off
+semi - targetted consecration/corruption selection - review all decks and select random triggered options
 
 
 VERY HIGH
@@ -43,6 +45,10 @@ test code
 
 
 DONE
+check for **Payout** keyword during setting prizes
+**bold formatting** on web for card descriptions
+cripple injury - add assigned injuries
+blessing - return 2 to picks from
 Add triggers from blessing/curses and show them in special play phase
 Consecrations/Corruptions hidden until special play - then revealed
 Tournamnets start error handling
