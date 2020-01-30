@@ -1,7 +1,6 @@
 Season 3
 py -3.7 -m pip install discord.py --upgrade
 python3.4 -m pip install -r requirements.txt --user
-update js version in the templates
 Update sheet
 SWITCH SHEET in code BEFORE GOING live
 review special plays and specialized training cards

@@ -442,8 +442,8 @@ def get_team(teamname):
 # DECKS
 
 def locked(deck):
-    """check if tournament the deck is in is locked"""
-    return deck.tournament_signup.tournament.phase in ["locked", "blood_bowl"]
+    """check if tournament the deck is in is locked""" 
+    return deck.tournament_signup.tournament.phase in [Tournament.LOCKED_PHASE, Tournament.BB_PHASE]
 
 def get_deck_or_abort(deck_id):
     """Returns deck or aborts"""

@@ -3,7 +3,7 @@ from sqlalchemy import event
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy.orm.attributes import set_committed_value
 
-from models.data_models import Tournament, Card, Deck, Coach
+from models.data_models import Tournament, Card, Deck, Coach, CardTemplate
 from models.base_model import db
 
 from .pack_service import PackService
@@ -47,8 +47,8 @@ def after_phase_set_hook(target, value, oldvalue, initiator):
                 
                 built_legends = []
                 for legend in legends:
-                    if isinstance(legend[0], Card) and not legend[0].template.rarity in ["Unique","Legendary","Inducement"] or \
-                        isinstance(legend[0], dict) and not legend[0]['template']['rarity'] in ["Unique","Legendary","Inducement"]:
+                    if isinstance(legend[0], Card) and not legend[0].template.rarity in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT] or \
+                        isinstance(legend[0], dict) and not legend[0]['template']['rarity'] in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT]:
                             built_legends.append(legend[0])
                 
                 if built_legends:

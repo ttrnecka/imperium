@@ -239,7 +239,7 @@ class DeckService:
                 f'{tournament.tournament_id}. {tournament.name} - channel ' +
                 f'{tournament.discord_channel}'
             )
-            tournament.phase = "locked"
+            tournament.phase = Tournament.LOCKED_PHASE
             db.session.commit()
         return deck
 
