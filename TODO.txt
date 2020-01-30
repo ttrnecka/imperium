@@ -1,14 +1,14 @@
 Season 3
 py -3.7 -m pip install discord.py --upgrade
-instal Pillow
+python3.4 -m pip install -r requirements.txt --user
 update js version in the templates
-change vue to mininifed version
 Update sheet
 SWITCH SHEET in code BEFORE GOING live
-review special plasy and specialized training cards
+review special plays and specialized training cards
 PATCH
 upgrade db
 achievement_insert
+AFTER GREEN LIGHT
 season_reset
 update config.py (with season old seasons)
 schedule tournament auto check for every hour
@@ -19,7 +19,7 @@ fix the consecration triggers once renamed
 
 TEST
 Tournamnet starts with automation and manual kick off
-semi - targetted consecration/corruption selection - review all decks and select random triggered options
+some of the new consecration/corruption triggers
 
 
 VERY HIGH
@@ -44,6 +44,7 @@ test code
 
 
 DONE
+semi - targetted consecration/corruption selection - review all decks and select random triggered options
 corruptions/consecration configurable in the sheet
 conclave achievement check trigger - do not record when SP is replayed
 check for **Payout** keyword during setting prizes
