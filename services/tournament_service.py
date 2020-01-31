@@ -461,7 +461,8 @@ class TournamentService:
             msg.append(f"{rule.name} - {rule.description}")
         
         msg.append(" ")
-        msg.append("**Blessings & Curses:**")
+        msg2 = []
+        msg2.append("**Blessings & Curses:**")
         
         for signup in tournament.tournament_signups:
             #conclave
@@ -476,7 +477,7 @@ class TournamentService:
                         word = "curse"
                         if not tournament.conclave_triggered:
                             CoachService.increment_curses(signup.coach)
-                    msg.append(f"{signup.coach.mention()} triggered {rule.name}: {getattr(rule,f'level{rule_level}')}, run **!{word} {rule_level}**")
+                    msg2.append(f"{signup.coach.mention()} triggered {rule.name}: {getattr(rule,f'level{rule_level}')}, run **!{word} {rule_level}**")
             
             # special plays
             special_plays1 = [card for card in signup.deck.cards if card.get('card_type') == "Special Play"]
@@ -487,8 +488,8 @@ class TournamentService:
 
             decks.append((signup.coach.mention(), DeckService.value(signup.deck), special_plays))
         
+        msg2.append(" ")
         sorted_decks = sorted(decks, key=lambda d: d[1])
-        msg.append(" ")
         msg.append("**Special Plays:**")
         for deck in sorted_decks:
             msg.append(f"{deck[0]}: deck value - {deck[1]}")
@@ -506,8 +507,11 @@ class TournamentService:
                         msg.append(deck[2][index]['template'].get('description'))
             msg.append(" ")
         
+        msg.extend(msg2)
+
         msg.append("**Note**: No Inducement shopping in this phase")
-        msg.append("**Note 2**: Use !done to confirm you are done with the phase, use !left to see who is left")
+        msg.append("**Note 2**: Blessing & Curses are rolled AFTER the special plays")
+        msg.append("**Note 3**: Use !done to confirm you are done with the phase, use !left to see who is left")
         tournament.conclave_triggered = True
         db.session.commit()
         return msg
