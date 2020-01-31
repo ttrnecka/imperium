@@ -510,7 +510,7 @@ class TournamentService:
         msg.extend(msg2)
 
         msg.append("**Note**: No Inducement shopping in this phase")
-        msg.append("**Note 2**: Blessing & Curses are rolled AFTER the special plays")
+        msg.append("**Note 2**: Blessings & Curses are rolled AFTER the special plays")
         msg.append("**Note 3**: Use !done to confirm you are done with the phase, use !left to see who is left")
         tournament.conclave_triggered = True
         db.session.commit()
