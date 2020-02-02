@@ -8,6 +8,7 @@ from models.base_model import db
 
 SKILLREG = re.compile(r'(Diving Catch|Kick-Off Return|Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off|Big Hand|Very Long Legs)( |,|\.|$)')
 INJURYREG = re.compile(r'(Smashed Knee|Damaged Back|Niggle|Smashed Ankle|Smashed Hip|Serious Concussion|Fractured Skull|Broken Neck|Smashed Collarbone)( |,|\.|$)')
+KEYWORDREG = re.compile(r'\*\*(\S+)\*\*')
 
 MUTATIONS = [
     "DisturbingPresence", "Horns", "Claw", "TwoHeads", "Tentacles","ExtraArms", "FoulAppearance", "PrehensileTail","BigHand","VeryLongLegs"
@@ -115,7 +116,7 @@ class ConclaveService:
     def chaos(cls,deck):
         return len(special_play_cards(deck))
 
-    #TODO Include Starter cards like APO and RR
+    #TESTED
     @classmethod
     def destitution(cls,deck):
         return len([card for card in deck.cards if card.template.rarity in [CardTemplate.RARITY_COMMON,CardTemplate.RARITY_STARTER]])
@@ -182,7 +183,7 @@ class ConclaveService:
 
     @classmethod
     def coach_o_matic(cls,deck):
-        return 0
+        return len([card for card in special_play_cards(deck) if "Randomise" in KEYWORDREG.findall(card.template.description)])
 
     #TESTED
     @classmethod
