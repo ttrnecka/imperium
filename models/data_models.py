@@ -460,12 +460,15 @@ class Tournament(Base):
 
     SP_PHASE = "special_play"
     BB_PHASE = "blood_bowl"
+    DB_PHASE = "deck_building"
+    LOCKED_PHASE = "locked"
+    IND_PHASE = "inducement"
     
     PHASES = [
-        "deck_building",
-        "locked",
+        DB_PHASE,
+        LOCKED_PHASE,
         SP_PHASE,
-        "inducement",
+        IND_PHASE,
         BB_PHASE
     ]
 

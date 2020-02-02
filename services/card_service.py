@@ -81,12 +81,12 @@ class CardService:
     @classmethod
     def builtin_skills_for(cls, card):
         if isinstance(card, Card):
-            if card.get('rarity') in ["Unique","Legendary","Inducement"]:
+            if card.get('rarity') in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT]:
                 string = card.get('description')
             else:
                 string = card.get('name')
         else:
-            if card['rarity'] in ["Unique","Legendary","Inducement"]:
+            if card['rarity'] in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT]:
                 string = card['description']
             else:
                 string = card['name']

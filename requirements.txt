@@ -4,7 +4,8 @@ oauth2client
 pyyaml
 flask_sqlalchemy
 Flask-Migrate
-flask_marshmallow 
+marshmallow==2.19.5
+flask_marshmallow
 marshmallow-sqlalchemy
 requests-oauthlib==1.2.0
 requests

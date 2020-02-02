@@ -904,10 +904,10 @@ class DiscordCommand(BotHelp):
                 await self.reply(["Incorrect number of arguments!!!", self.__class__.admincomp_help()])
                 return
 
-            if self.args[1] not in ["start", "stop", "update", "special_play", "inducement", "blood_bowl"]:
+            if self.args[1] not in ["start", "stop", "update", Tournament.SP_PHASE, Tournament.IND_PHASE, Tournament.BB_PHASE]:
                 await self.reply(["Incorrect arguments!!!", self.__class__.admincomp_help()])
 
-            if self.args[1] in ["start", "stop", "special_play", "inducement", "blood_bowl"]:
+            if self.args[1] in ["start", "stop", Tournament.SP_PHASE, Tournament.IND_PHASE, Tournament.BB_PHASE]:
                 if not represents_int(self.args[2]):
                     await self.reply([f"**{self.args[2]}** is not a number!!!\n"])
                     return
@@ -926,7 +926,7 @@ class DiscordCommand(BotHelp):
                 await self.reply([f"Coaches have been resigned from {tourn.name}!!!\n"])
                 return
 
-            if self.args[1] in ["start", "special_play", "inducement","blood_bowl"]:
+            if self.args[1] in ["start", Tournament.SP_PHASE, Tournament.IND_PHASE,Tournament.BB_PHASE]:
                 
                 result, err = TournamentService.start_check(tourn)
                 if err:
@@ -968,11 +968,11 @@ class DiscordCommand(BotHelp):
                     msg.append(f"**Unique Prize:**")
                     msg.append(f"{tourn.unique_prize}")
                 
-                if self.args[1] == "special_play":
+                if self.args[1] == Tournament.SP_PHASE:
                     msg = TournamentService.special_play_msg(tourn)
-                if self.args[1] == "inducement":
+                if self.args[1] == Tournament.IND_PHASE:
                     msg = TournamentService.inducement_msg(tourn)
-                if self.args[1] == "blood_bowl":
+                if self.args[1] == Tournament.BB_PHASE:
                     msg = TournamentService.blood_bowl_msg(tourn)
                 await self.send_message(channel, msg)
             return
