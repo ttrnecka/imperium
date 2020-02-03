@@ -1,5 +1,18 @@
 """Various helpers"""
 from services import PackService
+import os
+import logging
+from logging.handlers import RotatingFileHandler
+
+ROOT = os.path.dirname(__file__)
+logger = logging.getLogger('discord')
+logger.setLevel(logging.INFO)
+handler = RotatingFileHandler(
+    os.path.join(ROOT,'..', 'logs','discord.log'), maxBytes=10000000,
+    backupCount=5, encoding='utf-8', mode='a'
+)
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 class BotHelp:
     @classmethod
@@ -312,3 +325,44 @@ class BotHelp:
         msg += "\t<leve>: 1,2 or 3\n"
         msg += "```"
         return msg
+
+def log_response(response):
+    """Log command response"""
+    logger.info("Response:\n%s", response)
+
+class LongMessage:
+    """Class to handle long message sending in chunks
+        channel needs to have send() method
+    """
+    def __init__(self, channel):
+        self.limit = 2000
+        self.parts = []
+        self.channel = channel
+
+    def add(self, part):
+        """Adds part of long message"""
+        self.parts.append(part)
+
+    async def send(self):
+        """sends the message to channel in limit chunks"""
+        for chunk in self.chunks():
+            await self.channel.send(chunk)
+        log_response('\n'.join(self.lines()))
+
+    def lines(self):
+        """transforms the message to lines"""
+        lines = []
+        for part in self.parts:
+            lines.extend(part.split("\n"))
+        return lines
+
+    def chunks(self):
+        """Transform the lines to limit sized chunks"""
+        lines = self.lines()
+        while True:
+            msg = ""
+            if not lines:
+                break
+            while lines and len(msg + lines[0]) < self.limit:
+                msg += lines.pop(0) + "\n"
+            yield msg
