@@ -386,6 +386,12 @@ Vue.mixin({
         case "Sidestep":
           skills = ["SideStep"];
           break;
+        case "Crowd Pleaser":
+          skills = ["Frenzy","Juggernaut"]
+          break;
+        case "Designated Ball Carrier":
+          skills = ["Block", "SureHands"]
+          break;
         case "Bodyguard":
         case "Hired Muscle":
         case "Personal Army":

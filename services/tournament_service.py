@@ -678,7 +678,7 @@ class TournamentService:
             elif mode == "fast track":
                 duration = 3
             else:
-                raise TournamentError("Unknown tournament mode: {mode}")
+                raise TournamentError(f"Unknown tournament mode: {tournament.mode}")
 
             start = date.today()
             end = start + timedelta(days=duration)
@@ -719,10 +719,10 @@ class TournamentService:
                 raise TournamentError("No room available, release room or create new one and update Tournament Rooms tab, or configure room manually")
             tournament.discord_channel = first_room.name
 
-        TournamentService.update_tournament_in_sheet(tournament)
+        cls.update_tournament_in_sheet(tournament)
         db.session.commit()
 
-        _, err = TournamentService.start_check(tournament)
+        _, err = cls.start_check(tournament)
         if err:
             raise TournamentError(err)
         

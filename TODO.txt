@@ -1,19 +1,18 @@
 Season 3
-py -3.7 -m pip install discord.py --upgrade
-python3.4 -m pip install -r requirements.txt --user
-Update sheet
+python3.7 -m pip install discord.py --upgrade
+python3.7 -m pip install -r requirements.txt --user
+Update sheet with all tabs
 SWITCH SHEET in code BEFORE GOING live
-review special plays and specialized training cards
 PATCH
 upgrade db
 achievement_insert
+Tournamnet test with the team
 AFTER GREEN LIGHT
 season_reset
 update config.py (with season old seasons)
 schedule tournament auto check for every hour
 
 TODO
-coach-o-matic trigger logic
 fix the consecration triggers once renamed
 
 TEST
@@ -43,6 +42,8 @@ test code
 
 
 DONE
+review special plays and specialized training cards
+coach-o-matic trigger logic
 semi - targetted consecration/corruption selection - review all decks and select random triggered options
 corruptions/consecration configurable in the sheet
 conclave achievement check trigger - do not record when SP is replayed
