@@ -356,6 +356,10 @@ def skill_names_for(card):
         skills = ["MVPCondition2"]
     elif name == "Sidestep":
         skills = ["SideStep"]
+    elif name == "Crowd Pleaser":
+        skills = ["Frenzy","Juggernaut"]
+    elif name == "Designated Ball Carrier":
+        skills = ["Block", "SureHands"]
     elif name in ["Bodyguard","Hired Muscle","Personal Army"]:
         skills = []
     else:
