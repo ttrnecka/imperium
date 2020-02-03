@@ -13,11 +13,9 @@ update config.py (with season old seasons)
 schedule tournament auto check for every hour
 
 TODO
-fix the consecration triggers once renamed
 
 TEST
 Tournamnet starts with automation and manual kick off
-some of the new consecration/corruption triggers
 
 
 VERY HIGH
@@ -42,6 +40,8 @@ test code
 
 
 DONE
+fix the consecration triggers once renamed
+some of the new consecration/corruption triggers
 review special plays and specialized training cards
 coach-o-matic trigger logic
 semi - targetted consecration/corruption selection - review all decks and select random triggered options

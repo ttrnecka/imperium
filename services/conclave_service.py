@@ -57,6 +57,7 @@ class ConclaveService:
         return ConclaveRule.query.filter_by(name=name).one_or_none()
 
     #conclave checkers
+    #TESTED
     @classmethod
     def power(cls,deck):
         i = 0
@@ -65,6 +66,7 @@ class ConclaveService:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def deftness(cls,deck):
         i = 0
@@ -73,6 +75,7 @@ class ConclaveService:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def lethargy(cls,deck):
         i = 0
@@ -81,6 +84,7 @@ class ConclaveService:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def swiftness(cls,deck):
         i = 0
@@ -89,6 +93,7 @@ class ConclaveService:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def idleness(cls,deck):
         i = 0
@@ -97,6 +102,7 @@ class ConclaveService:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def teachings(cls,deck):
         return len(training_cards(deck))
@@ -106,9 +112,10 @@ class ConclaveService:
     def efficiency(cls,deck):
         return deck.tournament_signup.tournament.deck_value_limit - deck_value(deck)
 
+    #TESTED
     @classmethod
     def hero(cls,deck):
-        sorted_values = sorted([card.value for card in deck.cards],reverse=True)
+        sorted_values = sorted([card.template.value for card in deck.cards],reverse=True)
         return sorted_values[0] - sorted_values[1]
 
     #TESTED
@@ -131,7 +138,7 @@ class ConclaveService:
     def teamwork(cls,deck):
         i = 0
         for player in players(deck):
-            if printed(player,"Guard") + skill_ups(player,deck,"Guard") >= 1:
+            if printed(player,"Guard") + skill_ups(player,deck,"Guard", ignore_extra=True) >= 1:
                 i+=1
         return i
 
@@ -141,7 +148,7 @@ class ConclaveService:
         i = 0
         for player in players(deck):
             for mutation in MUTATIONS:
-                if printed(player,mutation) + skill_ups(player,deck,mutation) >= 1:
+                if printed(player,mutation) + skill_ups(player,deck,mutation, ignore_extra=True) >= 1:
                     i+=1
         return i
 
@@ -150,7 +157,7 @@ class ConclaveService:
     def violence(cls,deck):
         i = 0
         for player in players(deck):
-            if printed(player,"MightyBlow") + skill_ups(player,deck,"MightyBlow") >= 1:
+            if printed(player,"MightyBlow") + skill_ups(player,deck,"MightyBlow", ignore_extra=True) >= 1:
                 i+=1
         return i
 
@@ -159,15 +166,16 @@ class ConclaveService:
     def balance(cls,deck):
         i = 0
         for player in players(deck):
-            if printed(player,"Dodge") + skill_ups(player,deck,"Dodge") >= 1:
+            if printed(player,"Dodge") + skill_ups(player,deck,"Dodge", ignore_extra=True) >= 1:
                 i+=1
         return i
 
+    #TESTED
     @classmethod
     def foul_play(cls,deck):
         i = 0
         for player in players(deck):
-            if printed(player,"Dirty Player") + skill_ups(player,deck,"Dirty Player") >= 1:
+            if printed(player,"DirtyPlayer") + skill_ups(player,deck,"DirtyPlayer", ignore_extra=True) >= 1:
                 i+=1
         return i
 
@@ -190,6 +198,7 @@ class ConclaveService:
     def unsung(cls,deck):
         return len(staff_cards(deck))
 
+    #TESTED TODO check if other RR granting cards should count
     @classmethod
     def cautious(cls,deck):
         return len([card for card in staff_cards(deck) if card.template.name == "Re-roll"])
@@ -199,14 +208,17 @@ class ConclaveService:
     def legends(cls,deck):
         return len([card for card in players(deck) if card.template.rarity == CardTemplate.RARITY_LEGEND])
 
+    #TESTED
     @classmethod
     def solitude(cls,deck):
         return len([card for card in deck.cards if card.template.rarity == CardTemplate.RARITY_UNIQUE])
 
+    #TESTED
     @classmethod
     def popular(cls,deck):
         return len([card for card in deck.cards if card.template.subtype == CardTemplate.SUBTYPE_POSITIONAL])
 
+    #TESTED
     @classmethod
     def commitment(cls,deck):
         return len([card for card in deck.cards if card.template.one_time_use])
@@ -224,7 +236,7 @@ class ConclaveService:
     def fundamentals(cls,deck):
         return len([card for card in training_cards(deck) if card.template.subtype == CardTemplate.SUBTYPE_CORE])
 
-    
+    #TESTED
     @classmethod
     def stunty(cls,deck):
         i = 0
@@ -275,9 +287,9 @@ def printed(player,skill):
     """Return number of printed skill type for player"""
     return skill_names_for_player_card(player).count(skill)
 
-def skill_ups(player,deck,skill):
+def skill_ups(player,deck,skill, ignore_extra = False):
     """Return number of assigned skill type for player"""
-    return list(itertools.chain.from_iterable([skill_names_for(card) for card in assigned_cards(player,deck)])).count(skill)
+    return list(itertools.chain.from_iterable([skill_names_for(card) for card in assigned_cards(player,deck,ignore_extra=ignore_extra)])).count(skill)
 
 def skill_names_for_player_card(card):
     #return card descritpion for non player cards
@@ -391,9 +403,12 @@ def injury_names_for_player_card(card):
     
     return [injury_to_api_injury(match) for match in matches]
 
-def assigned_cards(card, deck):
+def assigned_cards(card, deck, ignore_extra = False):
     cards = []
-    for c in (deck.cards.all()+deck.extra_cards):
+    collection = deck.cards.all()
+    if not ignore_extra:
+        collection += deck.extra_cards
+    for c in collection:
         if card_id_or_uuid(card) in get_card_assignment(c,deck):
             cards.append(c)
 
