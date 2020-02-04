@@ -1033,8 +1033,9 @@ class DiscordCommand(BotHelp):
 
         if c_file:
             d_file = discord.File(c_file, filename=os.path.basename(c_file))
-            await self.reply([f"Conclave is undergoing the ritual, please stand by..."])
-            await self.message.channel.send(file=d_file)
+            async with self.message.channel.typing():
+                await self.reply([f"Conclave is undergoing the ritual, please stand by..."])
+                await self.message.channel.send(file=d_file)
         else:
             if rule2:
                 await self.reply(["Conclave casts upon you:", f"**{rule1.name}**: {getattr(rule1,f'level{level}_description')}","OR", f"**{rule2.name}**: {getattr(rule2,f'level{level}_description')}"])

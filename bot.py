@@ -1,10 +1,15 @@
 """Bot"""
 import discord
+from discord.ext import commands
 import os
 from web import db
 
 from bot.helpers import logger
 from bot.command import DiscordCommand
+
+import web
+
+bot = commands.Bot(command_prefix='!')
 
 ROOT = os.path.dirname(__file__)
 
@@ -46,6 +51,10 @@ async def on_ready():
     # rewrite default discord emojis with the server supported ones
     for emoji in client.emojis:
         DiscordCommand.emojis[emoji.name] = str(emoji)
+
+    act = discord.Game("Imperium")
+    await client.change_presence(status=discord.Status.online, activity=act)
+
 
 with open(os.path.join(ROOT, 'config/TOKEN'), 'r') as token_file:
     TOKEN = token_file.read()
