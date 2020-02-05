@@ -327,7 +327,7 @@ class TournamentService:
             NotificationService.notify(
                 f'{coach_mention} successfuly signed to tournament. {fee_msg}'
             )
-            # i tournament is full initiate updated in extra thread
+            # if tournament is full initiate update in extra thread, this will recreate free tournaments if needed
             
             if tournament.is_full():
                 AdminNotificationService.notify("!admincomp update")
