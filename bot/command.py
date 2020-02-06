@@ -2,7 +2,6 @@ import os
 import traceback
 import random
 import discord
-import tempfile
 
 from sqlalchemy import func
 
@@ -1032,7 +1031,9 @@ class DiscordCommand(BotHelp):
                 files =[r1_file]
 
         if files:
+            buf = image_merge(files)
             d_file = discord.File(image_merge(files), filename=f"{ctype}.png")
+            buf.close()
             async with self.message.channel.typing():
                 await self.reply([f"Conclave is undergoing the ritual, please stand by..."])
                 await self.message.channel.send(file=d_file)
