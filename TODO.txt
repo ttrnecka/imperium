@@ -1,9 +1,9 @@
 Season 3
 python3.7 -m pip install discord.py --upgrade
-python3.7 -m pip install -r requirements.txt --user
-Update sheet with all tabs
-SWITCH SHEET in code BEFORE GOING live
+DONE Update sheet with all tabs
+DONE SWITCH SHEET in code BEFORE GOING live
 PATCH
+python3.7 -m pip install -r requirements.txt --user
 upgrade db
 achievement_insert
 Tournamnet test with the team
