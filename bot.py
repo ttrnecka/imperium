@@ -52,7 +52,7 @@ async def on_ready():
     for emoji in client.emojis:
         DiscordCommand.emojis[emoji.name] = str(emoji)
 
-    act = discord.Game("Imperium")
+    act = discord.Game("Imperium Season 3")
     await client.change_presence(status=discord.Status.online, activity=act)
 
 
