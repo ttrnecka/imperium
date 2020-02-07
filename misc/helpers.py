@@ -4,6 +4,8 @@ from sqlalchemy.orm import raiseload
 
 from models.data_models import Coach, Card, db
 
+import io
+
 class CardHelper:
     """CardHelper namespace"""
     rarityorder = {"Starter":10, "Common":5, "Rare":4, "Epic":3, "Legendary":2, "Unique":1}
@@ -99,7 +101,8 @@ class InvalidUsage(Exception):
 import sys
 from PIL import Image 
 
-def image_merge(image_files,output_file):
+def image_merge(image_files):
+    """Merges the image files vertically and return IO buffer with them to process further"""
     images = [Image.open(x) for x in image_files]
     widths, heights = zip(*(i.size for i in images))
 
@@ -112,6 +115,7 @@ def image_merge(image_files,output_file):
     for im in images:
         new_im.paste(im, (x_offset,0))
         x_offset += im.size[0]
-
-    new_im.save(output_file)
-    return output_file
+    bts = io.BytesIO()
+    new_im.save(bts, format="png")
+    bts.seek(0)
+    return bts

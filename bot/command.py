@@ -1020,19 +1020,20 @@ class DiscordCommand(BotHelp):
 
         level = int(self.args[1])
 
+        r1_file = rule1.img(level)
+        files = []
         if ctype == "blessing":
-            r1_file = rule1.img(level)
             r2_file = rule2.img(level)
             if r1_file and r2_file:
-                c_file = image_merge([r1_file,ConclaveRule.divider_img(),r2_file], \
-                    os.path.join(ConclaveRule.IMAGE_FOLDER,"tmp_blessing.png"))
-            else:
-                c_file = None
+                files = [r1_file,ConclaveRule.divider_img(),r2_file]
         else:
-            c_file = rule1.img(level)
+            if r1_file:
+                files =[r1_file]
 
-        if c_file:
-            d_file = discord.File(c_file, filename=os.path.basename(c_file))
+        if files:
+            buf = image_merge(files)
+            d_file = discord.File(image_merge(files), filename=f"{ctype}.png")
+            buf.close()
             async with self.message.channel.typing():
                 await self.reply([f"Conclave is undergoing the ritual, please stand by..."])
                 await self.message.channel.send(file=d_file)
