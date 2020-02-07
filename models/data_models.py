@@ -546,6 +546,7 @@ class TournamentRoom(Base):
     __tablename__ = 'tournament_rooms'
 
     name = db.Column(db.String(80),nullable=False)
+    region = db.Column(db.String(255),nullable=False)
 
 class ConclaveRule(Base):
     __tablename__ = 'conclave_rules'

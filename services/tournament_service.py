@@ -117,6 +117,7 @@ class TournamentService:
         """import sheet tournament room line into dict to update the TournamentRoom record"""
         return {
             "name":room["Name"],
+            "region":room["Region Bias"]
         }
     
     @classmethod
@@ -708,7 +709,7 @@ class TournamentService:
 
         # set room
         if not tournament.discord_channel:
-            rooms = TournamentRoom.query.all()
+            rooms = TournamentRoom.query.filter_by(region=tournament.region).all()
             first_room = None
             for room in rooms:
                 if Tournament.query.filter(Tournament.status != "FINISHED", Tournament.discord_channel == room.name).count() == 0:
@@ -716,7 +717,7 @@ class TournamentService:
                     break
 
             if not first_room:
-                raise TournamentError("No room available, release room or create new one and update Tournament Rooms tab, or configure room manually")
+                raise TournamentError(f"No room available for {tournament.region}, release room or create new one and update Tournament Rooms tab, or configure room manually")
             tournament.discord_channel = first_room.name
 
         cls.update_tournament_in_sheet(tournament)
