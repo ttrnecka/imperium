@@ -10,7 +10,7 @@ Tournamnet test with the team
 AFTER GREEN LIGHT
 season_reset
 update config.py (with season old seasons)
-schedule tournament auto check for every hour
+DONE schedule tournament auto check for every hour
 
 TODO
 
