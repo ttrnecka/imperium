@@ -10,6 +10,7 @@ from sqlalchemy.orm.attributes import flag_modified
 import bb2
 from web import db, app, STORE, STATS_FILE, get_stats
 from models.data_models import Coach
+from models.marsh_models import leaderboard_coach_schema
 from services import NotificationService, AchievementNotificationService, CoachService
 
 app.app_context().push()
@@ -333,6 +334,8 @@ def main(argv):
         logger.info("Stats calculation of match %s completed", data['uuid'])
 
     try:
+        all_coaches = Coach.query.all()
+        stats['coaches_extra']=leaderboard_coach_schema.dump(all_coaches).data
         stats['coaches'].pop('', None)
         file = open(STATS_FILE, "w")
         file.write(json.dumps(stats))

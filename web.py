@@ -194,9 +194,8 @@ def new_coach():
 @app.route("/coaches/leaderboard", methods=["GET"])
 def get_coaches_leaderboard():
     """return leaderboard json"""
-    all_coaches = Coach.query.all()
     result = {}
-    result['coaches'] = leaderboard_coach_schema.dump(all_coaches).data
+    result['coaches'] = list(get_stats()['coaches_extra'].values()) # leaderboard_coach_schema.dump(all_coaches).data
     result['coach_stats'] = list(get_stats()['coaches'].values())
     return jsonify(result)
 
