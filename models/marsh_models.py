@@ -12,6 +12,7 @@ class AccountSchema(ma.ModelSchema):
     class Meta:
         model = Account
     #transactions = ma.Nested(TransactionSchema, many=True)
+    transactions = ma.Nested(TransactionSchema, many=True, attribute = 'last_transactions')
 
 class CardTemplateSchema(ma.ModelSchema):
     class Meta:
