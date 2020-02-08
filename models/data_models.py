@@ -382,7 +382,7 @@ class Account(Base):
     amount = db.Column(db.Integer, default=INIT_CASH, nullable=False)
     coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False)
 
-    transactions = db.relationship('Transaction', backref=db.backref('account', lazy=False), cascade="all, delete-orphan", lazy='joined')
+    transactions = db.relationship('Transaction', backref=db.backref('account', lazy=False), cascade="all, delete-orphan", lazy='selectin')
 
     def __repr__(self):
         return '<Account %r>' % self.amount
