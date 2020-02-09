@@ -286,13 +286,7 @@ def tournament_start(tournament_id):
     try:
         tourn = Tournament.query.get(tournament_id)
         TournamentService.kick_off(tourn)
-        result, err = TournamentService.start_check(tourn)
-        if err:
-            raise InvalidUsage(str(err), status_code=403)
 
-        AdminNotificationService.notify(
-            f"!admincomp start {tourn.tournament_id}"
-        )
         result = tournament_schema.dump(tourn)
         return jsonify(result.data)
     except (RegistrationError, TransactionError, TypeError, TournamentError) as exc:
