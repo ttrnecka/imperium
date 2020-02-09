@@ -8,7 +8,7 @@ DONE upgrade db
 DONE achievement_insert
 DONE Tournamnet test with the team
 AFTER GREEN LIGHT
-season_reset
+DONE season_reset
 update config.py (with season old seasons)
 restart bot/web
 run update_stats
