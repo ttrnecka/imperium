@@ -704,7 +704,7 @@ class TournamentService:
             signees = [ts.coach.short_name() for ts in tournament.tournament_signups]
             print(signees)
             for admin in regional_admins:
-                if Tournament.query.filter_by(status="OPEN", admin=admin.name).count() < admin.load and admin.name not in signees:
+                if Tournament.query.filter_by(status="RUNNING", admin=admin.name).count() < admin.load and admin.name not in signees:
                     available_admins.append(admin)
 
             if not available_admins:
