@@ -689,11 +689,12 @@ class TournamentService:
             tournament.deadline_date = end.strftime("%b %d").lstrip("0").replace(" 0", " ")
 
         # set sponsor
-        if not tournament.sponsor:
+        if not tournament.sponsor and tournament.type == "Development":
             sponsor = random.choice(TournamentSponsor.query.all())
             tournament.sponsor = sponsor.name
             tournament.sponsor_description = sponsor.effect
             tournament.special_rules = sponsor.special_rules
+            
 
         # set admin
         if not tournament.admin:
