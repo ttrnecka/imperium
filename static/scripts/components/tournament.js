@@ -176,9 +176,10 @@ export default {
         },
         call(method) {
             let path;
+            let updatingMsg;
             if(method=="update") {
                 path = "/tournaments/"+method;
-                this.flash("Updating...", 'info',{timeout: 3000});
+                updatingMsg = this.flash("Updating...", 'info');
             } else if(method=="get") {
                 path = "/tournaments/"+this.tournament.id;
             } else {
@@ -240,6 +241,8 @@ export default {
             })
             .then(() => {
                 this.processing=false;
+                if (typeof updatingMsg !== 'undefined')
+                  updatingMsg.destroy();
             });
         },
         showDeck(coach) {

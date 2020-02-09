@@ -6,16 +6,16 @@ DONE PATCH
 DONE python3.7 -m pip install -r requirements.txt --user
 DONE upgrade db
 DONE achievement_insert
-Tournamnet test with the team
+DONE Tournamnet test with the team
 AFTER GREEN LIGHT
 season_reset
 update config.py (with season old seasons)
+restart bot/web
+run update_stats
 DONE schedule tournament auto check for every hour
 
 TODO
 
-TEST
-Tournamnet starts with automation and manual kick off
 
 
 VERY HIGH
