@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
     app.app_context().push()
 
-    for coach in Coach.query.all():
+    for coach in Coach.query.with_deleted().all():
         if not coach.achievements:
             coach.achievements = achievements_template
         else:

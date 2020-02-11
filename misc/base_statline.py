@@ -36,7 +36,7 @@ base_statline = {
     "Orc_BlackOrcBlocker":"4429",
     "Chaos Dwarf_Minotaur":"5528",
     "Chaos_Warrior":"5439",
-    "Dwarf_Deathroller":"471a",
+    "Dwarf_DeathRoller":"471a",
     "Goblin_Troll":"4519",
     "Halfling_Treeman":"261a",
     "Human_Ogre":"5529",
