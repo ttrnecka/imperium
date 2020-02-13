@@ -1,4 +1,4 @@
-import tournament from './components/tournament.js?1.30';
+import tournament from './components/tournament.js?1.31';
 import signupModal from './components/signup-modal.js?1.0';
 import VueFlashMessage from './components/VueFlashMessage/index.js?1.1';
 Vue.use(VueFlashMessage);
@@ -7,7 +7,7 @@ Vue.use(VueFlashMessage);
 Vue.mixin({
   data () {
     return {
-      rarityorder: {"Starter":10,"Common":6, "Rare":5, "Epic":4, "Inducement":3,"Legendary":2, "Unique":1},
+      rarityorder: {"Starter":10,"Common":9, "Rare":8, "Epic":7, "Inducement":6,"Blessed":5,"Cursed":4,"Legendary":2, "Unique":1},
       mixed_teams: [
         {"idraces":38, "code":"aog", "tier_tax":0,  "name":"Alliance of Goodness",   "races":['Bretonnian' , 'Human', 'Dwarf', 'Halfling', 'Wood Elf'] },
         {"idraces":42, "code":"au",  "tier_tax":0, "name":'Afterlife United',       "races":['Undead','Necromantic','Khemri','Vampire']},
@@ -250,7 +250,7 @@ Vue.mixin({
         return card.template.name;
       }
       let str;
-      if(["Unique","Legendary","Inducement"].includes(card.template.rarity)) {
+      if(["Unique","Legendary","Inducement","Blessed","Cursed"].includes(card.template.rarity)) {
         str = card.template.description
       } else {
         str = card.template.name
@@ -277,7 +277,7 @@ Vue.mixin({
         return card.template.name;
       }
       let str;
-      if(["Unique","Legendary","Inducement"].includes(card.template.rarity)) {
+      if(["Unique","Legendary","Inducement","Blessed","Cursed"].includes(card.template.rarity)) {
         str = card.template.description
       } else {
         str = card.template.name

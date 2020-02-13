@@ -61,6 +61,8 @@ class CardTemplate(Base):
     RARITY_COMMON = "Common"
     RARITY_STARTER = "Starter"
     RARITY_EPIC = "Epic"
+    RARITY_BLESSED = "Blessed"
+    RARITY_CURSED = "Cursed"
     SUBTYPE_LINEMAN = "Lineman"
     SUBTYPE_POSITIONAL = "Positional"
     SUBTYPE_BASIC = "Basic"

@@ -702,7 +702,7 @@ export default {
         },
 
         assignable_deck_player_cards() {
-            return this.deck_player_cards.filter((e) => !["Legendary","Inducement","Unique"].includes(e.template.rarity));
+            return this.deck_player_cards.filter((e) => !["Legendary","Inducement","Unique","Blessed","Cursed"].includes(e.template.rarity));
         },
 
         deck_player_cards() {

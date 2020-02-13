@@ -47,8 +47,8 @@ def after_phase_set_hook(target, value, oldvalue, initiator):
                 
                 built_legends = []
                 for legend in legends:
-                    if isinstance(legend[0], Card) and not legend[0].template.rarity in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT] or \
-                        isinstance(legend[0], dict) and not legend[0]['template']['rarity'] in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT]:
+                    if isinstance(legend[0], Card) and not legend[0].template.rarity in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED] or \
+                        isinstance(legend[0], dict) and not legend[0]['template']['rarity'] in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
                             built_legends.append(legend[0])
                 
                 if built_legends:
