@@ -25,13 +25,15 @@ class ConclaveService:
     @classmethod
     def select_rules(cls,rules):
         """Randomly select rules from the list"""
+        max_rules = 3
+        max_same_type_rules = 2
         selected = []
         i = 0
         max_i = len(rules)*2
-        while len(selected) < 5 and i < max_i:
+        while len(selected) < max_rules and i < max_i:
             pick = random.choice(rules)
             if pick not in selected and not any(pick.same_class(rule) for rule in selected) \
-                and not len([rule for rule in selected if rule.type == pick.type])>2:
+                and not len([rule for rule in selected if rule.type == pick.type])>=max_same_type_rules:
                 selected.append(pick)
             i+=1
         

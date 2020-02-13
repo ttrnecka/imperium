@@ -658,7 +658,8 @@ class TournamentService:
                 "Sponsor Description":"",
                 "Special Rules":"",
                 "Prizes": temp.prizes,
-                "Unique Prize": ""
+                "Unique Prize": "",
+                "Conclave Triggers":"",
             }
             new_tournaments[i] = list(temp.values())
         ImperiumSheetService.append_tournaments(new_tournaments)
@@ -688,19 +689,22 @@ class TournamentService:
             tournament.deadline_date = end.strftime("%b %d").lstrip("0").replace(" 0", " ")
 
         # set sponsor
-        if not tournament.sponsor:
+        if not tournament.sponsor and tournament.type == "Development":
             sponsor = random.choice(TournamentSponsor.query.all())
             tournament.sponsor = sponsor.name
             tournament.sponsor_description = sponsor.effect
             tournament.special_rules = sponsor.special_rules
+            
 
         # set admin
         if not tournament.admin:
             admins = TournamentAdmin.query.all()
             regional_admins = [admin for admin in admins if tournament.region in admin.region]
             available_admins = []
+            signees = [ts.coach.short_name() for ts in tournament.tournament_signups]
+            print(signees)
             for admin in regional_admins:
-                if Tournament.query.filter_by(status="OPEN", admin=admin.name).count() < admin.load:
+                if Tournament.query.filter_by(status="RUNNING", admin=admin.name).count() < admin.load and admin.name not in signees:
                     available_admins.append(admin)
 
             if not available_admins:

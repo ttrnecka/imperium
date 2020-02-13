@@ -9,7 +9,7 @@ from flask import Flask, render_template, jsonify, abort, session, redirect, req
 from flask_fontawesome import FontAwesome
 from flask_migrate import Migrate
 from flask_swagger import swagger
-from sqlalchemy.orm import raiseload
+from sqlalchemy.orm import raiseload, selectinload
 from requests_oauthlib import OAuth2Session
 
 from models.base_model import db
@@ -17,7 +17,7 @@ from models.data_models import Coach, Tournament
 from models.data_models import TransactionError, Deck
 from models.marsh_models import ma, coach_schema, cards_schema, coaches_schema
 from models.marsh_models import tournaments_schema, tournament_schema, duster_schema
-from models.marsh_models import leaderboard_coach_schema, deck_schema, cracker_cards_schema
+from models.marsh_models import deck_schema, cracker_cards_schema
 from services import PackService, CoachService, NotificationService
 from services import LedgerNotificationService, AchievementNotificationService
 from services import AdminNotificationService, CardService, TournamentNotificationService, CrackerService
@@ -155,7 +155,7 @@ def me():
     """returns user from session"""
     user = session.get('discord_user', {'code':0})
     if current_user():
-        coach = Coach.query.with_deleted().filter_by(disc_id=current_user()['id']).one_or_none()
+        coach = Coach.query.with_deleted().options(selectinload(Coach.packs)).filter_by(disc_id=current_user()['id']).one_or_none()
         result = coach_schema.dump(coach)
         coach_data = result.data
     else:
@@ -194,9 +194,8 @@ def new_coach():
 @app.route("/coaches/leaderboard", methods=["GET"])
 def get_coaches_leaderboard():
     """return leaderboard json"""
-    all_coaches = Coach.query.all()
     result = {}
-    result['coaches'] = leaderboard_coach_schema.dump(all_coaches).data
+    result['coaches'] = get_stats()['coaches_extra']
     result['coach_stats'] = list(get_stats()['coaches'].values())
     return jsonify(result)
 
@@ -287,13 +286,7 @@ def tournament_start(tournament_id):
     try:
         tourn = Tournament.query.get(tournament_id)
         TournamentService.kick_off(tourn)
-        result, err = TournamentService.start_check(tourn)
-        if err:
-            raise InvalidUsage(str(err), status_code=403)
 
-        AdminNotificationService.notify(
-            f"!admincomp start {tourn.tournament_id}"
-        )
         result = tournament_schema.dump(tourn)
         return jsonify(result.data)
     except (RegistrationError, TransactionError, TypeError, TournamentError) as exc:
@@ -379,7 +372,7 @@ def card_dust_remove(card_id):
 @app.route("/coaches/<int:coach_id>", methods=["GET"])
 def get_coach(coach_id):
     """get coach with detailed info"""
-    coach = Coach.query.get(coach_id)
+    coach = Coach.query.options(selectinload(Coach.packs)).get(coach_id)
     if coach is None:
         abort(404)
     result = coach_schema.dump(coach)
@@ -392,7 +385,7 @@ def get_coach(coach_id):
 @webadmin
 def update_coach(coach_id):
     """Update coaches bb2 name"""
-    coach = Coach.query.get(coach_id)
+    coach = Coach.query.options(selectinload(Coach.packs)).get(coach_id)
     if coach is None:
         abort(404)
 

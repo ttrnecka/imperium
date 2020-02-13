@@ -386,6 +386,9 @@ class Account(Base):
 
     transactions = db.relationship('Transaction', backref=db.backref('account', lazy=False), cascade="all, delete-orphan", lazy='select')
 
+    def last_transactions(self):
+        return Transaction.query.filter(Transaction.account_id == self.id).order_by(Transaction.date_created.desc()).limit(20).all()
+
     def __repr__(self):
         return '<Account %r>' % self.amount
 
