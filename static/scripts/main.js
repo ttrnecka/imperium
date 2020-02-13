@@ -124,6 +124,8 @@ Vue.mixin({
           klass = "table-success";
           break;
         case "Inducement":
+        case "Blessed":
+        case "Cursed":
           klass = "table-inducement";
           break;
       }
