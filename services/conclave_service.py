@@ -38,7 +38,20 @@ class ConclaveService:
             i+=1
         
         return selected
-        
+    
+    @classmethod 
+    def ignore(cls,deck,rule):
+        """Hardcoded for the moment"""
+        tournament = deck.tournament_signup.tournament
+        # not hitting cripple cup with corruption of the cripple
+        if rule.name == "Corruption of the Cripple" and tournament.sponsor == "Cripple Cup":
+            return True
+
+        # ignore efficiency for low value tournaments as it is very hard to fit in anyway
+        if rule.name in ["Consecration of Efficiency","Corruption of Efficiency"] and tournament.deck_value_limit < 100:
+            return True
+        False
+
     @classmethod
     def check_trigger(cls, deck, name=""):
         """Returns 0 if it does not trigger, otherwise returns 1 2 or 3 based on the trigger level
@@ -46,7 +59,7 @@ class ConclaveService:
         """
         
         rule = cls.get_conclave_rule(name)
-        if not rule:
+        if not rule or cls.ignore(deck,rule):
             return None
 
         checker = rule.klass().lower()

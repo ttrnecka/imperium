@@ -16,8 +16,9 @@ DONE schedule tournament auto check for every hour
 
 TODO
 inducement calaculation in special phase should be saved and send later - blessing updates.demotes could mess tge values
-ignore some corruptios/consecrations for certain sposnors
+ignore some corruptios/consecrations for certain sposnors, tune some corruptions consecrations to trigger over certain DV limit only
 make blessings/curses limited to avialable list + add command to rerol
+make the deck skills to be removable
 
 
 VERY HIGH
