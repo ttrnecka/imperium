@@ -20,6 +20,7 @@ from .duster_service import DusterService, DustingError
 from .deck_service import DeckService, DeckError
 from .cracker_service import CrackerService, InvalidCrackerType, InvalidCrackerTeam
 from .conclave_service import ConclaveService
+from .competition_service import CompetitionService
 
 @event.listens_for(Tournament.phase,'set')
 def after_phase_set_hook(target, value, oldvalue, initiator):
