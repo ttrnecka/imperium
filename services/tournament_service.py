@@ -12,6 +12,7 @@ from .imperium_sheet_service import ImperiumSheetService
 from .deck_service import DeckService
 from .conclave_service import ConclaveService
 from .coach_service import CoachService
+from .competition_service import CompetitionService
 
 class RegistrationError(Exception):
     """Exception to raise for tournament registration issues"""
@@ -756,3 +757,5 @@ class TournamentService:
         tournament.Corruption = ""
         cls.update_tournament_in_sheet(tournament)
         db.session.commit()
+        for comp in tournament.competitions:
+            CompetitionService.delete_competition(comp)
