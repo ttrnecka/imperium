@@ -25,6 +25,12 @@ class Agent:
         data = r.json()
         return data
 
+    def competitions(self, leagues):
+        """Pulls competitions data"""
+        r = self.call("competitions", league=leagues)
+        data = r.json()
+        return data
+
     def matches(self, **kwargs):
         """Pull matches"""
         if 'limit' not in kwargs:
@@ -36,7 +42,7 @@ class Agent:
         if 'start' not in kwargs:
             kwargs['start'] = '2016-01-01'
         if 'league' not in kwargs:
-            kwargs['league'] = 'REBBL Imperium,REBBL Imperium Extra,REBBL Imperium Extra 2'
+            kwargs['league'] = self.leagues
         r = self.call("matches", **kwargs)
         data = r.json()
         return data

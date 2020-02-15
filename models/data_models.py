@@ -553,6 +553,22 @@ class TournamentRoom(Base):
     name = db.Column(db.String(80),nullable=False)
     region = db.Column(db.String(255),nullable=False)
 
+class Competition(Base):
+    __tablename__ = 'competitions'
+
+    comp_id = db.Column(db.Integer(), nullable=False, unique=True)
+    name = db.Column(db.String(80),nullable=False, index=True)
+    league_id = db.Column(db.Integer(), nullable=False, index=True)
+    league_name = db.Column(db.String(80),nullable=False, index=True)
+    competition_type = db.Column(db.String(80),nullable=False)
+    team_count = db.Column(db.Integer(), nullable=False)
+    turn_duration = db.Column(db.Integer(), nullable=False)
+    status = db.Column(db.Integer(), nullable=False)
+    owner_id = db.Column(db.Integer(), nullable=True)
+
+    tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), nullable=True)
+    tournament = db.relationship("Tournament", backref=db.backref('competitions'))
+
 class ConclaveRule(Base):
     __tablename__ = 'conclave_rules'
 
