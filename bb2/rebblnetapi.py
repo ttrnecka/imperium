@@ -1,6 +1,7 @@
 """REBBL Net api agent modul"""
 import requests, json
 import functools, urllib
+from threading import Timer
 from models.base_model import db
 
 def needs_token(func):
@@ -14,7 +15,7 @@ def needs_token(func):
 def encodeURIComponent(str):
     return urllib.parse.quote(str, safe='~()*!.\'')
 
-class REBBL_CYANIDE_API:
+class Api:
     """REBBL api Cyanide agent"""
 
     def __init__(self):
@@ -29,6 +30,9 @@ class REBBL_CYANIDE_API:
     def _headers(self):
         return {'Authorization': f"Bearer {self.token}"}
 
+    def clear_token(self):
+        self.token = ""
+
     def get_token(self):
         url = f"https://login.microsoftonline.com/{self.tennant_id}/oauth2/v2.0/token"
         headers = {'content-type': 'application/x-www-form-urlencoded'}
@@ -40,6 +44,8 @@ class REBBL_CYANIDE_API:
         }, headers=headers)
 
         self.token = r.json()['access_token']
+        t = Timer(59*60, self.clear_token)
+        t.start()
 
     @needs_token
     def get_coach_info(self,coach_id):
@@ -63,35 +69,47 @@ class REBBL_CYANIDE_API:
 
     @needs_token
     def get_competition_info(self, competition_id):
-        r = requests.get(f"{self.api_url}/api/competition/{competitionId}", headers=self._headers())
+        r = requests.get(f"{self.api_url}/api/competition/{competition_id}", headers=self._headers())
+        return r.json()
+
+    @needs_token
+    def get_board_info(self, leagueId):
+        r = requests.get(f"{self.api_url}/api/league/{leagueId}/board", headers=self._headers())
+        return r.json()
+
+    @needs_token
+    def delete_competition(self, competition_id):
+        r = requests.delete(f"{self.api_url}/api/competition/{competition_id}", headers=self._headers())
         return r.json()
 
     @needs_token
     def get_competition_ticket_info(self, competition_id):
-        r = requests.get(f"{self.api_url}/api/ticket/{competitionId}", headers=self._headers())
+        r = requests.get(f"{self.api_url}/api/ticket/{competition_id}", headers=self._headers())
         return r.json()
 
     @needs_token
     def get_tickets(self, competition_id):
-        r = requests.get(f"{self.api_url}/api/competition/{competitionId}/tickets", headers=self._headers())
+        r = requests.get(f"{self.api_url}/api/competition/{competition_id}/tickets", headers=self._headers())
         return r.json()
 
     @needs_token
     def create_competition(self, league_id, name, owner_id, team_count, competition_type, turn_duration, aging, enhancement, resurrection, custom_teams, mixed_teams, experienced_teams):
         data = {
-        "leagueId":league_id,
-        "name":name,
-        "ownerId":owner_id,
-        "teamCount":team_count,
-        "competitionType":competition_type,
-        "turnDuration": turn_duration,
-        "aging":aging,
-        "enhancement":enhancement,
-        "resurrection":resurrection,
-        "customTeams":custom_teams,
-        "mixedTeams":mixed_teams,
-        "experiencedTeams":experienced_teams
+            "leagueId":league_id,
+            "name":name,
+            "ownerId":owner_id,
+            "teamCount":team_count,
+            "competitionType":competition_type,
+            "turnDuration": turn_duration,
+            "aging":aging,
+            "enhancement":enhancement,
+            "resurrection":resurrection,
+            "customTeams":custom_teams,
+            "mixedTeams":mixed_teams,
+            "experiencedTeams":experienced_teams
         }
 
-        r = requests.post(f"{self.api_url}/api/competition", data=data, headers=self._headers())
+        headers = self._headers()
+        headers['content-type'] = 'application/json'
+        r = requests.post(f"{self.api_url}/api/competition", data=json.dumps(data), headers=headers)
         return r.json()

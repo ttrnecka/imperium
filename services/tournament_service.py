@@ -565,7 +565,7 @@ class TournamentService:
         return False
 
     @staticmethod
-    def left_phase(room):
+    def get_tournament_using_room(room):
         if not room:
             raise TournamentError(f"Discord room not defined!")
         tourn = Tournament.query.join(Tournament.tournament_signups).filter(Tournament.status!="FINISHED").filter(Tournament.discord_channel==room).all()
@@ -573,23 +573,20 @@ class TournamentService:
             raise TournamentError(f"Tournament using room {room} was not found!")
         if len(tourn)>1:
             raise TournamentError(f"Unable to identify unique tournament using room {room}. Contact admin!")
+        return tourn[0]
 
-        signups = tourn[0].tournament_signups
+    @staticmethod
+    def left_phase(room):
+        tourn = TournamentService.get_tournament_using_room(room)
+        signups = tourn.tournament_signups
         coaches = [ts.deck.tournament_signup.coach for ts in signups if not ts.deck.phase_done]
 
         return coaches
 
     @staticmethod
     def get_phase(room):
-        if not room:
-            raise TournamentError(f"Discord room not defined!")
-        tourn = Tournament.query.join(Tournament.tournament_signups).filter(Tournament.status!="FINISHED").filter(Tournament.discord_channel==room).all()
-        if not tourn:
-            raise TournamentError(f"Tournament using room {room} was not found!")
-        if len(tourn)>1:
-            raise TournamentError(f"Unable to identify unique tournament using room {room}. Contact admin!")
-
-        return tourn[0].phase
+        tourn = TournamentService.get_tournament_using_room(room)
+        return tourn.phase
 
     @staticmethod
     def start_check(tourn):
@@ -702,7 +699,6 @@ class TournamentService:
             regional_admins = [admin for admin in admins if tournament.region in admin.region]
             available_admins = []
             signees = [ts.coach.short_name() for ts in tournament.tournament_signups]
-            print(signees)
             for admin in regional_admins:
                 if Tournament.query.filter_by(status="RUNNING", admin=admin.name).count() < admin.load and admin.name not in signees:
                     available_admins.append(admin)

@@ -29,7 +29,8 @@ class BotHelp:
         msg += "!genpacktemp    - generates inducement or special play pack,"
         msg += " does not assign it to coach, costs nothing\n"
         msg += "!blessing       - returns random blessing\n"
-        msg += "!curse       - returns random curse\n"
+        msg += "!curse          - returns random curse\n"
+        msg += "!comp           - manages in-game comps\n"
         msg += " \n__**Admin Commands**__\n"
         msg += "!adminlist      - lists coach's account \n"
         msg += "!adminbank      - updates to coach's bank, sends notification to the coach \n"
@@ -323,6 +324,19 @@ class BotHelp:
         msg += "USAGE:\n"
         msg += "!curse <level>\n"
         msg += "\t<leve>: 1,2 or 3\n"
+        msg += "```"
+        return msg
+
+    @classmethod
+    def comp_help(cls):
+        """help message"""
+        msg = "```"
+        msg += "Manages in-game competitions for tournaments. Needs to be run in tournament channel\n"
+        msg += "USAGE:\n"
+        msg += "!comp list\n"
+        msg += "\tlist all competitions for tournament\n"
+        msg += "!comp create ladder\n"
+        msg += "\tcreates ladder comp for tournament if it does not exists\n"
         msg += "```"
         return msg
 

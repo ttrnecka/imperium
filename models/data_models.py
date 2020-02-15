@@ -5,6 +5,7 @@ import logging
 import json
 from logging.handlers import RotatingFileHandler
 import os
+from enum import Enum
 from sqlalchemy import UniqueConstraint, event
 from sqlalchemy.dialects import mysql 
 from sqlalchemy.types import TypeDecorator
@@ -520,6 +521,15 @@ class Tournament(Base):
             return True
         return False
 
+    def ladder_room_name(self):
+        short_mode = {
+            "Boot Camp": "boot",
+            "Fast Track": "ft",
+            "Regular": "reg"
+        }
+        name = f"{self.discord_channel} {self.tournament_id} {short_mode.get(self.mode,'')}"
+        return name[:25] if len(name) > 25 else name
+
 class TournamentTemplate(Base):
     __tablename__ = 'tournament_templates'
 
@@ -555,6 +565,23 @@ class TournamentRoom(Base):
 
 class Competition(Base):
     __tablename__ = 'competitions'
+
+    class Status(Enum):
+        WAITING_FOR_TEAMS = 0
+        RUNNING = 1
+        COMPLETED = 2
+
+    class TurnDuration(Enum):
+        ONE_MINUTE = 0
+        TWO_MINUTES = 1
+        TREE_MINUTES = 2
+        FOUR_MINUTES = 3
+
+    class CompetitionType(Enum):
+        LADDER = 3 
+        ROUND_ROBIN = 1 
+        KNOCKOUT = 2 
+        SWISS = 0
 
     comp_id = db.Column(db.Integer(), nullable=False, unique=True)
     name = db.Column(db.String(80),nullable=False, index=True)

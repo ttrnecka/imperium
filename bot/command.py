@@ -10,7 +10,7 @@ from models.data_models import Coach, Pack, Transaction, ConclaveRule
 from models.data_models import TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
 from misc.helpers import represents_int, image_merge
-from services import PackService, CardService, TournamentService, CoachService
+from services import PackService, CardService, TournamentService, CoachService, CompetitionError, CompetitionService
 from services import DusterService, RegistrationError, DustingError, TournamentError
 
 from .helpers import BotHelp, LongMessage, log_response, logger
@@ -219,6 +219,8 @@ class DiscordCommand(BotHelp):
                 await self.__run_blessing()
             elif self.cmd.startswith('!curse'):
                 await self.__run_curse()
+            elif self.cmd.startswith('!comp'):
+                await self.__run_comp()
         except (ValueError, TransactionError, RegistrationError) as e:
             await self.transaction_error(e)
         except Exception as e:
@@ -459,7 +461,41 @@ class DiscordCommand(BotHelp):
             await self.transaction_error(e)
             return
         await self.reply(msg)
-        
+    
+    async def __run_comp(self):
+        room = self.message.channel.name
+        if len(self.args) < 2 or (len(self.args) > 1 and self.args[1] not in ["list","create"]) \
+            or (self.args[1] == "create" and (len(self.args) < 3 or self.args[2] not in ["ladder"])):
+            await self.short_reply(self.__class__.comp_help())
+            return
+
+        try:
+            tourn = TournamentService.get_tournament_using_room(room)
+            
+            if tourn.status != "RUNNING":
+                await self.reply(["Tournament is not running!"])
+                return
+
+            if self.args[1] == "create":
+                comp_name = tourn.ladder_room_name()
+                comp = CompetitionService.create_imperium_ladder(comp_name)
+                tourn.competitions.append(comp)
+                db.session.commit()
+                await self.reply([f"Competition **{comp.name}** created in **{comp.league_name}**"])
+                return
+            
+            if self.args[1] == "list":
+                msg = ["**Competitions:**"]
+                for comp in tourn.competitions:
+                    msg.append(f"{comp.league_name} - {comp.name}")
+                await self.reply(msg)
+                return
+
+        except CompetitionError as e:
+            await self.transaction_error(e)
+            return
+        await self.reply(msg)
+
     async def __run_genpacktemp(self):
         if self.__class__.check_gentemp_command(self.cmd):
             ptype = self.args[1]
