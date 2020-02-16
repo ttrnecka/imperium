@@ -42,7 +42,7 @@ class Agent:
         if 'start' not in kwargs:
             kwargs['start'] = '2016-01-01'
         if 'league' not in kwargs:
-            kwargs['league'] = self.leagues
+            kwargs['league'] = 'REBBL Imperium,REBBL Imperium Extra,REBBL Imperium Extra 2'
         r = self.call("matches", **kwargs)
         data = r.json()
         return data
