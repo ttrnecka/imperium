@@ -53,5 +53,8 @@ class BB2Service:
             resurrection=kwargs['resurrection'],
             custom_teams=kwargs['custom_teams'], 
             mixed_teams=kwargs['mixed_teams'], 
-            experienced_teams=kwargs['experienced_teams'])
+            experienced_teams=kwargs['experienced_teams'],
+            kick_off_events=kwargs['kick_off_events'], 
+            autovalidate_match=kwargs['autovalidate_match'],
+            registration_type=kwargs['registration_type'])
 

@@ -107,7 +107,7 @@ class Api:
         return r.json()
 
     @needs_token
-    def create_competition(self, league_id, name, owner_id, team_count, competition_type, turn_duration, aging, enhancement, resurrection, custom_teams, mixed_teams, experienced_teams):
+    def create_competition(self, league_id, name, owner_id, team_count, competition_type, turn_duration, aging, enhancement, resurrection, custom_teams, mixed_teams, experienced_teams, kick_off_events, autovalidate_match, registration_type):
         data = {
             "leagueId":league_id,
             "name":name,
@@ -120,7 +120,11 @@ class Api:
             "resurrection":resurrection,
             "customTeams":custom_teams,
             "mixedTeams":mixed_teams,
-            "experiencedTeams":experienced_teams
+            "experiencedTeams":experienced_teams,
+            "registrationType": "InviteOnly",
+            "kickOffEvents": kick_off_events,
+            "autovalidateMatch": autovalidate_match,
+            "registrationType": registration_type
         }
 
         headers = self._headers()

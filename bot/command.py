@@ -465,7 +465,8 @@ class DiscordCommand(BotHelp):
     async def __run_comp(self):
         room = self.message.channel.name
         if len(self.args) < 2 or (len(self.args) > 1 and self.args[1] not in ["list","create"]) \
-            or (self.args[1] == "create" and (len(self.args) < 3 or self.args[2] not in ["ladder"])):
+            or (self.args[1] == "create" and (len(self.args) < 3 or self.args[2] not in ["ladder", "1on1"])) \
+            or (self.args[2] == "1on1" and len(self.args) == 3):
             await self.short_reply(self.__class__.comp_help())
             return
 
@@ -477,8 +478,13 @@ class DiscordCommand(BotHelp):
                 return
 
             if self.args[1] == "create":
-                comp_name = tourn.ladder_room_name()
-                comp = CompetitionService.create_imperium_ladder(comp_name)
+                if self.args[2] == "ladder":
+                    comp_name = tourn.ladder_room_name()
+                    comp = CompetitionService.create_imperium_ladder(comp_name)
+                if self.args[2] == "1on1":
+                    comp_name = " ".join(self.args[3:])
+                    comp_name = comp_name[:25] if len(comp_name) > 25 else comp_name
+                    comp = CompetitionService.create_imperium_rr(comp_name)
                 tourn.competitions.append(comp)
                 db.session.commit()
                 await self.reply([f"Competition **{comp.name}** created in **{comp.league_name}**"])

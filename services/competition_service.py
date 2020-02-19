@@ -17,7 +17,10 @@ def imperium_default_comp_params():
         "custom_teams":True,
         "mixed_teams":True,
         "experienced_teams":True,
-        "owner_id":0
+        "owner_id":0,
+        "kick_off_events": True,
+        "autovalidate_match": True,
+        "registration_type": "InviteOnly"
     }
 
 class CompetitionService:
@@ -103,7 +106,7 @@ class CompetitionService:
         return cls.create_imperium_comp(name, competition_type=Competition.CompetitionType.LADDER.value)
 
     @classmethod
-    def create_imperium_rr(cls, league_id, name):
+    def create_imperium_rr(cls,name):
         return cls.create_imperium_comp(name,competition_type=Competition.CompetitionType.ROUND_ROBIN.value, team_count=2)
 
     #@classmethod
@@ -111,7 +114,7 @@ class CompetitionService:
     #    cls.create_imperium_comp(league_id,name,owner_id,competition_type=Competition.CompetitionType.KNOCKOUT.value, team_count=team_count)
 
     @classmethod
-    def __create_competition(cls, league_id=0, name="", owner_id=0, team_count=0, competition_type=0, turn_duration=0, aging=False, resurrection=False, enhancement=False, custom_teams=False, mixed_teams=False, experienced_teams=False):
+    def __create_competition(cls, league_id=0, name="", owner_id=0, team_count=0, competition_type=0, turn_duration=0, aging=False, resurrection=False, enhancement=False, custom_teams=False, mixed_teams=False, experienced_teams=False, kick_off_events=True, autovalidate_match=True, registration_type="InviteOnly"):
         comp = {
             "league_id":league_id,
             "name":name,
@@ -124,7 +127,10 @@ class CompetitionService:
             "resurrection":resurrection,
             "custom_teams":custom_teams, 
             "mixed_teams":mixed_teams, 
-            "experienced_teams":experienced_teams
+            "experienced_teams":experienced_teams,
+            "kick_off_events": kick_off_events,
+            "autovalidate_match": autovalidate_match,
+            "registration_type": registration_type
         }
 
         comp_types = {
