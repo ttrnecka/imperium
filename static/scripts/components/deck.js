@@ -413,6 +413,32 @@ export default {
                 this.processing=false;
             });
         },
+        reset() {
+            if(!this.is_owner) {
+                return;
+            }
+            if(this.locked) {
+                this.flash("Deck is locked!", 'info',{timeout: 3000});
+                return;
+            }
+            const path = "/decks/"+this.deck_id+"/reset";
+            this.processing= true;
+            const processingMsg = this.flash("Processing...", 'info');
+            axios.get(path)
+            .then((res) => {
+                let msg = "Deck reset!";
+                this.flash(msg, 'success',{timeout: 1000});
+                this.deck.cards.forEach((card) => {
+                    this.clearCard(card);
+                })
+                this.deck = res.data;
+            })
+            .catch(this.async_error)
+            .then(() => {
+                processingMsg.destroy();
+                this.processing=false;
+            });
+        },
         addCard(card) {
             const path = "/decks/"+this.deck_id+"/addcard";
             this.processing= true;
@@ -463,13 +489,10 @@ export default {
             axios.post(path,card)
             .then((res) => {
                 let msg = "Card removed!";
-                let ccard;
                 this.flash(msg, 'success',{timeout: 1000});
                 this.deck = res.data;
                 if(card.id && card.deck_type!="extra" && card.deck_type!="extra_inducement") {
-                    const check = (this.development) ? "in_development_deck" : "in_imperium_deck";
-                    ccard = this.coach.cards.find((c) => c.id == card.id);
-                    ccard[check] = false;
+                    this.clearCard(card);
                 }
                 this.removeAllInjuries(card);
             })
@@ -482,6 +505,11 @@ export default {
         phaseDone() {
             this.deck.phase_done = true;
             this.updateDeck();
+        },
+        clearCard(card) {
+            const check = (this.development) ? "in_development_deck" : "in_imperium_deck";
+            let ccard = this.coach.cards.find((c) => c.id == card.id);
+            ccard[check] = false;
         },
         updateDeck() {
             if(!this.is_owner) {
@@ -820,7 +848,9 @@ export default {
                                     <button v-if="!deck.phase_done && is_owner" type="button" class="btn btn-danger" @click="phaseDone()">Done</button>
                                 </template>
                             </h5>
+                            <span>
                             <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked && started" @click="commit()">Commit</button>
+                            <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked" @click="reset()">Reset</button>
                             <button type="button" disabled class="btn btn-success" v-if="deck.commited && !locked">Committed</button>
                             <button type="button" disabled class="btn btn-info" v-if="locked">Locked</button>
                             <button type="button" disabled class="btn btn-info" v-if="!started">Not Started</button>

@@ -185,8 +185,6 @@ class DeckService:
                 raise DeckError("Card not found")
         else:
             #extra cards
-            print(card)
-            print(deck.unused_extra_cards)
             if card in deck.unused_extra_cards:
                 deck.unused_extra_cards.remove(card)
                 deck.extra_cards.remove(card)
@@ -241,6 +239,13 @@ class DeckService:
             )
             tournament.phase = Tournament.LOCKED_PHASE
             db.session.commit()
+        return deck
+
+    @classmethod
+    def reset(cls, deck):
+        for card in deck.cards.all() + deck.extra_cards:
+            card = card_schema.dump(card).data
+            cls.removecard(deck,card)
         return deck
 
     @classmethod

@@ -93,6 +93,20 @@ class Api:
         return r.json()
 
     @needs_token
+    def send_ticket(self, competition_id, owner_id, coach_id, team_id):
+        data = {
+            "competitionId": competition_id,
+            "ownerId": owner_id,
+            "coachId": coach_id,
+            "teamId": team_id
+        }
+
+        headers = self._headers()
+        headers['content-type'] = 'application/json'
+        r = requests.post(f"{self.api_url}/api/ticket", data=json.dumps(data), headers=headers)
+        return r.json()
+
+    @needs_token
     def create_competition(self, league_id, name, owner_id, team_count, competition_type, turn_duration, aging, enhancement, resurrection, custom_teams, mixed_teams, experienced_teams):
         data = {
             "leagueId":league_id,

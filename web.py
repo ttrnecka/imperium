@@ -599,6 +599,20 @@ def commit_deck(deck_id):
 
     return deck_response(deck)
 
+# reset deck
+@app.route("/decks/<int:deck_id>/reset", methods=["GET"])
+@authenticated
+def reset_deck(deck_id):
+    """Resets deck"""
+    deck = get_unlocked_deck_or_abort(deck_id)
+    can_edit_deck(deck)
+
+    try:
+        deck = DeckService.reset(deck)
+    except (DeckError) as exc:
+        raise InvalidUsage(str(exc), status_code=403)
+
+    return deck_response(deck)
 
 @app.route("/api/cracker/cards/<coach>", methods=["POST"])
 @cracker_api_user
