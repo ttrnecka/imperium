@@ -4,6 +4,7 @@ from sqlalchemy import func
 from models.data_models import Competition, Coach, Tournament
 from models.base_model import db
 from .bb2_service import BB2Service, SighanideError
+from .notification_service import TournamentNotificationService
 
 
 class CompetitionError(Exception):
@@ -186,5 +187,5 @@ class CompetitionService:
 
         db.session.add(c)
         db.session.commit()
-
+        TournamentNotificationService.notify(f"Created in-game room **{c.name}** in **{c.league_name}"**)
         return c
