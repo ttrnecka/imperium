@@ -139,6 +139,7 @@ class CompetitionService:
             raise CompetitionError(f"Team {team_name} does not belong to coach {coach.bb2_name}")
         try:
             result = BB2Service.api().send_ticket(comp.comp_id, 0, coach_id, team_id)
+            TournamentNotificationService.notify(f"{coach.short_name()} ticketed **{deck.team_name}** into **{competition_name}**")
         except SighanideError as e:
             raise CompetitionError(str(e))
         return result
