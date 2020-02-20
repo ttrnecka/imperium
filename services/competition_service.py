@@ -56,9 +56,7 @@ class CompetitionService:
         db.session.commit()
 
     @staticmethod
-    def delete_competition(competition):
-        if not isinstance(competition,Competition):
-            raise CompetitionError("competition is not Competition class")
+    def delete_competition(competition: Competition):
         BB2Service.delete_competition(competition.comp_id)
 
         db.session.delete(competition)
