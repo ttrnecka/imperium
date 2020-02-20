@@ -5,8 +5,9 @@ import random
 
 from sqlalchemy import asc, func
 from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card, TournamentTemplate, TournamentAdmin
-from models.data_models import TournamentSponsor, TournamentRoom, ConclaveRule
+from models.data_models import TournamentSponsor, TournamentRoom, ConclaveRule, Competition
 from models.base_model import db
+from misc import imperium_keywords
 from .notification_service import NotificationService, AdminNotificationService
 from .imperium_sheet_service import ImperiumSheetService
 from .deck_service import DeckService
@@ -456,6 +457,7 @@ class TournamentService:
         msg = ["__**Special Play Phase**__:"," "]
         
         decks = []
+        announces = []
         max_special_plays = 0
 
         msg.append("**Conclave rituals in place for this tournament:**")
@@ -481,6 +483,12 @@ class TournamentService:
                             CoachService.increment_curses(signup.coach)
                     msg2.append(f"{signup.coach.mention()} triggered {rule.name}: {getattr(rule,f'level{rule_level}')}, run **!{word} {rule_level}**")
             
+            # Announce cards
+            announce1 = [card for card in signup.deck.cards if "Announce" in imperium_keywords(card.template.description)]
+            announce2 = [card for card in signup.deck.extra_cards if "Announce" in imperium_keywords(card.get('template').get('description'))]
+            announce = announce1 + announce2
+            if announce:
+                announces.append((signup.coach.mention(), announce))
             # special plays
             special_plays1 = [card for card in signup.deck.cards if card.get('card_type') == "Special Play"]
             special_plays2 = [card for card in signup.deck.extra_cards if card.get('template').get('card_type') == "Special Play"]
@@ -496,6 +504,17 @@ class TournamentService:
         for deck in sorted_decks:
             msg.append(f"{deck[0]}: deck value - {deck[1]}")
 
+        if announces:
+            msg.extend([" ", "__Announcements__:", " "])
+            for coach, cards in announces:
+                for card in cards:
+                    if isinstance(card, Card):
+                        msg.append(f"{coach} announces **{card.get('name')}**:")
+                        msg.append(card.get('description'))
+                    else:
+                        msg.append(f"{coach} announces **{card['template'].get('name')}**:")
+                        msg.append(card['template'].get('description'))
+        
         msg.extend([" ", "__Order of Play__:", " "])
 
         for index in range(max_special_plays):
