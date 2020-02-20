@@ -468,7 +468,8 @@ class DiscordCommand(BotHelp):
         if self.args_len == 1 \
             or (self.args_len > 1 and self.args[1] not in ["list","create", "ticket"]) \
             or (self.args[1] == "create" and \
-                (self.args_len < 3 or self.args[2] not in ["ladder", "1on1"] or (self.args[2] == "1on1" and self.args_len == 3))) \
+                (self.args_len < 3 or self.args[2] not in ["ladder", "1on1","knockout"] or (self.args[2] == "1on1" and self.args_len == 3) \
+                    or (self.args[2] == "knockout" and self.args_len < 5 and not represents_int(self.args[3])))) \
             or (self.args[1] == "ticket" and self.args_len < 3):
             await self.short_reply(self.__class__.comp_help())
             return
@@ -488,6 +489,10 @@ class DiscordCommand(BotHelp):
                     comp_name = " ".join(self.args[3:])
                     comp_name = comp_name[:25] if len(comp_name) > 25 else comp_name
                     comp = CompetitionService.create_imperium_rr(comp_name)
+                if self.args[2] == "knockout":
+                    comp_name = " ".join(self.args[4:])
+                    comp_name = comp_name[:25] if len(comp_name) > 25 else comp_name
+                    comp = CompetitionService.create_imperium_knockout(comp_name, int(self.args[3]))
                 tourn.competitions.append(comp)
                 db.session.commit()
                 await self.reply([f"Competition **{comp.name}** created in **{comp.league_name}**"])
@@ -495,8 +500,17 @@ class DiscordCommand(BotHelp):
             
             if self.args[1] == "list":
                 msg = ["**Competitions:**"]
+                msg.append("```")
+                msg.append(
+                    '{:25s} | {:25} | {:25}'.format("League","Name","Type")
+                )
+                msg.append(78*"-")
                 for comp in tourn.competitions:
-                    msg.append(f"{comp.league_name} - {comp.name}")
+                    msg.append(
+                        '{:25s} | {:25} | {:25}'.format(comp.league_name,comp.name,comp.type_str())
+                    )
+
+                msg.append("```")
                 await self.reply(msg)
                 return
 
@@ -935,6 +949,22 @@ class DiscordCommand(BotHelp):
                     msg.append(f"{tourn.prizes}")
                     msg.append(f"**Unique Prize:**")
                     msg.append(f"{tourn.unique_prize}")
+
+                    #room setup
+                    if tourn.is_development():
+                        try:
+                            CompetitionService.import_competitions()
+                            comp = Competition.query.filter_by(name=tourn.ladder_room_name()).one_or_none()
+                            if not comp:
+                                comp = CompetitionService.create_imperium_ladder(tourn.ladder_room_name())
+                            
+                            comp.tournament_id = tourn.id
+                            db.session.commit()
+                        except CompetitionError as e:
+                            await self.short_reply(e)
+                        msg.append(f"**In-game rooms:**")
+                        for comp in tourn.competitions:
+                            msg.append(f"**{comp.name}** in **{comp.league_name}** league")
                 
                 if self.args[1] == Tournament.SP_PHASE:
                     msg = TournamentService.special_play_msg(tourn)

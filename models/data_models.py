@@ -530,6 +530,9 @@ class Tournament(Base):
         name = f"{self.discord_channel} {self.tournament_id} {short_mode.get(self.mode,'')}"
         return name[:25] if len(name) > 25 else name
 
+    def is_development(self):
+        return self.type == "Development"
+
 class TournamentTemplate(Base):
     __tablename__ = 'tournament_templates'
 
@@ -595,6 +598,14 @@ class Competition(Base):
 
     tournament_id = db.Column(db.Integer, db.ForeignKey('tournaments.id'), nullable=True)
     tournament = db.relationship("Tournament", backref=db.backref('competitions'))
+
+    def type_str(self):
+        types = {
+            "ladder": "Ladder",
+            "single_elimination": "Knockout",
+            "round_robin": "Round Robin"
+        }
+        return types.get(self.competition_type, "Unknown")
 
 class ConclaveRule(Base):
     __tablename__ = 'conclave_rules'

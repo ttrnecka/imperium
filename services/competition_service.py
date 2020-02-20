@@ -3,7 +3,7 @@ from sqlalchemy import func
 
 from models.data_models import Competition, Coach, Tournament
 from models.base_model import db
-from .bb2_service import BB2Service
+from .bb2_service import BB2Service, SighanideError
 
 
 class CompetitionError(Exception):
@@ -110,11 +110,15 @@ class CompetitionService:
         return cls.create_imperium_comp(name,competition_type=Competition.CompetitionType.ROUND_ROBIN.value, team_count=2)
 
     @classmethod
+    def create_imperium_knockout(cls, name, team_count):
+        return cls.create_imperium_comp(name,competition_type=Competition.CompetitionType.KNOCKOUT.value, team_count=team_count)
+
+    @classmethod
     def ticket_competition(cls, competition_name: str, coach: Coach, tournament: Tournament):
         # get deck
         decks = [ts.deck for ts in tournament.tournament_signups if ts.coach == coach]
         if not decks:
-            raise CompetitionError(f"Coach **{coach.name}** does not have team in this tournament")
+            raise CompetitionError(f"Coach **{coach.short_name()}** does not have team in this tournament")
         deck = decks[0]
         if not deck.team_name:
             raise CompetitionError(f"No team name is specified in the deck")
@@ -132,12 +136,11 @@ class CompetitionService:
         coach_name = result['coach']['name']
         if coach.bb2_name and coach.bb2_name != coach_name:
             raise CompetitionError(f"Team {team_name} does not belong to coach {coach.bb2_name}")
-        result = BB2Service.api().send_ticket(comp.comp_id, 0, coach_id, team_id)
+        try:
+            result = BB2Service.api().send_ticket(comp.comp_id, 0, coach_id, team_id)
+        except SighanideError as e:
+            raise CompetitionError(str(e))
         return result
-
-    #@classmethod
-    #def create_imperium_knockout(cls, league_id, name, owner_id, team_count):
-    #    cls.create_imperium_comp(league_id,name,owner_id,competition_type=Competition.CompetitionType.KNOCKOUT.value, team_count=team_count)
 
     @classmethod
     def __create_competition(cls, league_id=0, name="", owner_id=0, team_count=0, competition_type=0, turn_duration=0, aging=False, resurrection=False, enhancement=False, custom_teams=False, mixed_teams=False, experienced_teams=False, kick_off_events=True, autovalidate_match=True, registration_type="InviteOnly"):

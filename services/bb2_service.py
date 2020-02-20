@@ -1,4 +1,4 @@
-from bb2.rebblnetapi import Api
+from bb2.rebblnetapi import Api, SighanideError
 
 
 """BB2Service proxy helpers"""

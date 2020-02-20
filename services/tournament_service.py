@@ -12,7 +12,7 @@ from .imperium_sheet_service import ImperiumSheetService
 from .deck_service import DeckService
 from .conclave_service import ConclaveService
 from .coach_service import CoachService
-from .competition_service import CompetitionService
+from .competition_service import CompetitionService, CompetitionError
 
 class RegistrationError(Exception):
     """Exception to raise for tournament registration issues"""
@@ -544,6 +544,14 @@ class TournamentService:
     @classmethod
     def blood_bowl_msg(cls, tournament):
         msg = ["**You have to play Blood Bowl now, we apologize for the inconvenience!**"]
+        if tournament.is_development():
+            for ts in tournament.tournament_signups:
+                try:
+                    result = CompetitionService.ticket_competition(tournament.ladder_room_name(), ts.coach, tournament)
+                    team_name = result['ResponseCreateCompetitionTicket']['TicketInfos']['RowTeam']['Name']
+                    msg.append(f"{ts.coach.mention()} - Ticket sent to **{team_name}** for competition **{tournament.ladder_room_name()}**")
+                except CompetitionError as e:
+                    msg.append(f"{ts.coach.mention()} - Could not ticket team - {str(e)}")
         return msg
 
     @staticmethod
