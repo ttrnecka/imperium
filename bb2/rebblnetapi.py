@@ -15,6 +15,9 @@ def needs_token(func):
 def encodeURIComponent(str):
     return urllib.parse.quote(str, safe='~()*!.\'')
 
+class SighanideError(Exception):
+    """Exception to raise for RebblNetApiError issues"""
+
 class Api:
     """REBBL api Cyanide agent"""
 
@@ -104,6 +107,7 @@ class Api:
         headers = self._headers()
         headers['content-type'] = 'application/json'
         r = requests.post(f"{self.api_url}/api/ticket", data=json.dumps(data), headers=headers)
+        self.check_response(r)
         return r.json()
 
     @needs_token
@@ -131,3 +135,8 @@ class Api:
         headers['content-type'] = 'application/json'
         r = requests.post(f"{self.api_url}/api/competition", data=json.dumps(data), headers=headers)
         return r.json()
+
+    @classmethod
+    def check_response(cls, response):
+        if response.status_code != 200:
+            raise SighanideError(response.json()['message'])

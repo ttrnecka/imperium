@@ -1,7 +1,7 @@
 """Coach service helpers"""
 from sqlalchemy import func
 
-from models.data_models import Competition
+from models.data_models import Competition, Coach, Tournament
 from models.base_model import db
 from .bb2_service import BB2Service
 
@@ -76,7 +76,7 @@ class CompetitionService:
 
         # if exists check if it is running
         if comp and Competition.Status(comp.status) != Competition.Status.COMPLETED:
-            raise CompetitionError(f"Active competition with name {name} exists already in {comp.league_name}")
+            raise CompetitionError(f"Active competition with name **{name}** exists already in **{comp.league_name}**")
 
         if comp: # if it exists and is completed, delete it
             CompetitionService.delete_competition(comp)
@@ -108,6 +108,32 @@ class CompetitionService:
     @classmethod
     def create_imperium_rr(cls,name):
         return cls.create_imperium_comp(name,competition_type=Competition.CompetitionType.ROUND_ROBIN.value, team_count=2)
+
+    @classmethod
+    def ticket_competition(cls, competition_name: str, coach: Coach, tournament: Tournament):
+        # get deck
+        decks = [ts.deck for ts in tournament.tournament_signups if ts.coach == coach]
+        if not decks:
+            raise CompetitionError(f"Coach **{coach.name}** does not have team in this tournament")
+        deck = decks[0]
+        if not deck.team_name:
+            raise CompetitionError(f"No team name is specified in the deck")
+        #get comp
+        comp = Competition.query.filter_by(name=competition_name).one_or_none()
+        if not comp:
+            raise CompetitionError(f"Competition **{comp_name}** does not exist")
+
+        result = BB2Service.team(deck.team_name)
+        if not result:
+            raise CompetitionError(f"Team {deck.team_name} does not exist")
+
+        team_id = result['team']['id']
+        coach_id = result['coach']['id']
+        coach_name = result['coach']['name']
+        if coach.bb2_name and coach.bb2_name != coach_name:
+            raise CompetitionError(f"Team {team_name} does not belong to coach {coach.bb2_name}")
+        result = BB2Service.api().send_ticket(comp.comp_id, 0, coach_id, team_id)
+        return result
 
     #@classmethod
     #def create_imperium_knockout(cls, league_id, name, owner_id, team_count):

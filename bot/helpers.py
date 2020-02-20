@@ -339,6 +339,8 @@ class BotHelp:
         msg += "\tcreates ladder comp for tournament if it does not exists\n"
         msg += "!comp create 1on1 <name>\n"
         msg += "\tcreates 1 on 1 comp with <name> for tournament if it does not exists\n"
+        msg += "!comp ticket <competition_name>\n"
+        msg += "\tsends ticket to the <competition_name> to the coach issuing the command in the tournament room\n"
         msg += "```"
         return msg
 

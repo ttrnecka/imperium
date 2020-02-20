@@ -6,7 +6,7 @@ import discord
 from sqlalchemy import func
 
 from web import db, app
-from models.data_models import Coach, Pack, Transaction, ConclaveRule
+from models.data_models import Coach, Pack, Transaction, ConclaveRule, Competition
 from models.data_models import TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
 from misc.helpers import represents_int, image_merge
@@ -189,6 +189,7 @@ class DiscordCommand(BotHelp):
         self.client = dclient
         self.cmd = dmessage.content.lower()
         self.args = self.cmd.split()
+        self.args_len = len(self.args)
 
     async def process(self):
         """Process the command"""
@@ -464,9 +465,11 @@ class DiscordCommand(BotHelp):
     
     async def __run_comp(self):
         room = self.message.channel.name
-        if len(self.args) < 2 or (len(self.args) > 1 and self.args[1] not in ["list","create"]) \
-            or (self.args[1] == "create" and (len(self.args) < 3 or self.args[2] not in ["ladder", "1on1"])) \
-            or (self.args[2] == "1on1" and len(self.args) == 3):
+        if self.args_len == 1 \
+            or (self.args_len > 1 and self.args[1] not in ["list","create", "ticket"]) \
+            or (self.args[1] == "create" and \
+                (self.args_len < 3 or self.args[2] not in ["ladder", "1on1"] or (self.args[2] == "1on1" and self.args_len == 3))) \
+            or (self.args[1] == "ticket" and self.args_len < 3):
             await self.short_reply(self.__class__.comp_help())
             return
 
@@ -495,6 +498,16 @@ class DiscordCommand(BotHelp):
                 for comp in tourn.competitions:
                     msg.append(f"{comp.league_name} - {comp.name}")
                 await self.reply(msg)
+                return
+
+            if self.args[1] == "ticket":
+                comp_name = " ".join(self.args[2:])
+                # get coach
+                coach = Coach.get_by_discord_id(self.message.author.id)
+
+                result = CompetitionService.ticket_competition(comp_name, coach, tourn)
+                team_name = result['ResponseCreateCompetitionTicket']['TicketInfos']['RowTeam']['Name']
+                await self.reply([f"Ticket sent to **{team_name}** for competition **{comp_name}**"])
                 return
 
         except CompetitionError as e:
