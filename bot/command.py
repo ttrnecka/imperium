@@ -472,60 +472,55 @@ class DiscordCommand(BotHelp):
             await self.short_reply(self.__class__.comp_help())
             return
 
-        try:
-            tourn = TournamentService.get_tournament_using_room(room)
-            
-            if tourn.status != "RUNNING":
-                await self.reply(["Tournament is not running!"])
-                return
-
-            if self.args[1] == "create":
-                if self.args[2] == "ladder":
-                    comp_name = tourn.ladder_room_name()
-                    comp = CompetitionService.create_imperium_ladder(comp_name)
-                if self.args[2] == "1on1":
-                    comp_name = " ".join(self.args[3:])
-                    comp_name = comp_name[:25] if len(comp_name) > 25 else comp_name
-                    comp = CompetitionService.create_imperium_rr(comp_name)
-                if self.args[2] == "knockout":
-                    comp_name = " ".join(self.args[4:])
-                    comp_name = comp_name[:25] if len(comp_name) > 25 else comp_name
-                    comp = CompetitionService.create_imperium_knockout(comp_name, int(self.args[3]))
-                tourn.competitions.append(comp)
-                db.session.commit()
-                await self.reply([f"Competition **{comp.name}** created in **{comp.league_name}**"])
-                return
-            
-            if self.args[1] == "list":
-                msg = ["**Competitions:**"]
-                msg.append("```")
-                msg.append(
-                    '{:25s} | {:25} | {:25}'.format("League","Name","Type")
-                )
-                msg.append(78*"-")
-                for comp in tourn.competitions:
-                    msg.append(
-                        '{:25s} | {:25} | {:25}'.format(comp.league_name,comp.name,comp.type_str())
-                    )
-
-                msg.append("```")
-                await self.reply(msg)
-                return
-
-            if self.args[1] == "ticket":
-                comp_name = " ".join(self.args[2:])
-                # get coach
-                coach = Coach.get_by_discord_id(self.message.author.id)
-
-                result = CompetitionService.ticket_competition(comp_name, coach, tourn)
-                team_name = result['ResponseCreateCompetitionTicket']['TicketInfos']['RowTeam']['Name']
-                await self.reply([f"Ticket sent to **{team_name}** for competition **{comp_name}**"])
-                return
-
-        except CompetitionError as e:
-            await self.transaction_error(e)
+        tourn = TournamentService.get_tournament_using_room(room)
+        
+        if tourn.status != "RUNNING":
+            await self.reply(["Tournament is not running!"])
             return
-        await self.reply(msg)
+
+        if self.args[1] == "create":
+            if self.args[2] == "ladder":
+                comp_name = tourn.ladder_room_name()
+                comp = CompetitionService.create_imperium_ladder(comp_name)
+            if self.args[2] == "1on1":
+                comp_name = " ".join(self.args[3:])
+                comp_name = comp_name[:25] if len(comp_name) > 25 else comp_name
+                comp = CompetitionService.create_imperium_rr(comp_name)
+            if self.args[2] == "knockout":
+                comp_name = " ".join(self.args[4:])
+                comp_name = comp_name[:25] if len(comp_name) > 25 else comp_name
+                comp = CompetitionService.create_imperium_knockout(comp_name, int(self.args[3]))
+            tourn.competitions.append(comp)
+            db.session.commit()
+            await self.reply([f"Competition **{comp.name}** created in **{comp.league_name}**"])
+            return
+        
+        if self.args[1] == "list":
+            msg = ["**Competitions:**"]
+            msg.append("```")
+            msg.append(
+                '{:25s} | {:25} | {:25}'.format("League","Name","Type")
+            )
+            msg.append(78*"-")
+            for comp in tourn.competitions:
+                msg.append(
+                    '{:25s} | {:25} | {:25}'.format(comp.league_name,comp.name,comp.type_str())
+                )
+
+            msg.append("```")
+            await self.reply(msg)
+            return
+
+        if self.args[1] == "ticket":
+            comp_name = " ".join(self.args[2:])
+            # get coach
+            coach = Coach.get_by_discord_id(self.message.author.id)
+
+            result = CompetitionService.ticket_competition(comp_name, coach, tourn)
+            team_name = result['ResponseCreateCompetitionTicket']['TicketInfos']['RowTeam']['Name']
+            await self.reply([f"Ticket sent to **{team_name}** for competition **{comp_name}**"])
+            return
+
 
     async def __run_genpacktemp(self):
         if self.__class__.check_gentemp_command(self.cmd):

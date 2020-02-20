@@ -57,9 +57,12 @@ class CompetitionService:
 
     @staticmethod
     def delete_competition(competition: Competition):
-        BB2Service.delete_competition(competition.comp_id)
-        db.session.delete(competition)
-        db.session.commit()
+        try:
+            BB2Service.delete_competition(competition.comp_id)
+            db.session.delete(competition)
+            db.session.commit()
+        except SighanideError as e:
+            raise CompetitionError(str(e))
 
     @classmethod
     def create_imperium_comp(cls, name, competition_type=0, team_count=0):
@@ -161,7 +164,10 @@ class CompetitionService:
             3: "ladder"
         }
 
-        BB2Service.create_competition(**comp)
+        try:
+            BB2Service.create_competition(**comp)
+        except SighanideError as e:
+            raise CompetitionError(str(e))
 
         c = Competition()
         c.comp_id = int(response['CompetitionData']['RowCompetition']['Id']['Value'].split(":")[1].split("-")[0])
