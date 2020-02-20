@@ -58,23 +58,19 @@ class CompetitionService:
     @staticmethod
     def delete_competition(competition: Competition):
         BB2Service.delete_competition(competition.comp_id)
-
         db.session.delete(competition)
         db.session.commit()
 
     @classmethod
     def create_imperium_comp(cls, name, competition_type=0, team_count=0):
-        # refresh comps
         CompetitionService.import_competitions()
 
-        # check if it exists
         comp = Competition.query.filter(func.lower(Competition.name) == func.lower(name)).one_or_none()
 
-        # if exists check if it is running
         if comp and Competition.Status(comp.status) != Competition.Status.COMPLETED:
             raise CompetitionError(f"Active competition with name **{name}** exists already in **{comp.league_name}**")
 
-        if comp: # if it exists and is completed, delete it
+        if comp: # if it exists it is completed so delete it
             CompetitionService.delete_competition(comp)
 
         # select the league
@@ -89,7 +85,6 @@ class CompetitionService:
             raise CompetitionError(f"Competition cannot be created, all leagues are full!!!")
 
         league_id = BB2Service.league(selected_league)['league']['id']
-        # check if it exists and is running
         params = imperium_default_comp_params()
         params["league_id"] = league_id
         params["name"] = name
