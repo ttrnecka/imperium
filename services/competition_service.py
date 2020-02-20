@@ -187,5 +187,5 @@ class CompetitionService:
 
         db.session.add(c)
         db.session.commit()
-        TournamentNotificationService.notify(f"Created in-game room **{c.name}** in **{c.league_name}"**)
+        TournamentNotificationService.notify(f"Created in-game room **{c.name}** in **{c.league_name}**")
         return c
