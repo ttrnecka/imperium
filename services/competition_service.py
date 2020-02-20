@@ -165,7 +165,7 @@ class CompetitionService:
         }
 
         try:
-            BB2Service.create_competition(**comp)
+            response = BB2Service.create_competition(**comp)
         except SighanideError as e:
             raise CompetitionError(str(e))
 
