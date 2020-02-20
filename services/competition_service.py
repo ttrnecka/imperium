@@ -121,7 +121,7 @@ class CompetitionService:
         #get comp
         comp = Competition.query.filter_by(name=competition_name).one_or_none()
         if not comp:
-            raise CompetitionError(f"Competition **{comp_name}** does not exist")
+            raise CompetitionError(f"Competition **{competition_name}** does not exist")
 
         result = BB2Service.team(deck.team_name)
         if not result:
