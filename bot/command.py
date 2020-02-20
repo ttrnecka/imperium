@@ -222,8 +222,6 @@ class DiscordCommand(BotHelp):
                 await self.__run_curse()
             elif self.cmd.startswith('!comp'):
                 await self.__run_comp()
-        except (ValueError, TransactionError, RegistrationError) as e:
-            await self.transaction_error(e)
         except Exception as e:
             await self.transaction_error(e)
             #raising will not kill the discord bot but will cause it to log this to log as well
