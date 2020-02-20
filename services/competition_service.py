@@ -59,10 +59,7 @@ class CompetitionService:
     def delete_competition(competition):
         if not isinstance(competition,Competition):
             raise CompetitionError("competition is not Competition class")
-        response = BB2Service.delete_competition(competition.comp_id)
-
-        if response["ResponseDeleteCompetition"]["CallResult"]["ErrLabel"]:
-            raise CompetitionError(response["ResponseDeleteCompetition"]["CallResult"]["ErrLabel"])
+        BB2Service.delete_competition(competition.comp_id)
 
         db.session.delete(competition)
         db.session.commit()
@@ -171,10 +168,8 @@ class CompetitionService:
             3: "ladder"
         }
 
-        response = BB2Service.create_competition(**comp)
+        BB2Service.create_competition(**comp)
 
-        if response['CompetitionData']['RowLeague']['IdOwner'] == "0":
-            raise CompetitionError("Unable to create competition")
         c = Competition()
         c.comp_id = int(response['CompetitionData']['RowCompetition']['Id']['Value'].split(":")[1].split("-")[0])
         c.name = name
