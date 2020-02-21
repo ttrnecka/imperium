@@ -156,7 +156,7 @@ class Api:
             try:
                 data = response.json()
                 raise SighanideError(data['message'])
-            except (simplejson.error.JSONDecodeError, json.decoder.JSONDecodeError) as e:
+            except json.decoder.JSONDecodeError as e:
                 logger.error(str(e))
                 raise SighanideError("API is down")
 
