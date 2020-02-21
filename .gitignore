@@ -9,4 +9,6 @@ imperium.code-workspace
 config/config.py
 pylintrc
 bot.bat
+web.bat
+shell.bat
 cleanup.py
