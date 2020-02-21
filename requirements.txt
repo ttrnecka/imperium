@@ -12,3 +12,4 @@ requests
 flask-fontawesome
 flask-swagger
 Pillow
+simplejson
