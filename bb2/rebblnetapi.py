@@ -1,8 +1,11 @@
 """REBBL Net api agent modul"""
 import requests, json
 import functools, urllib
+import logging
 from threading import Timer
 from models.base_model import db
+
+logger = logging.getLogger('discord')
 
 def needs_token(func):
     @functools.wraps(func)
@@ -149,4 +152,10 @@ class Api:
     @classmethod
     def check_response(cls, response):
         if response.status_code != 200:
-            raise SighanideError(response.json()['message'])
+            try:
+                data = response.json()
+                raise SighanideError(data['message'])
+            except json.JSONDecodeError as e:
+                logger.error(str(e))
+                raise SighanideError("API is down")
+
