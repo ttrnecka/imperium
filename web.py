@@ -167,8 +167,14 @@ def me():
 @app.route("/")
 def index():
     """render index"""
+    # bb2_names = sorted(list(get_stats()['coaches'].keys()))
+    return render_template("index.html")
+
+@app.route("/bb2_names")
+def bb2_names():
+    """render index"""
     bb2_names = sorted(list(get_stats()['coaches'].keys()))
-    return render_template("index.html", bb2_names=bb2_names)
+    return jsonify(bb2_names)
 
 @app.route("/coaches", methods=["GET"])
 def get_coaches():
