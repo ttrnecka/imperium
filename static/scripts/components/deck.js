@@ -1,4 +1,4 @@
-import injuryPicker from './injury_picker.js';
+import injuryPicker from './injury_picker.js?1';
 
 export default {
     name: 'deck',
