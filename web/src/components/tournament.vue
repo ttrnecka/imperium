@@ -139,9 +139,11 @@
 <script>
 import deck from './deck.vue';
 import confirmationButton from './confirmation-button.vue';
+import Cards from '../mixins/cards';
 
 export default {
   name: 'tournament',
+  mixins: [Cards],
   components: {
     deck: deck,
     'confirmation-button': confirmationButton,

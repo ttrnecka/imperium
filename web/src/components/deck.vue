@@ -167,7 +167,7 @@
                                     <div :id="'collapselog'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
                                         <div class="card-body">
                                             <div class="row">
-                                                <template v-for="(line, index) in deck.log.split(/\\r?\\n/).reverse().slice(1)">
+                                                <template v-for="(line, index) in deck.log.split(/\r?\n/).reverse().slice(1)">
                                                 {{line}} <br :key="index" />
                                                 </template>
                                             </div>
@@ -212,14 +212,14 @@
                                     </div>
                                     <div :id="'accordionCardsCollection'+id">
                                         <div class="card" v-for="(ctype, index) in deck_card_types" :key="index">
-                                            <div class="card-header" :id="ctype.replace(/\\s/g, '')+'CardsCollection'+id">
+                                            <div class="card-header" :id="ctype.replace(/\s/g, '')+'CardsCollection'+id">
                                                 <h6 class="mb-0">
-                                                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseCollection'+ctype.replace(/\\s/g, '')+id" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\\s/g, '')">
+                                                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseCollection'+ctype.replace(/\s/g, '')+id" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\s/g, '')">
                                                     {{ ctype }} Cards
                                                     </button>
                                                 </h6>
                                             </div>
-                                            <div :id="'collapseCollection'+ctype.replace(/\\s/g, '')+id" class="deck_ctype collapse show" :aria-labelledby="ctype.replace(/\\s/g, '')+'Cards'" :data-parent="'#accordionCardsCollection'+id">
+                                            <div :id="'collapseCollection'+ctype.replace(/\s/g, '')+id" class="deck_ctype collapse show" :aria-labelledby="ctype.replace(/\s/g, '')+'Cards'" :data-parent="'#accordionCardsCollection'+id">
                                                 <div class="card-body table-responsive">
                                                     <table class="table  table-striped table-hover">
                                                         <thead>
@@ -272,14 +272,14 @@
                                     </div>
                                     <div :id="'accordionCardsDeck'+id">
                                         <div class="card" v-for="(ctype, index) in deck_card_types" :key="index">
-                                            <div class="card-header" :id="ctype.replace(/\\s/g, '')+'CardsDeck'+id">
+                                            <div class="card-header" :id="ctype.replace(/\s/g, '')+'CardsDeck'+id">
                                                 <h6 class="mb-0">
-                                                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseDeck'+ctype.replace(/\\s/g, '')+id" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\\s/g, '')">
+                                                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseDeck'+ctype.replace(/\s/g, '')+id" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\s/g, '')">
                                                     {{ ctype }} Cards ({{deck_size_for(ctype)}})
                                                     </button>
                                                 </h6>
                                             </div>
-                                            <div :id="'collapseDeck'+ctype.replace(/\\s/g, '')+id" class="deck_ctype collapse show" :aria-labelledby="ctype.replace(/\\s/g, '')+'Cards'" :data-parent="'#accordionCardsDeck'+id">
+                                            <div :id="'collapseDeck'+ctype.replace(/\s/g, '')+id" class="deck_ctype collapse show" :aria-labelledby="ctype.replace(/\s/g, '')+'Cards'" :data-parent="'#accordionCardsDeck'+id">
                                                 <div class="card-body table-responsive">
                                                     <table class="table  table-striped table-hover">
                                                         <thead>
@@ -393,6 +393,7 @@ export default {
         inducement: 'Inducement',
         blood_bowl: 'Blood Bowl',
       },
+      deck_card_types: ['Player', 'Training', 'Special Play', 'Staff'],
     };
   },
   methods: {
