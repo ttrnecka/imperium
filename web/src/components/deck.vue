@@ -346,9 +346,11 @@
 </template>
 <script>
 import injuryPicker from './injury_picker.vue';
+import Cards from '../mixins/cards';
 
 export default {
   name: 'deck',
+  mixins: [Cards],
   components: {
     'injury-picker': injuryPicker,
   },

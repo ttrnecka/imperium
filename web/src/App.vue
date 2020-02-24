@@ -31,6 +31,15 @@
                           <div class="d-inline-block">&#127867; Beer Fund</div>
                       </a>
                   </li>
+                  <li class="nav-item">
+                    <a class="nav-link" target="_blank" title="Discord" href="https://discord.gg/hdSQhRf">
+                      <div class="d-inline-block">
+                        <i class="fab fa-discord"
+                          title="Discord">
+                        </i>
+                      </div>
+                    </a>
+                  </li>
               </ul>
               <ul class="navbar-nav" v-cloak>
                   <li v-if="user.username" class="nav-item">
@@ -1061,9 +1070,11 @@
 import Vue from 'vue';
 import tournament from './components/tournament.vue';
 import signupModal from './components/signup-modal.vue';
+import Cards from './mixins/cards';
 
 export default {
   name: 'App',
+  mixins: [Cards],
   data() {
     return {
       coaches: [],

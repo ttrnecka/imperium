@@ -10,6 +10,8 @@ import VueFlashMessage from './components/VueFlashMessage/index';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import './assets/css/main.css';
+import '@fortawesome/fontawesome-free/css/all.css';
+import '@fortawesome/fontawesome-free/js/all';
 // import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 Vue.use(VueAxios, axios);
@@ -113,13 +115,6 @@ Vue.mixin({
           races: ['Ogre', 'Goblin', 'Orc', 'Lizardman'],
         },
       ],
-      skills: {
-        G: ['Dauntless', 'Dirty Player', 'Fend', 'Kick-Off Return', 'Pass Block', 'Shadowing', 'Tackle', 'Wrestle', 'Block', 'Frenzy', 'Kick', 'Pro', 'Strip Ball', 'Sure Hands'],
-        A: ['Catch', 'Diving Catch', 'Diving Tackle', 'Jump Up', 'Leap', 'Sidestep', 'SideStep', 'Sneaky Git', 'Sprint', 'Dodge', 'Sure Feet'],
-        P: ['Accurate', 'Dump-Off', 'Hail Mary Pass', 'Nerves of Steel', 'Pass', 'Safe Throw', 'Leader'],
-        S: ['Break Tackle', 'Grab', 'Juggernaut', 'Multiple Block', 'Piling On', 'Stand Firm', 'Strong Arm', 'Thick Skull', 'Guard', 'Mighty Blow'],
-        M: ['Big Hand', 'Disturbing Presence', 'Extra Arms', 'Foul Appearance', 'Horns', 'Prehensile Tail', 'Tentacles', 'Two Heads', 'Very Long Legs', 'Claw'],
-      },
       card_types: ['Player', 'Training', 'Special Play', 'Reaction', 'Staff', 'Upgrade'],
       show_starter: 1,
       rarity_order: 1,
@@ -129,22 +124,6 @@ Vue.mixin({
     };
   },
   methods: {
-    is_skill_double(playerCard, skill) {
-      if (['Strength Up!', 'Agility Up!', 'Movement Up!', 'Armour Up!', 'IncreaseMovement', 'IncreaseMovement', 'IncreaseStrength', 'IncreaseAgility'].includes(skill)) {
-        return false;
-      }
-      if (playerCard.template.skill_access.indexOf(this.skill_to_group_map[skill]) > -1) {
-        // single
-        return false;
-      }
-      // double
-      return true;
-    },
-    skill_access_for(access) {
-      const groups = access.split('');
-      const skillArray = groups.map((e) => this.skills[e]);
-      return Array.prototype.concat.apply([], skillArray);
-    },
     race(raceid) {
       const team = this.mixed_teams.find((t) => t.idraces === raceid);
       if (team) {
@@ -268,12 +247,6 @@ Vue.mixin({
         }
       }
       return newCollection;
-    },
-    is_locked(card) {
-      if (card.in_development_deck || card.in_imperium_deck) {
-        return true;
-      }
-      return false;
     },
     injury_to_api_injury(injury) {
       let name;
@@ -539,16 +512,6 @@ Vue.mixin({
         return total / games;
       }
       return 0;
-    },
-  },
-  computed: {
-    skill_to_group_map() {
-      const map = {};
-      ['G', 'A', 'P', 'S', 'M'].forEach((g) => {
-        this.skills[g].forEach((e) => { map[e] = g; });
-        this.skills[g].forEach((e) => { map[e.replace(/[\s-]/g, '')] = g; });
-      });
-      return map;
     },
   },
 });
