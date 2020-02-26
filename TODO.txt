@@ -15,7 +15,9 @@ DONE run update_stats
 DONE schedule tournament auto check for every hour
 
 TODO
-FIX bb_names link - load by api and not in index
+Deck - is_owner needs to be changed to new logic, is_loggedcoach refactoring
+Fix signedCallback after the getCoaches is turned to action
+
 inducement calaculation in special phase should be saved and send later - blessing updates.demotes could mess tge values
 make blessings/curses limited to avialable list + add command to rerol
 make the deck skills to be removable

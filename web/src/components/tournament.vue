@@ -137,6 +137,7 @@
     </div>
 </template>
 <script>
+import { mapGetters } from 'vuex';
 import deck from './deck.vue';
 import confirmationButton from './confirmation-button.vue';
 import Cards from '../mixins/cards';
@@ -473,6 +474,9 @@ export default {
     is_running() {
       return this.tournament.status !== 'OPEN';
     },
+    ...mapGetters([
+      'loggedCoach', 'is_webadmin',
+    ]),
   },
   mounted() {
     this.$on('deckClosed', () => { this.show_deck = false; });

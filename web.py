@@ -127,6 +127,14 @@ def signin():
     session['oauth2_state'] = state
     return redirect(authorization_url)
 
+@app.route('/signout')
+def signout():
+    """sign using discord OAUTH"""
+    session.pop('oauth2_state', None)
+    session.pop('oauth2_token', None)
+    session.pop('discord_user', None)
+    return redirect('/')
+
 @app.route('/callback')
 def callback():
     """discord callback target"""

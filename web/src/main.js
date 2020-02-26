@@ -12,6 +12,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import './assets/css/main.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import '@fortawesome/fontawesome-free/js/all';
+import store from './store';
 // import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 Vue.use(VueAxios, axios);
@@ -457,6 +458,7 @@ Vue.mixin({
         case 'Bodyguard':
         case 'Hired Muscle':
         case 'Personal Army':
+        case 'Mutant Roshi\'s Scare School':
           skills = [];
           break;
         default:
@@ -474,30 +476,6 @@ Vue.mixin({
       const skills = this.skill_names_for(card);
       const imgs = skills.map((s) => this.imgs_for_skill(s, double));
       return imgs.join('');
-    },
-    number_of_assignments(card) {
-      if (card.template.name === 'Bodyguard') {
-        return 1;
-      }
-      if (card.template.name === 'Hired Muscle') {
-        return 2;
-      }
-      if (card.template.name === 'Personal Army') {
-        return 3;
-      }
-      if (card.template.card_type !== 'Training') {
-        return 0;
-      }
-      if (card.template.name === 'Super Wildcard') {
-        return 3;
-      }
-      if (card.template.description.match(/ one /)) {
-        return 1;
-      }
-      if (card.template.description.match(/ three /)) {
-        return 3;
-      }
-      return 1;
     },
     print_date(pdate) {
       const jdate = new Date(pdate);
@@ -517,5 +495,6 @@ Vue.mixin({
 });
 
 new Vue({
+  store,
   render: (h) => h(App),
 }).$mount('#app');

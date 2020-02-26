@@ -14,7 +14,7 @@
             </div>
             <div class="modal-body">
                 <template v-if="!is_user">
-                    <p>To be able to use this site you need to <a href="/signin">Sign in</a> using Discord credentials first!</p>
+                    <p>To be able to use this site you need to <a href="#" @click="signin">Sign in</a> using Discord credentials first!</p>
                 </template>
                 <template v-if="is_user && !is_coach">
                     <h5>Welcome to REBBL Imperium!</h5>
@@ -142,10 +142,12 @@
     </div>
 </template>
 <script>
+import Api from '@/mixins/api';
 import confirmationButton from './confirmation-button.vue';
 
 export default {
   name: 'singup-modal',
+  mixins: [Api],
   delimiters: ['{{', '}}'],
   props: ['user'],
   components: {
