@@ -4,47 +4,7 @@
     <div class="container-fluid pt-2" v-cloak>
       <flash-message transitionIn="animated swing" class="flashpool"></flash-message>
       <coach-content v-if="menu=='Coaches'"></coach-content>
-      <div v-if="menu=='Tournaments'" class="row">
-        <div class="col-12">
-          <div class="tab-content" id="accordionTournaments">
-            <div class="row col-lg-9">
-              <div class="form-group col-md-4">
-                <select class="form-control" id="tournament_region" v-model="selected_t_region">
-                  <option selected disabled value="">Region:</option>
-                  <option value="">Reset</option>
-                  <option value="all">Cross-region</option>
-                  <option value="bigo">Big O</option>
-                  <option value="gman">GMAN</option>
-                  <option value="rel">REL</option>
-                </select>
-              </div>
-              <div class="form-group col-md-4">
-                <select class="form-control" id="tournament_state" v-model="selected_t_state">
-                  <option selected disabled value="">Occupation:</option>
-                  <option value="">Reset</option>
-                  <option value="free">Free</option>
-                  <option value="full">Full</option>
-                  <option value="entered">Entered</option>
-                  <option value="admined_by_me">Admined by me</option>
-                </select>
-              </div>
-              <div class="form-group col-md-4">
-                <select class="form-control" id="tournament_duration" v-model="selected_t_mode">
-                  <option selected disabled value="">Mode:</option>
-                  <option value="">Reset</option>
-                  <option value="regular">Regular</option>
-                  <option value="fasttrack">Fast Track</option>
-                  <option value="bootcamp">Boot Camp</option>
-                </select>
-              </div>
-            </div>
-            <tournament class="show col-lg-9" v-for="tournament in filteredTournaments"
-              :key="tournament.tournament_id" :id="'tourn'+tournament.tournament_id"
-              role="tabpanel" aria-labelledby="tournament" :tournament="tournament"
-              :coaches="coaches" :data-parent="'#accordionTournaments'" :user="user"></tournament>
-          </div>
-        </div>
-      </div>
+      <tournament-content v-if="menu=='Tournaments'"></tournament-content>
       <div v-if="menu=='Leaderboard'" class="row">
         <div class="col-12 col-md-6 col-lg-4 table-responsive">
           <h4> TOP 10 Collectors </h4>
@@ -388,24 +348,20 @@
 
 <script>
 import Vue from 'vue';
-import { mapState, mapGetters } from 'vuex';
+import { mapState, mapGetters, mapActions } from 'vuex';
 import Cards from '@/mixins/cards';
 import Api from '@/mixins/api';
-import tournament from './components/tournament.vue';
 import signupModal from './components/signup-modal.vue';
 import imperiumNavbar from './components/nav_bar.vue';
 import coachContent from './components/coach_content.vue';
+import tournamentContent from './components/tournament_content.vue';
 
 export default {
   name: 'App',
   mixins: [Cards, Api],
   data() {
     return {
-      selected_t_region: '',
-      selected_t_state: '',
-      selected_t_mode: '',
       menu: 'Coaches',
-      search_timeout: null,
       leaderboard_loaded: false,
       leaderboard: {
         deck_values: [],
@@ -416,10 +372,10 @@ export default {
     };
   },
   components: {
-    tournament,
     'signup-modal': signupModal,
     imperiumNavbar,
     coachContent,
+    tournamentContent,
   },
   methods: {
     setMenu(value) {
@@ -430,21 +386,8 @@ export default {
       Vue.set(this.tournaments, idx, tourn);
     },
     getInitialData() {
-      this.axios.all([this.me(), this.getCoaches(), this.getTournaments(), this.getBBNames()])
-        .then(this.axios.spread((user, coaches, tournaments, bbNames) => {
-          this.$store.commit('storeUser', user.data.user);
-
-          // coaches
-          const { data } = coaches;
-          for (let i = 0, len = data.length; i < len; i += 1) {
-            data[i].cards = [];
-            data[i].tournaments = [];
-            data[i].account = {};
-            data[i].account.transactions = [];
-          }
-          this.$store.commit('storeCoaches', data);
-          this.$store.commit('storeTournaments', tournaments.data);
-          this.$store.commit('storeBBNames', bbNames.data);
+      this.axios.all([this.getMe(), this.getCoaches(), this.getTournaments(), this.getBBNames()])
+        .then(this.axios.spread(() => {
           this.$store.commit('initially_loaded');
         }))
         .catch((error) => {
@@ -480,40 +423,11 @@ export default {
       this.user.coach = coach;
       this.getCoaches();
     },
+    ...mapActions([
+      'getCoaches', 'getTournaments', 'getBBNames', 'getMe',
+    ]),
   },
   computed: {
-    filteredTournaments() {
-      let filtered = this.tournaments;
-      if (this.selected_t_region !== '') {
-        filtered = filtered.filter((e) => e.region.toLowerCase().replace(/\s/g, '') === this.selected_t_region);
-      }
-      if (this.selected_t_mode !== '') {
-        filtered = filtered.filter((e) => e.mode.toLowerCase().replace(/\s/g, '') === this.selected_t_mode);
-      }
-      if (this.selected_t_state === 'full') {
-        filtered = filtered.filter((e) => e.coach_limit === e.tournament_signups.filter((el) => el.mode === 'active').length);
-      } else if (this.selected_t_state === 'free') {
-        filtered = filtered.filter((e) => e.coach_limit > e.tournament_signups.filter((el) => el.mode === 'active').length);
-      } else if (this.selected_t_state === 'admined_by_me') {
-        filtered = filtered.filter((e) => this.loggedCoach
-          && this.loggedCoach.short_name === e.admin);
-      } else if (this.selected_t_state === 'entered') {
-        filtered = filtered.filter((e) => {
-          if (this.loggedCoach !== undefined) {
-            for (let i = 0; i < e.coach_limit; i += 1) {
-              if (e.tournament_signups[i]) {
-                if (e.tournament_signups[i].coach === this.loggedCoach.id) {
-                  return e;
-                }
-              }
-            }
-          }
-          return false;
-        });
-      }
-      return filtered;
-    },
-
     loaded_user_and_coaches() {
       if (this.loaded_user && this.loaded_coaches) {
         return true;
@@ -594,15 +508,6 @@ export default {
           this.leaderboard_loaded = true;
         }
       }
-      // pop over needs to be reenabled after you navige
-      // back to Coaches menu from the other sections
-
-      if (newMenu === 'Coaches') {
-        this.selectCoach();
-        this.$nextTick(() => {
-          this.$('[data-toggle="popover"]').popover();
-        });
-      }
     },
     loaded_user_and_coaches: function (value) {
       if (value === true && !this.is_active) {
@@ -612,8 +517,6 @@ export default {
   },
   mounted() {
     this.$on('signedUpCoach', this.signedCallback);
-    this.$on('updateTournament', this.updateTournament);
-    this.$on('updateTournaments', this.getTournaments);
   },
   beforeMount() {
     this.getInitialData();

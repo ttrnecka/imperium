@@ -18,22 +18,6 @@ const Api = {
           console.error(error);
         });
     },
-    me() {
-      const path = '/me';
-      return this.axios.get(path);
-    },
-    getCoaches() {
-      const path = '/coaches';
-      return this.axios.get(path);
-    },
-    getTournaments() {
-      const path = '/tournaments';
-      return this.axios.get(path);
-    },
-    getBBNames() {
-      const path = '/bb2_names';
-      return this.axios.get(path);
-    },
   },
   computed: {
   },

@@ -644,6 +644,7 @@ export default {
   data() {
     return {
       coach_filter: '',
+      search_timeout: null,
       selected_team: 'All',
       processing: false,
       selectedCoach: {
@@ -769,7 +770,7 @@ export default {
       this.axios.put(path, { name: this.selectedCoach.bb2_name })
         .then((res) => {
           const idx = this.coaches.findIndex((x) => x.id === parseInt(id, 10));
-          this.set(this.coaches, idx, res.data);
+          this.$set(this.coaches, idx, res.data);
           this.selectedCoach = this.coaches[idx];
           this.flash('BB2 name updated', 'success', { timeout: 3000 });
         })
@@ -874,6 +875,12 @@ export default {
         this.getCoach(this.coaches[0].id);
       }
     },
+    init() {
+      this.selectCoach();
+      this.$nextTick(() => {
+        this.$('[data-toggle="popover"]').popover();
+      });
+    },
   },
   computed: {
     duster_type() {
@@ -902,11 +909,15 @@ export default {
   },
   watch: {
     initial_load: function (newValue) {
-      console.log(newValue);
       if (newValue) {
-        this.selectCoach();
+        this.init();
       }
     },
+  },
+  mounted() {
+    if (this.initial_load) {
+      this.init();
+    }
   },
 };
 </script>

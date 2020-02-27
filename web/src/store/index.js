@@ -31,11 +31,39 @@ export default new Vuex.Store({
   actions: {
     getCoaches({ commit }) {
       const path = '/coaches';
-      Vue.axios.get(path)
+      return Vue.axios.get(path)
         .then((res) => {
-          
+          const { data } = res;
+          for (let i = 0, len = data.length; i < len; i += 1) {
+            data[i].cards = [];
+            data[i].tournaments = [];
+            data[i].account = {};
+            data[i].account.transactions = [];
+          }
+          commit('storeCoaches', data);
         });
-    }
+    },
+    getTournaments({ commit }) {
+      const path = '/tournaments';
+      return Vue.axios.get(path)
+        .then((res) => {
+          commit('storeTournaments', res.data);
+        });
+    },
+    getBBNames({ commit }) {
+      const path = '/bb2_names';
+      return Vue.axios.get(path)
+        .then((res) => {
+          commit('storeBBNames', res.data);
+        });
+    },
+    getMe({ commit }) {
+      const path = '/me';
+      return Vue.axios.get(path)
+        .then((res) => {
+          commit('storeUser', res.data.user);
+        });
+    },
   },
   modules: {
   },
