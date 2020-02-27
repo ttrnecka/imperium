@@ -61,7 +61,7 @@ async def on_ready():
 with open(os.path.join(ROOT, 'config/TOKEN'), 'r') as token_file:
     TOKEN = token_file.read()
 
-cogs_dir = ROOT + "./bot/cogs"
+cogs_dir = ROOT + "/bot/cogs"
 
 # Here we load our extensions(cogs) that are located in the cogs directory. Any file in here attempts to load.
 if __name__ == '__main__':
