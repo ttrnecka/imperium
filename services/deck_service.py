@@ -6,7 +6,7 @@ from sqlalchemy import event
 
 from models.base_model import db
 from models.marsh_models import card_schema
-from models.data_models import date_now, Card, Coach, Tournament
+from models.data_models import date_now, Card, Coach, Tournament, CardTemplate
 from models.general import MIXED_TEAMS
 
 from .card_service import CardService
@@ -256,24 +256,25 @@ class DeckService:
         return assigned_cards, assigned_extra_cards
 
     @classmethod
-    def assigned_cards_to(cls, deck, card):
+    def assigned_cards_to(cls, deck, card, ignore_extra = False):
         """Returns all cards that are assigned to given card"""
         assigned_cards, assigned_extra_cards = cls.assigned_cards(deck)
+        if ignore_extra:
+          assigned_extra_cards = []
+
         # normal cards
         if isinstance(card, Card):
-            return [tcard for tcard in assigned_cards if str(card.id) in getattr(tcard, 'assigned_to_array')[str(deck.id)]], [tcard for tcard in assigned_extra_cards if str(card.id) in tcard['assigned_to_array'][str(deck.id)]]
+            return [tcard for tcard in assigned_cards if str(card.id) in getattr(tcard, 'assigned_to_array')[str(deck.id)]] + [tcard for tcard in assigned_extra_cards if str(card.id) in tcard['assigned_to_array'][str(deck.id)]]
         else:
-            return [tcard for tcard in assigned_cards if str(card['uuid']) in getattr(tcard, 'assigned_to_array')[str(deck.id)]], [tcard for tcard in assigned_extra_cards if str(card['uuid']) in tcard['assigned_to_array'][str(deck.id)]]
+            return [tcard for tcard in assigned_cards if str(card['uuid']) in getattr(tcard, 'assigned_to_array')[str(deck.id)]] + [tcard for tcard in assigned_extra_cards if str(card['uuid']) in tcard['assigned_to_array'][str(deck.id)]]
 
     @classmethod
     def skills_for(cls, deck, card):
-        original_cards, extra_cards = cls.assigned_cards_to(deck, card)
-        names1 = [CardService.skills_for_training_card(tcard.template.name) for tcard in original_cards]
+        assigned_cards = cls.assigned_cards_to(deck, card)
+        names1 = [CardService.skill_names_for(tcard) for tcard in assigned_cards]
         names1 = list(chain.from_iterable(names1))
-        names2 = [CardService.skills_for_training_card(tcard['template']['name']) for tcard in extra_cards]
-        names2 = list(chain.from_iterable(names2))
         printed_skills = CardService.builtin_skills_for(card)
-        return printed_skills + names1 + names2
+        return printed_skills + names1
 
     @classmethod
     def legends_in_deck(cls, deck):
@@ -289,6 +290,34 @@ class DeckService:
     def value(cls, deck):
         team = next((t for t in MIXED_TEAMS if t['name'] == deck.mixed_team), {'tier_tax':0})
         return sum(c.template.value for c in deck.cards) + team['tier_tax']
+
+    @staticmethod
+    def players(deck):
+      return [card for card in deck.cards if card.template.card_type == CardTemplate.TYPE_PLAYER]
+
+    @staticmethod
+    def training_cards(deck):
+      return [card for card in deck.cards if card.template.card_type == CardTemplate.TYPE_TRAINING]
+    
+    @staticmethod
+    def special_play_cards(deck):
+      return [card for card in deck.cards if card.template.card_type == CardTemplate.TYPE_SP]
+
+    @staticmethod
+    def staff_cards(deck):
+      return [card for card in deck.cards if card.template.card_type == CardTemplate.TYPE_STAFF]
+
+    @staticmethod
+    def deck_value(deck):
+      return sum([card.template.value for card in deck.cards])
+
+    @staticmethod
+    def assigned_injuries(card,deck):
+      injuries = []
+      uid = CardService.card_id_or_uuid(card)
+      if deck.injury_map.get(uid,None):
+          injuries.append(deck.injury_map[uid])
+      return injuries
 
 class DeckError(Exception):
     """Exception for Deck related issues"""

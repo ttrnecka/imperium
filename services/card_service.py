@@ -4,6 +4,7 @@ import re
 from models.data_models import Card, Coach, CardTemplate, CrackerCardTemplate, CrackerCard
 from models.base_model import db
 from misc.helpers import represents_int
+from misc import INJURYREG, SKILLREG
 from .imperium_sheet_service import ImperiumSheetService
 
 
@@ -94,55 +95,61 @@ class CardService:
         skills = re.findall(cls.skillreg,string)
         return [skill[0] for skill in skills]
 
-    @classmethod
-    def skills_for_training_card(cls, name):
-        skills = []
-        if name == "Block Party":
+    @staticmethod
+    def skill_names_for(card):
+      if isinstance(card,dict):
+          name = card['template']['name']
+      else:
+          name = card.template.name
+      if name == "Block Party":
           skills = ["Block"]
-        elif name == "Dodge like a Honeybadger, Sting like the Floor":
+      elif name == "Dodge like a Honeybadger, Sting like the Floor":
           skills = ["Tackle"]
-        elif name == "Gengar Mode":
+      elif name == "Gengar Mode":
           skills = ["DirtyPlayer"]
-        elif name == "Roger Dodger":
+      elif name == "Roger Dodger":
           skills = ["Dodge"]
-        elif name == "Packing a Punch":
+      elif name == "Packing a Punch":
           skills = ["MightyBlow"]
-        elif name == "Ballhawk":
+      elif name == "Ballhawk":
           skills = ["Wrestle","Tackle","StripBall"]
-        elif name == "Roadblock":
+      elif name == "Roadblock":
           skills = ["Block","Dodge","StandFirm"]
-        elif name == "Cold-Blooded Killer":
+      elif name == "Cold-Blooded Killer":
           skills = ["MightyBlow","PilingOn"]
-        elif name == "Sniper":
+      elif name == "Sniper":
           skills = ["Accurate","StrongArm"]
-        elif name == "A Real Nuisance":
+      elif name == "A Real Nuisance":
           skills = ["SideStep","DivingTackle"]
-        elif name == "Insect DNA":
+      elif name == "Insect DNA":
           skills = ["TwoHeads","ExtraArms"]
-        elif name == "Super Wildcard":
+      elif name == "Super Wildcard":
           skills = ["MVPCondition"]
-        elif name == "I Didn't Read The Rules":
+      elif name == "I Didn't Read The Rules":
           skills = ["MVPCondition","MVPCondition","MVPCondition"]
-        elif name == "Counterfeit Skill Shop":
+      elif name == "Counterfeit Skill Shop":
           skills = ["DivingTackle"]
-        elif name == "Laying the Smackdown":
+      elif name == "Laying the Smackdown":
           skills = ["Wrestle"]
-        elif name == "Need for Speed":
+      elif name == "Need for Speed":
           skills = ["IncreaseMovement"]
-        elif name == "The Great Wall":
+      elif name == "The Great Wall":
           skills = ["Guard"]
-        elif name == "Tubthumping":
+      elif name == "Tubthumping":
           skills = ["PilingOn","JumpUp","Dauntless"]
-        elif name == "Training Wildcard":
+      elif name == "Training Wildcard":
           skills = ["MVPCondition2"]
-        elif name == "Sidestep":
+      elif name == "Sidestep":
           skills = ["SideStep"]
-        elif name == "Bodyguard" or name == "Hired Muscle" or name == "Personal Army":
+      elif name == "Crowd Pleaser":
+          skills = ["Frenzy","Juggernaut"]
+      elif name == "Designated Ball Carrier":
+          skills = ["Block", "SureHands"]
+      elif name in ["Bodyguard","Hired Muscle","Personal Army"]:
           skills = []
-        else:
+      else:
           skills = [name]
-        
-        return skills
+      return [skill_to_api_skill(match) for match in skills]
 
     @classmethod
     def template_pool(cls):
@@ -163,3 +170,70 @@ class CardService:
                 pool.append(template)
         return pool
 
+    @staticmethod
+    def card_id_or_uuid(card):
+      id = card.id if card.id else card.uuid
+      return str(id)
+
+    @staticmethod
+    def injury_names_for_player_card(card):
+      #return card descritpion for non player cards
+      if card.template.card_type!=CardTemplate.TYPE_PLAYER:
+          return card.template.name
+
+      string = ""
+      if card.template.rarity in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
+          string = card.template.description
+      else:
+          string = card.template.name
+
+      matches = [match[0] for match in INJURYREG.findall(string)]
+      
+      return [injury_to_api_injury(match) for match in matches]
+
+    @staticmethod
+    def skill_names_for_player_card(card):
+      #return card descritpion for non player cards
+      if card.template.card_type!=CardTemplate.TYPE_PLAYER:
+          return card.template.name
+
+      string = ""
+      if card.template.rarity in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
+          string = card.template.description
+      else:
+          string = card.template.name
+
+      matches = [match[0] for match in SKILLREG.findall(string)]
+
+      # Pro Elf extra case
+      if len(re.findall("Pro Elf",string)):
+          # remove one accidental Pro skill
+          matches.remove("Pro")
+      
+      return [skill_to_api_skill(match) for match in matches]
+
+def injury_to_api_injury(injury):
+    if injury == "Smashed Collarbone":
+        name = "SmashedCollarBone"
+    else:
+        name = re.sub(r'[\s-]', '',injury)
+    return name
+
+def skill_to_api_skill(skill):
+  if skill in ["Strength Up!","ST+","+ST"]:
+      name = "IncreaseStrength"
+  elif skill in ["Agility Up!","AG+","+AG"]:
+      name = "IncreaseAgility"
+  elif skill in ["Movement Up!","MA+","+MA"]:
+      name = "IncreaseMovement"
+  elif skill in ["Armour Up!","AV+","+AV"]:
+      name = "IncreaseArmour"
+  elif skill == "Nerves of Steel":
+      name = "NervesOfSteel"
+  elif skill == "Sidestep":
+      name = "SideStep"
+  elif skill == "Mutant Roshi's Scare School":
+      name = ""
+  else:
+      name = re.sub(r'[\s-]', '',skill)
+  return name

@@ -5,7 +5,10 @@ import random
 
 from models.data_models import Deck, ConclaveRule, CardTemplate
 from models.base_model import db
-from misc import imperium_keywords, SKILLREG, INJURYREG
+from misc import imperium_keywords
+
+from .deck_service import DeckService
+from .card_service import CardService
 
 MUTATIONS = [
     "DisturbingPresence", "Horns", "Claw", "TwoHeads", "Tentacles","ExtraArms", "FoulAppearance", "PrehensileTail","BigHand","VeryLongLegs"
@@ -73,7 +76,7 @@ class ConclaveService:
     @classmethod
     def power(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             if player.strength() + printed(player,"IncreaseStrength") + skill_ups(player,deck,"IncreaseStrength") >= 5:
                 i+=1
         return i
@@ -82,7 +85,7 @@ class ConclaveService:
     @classmethod
     def deftness(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             if player.agility() + printed(player,"IncreaseAgility") + skill_ups(player,deck,"IncreaseAgility") >= 5:
                 i+=1
         return i
@@ -91,7 +94,7 @@ class ConclaveService:
     @classmethod
     def lethargy(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             if player.agility() + printed(player,"IncreaseAgility") + skill_ups(player,deck,"IncreaseAgility") <= 2:
                 i+=1
         return i
@@ -100,7 +103,7 @@ class ConclaveService:
     @classmethod
     def swiftness(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             if player.movement() + printed(player,"IncreaseMovement") + skill_ups(player,deck,"IncreaseMovement") >= 8:
                 i+=1
         return i
@@ -109,7 +112,7 @@ class ConclaveService:
     @classmethod
     def idleness(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             if player.movement() + printed(player,"IncreaseMovement") + skill_ups(player,deck,"IncreaseMovement") <= 5:
                 i+=1
         return i
@@ -117,12 +120,12 @@ class ConclaveService:
     #TESTED
     @classmethod
     def teachings(cls,deck):
-        return len(training_cards(deck))
+        return len(DeckService.training_cards(deck))
     
     #TESTED
     @classmethod
     def efficiency(cls,deck):
-        return deck.tournament_signup.tournament.deck_value_limit - deck_value(deck)
+        return deck.tournament_signup.tournament.deck_value_limit - DeckService.deck_value(deck)
 
     #TESTED
     @classmethod
@@ -133,7 +136,7 @@ class ConclaveService:
     #TESTED
     @classmethod
     def chaos(cls,deck):
-        return len(special_play_cards(deck))
+        return len(DeckService.special_play_cards(deck))
 
     #TESTED
     @classmethod
@@ -149,7 +152,7 @@ class ConclaveService:
     @classmethod
     def teamwork(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             if printed(player,"Guard") + skill_ups(player,deck,"Guard", ignore_extra=True) >= 1:
                 i+=1
         return i
@@ -158,7 +161,7 @@ class ConclaveService:
     @classmethod
     def mutants(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             for mutation in MUTATIONS:
                 if printed(player,mutation) + skill_ups(player,deck,mutation, ignore_extra=True) >= 1:
                     i+=1
@@ -168,7 +171,7 @@ class ConclaveService:
     @classmethod
     def violence(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             if printed(player,"MightyBlow") + skill_ups(player,deck,"MightyBlow", ignore_extra=True) >= 1:
                 i+=1
         return i
@@ -177,7 +180,7 @@ class ConclaveService:
     @classmethod
     def balance(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             if printed(player,"Dodge") + skill_ups(player,deck,"Dodge", ignore_extra=True) >= 1:
                 i+=1
         return i
@@ -186,7 +189,7 @@ class ConclaveService:
     @classmethod
     def foul_play(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             if printed(player,"DirtyPlayer") + skill_ups(player,deck,"DirtyPlayer", ignore_extra=True) >= 1:
                 i+=1
         return i
@@ -194,31 +197,31 @@ class ConclaveService:
     #TESTED
     @classmethod
     def situational(cls,deck):
-        return len([card for card in training_cards(deck) if card.template.subtype == CardTemplate.SUBTYPE_BASIC])
+        return len([card for card in DeckService.training_cards(deck) if card.template.subtype == CardTemplate.SUBTYPE_BASIC])
 
     #TESTED
     @classmethod
     def specialist(cls,deck):
-        return len([card for card in training_cards(deck) if card.template.subtype == CardTemplate.SUBTYPE_SPECIALIZED])
+        return len([card for card in DeckService.training_cards(deck) if card.template.subtype == CardTemplate.SUBTYPE_SPECIALIZED])
 
     @classmethod
     def coach_o_matic(cls,deck):
-        return len([card for card in special_play_cards(deck) if "Randomise" in imperium_keywords(card.template.description)])
+        return len([card for card in DeckService.special_play_cards(deck) if "Randomise" in imperium_keywords(card.template.description)])
 
     #TESTED
     @classmethod
     def unsung(cls,deck):
-        return len(staff_cards(deck))
+        return len(DeckService.staff_cards(deck))
 
     #TESTED TODO check if other RR granting cards should count
     @classmethod
     def cautious(cls,deck):
-        return len([card for card in staff_cards(deck) if card.template.name == "Re-roll"])
+        return len([card for card in DeckService.staff_cards(deck) if card.template.name == "Re-roll"])
 
     #TESTED 
     @classmethod
     def legends(cls,deck):
-        return len([card for card in players(deck) if card.template.rarity == CardTemplate.RARITY_LEGEND])
+        return len([card for card in DeckService.players(deck) if card.template.rarity == CardTemplate.RARITY_LEGEND])
 
     #TESTED
     @classmethod
@@ -239,20 +242,20 @@ class ConclaveService:
     @classmethod
     def cripple(cls,deck):
         i = 0
-        for player in players(deck):
-            i+=len(injury_names_for_player_card(player)+assigned_injuries(player,deck))
+        for player in DeckService.players(deck):
+            i+=len(CardService.injury_names_for_player_card(player)+DeckService.assigned_injuries(player,deck))
         return i
 
     #TESTED
     @classmethod
     def fundamentals(cls,deck):
-        return len([card for card in training_cards(deck) if card.template.subtype == CardTemplate.SUBTYPE_CORE])
+        return len([card for card in DeckService.training_cards(deck) if card.template.subtype == CardTemplate.SUBTYPE_CORE])
 
     #TESTED
     @classmethod
     def stunty(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             if player.stunty():
                 i+=1
         return i
@@ -261,8 +264,8 @@ class ConclaveService:
     @classmethod
     def preparation(cls,deck):
         i = 0
-        for player in players(deck):
-            if player.template.rarity not in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND] and len(skill_names_for_player_card(player)):
+        for player in DeckService.players(deck):
+            if player.template.rarity not in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND] and len(CardService.skill_names_for_player_card(player)):
                 i+=1
         return i
 
@@ -275,7 +278,7 @@ class ConclaveService:
     @classmethod
     def freaks(cls,deck):
         i = 0
-        for player in players(deck):
+        for player in DeckService.players(deck):
             if printed(player,"IncreaseMovement") + skill_ups(player,deck,"IncreaseMovement") \
                 + printed(player,"IncreaseStrength") + skill_ups(player,deck,"IncreaseStrength") \
                 + printed(player,"IncreaseAgility") + skill_ups(player,deck,"IncreaseAgility") \
@@ -283,177 +286,13 @@ class ConclaveService:
                 i+=1
         return i
 
-def players(deck):
-    return [card for card in deck.cards if card.template.card_type == CardTemplate.TYPE_PLAYER]
-
-def training_cards(deck):
-    return [card for card in deck.cards if card.template.card_type == CardTemplate.TYPE_TRAINING]
-
-def special_play_cards(deck):
-    return [card for card in deck.cards if card.template.card_type == CardTemplate.TYPE_SP]
-
-def staff_cards(deck):
-    return [card for card in deck.cards if card.template.card_type == CardTemplate.TYPE_STAFF]
-
 def printed(player,skill):
     """Return number of printed skill type for player"""
-    return skill_names_for_player_card(player).count(skill)
+    return CardService.skill_names_for_player_card(player).count(skill)
 
 def skill_ups(player,deck,skill, ignore_extra = False):
     """Return number of assigned skill type for player"""
-    return list(itertools.chain.from_iterable([skill_names_for(card) for card in assigned_cards(player,deck,ignore_extra=ignore_extra)])).count(skill)
-
-def skill_names_for_player_card(card):
-    #return card descritpion for non player cards
-    if card.template.card_type!=CardTemplate.TYPE_PLAYER:
-        return card.template.name
-
-    string = ""
-    if card.template.rarity in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
-        string = card.template.description
-    else:
-        string = card.template.name
-
-    matches = [match[0] for match in SKILLREG.findall(string)]
-
-    # Pro Elf extra case
-    if len(re.findall("Pro Elf",string)):
-        # remove one accidental Pro skill
-        matches.remove("Pro")
-    
-    return [skill_to_api_skill(match) for match in matches]
-
-def skill_names_for(card):
-    if isinstance(card,dict):
-        name = card['template']['name']
-    else:
-        name = card.template.name
-    if name == "Block Party":
-        skills = ["Block"]
-    elif name == "Dodge like a Honeybadger, Sting like the Floor":
-        skills = ["Tackle"]
-    elif name == "Gengar Mode":
-        skills = ["DirtyPlayer"]
-    elif name == "Roger Dodger":
-        skills = ["Dodge"]
-    elif name == "Packing a Punch":
-        skills = ["MightyBlow"]
-    elif name == "Ballhawk":
-        skills = ["Wrestle","Tackle","StripBall"]
-    elif name == "Roadblock":
-        skills = ["Block","Dodge","StandFirm"]
-    elif name == "Cold-Blooded Killer":
-        skills = ["MightyBlow","PilingOn"]
-    elif name == "Sniper":
-        skills = ["Accurate","StrongArm"]
-    elif name == "A Real Nuisance":
-        skills = ["SideStep","DivingTackle"]
-    elif name == "Insect DNA":
-        skills = ["TwoHeads","ExtraArms"]
-    elif name == "Super Wildcard":
-        skills = ["MVPCondition"]
-    elif name == "I Didn't Read The Rules":
-        skills = ["MVPCondition","MVPCondition","MVPCondition"]
-    elif name == "Counterfeit Skill Shop":
-        skills = ["DivingTackle"]
-    elif name == "Laying the Smackdown":
-        skills = ["Wrestle"]
-    elif name == "Need for Speed":
-        skills = ["IncreaseMovement"]
-    elif name == "The Great Wall":
-        skills = ["Guard"]
-    elif name == "Tubthumping":
-        skills = ["PilingOn","JumpUp","Dauntless"]
-    elif name == "Training Wildcard":
-        skills = ["MVPCondition2"]
-    elif name == "Sidestep":
-        skills = ["SideStep"]
-    elif name == "Crowd Pleaser":
-        skills = ["Frenzy","Juggernaut"]
-    elif name == "Designated Ball Carrier":
-        skills = ["Block", "SureHands"]
-    elif name in ["Bodyguard","Hired Muscle","Personal Army"]:
-        skills = []
-    else:
-        skills = [name]
-    return [skill_to_api_skill(match) for match in skills]
-
-def skill_to_api_skill(skill):
-    if skill in ["Strength Up!","ST+","+ST"]:
-        name = "IncreaseStrength"
-    elif skill in ["Agility Up!","AG+","+AG"]:
-        name = "IncreaseAgility"
-    elif skill in ["Movement Up!","MA+","+MA"]:
-        name = "IncreaseMovement"
-    elif skill in ["Armour Up!","AV+","+AV"]:
-        name = "IncreaseArmour"
-    elif skill == "Nerves of Steel":
-        name = "NervesOfSteel"
-    elif skill == "Sidestep":
-        name = "SideStep"
-    elif skill == "Mutant Roshi's Scare School":
-        name = ""
-    else:
-        name = re.sub(r'[\s-]', '',skill)
-    return name
-
-def injury_to_api_injury(injury):
-    if injury == "Smashed Collarbone":
-        name = "SmashedCollarBone"
-    else:
-        name = re.sub(r'[\s-]', '',injury)
-    return name
-
-def injury_names_for_player_card(card):
-    #return card descritpion for non player cards
-    if card.template.card_type!=CardTemplate.TYPE_PLAYER:
-        return card.template.name
-
-    string = ""
-    if card.template.rarity in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
-        string = card.template.description
-    else:
-        string = card.template.name
-
-    matches = [match[0] for match in INJURYREG.findall(string)]
-    
-    return [injury_to_api_injury(match) for match in matches]
-
-def assigned_cards(card, deck, ignore_extra = False):
-    cards = []
-    collection = deck.cards.all()
-    if not ignore_extra:
-        collection += deck.extra_cards
-    for c in collection:
-        if card_id_or_uuid(card) in get_card_assignment(c,deck):
-            cards.append(c)
-
-    return cards
-
-def assigned_injuries(card,deck):
-    injuries = []
-    uid = card_id_or_uuid(card)
-    if deck.injury_map.get(uid,None):
-        injuries.append(deck.injury_map[uid])
-    return injuries
-
-def get_card_assignment(card,deck):
-    asgn = []
-    if isinstance(card,dict):
-        if card["assigned_to_array"].get(str(deck.id),None):
-            asgn = card["assigned_to_array"][str(deck.id)]
-    else:        
-        if card.assigned_to_array.get(str(deck.id),None):
-            asgn = card.assigned_to_array[str(deck.id)]
-    return [str(a) for a in asgn]
-
-def card_id_or_uuid(card):
-    id = card.id if card.id else card.uuid
-    return str(id)
-
-
-def deck_value(deck):
-    return sum([card.template.value for card in deck.cards])
+    return list(itertools.chain.from_iterable([CardService.skill_names_for(card) for card in DeckService.assigned_cards_to(deck,player,ignore_extra=ignore_extra)])).count(skill)
 
 def trigger_level(rule,value):
     # order
