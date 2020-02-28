@@ -57,10 +57,10 @@ async def on_ready():
     act = discord.Game("Imperium Season 3")
     await bot.change_presence(status=discord.Status.online, activity=act)
 
-@bot.event
-async def on_command_error(ctx, error):
-    await ctx.send(error)
-    
+#@bot.event
+#async def on_command_error(ctx, error):
+#    await ctx.send(error)
+
 with open(os.path.join(ROOT, 'config/TOKEN'), 'r') as token_file:
     TOKEN = token_file.read()
 
