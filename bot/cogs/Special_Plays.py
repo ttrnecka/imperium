@@ -123,7 +123,7 @@ class SpecialPlays(commands.Cog):
             if result < 4:
                 description = f'{coach.mention()} loses one team re-roll.'
             else:
-                description = f'{coach.mention()} does not lose no re-roll.'
+                description = f'{coach.mention()} does not lose re-roll.'
             embed.add_field(name=f':game_die: : {result}', value=description, inline=True)
 
         await ctx.send(embed=embed)
