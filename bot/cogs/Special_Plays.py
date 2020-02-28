@@ -113,18 +113,18 @@ class SpecialPlays(commands.Cog):
         embed.set_thumbnail(url='https://cdn2.rebbl.net/images/cards/chef_small.png')
         result = dice.dice(6,1)[0]
         if result >= 4:
-            description = f'You gain one team re-roll.'
+            description = f'{me.mention()} gains one team re-roll.'
         else:
-            description = f'You gain no re-roll.'
-        embed.add_field(name=f'#{me.short_name()} :game_die: : #{result}', value=description, inline=False)
+            description = f'{me.mention()} gains no re-roll.'
+        embed.add_field(name=f':game_die: : {result}', value=description, inline=False)
 
         for coach in coaches:
             result = dice.dice(6,1)[0]
             if result < 4:
-                description = f'You lose one team re-roll.'
+                description = f'{coach.mention()} loses one team re-roll.'
             else:
-                description = f'You lose no re-roll.'
-            embed.add_field(name=f'#{coach.short_name()} :game_die: : #{result}', value=description, inline=True)
+                description = f'{coach.mention()} does not lose no re-roll.'
+            embed.add_field(name=f':game_die: : {result}', value=description, inline=True)
 
         await ctx.send(embed=embed)
 
