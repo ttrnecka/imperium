@@ -20,6 +20,14 @@
                           <div class="d-inline-block">&#127867; Beer Fund</div>
                       </a>
                   </li>
+                  <li v-if="user.username" class="nav-item dropdown">
+                      <a class="nav-link dropdown-toggle ml-auto" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Rules
+                      </a>
+                      <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <a v-for="rule in rules" :key="rule.value" class="dropdown-item" target="_blank" :href="rule.link">{{ rule.value }}</a>
+                      </div>
+                  </li>
                   <li class="nav-item">
                     <a class="nav-link" target="_blank" title="Discord" href="https://discord.gg/hdSQhRf">
                       <div class="d-inline-block">
@@ -53,13 +61,13 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import Api from '@/mixins/api';
 
 export default {
   name: 'imperium-navbar',
   mixins: [Api],
   props: {
-    user: Object,
     default: String,
   },
   data() {
@@ -69,7 +77,13 @@ export default {
         { value: 'Coaches', link: '#' },
         { value: 'Tournaments', link: '#' },
         { value: 'Leaderboard', link: '#' },
-        { value: 'Rules', link: 'https://bit.ly/2P9Y07F' },
+      ],
+      rules: [
+        { value: 'Main', link: 'https://bit.ly/2P9Y07F' },
+        { value: 'Special Play Almanac', link: 'https://bit.ly/38aQyRB' },
+        { value: 'Tournament Sponsor Almanac', link: 'https://bit.ly/2wkrZnN' },
+        { value: 'Imperium Tournament Almanac', link: 'https://bit.ly/2PxTMIr' },
+        { value: 'Key Cards', link: 'https://bit.ly/32J9oOE' },
       ],
     };
   },
@@ -79,7 +93,11 @@ export default {
       this.$emit('menu-change', option.value);
     },
   },
-
+  computed: {
+    ...mapState([
+      'user',
+    ]),
+  },
   created() {
     if (this.default) {
       this.menu = this.default;

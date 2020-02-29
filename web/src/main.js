@@ -116,9 +116,6 @@ Vue.mixin({
           races: ['Ogre', 'Goblin', 'Orc', 'Lizardman'],
         },
       ],
-      card_types: ['Player', 'Training', 'Special Play', 'Reaction', 'Staff', 'Upgrade'],
-      show_starter: 1,
-      rarity_order: 1,
       skillreg: /(Diving Catch|Kick-Off Return|Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off|Big Hand|Very Long Legs)( |,|\.|$)/g,
       injuryreg: /(Smashed Knee|Damaged Back|Niggle|Smashed Ankle|Smashed Hip|Serious Concussion|Fractured Skull|Broken Neck|Smashed Collarbone)( |,|\.|$)/g,
       markdown: new showdown.Converter(),
@@ -167,35 +164,6 @@ Vue.mixin({
       }
       return 'None';
     },
-    rarityclass(rarity) {
-      let klass;
-      switch (rarity) {
-        case 'Common':
-        case 'Starter':
-          klass = 'table-light';
-          break;
-        case 'Rare':
-          klass = 'table-info';
-          break;
-        case 'Epic':
-          klass = 'table-danger';
-          break;
-        case 'Legendary':
-          klass = 'table-warning';
-          break;
-        case 'Unique':
-          klass = 'table-success';
-          break;
-        case 'Inducement':
-        case 'Blessed':
-        case 'Cursed':
-          klass = 'table-inducement';
-          break;
-        default:
-          klass = 'table-light';
-      }
-      return klass;
-    },
     cardsValue(cards) {
       return cards.reduce((total, e) => {
         if (e.is_starter) {
@@ -203,51 +171,6 @@ Vue.mixin({
         }
         return total + e.template.value;
       }, 0);
-    },
-    sortedCards(cards) {
-      if (this.rarity_order === 0) {
-        return cards;
-      }
-      const order = this.rarityorder;
-      function compare(a, b) {
-        return (order[a.template.rarity] - order[b.template.rarity])
-          || a.template.name.localeCompare(b.template.name);
-      }
-      return cards.slice().sort(compare);
-    },
-
-    sortedCardsWithoutQuantity(cards, filter = '', mixedFilter = true) {
-      let tmCards;
-      if (!this.show_starter) {
-        tmCards = cards.filter((i) => !i.is_starter);
-      } else {
-        tmCards = cards;
-      }
-      if (filter !== '') {
-        tmCards = tmCards.filter((i) => i.template.card_type === filter);
-      }
-
-      if (this.selected_team !== 'All' && filter === 'Player' && mixedFilter) {
-        const { races } = this.mixed_teams.find((e) => e.name === this.selected_team);
-        tmCards = tmCards.filter((i) => i.template.race.split('/').some((r) => races.includes(r)));
-      }
-      return this.sortedCards(tmCards);
-    },
-
-    sortedCardsWithQuantity(cards, filter = '') {
-      const newCollection = {};
-      const sorted = this.sortedCardsWithoutQuantity(cards, filter);
-      for (let i = 0, len = sorted.length; i < len; i += 1) {
-        const { name } = sorted[i].template;
-        if (Object.prototype.hasOwnProperty.call(newCollection, name)) {
-          newCollection[name].quantity += 1;
-        } else {
-          newCollection[name] = {};
-          newCollection[name].card = sorted[i];
-          newCollection[name].quantity = 1;
-        }
-      }
-      return newCollection;
     },
     injury_to_api_injury(injury) {
       let name;
@@ -484,12 +407,8 @@ Vue.mixin({
       };
       return jdate.toLocaleDateString('default', options);
     },
-    per_game(total, games) {
-      // at least minimum of 6 games
-      if (games >= 6) {
-        return total / games;
-      }
-      return 0;
+    leaderboard_class(name) {
+      return this.is_loggedcoach(name) ? 'table-success' : '';
     },
   },
 });

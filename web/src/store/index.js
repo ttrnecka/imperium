@@ -27,6 +27,10 @@ export default new Vuex.Store({
     initially_loaded(state) {
       state.initial_load = true;
     },
+    updateTournament(state, tourn) {
+      const idx = state.tournaments.findIndex((x) => x.id === parseInt(tourn.id, 10));
+      Vue.set(state.tournaments, idx, tourn);
+    },
   },
   actions: {
     getCoaches({ commit }) {
@@ -79,6 +83,32 @@ export default new Vuex.Store({
         return true;
       }
       return false;
+    },
+
+    is_loggedcoach: (state, getters) => (name) => {
+      if (getters.loggedCoach !== undefined
+         && (getters.loggedCoach.bb2_name === name || getters.loggedCoach.short_name === name)) {
+        return true;
+      }
+      return false;
+    },
+    is_owner: (state, getters) => (coach) => {
+      return (getters.loggedCoach && coach && getters.loggedCoach.id === coach.id);
+    },
+    is_duster: (state, getters) => {
+      return (getters.loggedCoach.duster && getters.loggedCoach.duster.type);
+    },
+    is_duster_full: (state, getters) => {
+      return (getters.is_duster ? getters.loggedCoach.duster.cards.length === 10 : false);
+    },
+    is_duster_open: (state, getters) => {
+      return (getters.is_duster && getters.loggedCoach.duster.status === 'OPEN');
+    },
+    duster_type: (state, getters) => {
+      if (getters.is_duster) {
+        return getters.loggedCoach.duster.type;
+      }
+      return 'No dusting in progress';
     },
   },
 });

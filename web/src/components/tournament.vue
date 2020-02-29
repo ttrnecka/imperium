@@ -137,7 +137,7 @@
     </div>
 </template>
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapMutations } from 'vuex';
 import deck from './deck.vue';
 import confirmationButton from './confirmation-button.vue';
 import Cards from '../mixins/cards';
@@ -261,7 +261,7 @@ export default {
             this.flash(msg, 'success', { timeout: 3000 });
             this.prizes = [];
             this.prize_menu = false;
-            this.$parent.$emit('updateTournament', res.data);
+            this.updateTournament(res.data);
           })
           .catch((error) => {
             if (error.response) {
@@ -284,7 +284,7 @@ export default {
         .then((res) => {
           const msg = 'Phase updated!';
           this.flash(msg, 'success', { timeout: 3000 });
-          this.$parent.$emit('updateTournament', res.data);
+          this.updateTournament(res.data);
         })
         .catch((error) => {
           if (error.response) {
@@ -355,9 +355,9 @@ export default {
             this.flash(msg, 'info', { timeout: 3000 });
           }
           if (['sign', 'resign', 'get', 'start'].includes(method)) {
-            this.$parent.$emit('updateTournament', res.data);
+            this.updateTournament(res.data);
           } else if (method === 'update') {
-            this.$parent.$emit('updateTournaments', res.data);
+            this.storeTournaments(res.data);
           } else if (method === 'cards') {
             res.data.forEach((card) => {
               if (this.has_keyword(card, 'Payout')) {
@@ -396,6 +396,9 @@ export default {
       }
       return false;
     },
+    ...mapMutations([
+      'updateTournament', 'storeTournaments',
+    ]),
   },
   computed: {
     selected_phase() {

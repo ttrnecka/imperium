@@ -32,7 +32,7 @@
                   {{ selectedCoach.short_name}}'s Info
                 </a>
               </li>
-              <li v-if="is_owner" class="nav-item">
+              <li v-if="is_owner(selectedCoach)" class="nav-item">
                 <a class="nav-link" id="dusting-tab" data-toggle="tab"
                   href="#coach_dusting" role="tab" aria-controls="coach_dusting"
                   aria-selected="false">Dusting</a>
@@ -151,179 +151,30 @@
                   <div
                     class="custom-control custom-checkbox mr-sm-2 text-right">
                     <input type="checkbox" class="custom-control-input"
-                      id="sptoggle" v-model="show_starter">
+                      id="sptoggle" v-model="starter">
                     <label class="custom-control-label"
                       for="sptoggle">Toggle Starter Pack</label>
                   </div>
                   </div>
                 </div>
-                <div id="accordionCards">
-                  <div class="card" v-for="(ctype,index) in card_types"
-                    :key="index">
-                    <div class="card-header"
-                      :id="ctype.replace(/\s/g, '')+'Cards'">
-                      <h5 class="mb-0">
-                        <button class="btn btn-link"
-                          data-toggle="collapse"
-                          :data-target="'#collapse'
-                          +ctype.replace(/\s/g, '')"
-                          aria-expanded="true"
-                          :aria-controls="'collapse'
-                          +ctype.replace(/\s/g, '')">
-                        {{ ctype }} Cards
-                        </button>
-                      </h5>
-                    </div>
-                    <div :id="'collapse'+ctype.replace(/\s/g, '')"
-                      class="collapse show"
-                      :aria-labelledby="ctype.replace(/\s/g, '')+'Cards'"
-                      data-parent="#accordionCards">
-                      <div class="card-body table-responsive">
-                        <table class="table  table-striped">
-                            <thead>
-                            <tr>
-                                <th>
-                                  <i class="fas fa-lock"
-                                  title="Locked in another tournament">
-                                  </i>
-                                </th>
-                                <th>Rarity</th>
-                                <th>Value</th>
-                                <th>Name</th>
-                                <th>Skills</th>
-                                <th>Race</th>
-                                <th class="d-none d-sm-table-cell">
-                                  Subtype
-                                </th>
-                                <th class="d-none d-sm-table-cell">
-                                  Quantity
-                                </th>
-                                <th class="d-xs-table-cell d-sm-none">
-                                  Q
-                                </th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr
-                              v-for="card in
-                              sortedCardsWithQuantity(selectedCoach.cards,ctype)"
-                              :key="card.card.id"
-                              :class="rarityclass(card.card.template.rarity)"
-                              data-toggle="popover" data-placement="top"
-                              :title="card.card.template.name" data-html="true"
-                              :data-content="markdown.makeHtml(
-                                card.card.template.description)">
-                                <td>
-                                  <i v-if="is_locked(card.card) &&
-                                    is_loggedcoach(selectedCoach.short_name)"
-                                    class="fas fa-lock">
-                                  </i>
-                                </td>
-                                <td>
-                                  <img class="rarity"
-                                    :src="'static/images/'+card.card.template.rarity+'.jpg'"
-                                    :alt="card.card.template.rarity"
-                                    :title="card.card.template.rarity"
-                                    width="20" height="25" />
-                                  </td>
-                                <td>{{ card.card.template.value }}</td>
-                                <td>{{card.card.template.name}}</td>
-                                <td><span v-html="skills_for(card.card)"></span></td>
-                                <td>{{ card.card.template.race }}</td>
-                                <td class="d-none d-sm-table-cell">
-                                  {{ card.card.template.subtype }}
-                                </td>
-                                <td>{{ card.quantity }}</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <card-list id="accordionCards" :cards="selectedCoach.cards" :selected_team="selected_team" :owner="selectedCoach"
+                  :starter="starter" :quantity="true"></card-list>
               </div>
             </div>
-            <div v-if="is_owner" class="tab-pane fade"
+            <div v-if="is_owner(selectedCoach)" class="tab-pane fade"
               id="coach_dusting" role="tabpanel" aria-labelledby="dusting-tab">
               <div class="col-auto my-1">
                 <div class="row duster_info">
                   <div class="col-9 col-md-6"><h4>{{duster_type}}</h4></div>
                   <div class="col-3 col-md-6 text-right">
-                    <button v-if="is_duster_open()" type="button" :disabled="processing"
+                    <button v-if="is_duster_open" type="button" :disabled="processing"
                       class="btn btn-info" @click="dust_cancel()">Cancel</button>
-                    <button v-if="is_duster_full()" :disabled="processing" type="button"
+                    <button v-if="is_duster_full" :disabled="processing" type="button"
                       class="btn btn-info" @click="dust_commit()">Commit</button>
                   </div>
                 </div>
-                <div id="accordionCardsDusting">
-                    <div class="card" v-for="(ctype,index) in card_types" :key="index">
-                      <div class="card-header" :id="ctype.replace(/\s/g, '')+'CardsDusting'">
-                        <h5 class="mb-0">
-                          <button class="btn btn-link" data-toggle="collapse"
-                            :data-target="'#collapse'+ctype.replace(/\s/g, '')+'Dusting'"
-                            aria-expanded="true"
-                            :aria-controls="'collapse'+ctype.replace(/\s/g, '')+'Dusting'">
-                            {{ ctype }} Cards
-                          </button>
-                        </h5>
-                      </div>
-                      <div :id="'collapse'+ctype.replace(/\s/g, '')+'Dusting'"
-                        class="collapse show"
-                        :aria-labelledby="ctype.replace(/\s/g, '')+'CardsDusting'"
-                        data-parent="#accordionCardsDusting">
-                        <div class="card-body table-responsive">
-                          <table class="table table-fixed table-striped">
-                            <thead>
-                            <tr>
-                              <th>Rarity</th>
-                              <th class="d-none d-sm-table-cell">Value</th>
-                              <th>Name</th>
-                              <th>Skills</th>
-                              <th class="d-none d-sm-table-cell">Race</th>
-                              <th class="d-none d-sm-table-cell">Subtype</th>
-                              <th style="width: 15%"></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr v-for="card in
-                              sortedCardsWithoutQuantity(selectedCoach.cards,ctype,false)"
-                              :key="card.id" :class="rarityclass(card.template.rarity)">
-                              <template v-if="!card.is_starter">
-                              <td>
-                                <img class="rarity"
-                                  :src="'static/images/'+card.template.rarity+'.jpg'"
-                                  :alt="card.template.rarity"
-                                  :title="card.template.rarity" width="20" height="25" />
-                              </td>
-                              <td class="d-none d-sm-table-cell">
-                                {{ card.template.value }}
-                                </td>
-                              <td :title="card.template.description">
-                                {{ card.template.name }}
-                              </td>
-                              <td><span v-html="skills_for(card)"></span></td>
-                              <td class="d-none d-sm-table-cell">
-                                {{ card.template.race }}
-                              </td>
-                              <td class="d-none d-sm-table-cell">
-                                {{ card.template.subtype }}
-                              </td>
-                              <td class="text-right">
-                                <button v-if="is_in_duster(card)" :disabled="processing"
-                                  type="button" class="col-12 btn btn-danger"
-                                  @click="dust_remove(card)">Remove</button>
-                                <button v-else type="button" :disabled="processing"
-                                  class="col-12 btn btn-success"
-                                  @click="dust_add(card)">Add</button>
-                              </td>
-                              </template>
-                            </tr>
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                </div>
+                <card-list id="accordionCardsDusting" :cards="selectedCoach.cards" :owner="selectedCoach"
+                  :starter="false" :duster="true"></card-list>
               </div>
             </div>
             <div class="tab-pane fade" id="coach_achievements"
@@ -335,118 +186,39 @@
                 <div class="row">
                   <h5 class="col-12">Hidden Quests</h5>
                 </div>
-                <div v-for="(ach,index) in quest_achievements(selectedCoach)"
-                  :key="'quest'+index" class="row">
-                  <template v-if="ach.completed">
-                    <div class="col-9">
-                      <div class="progress position-relative mb-2">
-                        <div class="progress-bar"
-                          :class="ach.completed ? 'bg-success' : ''" role="progressbar"
-                          :style="'width: '+progress(ach.best/ach.target)+'%;'"
-                          aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                        </div>
-                        <span class="justify-content-center d-flex position-absolute w-100">
-                          {{ach.desc}} {{ach.best}} / {{ach.target}}
-                        </span>
-                      </div>
-                    </div>
-                    <div class="col-3">
-                      <button type="button" :disabled="!achievement_ready(ach)"
-                        :class="achievement_state_class(ach)"
-                        class="col-12 mb-2 ml-2 btn">
-                        {{ach.award_text}}<span v-if="ach.completed"> ✓</span>
-                      </button>
-                    </div>
-                  </template>
-                </div>
+                <imperium-achievement v-for="(ach,index) in quest_achievements(selectedCoach)"
+                  :key="'quest'+index" :data="ach" :hidden="true">
+                </imperium-achievement>
+
                 <div class="row">
                     <h5 class="col-12">Conclave Achievements</h5>
                 </div>
-                <div v-for="(ach,index) in conclave_achievements(selectedCoach)"
-                  :key="'conclave'+index" class="row">
-                  <div class="col-9">
-                    <div class="progress position-relative mb-2">
-                      <div class="progress-bar"
-                        :class="ach.completed ? 'bg-success' : ''" role="progressbar"
-                        :style="'width: '+progress(ach.best/ach.target)+'%;'"
-                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                      </div>
-                      <span class="justify-content-center d-flex position-absolute w-100">
-                        {{ach.desc}} {{ach.best}} / {{ach.target}}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="col-3">
-                    <button type="button" :disabled="!achievement_ready(ach)"
-                      :class="achievement_state_class(ach)"
-                      class="col-12 mb-2 ml-2 btn">
-                      {{ach.award_text}}<span v-if="ach.completed"> ✓</span>
-                    </button>
-                  </div>
-                </div>
+                <imperium-achievement v-for="(ach,index) in conclave_achievements(selectedCoach)"
+                  :key="'conclave'+index" :data="ach">
+                </imperium-achievement>
+
                 <div class="row">
                     <h5 class="col-12">Match Achievements (Any Team)</h5>
                 </div>
-                <div v-for="(ach,index) in match_achievements(selectedCoach)"
-                  :key="'match_ach'+index" class="row">
-                  <div class="col-9">
-                    <div class="progress position-relative mb-2">
-                      <div class="progress-bar" :class="ach.completed ? 'bg-success' : ''"
-                        role="progressbar"
-                        :style="'width: '+progress(ach.best/ach.target)+'%;'"
-                        aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                      </div>
-                      <span class="justify-content-center d-flex position-absolute w-100">
-                        {{ach.desc}} {{ach.best}} / {{ach.target}}
-                      </span>
-                    </div>
-                  </div>
-                  <div class="col-3">
-                    <button type="button" :disabled="!achievement_ready(ach)"
-                      :class="achievement_state_class(ach)"
-                      class="col-12 mb-2 ml-2 btn">
-                      {{ach.award_text}}<span v-if="ach.completed"> ✓</span>
-                    </button>
-                  </div>
-                </div>
+                <imperium-achievement v-for="(ach,index) in match_achievements(selectedCoach)"
+                  :key="'match_ach'+index" :data="ach">
+                </imperium-achievement>
+
                 <div class="row">
                     <h5 class="col-12">Mixed Team Achievements</h5>
                 </div>
-                <div v-for="(ta,index) in team_achievements(selectedCoach)"
-                  :key="index" class="row">
+                <template v-for="(ta,index) in team_achievements(selectedCoach)">
+                  <div :key="index" class="row">
                   <h6 class="col-12">{{ta.team_name}}</h6>
+                  </div>
                   <template v-for="stat in
                     ['played','touchdowns','casualties','kills','passes','wins']">
                     <template v-for="n in [1,2,3]">
-                      <div class="col-9" :key="'progress'+stat+n">
-                        <div class="progress position-relative mb-2">
-                          <div class="progress-bar"
-                            :class="ta.achievements[stat][n].completed ? 'bg-success' : ''"
-                            role="progressbar"
-                            :style="'width: '+progress(
-                              ta.achievements[stat][n].best/ta.achievements[stat][n].target
-                            )+'%;'"
-                            aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                          </div>
-                          <span class="justify-content-center d-flex position-absolute w-100">
-                          {{ta.achievements[stat][n].desc}} {{ta.achievements[stat][n].best}}
-                          /
-                          {{ta.achievements[stat][n].target}}
-                          </span>
-                        </div>
-                      </div>
-                      <div class="col-3" :key="'button'+stat+n">
-                        <button type="button"
-                          :disabled="!achievement_ready(ta.achievements[stat][n])"
-                          :class="achievement_state_class(ta.achievements[stat][n])"
-                          class="col-12 mb-2 ml-2 btn">
-                          {{ta.achievements[stat][n].award_text}}
-                          <span v-if="ta.achievements[stat][n].completed"> ✓</span>
-                        </button>
-                      </div>
+                      <imperium-achievement :key="`${index}${stat}${n}`" :data="ta.achievements[stat][n]">
+                      </imperium-achievement>
                     </template>
                   </template>
-                </div>
+                </template>
               </div>
             </div>
             <div class="tab-pane fade" id="coach_stats"
@@ -634,12 +406,16 @@
 import { mapState, mapGetters } from 'vuex';
 import Cards from '@/mixins/cards';
 import tournament from '@/components/tournament.vue';
+import imperiumAchievement from '@/components/achievement.vue';
+import cardList from '@/components/card_list.vue';
 
 export default {
   name: 'coach-content',
   mixins: [Cards],
   components: {
     tournament,
+    imperiumAchievement,
+    cardList,
   },
   data() {
     return {
@@ -647,6 +423,7 @@ export default {
       search_timeout: null,
       selected_team: 'All',
       processing: false,
+      starter: true,
       selectedCoach: {
         short_name: '',
         account: {
@@ -782,91 +559,7 @@ export default {
           }
         });
     },
-    is_duster() {
-      return (this.loggedCoach.duster && this.loggedCoach.duster.type);
-    },
-    is_in_duster(card) {
-      return (this.is_duster() ? this.loggedCoach.duster.cards.includes(card.id) : false);
-    },
-    is_duster_full() {
-      return (this.is_duster() ? this.loggedCoach.duster.cards.length === 10 : false);
-    },
-    is_duster_open() {
-      return (this.is_duster() && this.loggedCoach.duster.status === 'OPEN');
-    },
-    dust_add(card) {
-      this.dust('add', card);
-    },
-    dust_remove(card) {
-      this.dust('remove', card);
-    },
-    dust_cancel() {
-      this.dust('cancel');
-    },
-    dust_commit() {
-      this.dust('commit');
-    },
-    dust(method, card) {
-      let path;
-      if (card) {
-        path = `/duster/${method}/${card.id}`;
-      } else {
-        path = `/duster/${method}`;
-      }
-      let msg;
-      this.processing = true;
-      this.axios.get(path)
-        .then((res) => {
-          if (method === 'add') {
-            msg = `Card ${card.template.name} flagged for dusting`;
-          } else if (method === 'remove') {
-            msg = `Card ${card.template.name} - dusting flag removed`;
-          } else if (method === 'cancel') {
-            msg = 'Dusting cancelled';
-          } else if (method === 'commit') {
-            const freeCmd = (res.data.type === 'Tryouts' ? '!genpack player <type>' : '!genpack training or !genpack special');
-            msg = `Dusting committed! Use ${freeCmd} to generate a free pack!`;
-            this.getCoach(this.loggedCoach.id);
-          }
-          this.loggedCoach.duster = res.data;
-          this.flash(msg, 'success', { timeout: 3000 });
-        })
-        .catch((error) => {
-          if (error.response) {
-            this.flash(error.response.data.message, 'error', { timeout: 3000 });
-          } else {
-            console.error(error);
-          }
-        })
-        .then(() => {
-          this.processing = false;
-        });
-    },
-    is_loggedcoach(name) {
-      if (this.loggedCoach !== undefined
-         && (this.loggedCoach.bb2_name === name || this.loggedCoach.short_name === name)) {
-        return true;
-      }
-      return false;
-    },
-    progress(number) {
-      if (number > 1) {
-        return 100;
-      }
-      return number * 100;
-    },
-    achievement_state_class(ach) {
-      if (this.progress(ach.best / ach.target) === 100) {
-        return 'btn-success';
-      }
-      return 'btn-secondary';
-    },
-    achievement_ready(ach) {
-      if (this.progress(ach.best / ach.target) === 100 && !ach.completed) {
-        return true;
-      }
-      return false;
-    },
+    
     selectCoach() {
       const c = this.loggedCoach;
       if (c && c.deleted === false) {
@@ -883,12 +576,6 @@ export default {
     },
   },
   computed: {
-    duster_type() {
-      if (this.is_duster()) {
-        return this.loggedCoach.duster.type;
-      }
-      return 'No dusting in progress';
-    },
     orderedCoaches() {
       const { coaches } = this;
       return coaches.sort((a, b) => a.name.localeCompare(b.name));
@@ -897,14 +584,11 @@ export default {
       return this.orderedCoaches.filter((coach) => coach.name
         .toLowerCase().includes(this.coach_filter.toLowerCase()));
     },
-    is_owner() {
-      return (this.loggedCoach && this.selectedCoach && this.loggedCoach.id === this.selectedCoach.id);
-    },
     ...mapState([
       'user', 'coaches', 'tournaments', 'bb2Names', 'initial_load',
     ]),
     ...mapGetters([
-      'loggedCoach', 'is_webadmin',
+      'loggedCoach', 'is_webadmin', 'is_loggedcoach', 'is_duster', 'is_duster_full', 'is_duster_open', 'duster_type', 'is_owner',
     ]),
   },
   watch: {

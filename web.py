@@ -248,7 +248,12 @@ def tournaments_update():
     """Update tournaments from sheet"""
     try:
         TournamentService.update()
-        return jsonify(True)
+        all_tournaments = Tournament.query.options(
+            raiseload(Tournament.coaches)
+        ).filter(Tournament.status.in_(("OPEN", "RUNNING"))).all()
+
+        result = tournaments_schema.dump(all_tournaments)
+        return jsonify(result.data)
     except RegistrationError as exc:
         raise InvalidUsage(str(exc), status_code=403)
 

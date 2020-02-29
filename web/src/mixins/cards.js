@@ -118,6 +118,54 @@ const Cards = {
       }
       return name;
     },
+    dust(method, card) {
+      let path;
+      if (card) {
+        path = `/duster/${method}/${card.id}`;
+      } else {
+        path = `/duster/${method}`;
+      }
+      let msg;
+      this.processing = true;
+      this.axios.get(path)
+        .then((res) => {
+          if (method === 'add') {
+            msg = `Card ${card.template.name} flagged for dusting`;
+          } else if (method === 'remove') {
+            msg = `Card ${card.template.name} - dusting flag removed`;
+          } else if (method === 'cancel') {
+            msg = 'Dusting cancelled';
+          } else if (method === 'commit') {
+            const freeCmd = (res.data.type === 'Tryouts' ? '!genpack player <type>' : '!genpack training or !genpack special');
+            msg = `Dusting committed! Use ${freeCmd} to generate a free pack!`;
+            this.getCoach(this.loggedCoach.id);
+          }
+          this.loggedCoach.duster = res.data;
+          this.flash(msg, 'success', { timeout: 3000 });
+        })
+        .catch((error) => {
+          if (error.response) {
+            this.flash(error.response.data.message, 'error', { timeout: 3000 });
+          } else {
+            console.error(error);
+          }
+        })
+        .then(() => {
+          this.processing = false;
+        });
+    },
+    dust_cancel() {
+      this.dust('cancel');
+    },
+    dust_commit() {
+      this.dust('commit');
+    },
+    dust_add(card) {
+      this.dust('add', card);
+    },
+    dust_remove(card) {
+      this.dust('remove', card);
+    },
   },
   computed: {
     skill_to_group_map() {
