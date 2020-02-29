@@ -221,7 +221,7 @@ def CoM2000(room, caller: Coach):
     }
 
 def CoM5000(room, caller: Coach):
-    tourn = TournamentService.get_tournament_using_room(room)
+    #tourn = TournamentService.get_tournament_using_room(room)
     title = 'Coach-o-Matic 5000'
     description = ""
     packs = []
@@ -251,7 +251,7 @@ def CoM5000(room, caller: Coach):
     }
 
 def CoM9000(room, caller: Coach):
-    tourn = TournamentService.get_tournament_using_room(room)
+    #tourn = TournamentService.get_tournament_using_room(room)
     title = 'Coach-o-Matic 9000'
     description = ""
     packs = []
@@ -276,7 +276,7 @@ def CoM9000(room, caller: Coach):
     }
 
 def CoMWithFriends(room, caller: Coach):
-    tourn = TournamentService.get_tournament_using_room(room)
+    #tourn = TournamentService.get_tournament_using_room(room)
     title = 'Coach-o-Matic With Your Friends'
     description = ""
     packs = []
