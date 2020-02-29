@@ -1,8 +1,12 @@
 """Various helpers"""
 from services import PackService
 import os
+import re
 import logging
+from discord.ext.commands import Context
+from discord.utils import get
 from logging.handlers import RotatingFileHandler
+from misc import SKILLREG
 
 ROOT = os.path.dirname(__file__)
 logger = logging.getLogger('discord')
@@ -386,3 +390,10 @@ class LongMessage:
             while lines and len(msg + lines[0]) < self.limit:
                 msg += lines.pop(0) + "\n"
             yield msg
+
+def transform_message(message, ctx: Context):
+    def skill_transform(m):
+        skill_emoji = get(ctx.guild.emojis, name=re.sub(r'[\s-]', '', m.group(1))) or ""
+        return f'{skill_emoji} {m.group(1)}{m.group(2)}'
+    trans_message = re.sub(SKILLREG, skill_transform, message)
+    return trans_message

@@ -1,4 +1,4 @@
-"""Imperiumr Sheet Service helpers"""
+"""Imperium Sheet Service helpers"""
 import os
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials

@@ -11,7 +11,7 @@ from sqlalchemy.dialects import mysql
 from sqlalchemy.types import TypeDecorator
 from sqlalchemy.sql.expression import func
 from sqlalchemy.orm.attributes import flag_modified
-from misc.base_statline import base_statline
+from misc.base_statline import base_statline, base_skills
 
 
 ROOT = os.path.dirname(__file__)
@@ -138,6 +138,9 @@ class Card(Base):
     def statline(self):
         return base_statline.get(f"{self.first_race()}_{self.template.position}","")
     
+    def default_skills(self):
+        return base_skills.get(f"{self.first_race()}_{self.template.position}","").split(",")
+
     def first_race(self):
         return self.template.race.split('/')[0]
 

@@ -12,6 +12,9 @@ class CoachService:
     """CoachService helpers namespace"""
 
     @staticmethod
+    def discord_user_to_coach(discord_user):
+        return Coach.get_by_discord_id(discord_user.id)
+    @staticmethod
     def new_coach(name, discord_id):
         coach = Coach.create(str(name), discord_id)
         pack = PackService.new_starter_pack(coach = coach)

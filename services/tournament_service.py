@@ -617,6 +617,11 @@ class TournamentService:
         return tourn.phase
 
     @staticmethod
+    def coaches_for(tourn):
+        signups = tourn.tournament_signups
+        return [ts.deck.tournament_signup.coach for ts in signups]
+
+    @staticmethod
     def start_check(tourn):
         if not tourn.discord_channel:
             err = "Discord channel is not defined, please update it in Tournament sheet and run **!admincomp update**!\n"
