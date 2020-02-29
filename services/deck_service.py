@@ -249,6 +249,11 @@ class DeckService:
         return deck
 
     @classmethod
+    def eligible_players(cls, deck, card):
+      """Returns list of eligible player Cards or cards that can be assigned given training card"""
+      return DeckService.players(deck)
+
+    @classmethod
     def assigned_cards(cls, deck):
         """Returns all cards that are assigned"""
         assigned_cards = [card for card in deck.cards if card.assigned_to_array[str(deck.id)]]

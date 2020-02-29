@@ -82,28 +82,38 @@ class SpecialPlays(commands.Cog):
         await send_embed(data, ctx)
 
     @commands.command()
-    async def COM2000(self, ctx):
+    async def CoM2000(self, ctx):
         """**Randomise**. In the Deck Inducement phase, open an additional Inducement Skill Pack.
            Each Training Card in the pack must be applied to a random player on your team. This card
            is removed from your collection after use."""
-        data = getattr(special_play, inspect.currentframe().f_code.co_name)()
+        me = CoachService.discord_user_to_coach(ctx.author)
+        data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
         await send_embed(data, ctx)
 
     @commands.command()
-    async def COM5000(self, ctx):
+    async def CoM5000(self, ctx):
         """**Randomise**. In the Deck Inducement phase, open one additional Inducement Skill Pack and
            one additional Inducement Coaching Pack. Each Training Card in the pack must be applied to
            a random player on your team. This card is removed from your collection after use."""
-        data = getattr(special_play, inspect.currentframe().f_code.co_name)()
+        me = CoachService.discord_user_to_coach(ctx.author)
+        data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
         await send_embed(data, ctx)
 
     @commands.command()
-    async def COM9000(self, ctx):
+    async def CoM9000(self, ctx):
         """**Randomise**. Choose one Special Play card that is yet to be resolved. The chosen card must
            now be played as if it had the **Randomise** key word. In the Deck Inducement phase, open three
            additional Inducement Coaching Packs. Each Training Card in the pack must be applied to a random
            player on your team. This card is removed from your collection after use."""
-        data = getattr(special_play, inspect.currentframe().f_code.co_name)()
+        me = CoachService.discord_user_to_coach(ctx.author)
+        data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
+        await send_embed(data, ctx)
+
+    @commands.command()
+    async def CoMWithFriends(self, ctx):
+        """**Randomise**. Open an Inducement Skill Pack and randomly apply all Training cards across your opponents' teams."""
+        me = CoachService.discord_user_to_coach(ctx.author)
+        data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
         await send_embed(data, ctx)
 def setup(bot):
     bot.add_cog(SpecialPlays(bot))

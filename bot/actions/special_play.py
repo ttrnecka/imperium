@@ -1,7 +1,8 @@
+import random
 from bot import dice
 from bot.command import DiscordCommand
 from misc.helpers import CardHelper
-from services import TournamentService, CoachService, PackService
+from services import TournamentService, CoachService, PackService, DeckService, CardService
 from models.data_models import Coach
 from web import db
 
@@ -160,25 +161,67 @@ def CelebrityMasterChef(room, caller: Coach):
         'rolls': result
     }
 
-def COM2000():
+def CoM2000(room, caller: Coach):
+    #tourn = TournamentService.get_tournament_using_room(room)
+    #deck = [ts.deck for ts in tourn.tournament_signups if ts.coach == caller]
+    #if not deck:
+    #    raise f"#{caller.short_name()} is not signed into the tournament"
+    #deck = deck[0]
+
     title = 'Coach-o-Matic 2000'
     description = ""
-    pack = PackService.generate('skill')
-    message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
-    ef1 = {
-        'name': 'Skill Pack',
-        'value': message,
-        'inline': False,
-    }
+    with db.session.no_autoflush:
+      pack = PackService.generate('skill')
+      message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
+      efs = [{
+          'name': 'Skill Pack',
+          'value': message,
+          'inline': False,
+      }]
+      
+      #local_skill_map = {
+      #
+      #}
+
+      #for card in pack.cards:
+        #player_list = DeckService.eligible_players(deck, card)
+        #skills = CardService.skill_names_for(card)
+
+        #local_player_list = [player for player in player_list if not local_skill_map.get(CardService.card_id_or_uuid(player), None) or not list(set(local_skill_map[CardService.card_id_or_uuid(player)]) & set(skills)) ]
+
+        #selected = None
+
+        #if local_player_list:
+        #  selected = random.choice(local_player_list)
+        #  uid = CardService.card_id_or_uuid(selected)
+        #  if not uid in local_skill_map:
+        #    local_skill_map[uid] = []  
+        #  local_skill_map[uid].extend(skills)
+
+        #if selected:
+        #  existing_skills = DeckService.skills_for(deck, selected)
+        #  if isinstance(selected, dict):
+        #    value = f'{", ".join(existing_skills)} {selected["template"]["name"]}'
+        #  else:
+        #    value = f'{", ".join(existing_skills)} {selected.template.name}'
+        #else:
+        #  value = "No eligible player has been found"
+        #efs.append({
+        #  'name': f'{card.template.name}',
+        #  'value': value,
+        #  'inline': False,
+        #})
+
     return {
         'embed_title': title,
         'embed_desc': description,
         'thumbnail_url': 'https://cdn2.rebbl.net/images/sponsors/goblinbambling.png',
-        'embed_fields': [ef1],
+        'embed_fields': efs,
         'rolls': pack
     }
 
-def COM5000():
+def CoM5000(room, caller: Coach):
+    tourn = TournamentService.get_tournament_using_room(room)
     title = 'Coach-o-Matic 5000'
     description = ""
     packs = []
@@ -207,7 +250,8 @@ def COM5000():
         'rolls': packs
     }
 
-def COM9000():
+def CoM9000(room, caller: Coach):
+    tourn = TournamentService.get_tournament_using_room(room)
     title = 'Coach-o-Matic 9000'
     description = ""
     packs = []
@@ -228,5 +272,27 @@ def COM9000():
         'embed_desc': description,
         'thumbnail_url': 'https://cdn2.rebbl.net/images/sponsors/goblinbambling.png',
         'embed_fields': efs,
+        'rolls': packs
+    }
+
+def CoMWithFriends(room, caller: Coach):
+    tourn = TournamentService.get_tournament_using_room(room)
+    title = 'Coach-o-Matic With Your Friends'
+    description = ""
+    packs = []
+    with db.session.no_autoflush:
+        pack = PackService.generate('skill')
+        packs.append(pack)
+        message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
+        ef1 = {
+            'name': 'Skill Pack',
+            'value': message,
+            'inline': False,
+        }
+    return {
+        'embed_title': title,
+        'embed_desc': description,
+        'thumbnail_url': 'https://cdn2.rebbl.net/images/sponsors/goblinbambling.png',
+        'embed_fields': [ef1],
         'rolls': packs
     }
