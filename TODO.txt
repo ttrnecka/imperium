@@ -15,10 +15,7 @@ DONE run update_stats
 DONE schedule tournament auto check for every hour
 
 TODO
-Deck - is_owner needs to be changed to new logic, is_loggedcoach refactoring
-Fix signedCallback after the getCoaches is turned to action
-Fix emits in tournament/coach components
-REview emits
+Deck - is_owner needs to be changed to new logic
 review axios calls
 inducement calaculation in special phase should be saved and send later - blessing updates.demotes could mess tge values
 make blessings/curses limited to avialable list + add command to rerol

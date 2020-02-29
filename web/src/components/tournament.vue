@@ -390,12 +390,6 @@ export default {
       this.selected.coach = coach;
       this.show_deck = true;
     },
-    is_owner(coach) {
-      if (this.loggedCoach && this.loggedCoach.id === coach.id) {
-        return true;
-      }
-      return false;
-    },
     ...mapMutations([
       'updateTournament', 'storeTournaments',
     ]),
@@ -478,7 +472,7 @@ export default {
       return this.tournament.status !== 'OPEN';
     },
     ...mapGetters([
-      'loggedCoach', 'is_webadmin',
+      'loggedCoach', 'is_webadmin', 'is_owner',
     ]),
   },
   mounted() {
