@@ -44,6 +44,9 @@ export default {
     };
   },
   methods: {
+    leaderboard_class(name) {
+      return this.is_loggedcoach(name) ? 'table-success' : '';
+    },
     coach_name(coach) {
       if (coach.short_name) {
         return coach.short_name;

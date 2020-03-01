@@ -58,9 +58,6 @@ export default {
       }
       return 0;
     },
-    leaderboard_class(name) {
-      return this.is_loggedcoach(name) ? 'table-success' : '';
-    },
   },
   computed: {
     stats_coach() {
