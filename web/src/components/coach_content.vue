@@ -571,7 +571,9 @@ export default {
     init() {
       this.selectCoach();
       this.$nextTick(() => {
-        this.$('[data-toggle="popover"]').popover();
+        this.$('[data-toggle="popover"]').popover({
+          trigger: 'focus',
+        });
       });
     },
     print_date(pdate) {
