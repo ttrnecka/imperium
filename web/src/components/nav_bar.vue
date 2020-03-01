@@ -48,11 +48,11 @@
                       </a>
                       <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="#">{{ user.username }}</a>
-                        <a class="dropdown-item" href="#" @click="signout">Signout</a>
+                        <a class="dropdown-item" href="/signout">Signout</a>
                       </div>
                   </li>
                   <li v-else class="nav-item">
-                    <a class="nav-link" href="#" @click="signin">Signin</a>
+                    <a class="nav-link" href="/signin">Signin</a>
                   </li>
               </ul>
           </div>
