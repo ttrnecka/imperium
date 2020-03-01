@@ -27,6 +27,7 @@ class CardSchema(ma.ModelSchema):
         exclude = ["decks", "coach"]
     assigned_to_array = ma.Dict(ma.List(ma.String))
     template = ma.Nested(CardTemplateSchema)
+    default_skills = ma.List(ma.String())
 
 class TournamentSignupSchema(ma.ModelSchema):
     class Meta:
@@ -55,7 +56,6 @@ class CoachSchema(ma.ModelSchema):
     achievements = ma.Dict()
     stats = ma.Dict()
     free_packs = ma.String()
-    default_skills = ma.List(ma.String())
     cards = ma.Nested(CardSchema, many=True, attribute = 'active_cards')
 
 class CoachLeaderboardSchema(ma.Schema):

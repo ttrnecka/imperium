@@ -4,7 +4,7 @@
             <option value="DISABLED" disabled selected>Injury?</option>
             <option value="">Cancel</option>
             <option value="X">Reset</option>
-            <option v-for="(cas,index) in injuries" :title="cas[0]" :value="cas[0]" :key="index">{{ cas[1] }}</option>
+            <option v-for="(cas,index) in injuries" :title="cas[0]" :value="cas[0]" :key="index">{{ cas[0] }} ({{ cas[1] }})</option>
         </select>
     </div>
 </template>

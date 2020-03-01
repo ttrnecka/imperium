@@ -1,365 +1,267 @@
 <template>
-    <div class="modal fade deck" :id="'deck'+id" tabindex="-1" role="dialog" aria-labelledby="deck" aria-hidden="true">
-                    <div class="modal-dialog modal-xl">
-                    <div class="modal-content">
-                        <div class="modal-header deck_header">
-                            <h5 class="modal-title">Deck for {{coach.short_name}} in {{tournament.name}} - Phase: {{ phases[tournament.phase] }}
-                                <template v-if="doneable_phase">
-                                    <button v-if="deck.phase_done" type="button" disabled class="btn btn-success">Done</button>
-                                    <button v-if="!deck.phase_done && is_owner" type="button" class="btn btn-danger" @click="phaseDone()">Done</button>
-                                    <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked" @click="reset()">Reset</button>
-                                    <button type="button" disabled class="btn btn-success" v-if="deck.commited && !locked">Committed</button>
-                                    <button type="button" disabled class="btn btn-info" v-if="locked">Locked</button>
-                                    <button type="button" disabled class="btn btn-info" v-if="!started">Not Started</button>
-                                </template>
-                            </h5>
-                            <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked && started" @click="commit()">Commit</button>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row">
-                                <div class="col-12">
-                                    <h6 class="d-inline-block">Team:</h6>
-                                    <button v-if="deck.team_name" class="mb-2 ml-3 btn btn-sm btn-info" @click="getTeam(deck.team_name)">Load Team</button>
-                                </div>
-                                <div class="form-group col-lg-6">
-                                    <select class="form-control" v-model="selected_team" :disabled="deck_player_size>0 || !is_owner || locked">
-                                        <option selected value="All">Select team</option>
-                                        <option v-for="team in mixed_teams" :value="team.name" :key="team.code">{{ team.name }} ({{ team.races.join() }})</option>
-                                    </select>
-                                </div>
-                                <div class="form-group col-lg-6">
-                                    <input type="text" :disabled="!is_owner || locked" class="form-control" placeholder="Team Name (max 25 characters)" maxlength="25" v-bind:value="deck.team_name" v-on:input="debounceUpdateName($event.target.value)">
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div :id="'teamInfoAccordion'+id" class="col-12 mb-3 mt-3" v-if="extra_allowed && 'coach' in team">
-                                    <div class="card">
-                                    <div class="card-header" :id="'teamInfo'+id">
-                                        <h6 class="mb-0">
-                                            <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseTeamInfo'+id" aria-expanded="true" aria-controls="collapseTeamInfo">
-                                            BB2 Team Details
-                                            </button>
-                                        </h6>
-                                    </div>
-                                    <div :id="'collapseTeamInfo'+id" class="collapse hide" aria-labelledby="teamInfo'" :data-parent="'#teamInfoAccordion'+id">
-                                        <div class="card-body table-responsive">
-                                            <div class="row">
-                                                <div class="col-sm-4"><b>Team:</b> {{team.team.name}}</div>
-                                                <div class="col-sm-4"><b>Race:</b> {{race(team.team.idraces)}}</div>
-                                                <div class="col-sm-4"><b>Coach:</b> {{team.coach.name}}</div>
-                                                <div class="col-sm-4"><b>TV:</b> {{team.team.value}}</div>
-                                                <div class="col-sm-4">
-                                                <b>Apothecary:</b> {{ team.team.apothecary ? "Yes" : "No"}}
-                                                    <span v-if="team_check.apothecary.value" class="deck_valid_check">✓</span>
-                                                    <span :title="team_check.apothecary.msg" v-else class="deck_invalid_check">✗</span>
-                                                </div>
-                                                <div class="col-sm-4"><b>Rerolls:</b> {{team.team.rerolls}}
-                                                    <span v-if="team_check.rerolls.value" class="deck_valid_check">✓</span>
-                                                    <span :title="team_check.rerolls.msg" v-else class="deck_invalid_check">✗</span>
-                                                </div>
-                                                <div class="col-sm-4"><b>Assistant Coaches:</b> {{team.team.assistantcoaches}}</div>
-                                                <div class="col-sm-4"><b>Cheerleaders:</b> {{team.team.cheerleaders}}</div>
-                                                <div class="col-sm-4"><b>Stadium Enhancement:</b> {{stadium_enhacement(team.team)}}</div>
-                                            </div>
-                                            <h6 class="mt-2">Roster size:
-                                                <span v-if="team_check.roster.value" class="deck_valid_check">✓</span>
-                                                <span :title="team_check.roster.msg" v-else class="deck_invalid_check">✗</span>
-                                            </h6>
-                                            <div class="row">
-                                            <table class="table  table-striped table-hover">
-                                                <thead>
-                                                    <tr>
-                                                        <th>N.</th>
-                                                        <th>Lvl.</th>
-                                                        <th>SPP</th>
-                                                        <th>TV</th>
-                                                        <th>Name</th>
-                                                        <th>Position</th>
-                                                        <th>Skills</th>
-                                                        <th>Injuries</th>
-                                                        <th>Valid</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr v-for="player in sorted_roster" :key="player.id">
-                                                    <td>{{player.number}}</td>
-                                                    <td>{{player.level}}</td>
-                                                    <td>{{player.xp}}</td>
-                                                    <td>{{player.value}}</td>
-                                                    <td>{{player.name}}</td>
-                                                    <td>{{positional_from_api(player.type)}}</td>
-                                                    <td><span v-html="player.skills.map((s) => imgs_for_skill(s)).join('')"></span></td>
-                                                    <td><span v-html="player.casualties_state.map((c) => imgs_for_skill(c)).join('')"></span></td>
-                                                    <td>
-                                                        <span v-if="valid(player)" class="deck_valid_check">✓</span>
-                                                        <span v-else class="deck_invalid_check">✗</span>
-                                                    </td>
-                                                </tr>
-                                                </tbody>
-                                            </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                <h6>Sponsor: {{tournament.sponsor}}</h6>
-                                </div>
-                                <div class="col-12">
-                                {{tournament.special_rules}}
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                <h6>Comment:</h6>
-                                </div>
-                                <div class="col-12">
-                                <textarea class="form-control" :disabled="!is_owner || locked" rows="3" v-bind:value="deck.comment" v-on:input="debounceUpdateComment($event.target.value)"></textarea>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div :id="'extraCardsAccordion'+id" class="col-12 mb-3 mt-3">
-                                    <div class="card" v-if="extra_allowed && is_owner">
-                                    <div class="card-header" :id="'extraCards'+id">
-                                        <h6 class="mb-0">
-                                            <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseExtraCards'+id" aria-expanded="true" aria-controls="collapseExtraCards">
-                                            <span data-toggle="tooltip" data-placement="top" title="Use this to add extra cards to the collection for this tournament only">Sponsor & Extra Cards</span>
-                                            </button>
-                                        </h6>
-                                    </div>
-                                    <div :id="'collapseExtraCards'+id" class="collapse hide" aria-labelledby="extraCards'" :data-parent="'#extraCardsAccordion'+id">
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <input type="text" :disabled="!is_owner || locked" class="d-inline  form-control" :placeholder="extra_card_placeholder" v-model="extra_card">
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <button type="button" :disabled="processing || !is_owner || locked" class="btn-sm btn btn-success btn-block mb-1" @click="addExtraCard(extra_card)">Add</button>
-                                                </div>
-                                                <template v-for="card in deck.unused_extra_cards">
-                                                    <div class="col-md-6 pt-1 pl-4" :key="'name' + card.template.name">
-                                                    <h6 class="extra_card">{{card.template.name}}</h6>
-                                                    </div>
-                                                    <div class="col-md-3" :key="'clone' + card.template.name">
-                                                        <button type="button" :disabled="processing || !is_owner || locked" class="btn-sm mb-1 btn btn-success btn-block" @click="cloneExtraCard(card)">Clone</button>
-                                                    </div>
-                                                    <div class="col-md-3" :key="'remove' + card.template.name">
-                                                        <button type="button" :disabled="processing || !is_owner || locked" class="btn-sm mb-1 btn btn-danger btn-block" @click="removeExtraCard(card)">Remove</button>
-                                                    </div>
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                    <div class="card">
-                                    <div class="card-header" :id="'log'+id">
-                                        <h6 class="mb-0">
-                                            <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapselog'+id" aria-expanded="true" aria-controls="collapselog">
-                                            Deck Log
-                                            </button>
-                                        </h6>
-                                    </div>
-                                    <div :id="'collapselog'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <template v-for="(line, index) in deck.log.split(/\r?\n/).reverse().slice(1)">
-                                                {{line}} <br :key="index" />
-                                                </template>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                    <div v-if="has_deck_upgrade" class="card">
-                                    <div class="card-header" :id="'deck_upgrade'+id">
-                                        <h6 class="mb-0">
-                                            <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapsedeckupgrade'+id" aria-expanded="true" aria-controls="collapsedeckupgrade">
-                                            Deck Upgrade
-                                            </button>
-                                        </h6>
-                                    </div>
-                                    <div v-if="has_deck_upgrade" :id="'collapsedeckupgrade'+id" class="collapse show" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
-                                        <div class="card-body deck_upgrade">
-                                            <div class="row" v-for="card in deck_upgrades" :key="card.template.name">
-                                                <div class="col-md-3">
-                                                    <b>{{card.template.name}}:</b>
-                                                </div>
-                                                <div class="col-md-9">
-                                                    <span v-html="markdown.makeHtml(card.template.description)"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-lg-6">
-                                    <div class="row mt-1 deck_header">
-                                    <div class="col-6">
-                                        <h6>Collection</h6>
-                                    </div>
-                                    <div class="col-6">
-                                        <div class="custom-control custom-checkbox mr-sm-2 text-right">
-                                            <input type="checkbox" class="custom-control-input" :id="'sptoggle'+id" v-model="show_starter">
-                                            <label class="custom-control-label" :for="'sptoggle'+id">Toggle Starter Pack</label>
-                                        </div>
-                                    </div>
-                                    </div>
-                                    <div :id="'accordionCardsCollection'+id">
-                                        <div class="card" v-for="(ctype, index) in deck_card_types" :key="index">
-                                            <div class="card-header" :id="ctype.replace(/\s/g, '')+'CardsCollection'+id">
-                                                <h6 class="mb-0">
-                                                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseCollection'+ctype.replace(/\s/g, '')+id" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\s/g, '')">
-                                                    {{ ctype }} Cards
-                                                    </button>
-                                                </h6>
-                                            </div>
-                                            <div :id="'collapseCollection'+ctype.replace(/\s/g, '')+id" class="deck_ctype collapse show" :aria-labelledby="ctype.replace(/\s/g, '')+'Cards'" :data-parent="'#accordionCardsCollection'+id">
-                                                <div class="card-body table-responsive">
-                                                    <table class="table  table-striped table-hover">
-                                                        <thead>
-                                                        <tr>
-                                                            <th class="d-none d-xl-table-cell">Rarity</th>
-                                                            <th class="d-xl-none">R</th>
-                                                            <th class="d-none d-xl-table-cell">Value</th>
-                                                            <th class="d-xl-none">V</th>
-                                                            <th>Name</th>
-                                                            <th v-if="ctype=='Training' || ctype=='Special Play'">Skills</th>
-                                                            <th v-if="ctype=='Player'">Race</th>
-                                                            <th v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">Subtype</th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        <template v-for="card in sortedCardsWithoutQuantity(collection_cards,ctype)">
-                                                        <tr v-if="!isInDeck(card)" @click="addToDeck(card)" :key="card.id" :class="[rarityclass(card.template.rarity), extra_type(card.deck_type)]">
-                                                            <td><img class="rarity" :src="'static/images/'+card.template.rarity+'.jpg'" :alt="card.template.rarity" :title="card.template.rarity" width="20" height="25" /></td>
-                                                            <td>{{ card.template.value }}</td>
-                                                            <td :title="card.template.description">{{ card.template.name }}</td>
-                                                            <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
-                                                            <td v-if="ctype=='Player'">{{ card.template.race }}</td>
-                                                            <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">{{ card.template.subtype }}</td>
-                                                        </tr>
-                                                        </template>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="row mt-1 deck_header">
-                                    <div class="col-3">
-                                        <h6>Deck {{deck_size}}/{{tournament.deck_limit}}</h6>
-                                    </div>
-                                    <div class="col-3 text-center">
-                                        <h6>Value: {{ deck_value }}/{{ tournament.deck_value_limit }}</h6>
-                                    </div>
-                                    <div class="col-3 text-center">
-                                        <h6>Doubles: {{ deck_doubles_count }}</h6>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="custom-control custom-checkbox mr-sm-2 text-right">
-                                            <input type="checkbox" class="custom-control-input" :id="'raritytoggle'+id" v-model="rarity_order">
-                                            <label class="custom-control-label" :for="'raritytoggle'+id">Rarity order</label>
-                                        </div>
-                                    </div>
-                                    </div>
-                                    <div :id="'accordionCardsDeck'+id">
-                                        <div class="card" v-for="(ctype, index) in deck_card_types" :key="index">
-                                            <div class="card-header" :id="ctype.replace(/\s/g, '')+'CardsDeck'+id">
-                                                <h6 class="mb-0">
-                                                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseDeck'+ctype.replace(/\s/g, '')+id" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\s/g, '')">
-                                                    {{ ctype }} Cards ({{deck_size_for(ctype)}})
-                                                    </button>
-                                                </h6>
-                                            </div>
-                                            <div :id="'collapseDeck'+ctype.replace(/\s/g, '')+id" class="deck_ctype collapse show" :aria-labelledby="ctype.replace(/\s/g, '')+'Cards'" :data-parent="'#accordionCardsDeck'+id">
-                                                <div class="card-body table-responsive">
-                                                    <table class="table  table-striped table-hover">
-                                                        <thead>
-                                                        <tr>
-                                                            <th class="d-none d-xl-table-cell">Rarity</th>
-                                                            <th class="d-xl-none">R</th>
-                                                            <th class="d-none d-xl-table-cell">Value</th>
-                                                            <th class="d-xl-none">V</th>
-                                                            <th>Name</th>
-                                                            <th v-if="ctype=='Training' || ctype=='Special Play'">Skills</th>
-                                                            <th v-if="ctype=='Player'">Race</th>
-                                                            <th v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">Subtype</th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        <template v-for="card in sortedCardsWithoutQuantity(deck_cards,ctype,false)">
-                                                        <tr @click="removeFromDeck(card)" :key="card.id" :class="[rarityclass(card.template.rarity), extra_type(card.deck_type)]">
-                                                            <td><img class="rarity" :src="'static/images/'+card.template.rarity+'.jpg'" :alt="card.template.rarity" :title="card.template.rarity" width="20" height="25" /></td>
-                                                            <td>{{ card.template.value }}</td>
-                                                            <td :title="card.template.description">{{ card.template.name }}<span v-if="is_guarded(card)" title="No Special Play effects possible">&#128170;</span></td>
-                                                            <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
-                                                            <td v-if="ctype=='Player'">{{ card.template.race }}</td>
-                                                            <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">{{ card.template.subtype }}</td>
-                                                        </tr>
-                                                        <tr :class="[rarityclass(card.template.rarity)]" v-for="idx in number_of_assignments(card)" :key="idx">
-                                                            <th colspan="1">Assigned to:</th>
-                                                            <td colspan="3">
-                                                                <select v-if="ctype=='Training'" class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
-                                                                    <option default :value="null">Select Player</option>
-                                                                    <option v-for="(card,index) in sortedCards(assignable_deck_player_cards)" :key="index" :value="card_id_or_uuid(card)">{{index+1}}. {{ card.template.name }}</option>
-                                                                </select>
-                                                                <select v-else class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="assignCard(card)" :disabled="!is_owner || locked">
-                                                                    <option default :value="null">Select Player</option>
-                                                                    <option v-for="(card,index) in sortedCards(deck_player_cards)" :key="index" :value="card_id_or_uuid(card)">{{index+1}}. {{ card.template.name }}</option>
-                                                                </select>
-                                                            </td>
-                                                            <td class="d-none d-sm-table-cell"></td>
-                                                        </tr>
-                                                        <tr v-if="ctype=='Player'" :class="[rarityclass(card.template.rarity)]" :key="'player'+card.id">
-                                                            <th colspan="1">Skills:</th>
-                                                            <td colspan="2">
-                                                                <span v-html="skills_for(card)"></span>
-                                                                <span v-html="deck_skills_for(card)"></span>
-                                                            </td>
-                                                            <td>
-                                                                <img v-if="injuryPickerOpened(card)" @click="openInjuryPicker(card)" class="skill_icon skill_single" src="https://cdn2.rebbl.net/images/skills/SmashedHand.png" title="Add Injury">
-                                                                <injury-picker v-else v-on:injured="addInjury(card,$event)"></injury-picker>
-                                                            </td>
-                                                            <td class="d-none d-sm-table-cell"><b>Doubles:</b> {{doubles_count(card)}}</td>
-                                                        </tr>
-                                                        </template>
-                                                        </tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    </div>
+  <div class="modal fade deck" :id="'deck'+id" tabindex="-1" role="dialog" aria-labelledby="deck" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header deck_header">
+          <h5 class="modal-title">Deck for {{coach.short_name}} in {{tournament.name}} - Phase: {{ phases[tournament.phase] }}
+            <template v-if="doneable_phase">
+              <button v-if="deck.phase_done" type="button" disabled class="btn btn-success">Done</button>
+              <button v-if="!deck.phase_done && is_owner" type="button" class="btn btn-danger" @click="phaseDone()">Done</button>
+              <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked" @click="reset()">Reset</button>
+              <button type="button" disabled class="btn btn-success" v-if="deck.commited && !locked">Committed</button>
+              <button type="button" disabled class="btn btn-info" v-if="locked">Locked</button>
+              <button type="button" disabled class="btn btn-info" v-if="!started">Not Started</button>
+            </template>
+          </h5>
+          <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked && started" @click="commit()">Commit</button>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12">
+              <h6 class="d-inline-block">Team:</h6>
+              <button v-if="deck.team_name" class="mb-2 ml-3 btn btn-sm btn-info" @click="getTeam(deck.team_name)">Load Team</button>
+            </div>
+            <div class="form-group col-lg-6">
+              <select class="form-control" v-model="selected_team" :disabled="deck_player_size>0 || !is_owner || locked">
+                <option selected value="All">Select team</option>
+                <option v-for="team in mixed_teams" :value="team.name" :key="team.code">{{ team.name }} ({{ team.races.join() }})</option>
+              </select>
+            </div>
+            <div class="form-group col-lg-6">
+              <input type="text" :disabled="!is_owner || locked" class="form-control" placeholder="Team Name (max 25 characters)" maxlength="25" v-bind:value="deck.team_name" v-on:input="debounceUpdateName($event.target.value)">
+            </div>
+          </div>
+          <div class="row">
+            <div :id="'teamInfoAccordion'+id" class="col-12 mb-3 mt-3" v-if="'coach' in team">
+              <div class="card">
+                <div class="card-header" :id="'teamInfo'+id">
+                  <h6 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseTeamInfo'+id" aria-expanded="true" aria-controls="collapseTeamInfo">
+                    BB2 Team Details
+                    </button>
+                  </h6>
                 </div>
+                <div :id="'collapseTeamInfo'+id" class="collapse hide" aria-labelledby="teamInfo'" :data-parent="'#teamInfoAccordion'+id">
+                  <div class="card-body table-responsive">
+                    <div class="row">
+                      <div class="col-sm-4"><b>Team:</b> {{team.team.name}}</div>
+                      <div class="col-sm-4"><b>Race:</b> {{race(team.team.idraces)}}</div>
+                      <div class="col-sm-4"><b>Coach:</b> {{team.coach.name}}</div>
+                      <div class="col-sm-4"><b>TV:</b> {{team.team.value}}</div>
+                      <div class="col-sm-4">
+                      <b>Apothecary:</b> {{ team.team.apothecary ? "Yes" : "No"}}
+                        <span v-if="team_check.apothecary.value" class="deck_valid_check">✓</span>
+                        <span :title="team_check.apothecary.msg" v-else class="deck_invalid_check">✗</span>
+                      </div>
+                      <div class="col-sm-4"><b>Rerolls:</b> {{team.team.rerolls}}
+                        <span v-if="team_check.rerolls.value" class="deck_valid_check">✓</span>
+                        <span :title="team_check.rerolls.msg" v-else class="deck_invalid_check">✗</span>
+                      </div>
+                      <div class="col-sm-4"><b>Assistant Coaches:</b> {{team.team.assistantcoaches}}</div>
+                      <div class="col-sm-4"><b>Cheerleaders:</b> {{team.team.cheerleaders}}</div>
+                      <div class="col-sm-4"><b>Stadium Enhancement:</b> {{stadium_enhacement(team.team)}}</div>
+                    </div>
+                    <h6 class="mt-2">Roster size:
+                      <span v-if="team_check.roster.value" class="deck_valid_check">✓</span>
+                      <span :title="team_check.roster.msg" v-else class="deck_invalid_check">✗</span>
+                    </h6>
+                    <div class="row">
+                      <table class="table  table-striped table-hover">
+                        <thead>
+                          <tr>
+                            <th>N.</th>
+                            <th>Lvl.</th>
+                            <th>SPP</th>
+                            <th>TV</th>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Skills</th>
+                            <th>Injuries</th>
+                            <th>Valid</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="player in sorted_roster" :key="player.id">
+                          <td>{{player.number}}</td>
+                          <td>{{player.level}}</td>
+                          <td>{{player.xp}}</td>
+                          <td>{{player.value}}</td>
+                          <td>{{player.name}}</td>
+                          <td>{{positional_from_api(player.type)}}</td>
+                          <td><span v-html="player.skills.map((s) => imgs_for_skill(s)).join('')"></span></td>
+                          <td><span v-html="player.casualties_state.map((c) => imgs_for_skill(c)).join('')"></span></td>
+                          <td>
+                            <span v-if="valid(player)" class="deck_valid_check">✓</span>
+                            <span v-else class="deck_invalid_check">✗</span>
+                          </td>
+                        </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-12">
+            <h6>Sponsor: {{tournament.sponsor}}</h6>
+            </div>
+            <div class="col-12">
+            {{tournament.sponsor_description}}
+            </div>
+            <div class="col-12">
+            {{tournament.special_rules}}
+            </div>
+          </div>
+          <div class="row mb-3">
+            <div class="col-12">
+            <h6>Comment:</h6>
+            </div>
+            <div class="col-12">
+            <textarea class="form-control" :disabled="!is_owner || locked" rows="3" v-bind:value="deck.comment" v-on:input="debounceUpdateComment($event.target.value)"></textarea>
+            </div>
+          </div>
+          <div class="row">
+            <div :id="'extraCardsAccordion'+id" class="col-12 mb-3 mt-3">
+              <div class="card" v-if="is_owner">
+                <div class="card-header" :id="'extraCards'+id">
+                  <h6 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseExtraCards'+id" aria-expanded="true" aria-controls="collapseExtraCards">
+                      <span data-toggle="tooltip" data-placement="top" title="Use this to add extra cards to the collection for this tournament only">Sponsor & Extra Cards</span>
+                    </button>
+                  </h6>
+                </div>
+                <div :id="'collapseExtraCards'+id" class="collapse hide" aria-labelledby="extraCards'" :data-parent="'#extraCardsAccordion'+id">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-md-6">
+                        <input type="text" :disabled="!is_owner || locked" class="d-inline  form-control" :placeholder="extra_card_placeholder" v-model="extra_card">
+                      </div>
+                      <div class="col-md-6">
+                        <button type="button" :disabled="processing || !is_owner || locked" class="btn-sm btn btn-success btn-block mb-1" @click="addExtraCard(extra_card)">Add</button>
+                      </div>
+                      <template v-for="card in deck.unused_extra_cards">
+                        <div class="col-md-6 pt-1 pl-4" :key="'name' + card_id_or_uuid(card)">
+                        <h6 class="extra_card">{{card.template.name}}</h6>
+                        </div>
+                        <div class="col-md-3" :key="'clone' + card_id_or_uuid(card)">
+                          <button type="button" :disabled="processing || !is_owner || locked" class="btn-sm mb-1 btn btn-success btn-block" @click="cloneExtraCard(card)">Clone</button>
+                        </div>
+                        <div class="col-md-3" :key="'remove' + card_id_or_uuid(card)">
+                          <button type="button" :disabled="processing || !is_owner || locked" class="btn-sm mb-1 btn btn-danger btn-block" @click="removeExtraCard(card)">Remove</button>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-header" :id="'log'+id">
+                  <h6 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapselog'+id" aria-expanded="true" aria-controls="collapselog">
+                      Deck Log
+                    </button>
+                  </h6>
+                </div>
+                <div :id="'collapselog'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
+                  <div class="card-body">
+                    <div class="row">
+                      <template v-for="(line, index) in deck.log.split(/\r?\n/).reverse().slice(1)">
+                        {{line}} <br :key="index" />
+                      </template>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div v-if="has_deck_upgrade" class="card">
+                <div class="card-header" :id="'deck_upgrade'+id">
+                  <h6 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapsedeckupgrade'+id" aria-expanded="true" aria-controls="collapsedeckupgrade">
+                      Deck Upgrade
+                    </button>
+                  </h6>
+                </div>
+                <div v-if="has_deck_upgrade" :id="'collapsedeckupgrade'+id" class="collapse show" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
+                  <div class="card-body deck_upgrade">
+                    <div class="row" v-for="card in deck_upgrades" :key="card.template.name">
+                      <div class="col-md-3">
+                        <b>{{card.template.name}}:</b>
+                      </div>
+                      <div class="col-md-9">
+                        <span v-html="markdown.makeHtml(card.template.description)"></span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="row mt-1 deck_header">
+                <div class="col-6">
+                  <h6>Collection</h6>
+                </div>
+                <div class="col-6">
+                  <div class="custom-control custom-checkbox mr-sm-2 text-right">
+                    <input type="checkbox" class="custom-control-input" :id="'sptoggle'+id" v-model="starter">
+                    <label class="custom-control-label" :for="'sptoggle'+id">Toggle Starter Pack</label>
+                  </div>
+                </div>
+              </div>
+              <card-list id="accordionCardsCollection" :cards="collection_cards" :selected_team="selected_team" :owner="coach"
+                  :starter="starter" :quantity="false" :type_list="deck_card_types" :column_list="collection_colums"
+                  @card-click="addToDeck"></card-list>
+            </div>
+            <div class="col-lg-6">
+              <div class="row mt-1 deck_header">
+                <div class="col-3">
+                  <h6>Deck {{deck_size}}/{{tournament.deck_limit}}</h6>
+                </div>
+                <div class="col-3 text-center">
+                  <h6>Value: {{ deck_value }}/{{ tournament.deck_value_limit }}</h6>
+                </div>
+                <div class="col-3 text-center">
+                   <h6>Doubles: {{ deck_doubles_count }}</h6>
+                </div>
+                <div class="col-3">
+                  <div class="custom-control custom-checkbox mr-sm-2 text-right">
+                    <input type="checkbox" class="custom-control-input" :id="'raritytoggle'+id" v-model="rarity_order">
+                    <label class="custom-control-label" :for="'raritytoggle'+id">Rarity order</label>
+                  </div>
+                </div>
+              </div>
+              <card-list id="accordionCardsDeck" :cards="deck_cards" :selected_team="selected_team" :owner="coach"
+                  :starter="starter" :quantity="false" :type_list="deck_card_types" :column_list="collection_colums"
+                  @card-click="removeFromDeck" @card-assign="assignCard" :rarity_sort="rarity_order" :deck="deck" :edit="!(!is_owner || locked)"
+                  @update-deck="updateDeck"></card-list>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 <script>
-import injuryPicker from './injury_picker.vue';
-import Cards from '../mixins/cards';
+import Cards from '@/mixins/cards';
+import cardList from '@/components/card_list.vue';
 
 export default {
   name: 'deck',
   mixins: [Cards],
   components: {
-    'injury-picker': injuryPicker,
+    cardList,
   },
   data() {
     return {
       processing: false,
       selected_team: 'All',
-      show_starter: 1,
-      rarity_order: 1,
+      starter: true,
+      rarity_order: true,
       extra_card: '',
       deck: {
         cards: [],
@@ -396,6 +298,7 @@ export default {
         blood_bowl: 'Blood Bowl',
       },
       deck_card_types: ['Player', 'Training', 'Special Play', 'Staff'],
+      collection_colums: ['Rarity', 'Value', 'Name', 'Skills'],
     };
   },
   methods: {
@@ -465,12 +368,6 @@ export default {
         return;
       }
       this.removeCard(card);
-    },
-    isInDeck(card) {
-      if (this.development) {
-        return card.in_development_deck;
-      }
-      return card.in_imperium_deck;
     },
     async_error(error) {
       if (error.response) {
@@ -564,12 +461,8 @@ export default {
           // is not a player card -> skip
           if (c.template.card_type !== 'Player') { return; }
           // positional check
-          // console.log(this.positional_from_api(player.type))
-          // console.log(this.positional_mapping(c))
           if (!this.positional_mapping(c).includes(this.positional_from_api(player.type))) { return; }
           // skill check
-          // console.log(this.skill_names_for_player_card(c).concat(this.assigned_skills(c)));
-          // console.log(player.skills)
           if (!this.equal_sets(this.skill_names_for_player_card(c).concat(this.assigned_skills(c)), player.skills)) { return; }
           // injury check
           if (!this.equal_sets(this.player_injuries(c), player.casualties_state)) { return; }
@@ -718,7 +611,7 @@ export default {
         return false;
       }
 
-      const trainingCards = this.sortedCardsWithoutQuantity(this.deck_cards, 'Training', false);
+      const trainingCards = this.deck_cards.filter((e) => e.template.card_type === 'Training');
       const foundCard = trainingCards.find((c) => this.get_card_assignment(c).length === 0 || this.get_card_assignment(c).includes(undefined) || this.get_card_assignment(c).includes(null));
       if (foundCard !== undefined) {
         this.flash('Not all training cards are assigned to players!', 'error', { timeout: 3000 });
@@ -912,14 +805,8 @@ export default {
     deck_size_for(type) {
       return this.deck_cards.filter((e) => e.template.card_type === type).length;
     },
-    card_id_or_uuid(card) {
-      if (card.id) {
-        return String(card.id);
-      }
-      return String(card.uuid);
-    },
     assigned_cards(card) {
-      return this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
+      return this.deck_cards.filter((c) => this.get_card_assignment(c).includes(this.card_id_or_uuid(card)));
     },
     player_injuries(card) {
       return this.assigned_injuries(card).concat(this.injury_names_for_player_card(card));
@@ -938,21 +825,6 @@ export default {
         const skills = this.skill_names_for(c);
         return skills.map((s) => this.skill_to_api_skill(s));
       }).flat();
-    },
-    deck_skills_for(card) {
-      const assignedCards = this.assigned_cards(card);
-      const injuries = this.player_injuries(card);
-
-      return assignedCards.map((c) => {
-        let double = false;
-        const skills = this.skill_names_for(c);
-        skills.forEach((skill) => {
-          if (this.is_skill_double(card, skill)) {
-            double = true;
-          }
-        });
-        return this.skills_for(c, double);
-      }).join('') + injuries.map((c) => this.imgs_for_skill(c)).join('');
     },
     get_card_assignment(card) {
       if (card.assigned_to_array[this.deck.id]) {
@@ -979,62 +851,61 @@ export default {
       });
       return isDouble;
     },
-    doubles_count(card) {
-      const assignedCards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
-      let doubles = 0;
-
-      assignedCards.forEach((tcard) => {
-        // ignore extra cards
-        if (tcard.deck_type === 'extra') {
-          return;
-        }
-        const skills = this.skill_names_for(tcard);
-        let cardDoubles = 0;
-        // only count 1 double for a multiskill card
-        skills.forEach((skill) => {
-          if (this.is_skill_double(card, skill)) {
-            cardDoubles = 1;
-          }
-        });
-        doubles += cardDoubles;
-      });
-      return doubles;
-    },
-    is_guarded(card) {
-      if (card.template.card_type !== 'Player') { return false; }
-      const assignedCards = this.deck_cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
-      if (assignedCards.find((c) => ['Bodyguard', 'Hired Muscle', 'Personal Army'].includes(c.template.name)) !== undefined) { return true; }
-      return false;
-    },
-    injuryPickerOpened(card) {
-      if (card.cas_pick) {
-        return false;
-      }
-      return true;
-    },
-    openInjuryPicker(card) {
-      card.cas_pick = true;
-      this.$forceUpdate();
-    },
-    addInjury(card, injury) {
-      const id = this.card_id_or_uuid(card);
-      if (!this.deck.injury_map[id]) {
-        this.deck.injury_map[id] = [];
-      }
-      if (injury !== '' && injury !== 'X') {
-        this.deck.injury_map[id].push(injury);
-      }
-      card.cas_pick = false;
-      if (injury === 'X') {
-        this.removeAllInjuries(card);
-      } else {
-        this.updateDeck();
-      }
-    },
     removeAllInjuries(card) {
       const id = this.card_id_or_uuid(card);
       this.deck.injury_map[id] = [];
       this.updateDeck();
+    },
+    isInDeck(card) {
+      if (this.development) {
+        return card.in_development_deck;
+      }
+      return card.in_imperium_deck;
+    },
+    isNotInDeck(card) {
+      return !this.isInDeck(card);
+    },
+    positional_from_api(positional) {
+      const names = positional.split('_');
+      names.shift();
+      return names.join(' ');
+    },
+    stadium_enhacement(team) {
+      const building = team.cards.find((c) => c.type === 'Building');
+      if (building) {
+        switch (building.name) {
+          case 'Bazar':
+            return 'Magician\'s Shop';
+          case 'SecurityArea':
+            return 'Security Gate';
+          case 'RefreshmentArea':
+            return 'Beer Stand';
+          case 'RefereeArea':
+            return 'Referee Rest Area';
+          case 'Astrogranit':
+            return 'Astrogranite';
+          case 'ElfTurf':
+            return 'Elf Turf';
+          case 'VIPArea':
+            return 'Royal Box';
+          case 'FoodArea':
+            return 'Squig Sandwich Kiosk';
+          case 'Nuffle':
+            return 'Nuffle Altar';
+          case 'Roof':
+            return 'Magic Dome';
+          default:
+            return 'None';
+        }
+      }
+      return 'None';
+    },
+    race(raceid) {
+      const team = this.mixed_teams.find((t) => t.idraces === raceid);
+      if (team) {
+        return team.name;
+      }
+      return 'Unknown race';
     },
   },
   watch: {
@@ -1082,7 +953,7 @@ export default {
 
     // user collection + extra cards
     collection_cards() {
-      return this.coach.cards.concat(this.deck.unused_extra_cards);
+      return this.coach.cards.concat(this.deck.unused_extra_cards).filter(this.isNotInDeck);
     },
 
     // special cards in deck that belong to user
@@ -1114,13 +985,6 @@ export default {
         return true;
       }
       return false;
-    },
-    // allows extra cards menu
-    extra_allowed() {
-      // if(this.tournament.status=="OPEN") {
-      //    return false;
-      // }
-      return true;
     },
     started() {
       if (this.tournament.status === 'OPEN') {

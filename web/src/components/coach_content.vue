@@ -559,7 +559,7 @@ export default {
           }
         });
     },
-    
+
     selectCoach() {
       const c = this.loggedCoach;
       if (c && c.deleted === false) {
@@ -573,6 +573,13 @@ export default {
       this.$nextTick(() => {
         this.$('[data-toggle="popover"]').popover();
       });
+    },
+    print_date(pdate) {
+      const jdate = new Date(pdate);
+      const options = {
+        year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric',
+      };
+      return jdate.toLocaleDateString('default', options);
     },
   },
   computed: {

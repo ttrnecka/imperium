@@ -1,6 +1,96 @@
 const Cards = {
   data() {
     return {
+      rarityorder: {
+        Starter: 10,
+        Common: 9,
+        Rare: 8,
+        Epic: 7,
+        Inducement: 6,
+        Blessed: 5,
+        Cursed: 4,
+        Legendary: 2,
+        Unique: 1,
+      },
+      mixed_teams: [
+        {
+          idraces: 38,
+          code: 'aog',
+          tier_tax: 0,
+          name: 'Alliance of Goodness',
+          races: ['Bretonnian', 'Human', 'Dwarf', 'Halfling', 'Wood Elf'],
+        },
+        {
+          idraces: 42,
+          code: 'au',
+          tier_tax: 0,
+          name: 'Afterlife United',
+          races: ['Undead', 'Necromantic', 'Khemri', 'Vampire'],
+        },
+        {
+          idraces: 37,
+          code: 'afs',
+          tier_tax: 0,
+          name: 'Anti-Fur Society',
+          races: ['Kislev', 'Norse', 'Amazon', 'Lizardman'],
+        },
+        {
+          idraces: 34,
+          code: 'cgs',
+          tier_tax: 0,
+          name: 'Chaos Gods Selection',
+          races: ['Chaos', 'Nurgle'],
+        },
+        {
+          idraces: 33,
+          code: 'cpp',
+          tier_tax: 0,
+          name: 'Chaotic Player Pact',
+          races: ['Chaos', 'Skaven', 'Dark Elf', 'Underworld'],
+        },
+        {
+          idraces: 36,
+          code: 'egc',
+          tier_tax: 0,
+          name: 'Elfic Grand Coalition',
+          races: ['High Elf', 'Dark Elf', 'Wood Elf', 'Pro Elf'],
+        },
+        {
+          idraces: 35,
+          code: 'fea',
+          tier_tax: 0,
+          name: 'Far East Association',
+          races: ['Chaos Dwarf', 'Orc', 'Goblin', 'Skaven', 'Ogre'],
+        },
+        {
+          idraces: 39,
+          code: 'hl',
+          tier_tax: 0,
+          name: 'Human League',
+          races: ['Bretonnian', 'Human', 'Kislev', 'Norse', 'Amazon'],
+        },
+        {
+          idraces: 32,
+          code: 'sbr',
+          tier_tax: 0,
+          name: 'Superior Being Ring',
+          races: ['Bretonnian', 'High Elf', 'Vampire', 'Chaos Dwarf'],
+        },
+        {
+          idraces: 41,
+          code: 'uosp',
+          tier_tax: 0,
+          name: 'Union of Small People',
+          races: ['Ogre', 'Goblin', 'Halfling'],
+        },
+        {
+          idraces: 40,
+          code: 'vt',
+          tier_tax: 0,
+          name: 'Violence Together',
+          races: ['Ogre', 'Goblin', 'Orc', 'Lizardman'],
+        },
+      ],
       skill_groups: ['G', 'A', 'P', 'S', 'M'],
       skills: {
         G: ['Dauntless', 'Dirty Player', 'Fend', 'Kick-Off Return', 'Pass Block', 'Shadowing', 'Tackle', 'Wrestle', 'Block', 'Frenzy', 'Kick', 'Pro', 'Strip Ball', 'Sure Hands'],
@@ -10,6 +100,7 @@ const Cards = {
         M: ['Big Hand', 'Disturbing Presence', 'Extra Arms', 'Foul Appearance', 'Horns', 'Prehensile Tail', 'Tentacles', 'Two Heads', 'Very Long Legs', 'Claw'],
       },
       skillreg: /(Diving Catch|Kick-Off Return|Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off|Big Hand|Very Long Legs)( |,|\.|$)/g,
+      injuryreg: /(Smashed Knee|Damaged Back|Niggle|Smashed Ankle|Smashed Hip|Serious Concussion|Fractured Skull|Broken Neck|Smashed Collarbone)( |,|\.|$)/g,
     };
   },
   methods: {
@@ -84,6 +175,31 @@ const Cards = {
       }
       return matches.map((s) => this.skill_to_api_skill(s));
     },
+    default_skills_for_player(card) {
+      const skills = card.default_skills.map((s) => this.skill_to_api_skill(s));
+      return skills;
+    },
+    skills_for_player(card) {
+      const matches = this.default_skills_for_player(card).concat(this.skill_names_for_player_card(card));
+      return matches.map((s) => this.imgs_for_skill(s)).join('');
+    },
+    skills_for(card, double = false) {
+      if (card.template.card_type === 'Player') {
+        return this.skills_for_player(card);
+      }
+      if (['Special Play', 'Staff', 'Upgrade', 'Reaction'].includes(card.template.card_type)) {
+        return this.skills_for_special_and_staff(card);
+      }
+      const skills = this.skill_names_for(card);
+      const imgs = skills.map((s) => this.imgs_for_skill(s, double));
+      return imgs.join('');
+    },
+    imgs_for_skill(skill, double = false) {
+      const name = this.skill_to_api_skill(skill);
+      const url = 'https://cdn2.rebbl.net/images/skills/';
+      const doubleClass = double ? 'skill_double' : 'skill_single';
+      return `<img class="skill_icon "${doubleClass}" src="${url + name}.png" title="${skill}"></img>`;
+    },
     skill_to_api_skill(skill) {
       let name;
       switch (skill) {
@@ -113,10 +229,162 @@ const Cards = {
         case 'Sidestep':
           name = 'SideStep';
           break;
+        case 'Mutant Roshi\'s Scare School':
+          return '';
         default:
           name = skill.replace(/[\s-]/g, '');
       }
       return name;
+    },
+    cardsValue(cards) {
+      return cards.reduce((total, e) => {
+        if (e.is_starter) {
+          return total + 0;
+        }
+        return total + e.template.value;
+      }, 0);
+    },
+    injury_to_api_injury(injury) {
+      let name;
+      switch (injury) {
+        case 'Smashed Collarbone':
+          name = 'SmashedCollarBone';
+          break;
+        default:
+          name = injury.replace(/[\s-]/g, '');
+      }
+      return name;
+    },
+    injury_names_for_player_card(card) {
+      if (card.template.card_type !== 'Player') {
+        return card.template.name;
+      }
+      let str;
+      if (['Unique', 'Legendary', 'Inducement', 'Blessed', 'Cursed'].includes(card.template.rarity)) {
+        str = card.template.description;
+      } else {
+        str = card.template.name;
+      }
+      const matches = [];
+      let match;
+      match = this.injuryreg.exec(str);
+      while (match) {
+        if (match[1]) {
+          matches.push(match[1]);
+        } else if (match[2]) {
+          matches.push(match[2]);
+        }
+
+        if (this.injuryreg.lastIndex === match.index) {
+          this.injuryreg.lastIndex += 1;
+        }
+        match = this.injuryreg.exec(str);
+      }
+      return matches.map((s) => this.injury_to_api_injury(s));
+    },
+    skills_for_special_and_staff(card) {
+      if (!['Special Play', 'Staff', 'Upgrade', 'Reaction'].includes(card.template.card_type)) {
+        return card.template.name;
+      }
+      const str = card.template.description;
+      const matches = [];
+      let match;
+      match = this.skillreg.exec(str);
+      while (match) {
+        if (!(card.name === 'The Apple Pie Killer' && match[1] === 'Block')) {
+          if (match[1]) {
+            matches.push(match[1]);
+          } else if (match[2]) {
+            matches.push(match[2]);
+          }
+        }
+
+        if (this.skillreg.lastIndex === match.index) {
+          this.skillreg.lastIndex += 1;
+        }
+        match = this.skillreg.exec(str);
+      }
+      return matches.map((s) => this.imgs_for_skill(s)).join('');
+    },
+    skill_names_for(card) {
+      let skills = [];
+      switch (card.template.name) {
+        case 'Block Party':
+          skills = ['Block'];
+          break;
+        case 'Dodge like a Honeybadger, Sting like the Floor':
+          skills = ['Tackle'];
+          break;
+        case 'Gengar Mode':
+          skills = ['DirtyPlayer'];
+          break;
+        case 'Roger Dodger':
+          skills = ['Dodge'];
+          break;
+        case 'Packing a Punch':
+          skills = ['MightyBlow'];
+          break;
+        case 'Ballhawk':
+          skills = ['Wrestle', 'Tackle', 'StripBall'];
+          break;
+        case 'Roadblock':
+          skills = ['Block', 'Dodge', 'StandFirm'];
+          break;
+        case 'Cold-Blooded Killer':
+          skills = ['MightyBlow', 'PilingOn'];
+          break;
+        case 'Sniper':
+          skills = ['Accurate', 'StrongArm'];
+          break;
+        case 'A Real Nuisance':
+          skills = ['SideStep', 'DivingTackle'];
+          break;
+        case 'Insect DNA':
+          skills = ['TwoHeads', 'ExtraArms'];
+          break;
+        case 'Super Wildcard':
+          skills = ['MVPCondition'];
+          break;
+        case 'I Didn\'t Read The Rules':
+          skills = ['MVPCondition', 'MVPCondition', 'MVPCondition'];
+          break;
+        case 'Counterfeit Skill Shop':
+          skills = ['DivingTackle'];
+          break;
+        case 'Laying the Smackdown':
+          skills = ['Wrestle'];
+          break;
+        case 'Need for Speed':
+          skills = ['IncreaseMovement'];
+          break;
+        case 'The Great Wall':
+          skills = ['Guard'];
+          break;
+        case 'Tubthumping':
+          skills = ['PilingOn', 'JumpUp', 'Dauntless'];
+          break;
+        case 'Training Wildcard':
+          skills = ['MVPCondition2'];
+          break;
+        case 'Sidestep':
+          skills = ['SideStep'];
+          break;
+        case 'Crowd Pleaser':
+          skills = ['Frenzy', 'Juggernaut'];
+          break;
+        case 'Designated Ball Carrier':
+          skills = ['Block', 'SureHands'];
+          break;
+        case 'Bodyguard':
+        case 'Hired Muscle':
+        case 'Personal Army':
+        case 'Mutant Roshi\'s Scare School':
+          skills = [];
+          break;
+        default:
+          skills = [card.template.name];
+      }
+      return skills;
     },
     dust(method, card) {
       let path;
@@ -165,6 +433,18 @@ const Cards = {
     },
     dust_remove(card) {
       this.dust('remove', card);
+    },
+    card_id_or_uuid(card) {
+      if (card.id) {
+        return String(card.id);
+      }
+      return String(card.uuid);
+    },
+    injuryPickerOpened(card) {
+      if (card.cas_pick) {
+        return false;
+      }
+      return true;
     },
   },
   computed: {

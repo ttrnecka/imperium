@@ -139,7 +139,10 @@ class Card(Base):
         return base_statline.get(f"{self.first_race()}_{self.template.position}","")
     
     def default_skills(self):
-        return base_skills.get(f"{self.first_race()}_{self.template.position}","").split(",")
+        string = base_skills.get(f"{self.first_race()}_{self.template.position}","")
+        if string:
+          return string.split(",")
+        return []
 
     def first_race(self):
         return self.template.race.split('/')[0]

@@ -92,18 +92,10 @@ export default new Vuex.Store({
       }
       return false;
     },
-    is_owner: (state, getters) => (coach) => {
-      return (getters.loggedCoach && coach && getters.loggedCoach.id === coach.id);
-    },
-    is_duster: (state, getters) => {
-      return (getters.loggedCoach.duster && getters.loggedCoach.duster.type);
-    },
-    is_duster_full: (state, getters) => {
-      return (getters.is_duster ? getters.loggedCoach.duster.cards.length === 10 : false);
-    },
-    is_duster_open: (state, getters) => {
-      return (getters.is_duster && getters.loggedCoach.duster.status === 'OPEN');
-    },
+    is_owner: (state, getters) => (coach) => (getters.loggedCoach && coach && getters.loggedCoach.id === coach.id),
+    is_duster: (state, getters) => (getters.loggedCoach.duster && getters.loggedCoach.duster.type),
+    is_duster_full: (state, getters) => (getters.is_duster ? getters.loggedCoach.duster.cards.length === 10 : false),
+    is_duster_open: (state, getters) => (getters.is_duster && getters.loggedCoach.duster.status === 'OPEN'),
     duster_type: (state, getters) => {
       if (getters.is_duster) {
         return getters.loggedCoach.duster.type;
