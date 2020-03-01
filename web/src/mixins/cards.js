@@ -176,8 +176,11 @@ const Cards = {
       return matches.map((s) => this.skill_to_api_skill(s));
     },
     default_skills_for_player(card) {
-      const skills = card.default_skills.map((s) => this.skill_to_api_skill(s));
-      return skills;
+      if (card.default_skills) {
+        const skills = card.default_skills.map((s) => this.skill_to_api_skill(s));
+        return skills;
+      }
+      return [];
     },
     skills_for_player(card) {
       const matches = this.default_skills_for_player(card).concat(this.skill_names_for_player_card(card));
