@@ -38,7 +38,9 @@
               </thead>
               <tbody>
               <template v-for="card in sorted(ctype)">
-                <tr @click="$emit('card-click', card)" :key="card.id" :class="[rarityclass(card.template.rarity), extra_type(card.deck_type), 'pointer']">
+                <tr @click="$emit('card-click', card)" :key="card.id" :class="[rarityclass(card.template.rarity), extra_type(card.deck_type), 'pointer']"
+                  :title="card.template.name"
+                  :data-toggle="duster ? '': 'popover'" data-placement="top" data-html="true" :data-content="markdown.makeHtml(card.template.description)">
                   <td v-if="should_diplay('Lock')">
                     <i v-if="is_locked(card) && is_loggedcoach(owner.short_name)" class="fas fa-lock"></i>
                   </td>
@@ -47,8 +49,7 @@
                       :title="card.template.rarity" width="20" height="25" />
                     </td>
                   <td v-if="should_diplay('Value')">{{ card.template.value }}</td>
-                  <td v-if="should_diplay('Name')" :title="card.template.name"
-                    data-toggle="popover" data-placement="top" data-html="true" data-trigger="focus" :data-content="markdown.makeHtml(card.template.description)">{{card.template.name}}</td>
+                  <td v-if="should_diplay('Name')" :title="card.template.description">{{card.template.name}}</td>
                   <td v-if="should_diplay('Skills')"><span v-html="skills_for(card)"></span></td>
                   <td v-if="should_diplay('Race')">{{ card.template.race }}</td>
                   <td v-if="should_diplay('Subtype')" class="d-none d-sm-table-cell">
