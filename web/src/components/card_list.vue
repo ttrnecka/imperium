@@ -79,8 +79,10 @@
                     <td :colspan="column_list.length-2">
                       <span v-html="deck_skills_for(card)"></span>
                       <span v-if="is_guarded(card)" title="No Special Play effects possible">&#128170;</span>
-                      <img v-if="injuryPickerOpened(card)" @click="openInjuryPicker(card)" class="skill_icon skill_single pointer" src="https://cdn2.rebbl.net/images/skills/SmashedHand.png" title="Add Injury">
-                      <injury-picker v-else v-on:injured="addInjury(card,$event)"></injury-picker>
+                      <template v-if="is_loggedcoach(owner.short_name) && edit">
+                        <img v-if="injuryPickerOpened(card)" @click="openInjuryPicker(card)" class="skill_icon skill_single pointer" src="https://cdn2.rebbl.net/images/skills/SmashedHand.png" title="Add Injury">
+                        <injury-picker v-else v-on:injured="addInjury(card,$event)"></injury-picker>
+                      </template>
                     </td>
                     <td class="d-none d-sm-table-cell"><b>Doubles:</b> {{doubles_count(card)}}</td>
                   </tr>
