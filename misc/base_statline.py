@@ -141,7 +141,7 @@ base_skills = {
     "Lizardman_Skink":"Stunty,Dodge",
     "Undead_Ghoul":"Dodge",
     "Underworld_Goblin":"Stunty,Dodge,Right Stuff",
-    "Vampire_Vampire":"Bloodlust,Hypnotic Gaze,Regeneration",
+    "Vampire_Vampire":"Blood Lust,Hypnotic Gaze,Regeneration",
     "Wood Elf_Catcher":"Catch,Dodge,Sprint",
     "Amazon_Blitzer":"Dodge,Block",
     "Amazon_Linewoman":"Dodge",
