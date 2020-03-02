@@ -522,12 +522,12 @@ export default {
       const race = this.race(this.team.team.idraces);
       // AU has no apo
       if (race === 'Afterlife United') {
-        return false;
+        return 0;
       }
       if (this.deck.cards.find((c) => ['Apothecary', 'Clever Management', 'Inspirational Boss'].includes(c.template.name)) !== undefined) {
-        return true;
+        return 1;
       }
-      return false;
+      return 0;
     },
     numberOfRerolls() {
       const race = this.race(this.team.team.idraces);
