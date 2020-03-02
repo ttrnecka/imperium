@@ -84,6 +84,7 @@ export default {
         { value: 'Tournament Sponsor Almanac', link: 'https://bit.ly/2wkrZnN' },
         { value: 'Imperium Tournament Almanac', link: 'https://bit.ly/2PxTMIr' },
         { value: 'Key Cards', link: 'https://bit.ly/32J9oOE' },
+        { value: 'Inducements', link: 'https://bit.ly/2PDlHX9' },
       ],
     };
   },
