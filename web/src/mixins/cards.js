@@ -117,7 +117,11 @@ const Cards = {
       return Array.prototype.concat.apply([], skillArray);
     },
     is_skill_double(playerCard, skill) {
-      return !(playerCard.template.skill_access.indexOf(this.skill_to_group_map[skill]) > -1);
+      // check if the skill exists in the list
+      if (this.skill_to_group_map[skill]) {
+        return !(playerCard.template.skill_access.indexOf(this.skill_to_group_map[skill]) > -1);
+      }
+      return false;
     },
     is_locked(card) {
       return (card.in_development_deck || card.in_imperium_deck);

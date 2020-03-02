@@ -42,6 +42,10 @@ describe('Cards Mixin', () => {
     expect(wrapper.vm.is_skill_double(card_1, 'Mighty Blow')).toBe(false);
   });
 
+  it('is_skill_double - Movement Up! is not double', () => {
+    expect(wrapper.vm.is_skill_double(card_1, 'Movement Up!')).toBe(false);
+  });
+
   it('is_locked - properly handles in_development_deck and in_imperium_deck flags', () => {
     expect(wrapper.vm.is_locked({ in_development_deck: true, in_imperium_deck: true })).toBe(true);
     expect(wrapper.vm.is_locked({ in_development_deck: false, in_imperium_deck: true })).toBe(true);
