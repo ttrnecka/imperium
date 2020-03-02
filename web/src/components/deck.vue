@@ -122,7 +122,7 @@
             <h6>Comment:</h6>
             </div>
             <div class="col-12">
-            <textarea class="form-control" :disabled="!is_owner || locked" rows="3" v-bind:value="deck.comment" v-on:input="debounceUpdateComment($event.target.value)"></textarea>
+              <b-form-textarea rows="3" max-rows="8" class="p-2" :plaintext="!is_owner || locked" placeholder="Provide deck comments here" :value="deck.comment" @update="debounceUpdateComment($event)"></b-form-textarea>
             </div>
           </div>
           <div class="row">
@@ -201,7 +201,7 @@
             </div>
           </div>
           <div class="row">
-            <div class="col-lg-6">
+            <div v-if="canEdit" class="col-lg-6">
               <div class="row mt-1 deck_header">
                 <div class="col-6">
                   <h6>Collection</h6>
@@ -217,7 +217,7 @@
                   :starter="starter" :quantity="false" :type_list="deck_card_types" :column_list="collection_colums"
                   @card-click="addToDeck"></card-list>
             </div>
-            <div class="col-lg-6">
+            <div :class="cardListClass">
               <div class="row mt-1 deck_header">
                 <div class="col-3">
                   <h6>Deck {{deck_size}}/{{tournament.deck_limit}}</h6>
@@ -237,7 +237,7 @@
               </div>
               <card-list id="accordionCardsDeck" :cards="deck_cards" :selected_team="selected_team" :owner="coach"
                   :starter="starter" :quantity="false" :type_list="deck_card_types" :column_list="collection_colums"
-                  @card-click="removeFromDeck" @card-assign="assignCard" :rarity_sort="rarity_order" :deck="deck" :edit="!(!is_owner || locked)"
+                  @card-click="removeFromDeck" @card-assign="assignCard" :rarity_sort="rarity_order" :deck="deck" :edit="canEdit"
                   @update-deck="updateDeck"></card-list>
             </div>
           </div>
@@ -1020,6 +1020,12 @@ export default {
     },
     deck_upgrades() {
       return this.deck.deck_upgrade_cards;
+    },
+    canEdit() {
+      return (this.is_owner && !this.locked);
+    },
+    cardListClass() {
+      return this.canEdit ? 'col-lg-6' : 'col-lg-12';
     },
   },
   beforeMount() {

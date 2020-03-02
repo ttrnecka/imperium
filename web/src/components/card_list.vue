@@ -68,7 +68,7 @@
                 <template v-if="isDeck">
                   <tr :class="[rarityclass(card.template.rarity)]" v-for="(idx,index) in number_of_assignments(card)" :key="`assignment${index}${card_id_or_uuid(card)}`">
                     <td :colspan="column_list.length">
-                      <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="$emit('card-assign', card)" :disabled="!edit">
+                      <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="$emit('card-assign', card)" :disabled="!canEdit">
                         <option default :value="undefined" disabled>Select Player</option>
                         <option v-for="(card,index) in sortedCards(assignable_player_cards)" :key="index" :value="card_id_or_uuid(card)">{{index+1}}. {{ card.template.name }}</option>
                       </select>
@@ -79,7 +79,7 @@
                     <td :colspan="column_list.length-2">
                       <span v-html="deck_skills_for(card)"></span>
                       <span v-if="is_guarded(card)" title="No Special Play effects possible">&#128170;</span>
-                      <template v-if="is_loggedcoach(owner.short_name) && edit">
+                      <template v-if="canEdit">
                         <img v-if="injuryPickerOpened(card)" @click="openInjuryPicker(card)" class="skill_icon skill_single pointer" src="https://cdn2.rebbl.net/images/skills/SmashedHand.png" title="Add Injury">
                         <injury-picker v-else v-on:injured="addInjury(card,$event)"></injury-picker>
                       </template>
@@ -356,6 +356,9 @@ export default {
 
     player_cards() {
       return this.cards.filter((e) => e.template.card_type === 'Player');
+    },
+    canEdit() {
+      return (this.is_loggedcoach(this.owner.short_name) && this.edit);
     },
     ...mapState([
       'user',
