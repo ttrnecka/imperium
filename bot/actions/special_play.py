@@ -323,6 +323,11 @@ def CoMWithFriends(room, caller: Coach):
         pack = PackService.generate('skill')
         packs.append(pack)
         message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
+        efs.append({
+            'name': f'Skill Pack',
+            'value': message,
+            'inline': False,
+        })
         randomized = randomize_packs(decks, packs)
         for card in randomized:
             efs.append({
