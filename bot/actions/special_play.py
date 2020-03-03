@@ -293,7 +293,6 @@ def CoM9000(room, caller: Coach):
                 'value': message,
                 'inline': False,
             })
-            packs.append(pack)
         randomized = randomize_packs([deck], packs)
         for card in randomized:
             efs.append({
