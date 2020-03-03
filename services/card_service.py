@@ -206,8 +206,6 @@ class CardService:
         return 3
       if name == 'Super Wildcard':
         return 3
-      if name == "I Didn't Read The Rules":
-        return 1
       if ' one ' in c.get('description'):
         return 1
       if ' three ' in c.get('description'):
