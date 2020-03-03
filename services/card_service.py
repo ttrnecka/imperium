@@ -293,8 +293,6 @@ class CardService:
 
     def valid_skill_combination(skill_list1, skill_list2):
       """Returns True if the skills in both list can coexists"""
-      print(skill_list1)
-      print(skill_list2)
       if len(skill_list1+skill_list2) > 6:
         return False
 
