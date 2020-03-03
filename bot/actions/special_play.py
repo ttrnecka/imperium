@@ -96,12 +96,12 @@ def TailsNeverFails():
     }
     ef3 = {
         'name': 'Second roll',
-        'value': second[result[0]-1],
+        'value': second[result[1]-1],
         'inline': True,
     }
     ef4 = {
         'name': 'Third roll',
-        'value': third[result[0]-1],
+        'value': third[result[2]-1],
         'inline': True,
     }
     return {
