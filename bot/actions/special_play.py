@@ -334,6 +334,6 @@ def CoMWithFriends(room, caller: Coach):
         'embed_title': title,
         'embed_desc': description,
         'thumbnail_url': 'https://cdn2.rebbl.net/images/sponsors/goblinbambling.png',
-        'embed_fields': [ef1],
+        'embed_fields': efs,
         'rolls': packs
     }
