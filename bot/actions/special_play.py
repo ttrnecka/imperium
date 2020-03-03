@@ -10,7 +10,7 @@ def get_coach_deck_for_room_or_raise(room, coach):
     tourn = TournamentService.get_tournament_using_room(room)
     deck = [ts.deck for ts in tourn.tournament_signups if ts.coach == coach]
     if not deck:
-        raise f"#{caller.short_name()} is not signed into the tournament. Nice try!"
+        raise f"#{coach.short_name()} is not signed into the tournament. Nice try!"
     return deck[0]
 
 def randomize_packs(decks, packs):
