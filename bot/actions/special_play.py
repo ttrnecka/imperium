@@ -6,6 +6,54 @@ from services import TournamentService, CoachService, PackService, DeckService, 
 from models.data_models import Coach
 from web import db
 
+def get_coach_deck_for_room_or_raise(room, coach):
+    tourn = TournamentService.get_tournament_using_room(room)
+    deck = [ts.deck for ts in tourn.tournament_signups if ts.coach == coach]
+    if not deck:
+        raise f"#{caller.short_name()} is not signed into the tournament. Nice try!"
+    return deck[0]
+
+def randomize_packs(decks, packs):
+    local_skill_map = {}
+    result = []
+    for pack in packs:
+      for card in pack.cards:
+        deck = random.choice(decks)
+        coach = deck.tournament_signup.coach
+        sorted_player_cards = CardHelper.sort_cards_by_rarity(DeckService.assignable_players(deck))
+        player_list = DeckService.eligible_players(deck, card)
+        skills = CardService.skill_names_for(card)
+        for _ in range(CardService.number_of_assignments(card)):
+          local_player_list = [player for player in player_list if not local_skill_map.get(CardService.card_id_or_uuid(player), None) or not list(set(local_skill_map[CardService.card_id_or_uuid(player)]) & set(skills)) ]
+
+          selected = None
+
+          if local_player_list:
+            selected = random.choice(local_player_list)
+            uid = CardService.card_id_or_uuid(selected)
+            if not uid in local_skill_map:
+              local_skill_map[uid] = []  
+            local_skill_map[uid].extend(skills)
+
+          if selected:
+            existing_skills = DeckService.skills_for(deck, selected)
+            # get player index in the deck
+            idx = sorted_player_cards.index(selected) + 1
+            if isinstance(selected, dict):
+              value = f'{idx}. {selected["template"]["name"]} ({coach.short_name()})'
+            else:
+              value = f'{idx}. {selected.template.name} ({coach.short_name()})'
+          else:
+            value = f"No eligible player has been found ({coach.short_name()})"
+          result.append({
+            'card': card,
+            'coach': coach,
+            'player': selected,
+            'idx': idx,
+            'value': value,
+          })
+    return result
+
 def Bullcanoe():
     result = dice.dice(2,1)
     title = "Bullcanoe!"
@@ -162,11 +210,7 @@ def CelebrityMasterChef(room, caller: Coach):
     }
 
 def CoM2000(room, caller: Coach):
-    #tourn = TournamentService.get_tournament_using_room(room)
-    #deck = [ts.deck for ts in tourn.tournament_signups if ts.coach == caller]
-    #if not deck:
-    #    raise f"#{caller.short_name()} is not signed into the tournament"
-    #deck = deck[0]
+    deck = get_coach_deck_for_room_or_raise(room, caller)
 
     title = 'Coach-o-Matic 2000'
     description = ""
@@ -178,39 +222,13 @@ def CoM2000(room, caller: Coach):
           'value': message,
           'inline': False,
       }]
-      
-      #local_skill_map = {
-      #
-      #}
-
-      #for card in pack.cards:
-        #player_list = DeckService.eligible_players(deck, card)
-        #skills = CardService.skill_names_for(card)
-
-        #local_player_list = [player for player in player_list if not local_skill_map.get(CardService.card_id_or_uuid(player), None) or not list(set(local_skill_map[CardService.card_id_or_uuid(player)]) & set(skills)) ]
-
-        #selected = None
-
-        #if local_player_list:
-        #  selected = random.choice(local_player_list)
-        #  uid = CardService.card_id_or_uuid(selected)
-        #  if not uid in local_skill_map:
-        #    local_skill_map[uid] = []  
-        #  local_skill_map[uid].extend(skills)
-
-        #if selected:
-        #  existing_skills = DeckService.skills_for(deck, selected)
-        #  if isinstance(selected, dict):
-        #    value = f'{", ".join(existing_skills)} {selected["template"]["name"]}'
-        #  else:
-        #    value = f'{", ".join(existing_skills)} {selected.template.name}'
-        #else:
-        #  value = "No eligible player has been found"
-        #efs.append({
-        #  'name': f'{card.template.name}',
-        #  'value': value,
-        #  'inline': False,
-        #})
+      randomized = randomize_packs([deck], [pack])
+      for card in randomized:
+        efs.append({
+          'name': f'{card["card"].template.name}',
+          'value': card['value'],
+          'inline': False,
+        })
 
     return {
         'embed_title': title,
@@ -221,37 +239,45 @@ def CoM2000(room, caller: Coach):
     }
 
 def CoM5000(room, caller: Coach):
-    #tourn = TournamentService.get_tournament_using_room(room)
+    deck = get_coach_deck_for_room_or_raise(room, caller)
     title = 'Coach-o-Matic 5000'
     description = ""
     packs = []
+    efs = []
     with db.session.no_autoflush:
         pack = PackService.generate('skill')
         packs.append(pack)
         message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
-        ef1 = {
+        efs.append({
             'name': 'Skill Pack',
             'value': message,
             'inline': False,
-        }
+        })
         pack = PackService.generate('coaching')
         packs.append(pack)
         message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
-        ef2 = {
+        efs.append({
             'name': 'Coaching Pack',
             'value': message,
             'inline': False,
-        }
+        })
+        randomized = randomize_packs([deck], packs)
+        for card in randomized:
+            efs.append({
+            'name': f'{card["card"].template.name}',
+            'value': card['value'],
+            'inline': False,
+            })
     return {
         'embed_title': title,
         'embed_desc': description,
         'thumbnail_url': 'https://cdn2.rebbl.net/images/sponsors/goblinbambling.png',
-        'embed_fields': [ef1, ef2],
+        'embed_fields': efs,
         'rolls': packs
     }
 
 def CoM9000(room, caller: Coach):
-    #tourn = TournamentService.get_tournament_using_room(room)
+    deck = get_coach_deck_for_room_or_raise(room, caller)
     title = 'Coach-o-Matic 9000'
     description = ""
     packs = []
@@ -267,6 +293,13 @@ def CoM9000(room, caller: Coach):
                 'inline': False,
             })
             packs.append(pack)
+        randomized = randomize_packs([deck], packs)
+        for card in randomized:
+            efs.append({
+            'name': f'{card["card"].template.name}',
+            'value': card['value'],
+            'inline': False,
+            })
     return {
         'embed_title': title,
         'embed_desc': description,
@@ -276,19 +309,26 @@ def CoM9000(room, caller: Coach):
     }
 
 def CoMWithFriends(room, caller: Coach):
-    #tourn = TournamentService.get_tournament_using_room(room)
+    tourn = TournamentService.get_tournament_using_room(room)
+    decks = [ts.deck for ts in tourn.tournament_signups]
+    deck = get_coach_deck_for_room_or_raise(room, caller)
+    decks.remove(deck)
+
     title = 'Coach-o-Matic With Your Friends'
     description = ""
     packs = []
+    efs = []
     with db.session.no_autoflush:
         pack = PackService.generate('skill')
         packs.append(pack)
         message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
-        ef1 = {
-            'name': 'Skill Pack',
-            'value': message,
+        randomized = randomize_packs(decks, packs)
+        for card in randomized:
+            efs.append({
+            'name': f'{card["card"].template.name}',
+            'value': card['value'],
             'inline': False,
-        }
+            })
     return {
         'embed_title': title,
         'embed_desc': description,

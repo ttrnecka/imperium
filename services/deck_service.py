@@ -12,9 +12,8 @@ from models.general import MIXED_TEAMS
 from .card_service import CardService
 from .notification_service import LedgerNotificationService
 
-
 class DeckService:
-    """DeckeService namespace"""
+    """DeckService namespace"""
     @classmethod
     def update(cls, deck, deck_params):
         """Updates deck with new parameters"""
@@ -250,8 +249,26 @@ class DeckService:
 
     @classmethod
     def eligible_players(cls, deck, card):
-      """Returns list of eligible player Cards or cards that can be assigned given training card"""
-      return DeckService.players(deck)
+        """Returns list of eligible player Cards or cards that can be assigned given training card"""
+        # only players that can be assigned skill
+        players = DeckService.assignable_players(deck)
+        # get the skills the cards gives
+        skills = CardService.skill_names_for(card, api_format=False)
+        eligible = []
+        for player in players:
+            # check if the card does not have the skill assigned in the dekc already
+            assigned_cards = cls.assigned_cards_to(deck,player)
+            valid = True
+            for ac in assigned_cards:
+                askills = CardService.skill_names_for(ac, api_format=False)
+                # if the new skills at least partially in the assigned skills
+                if (set(skills) & set(askills)):
+                    valid = False
+                    break
+            # check if card can be assigned the skill
+            if valid and CardService.can_take_skills(player, skills):
+                eligible.append(player)
+        return eligible
 
     @classmethod
     def assigned_cards(cls, deck):
@@ -275,6 +292,7 @@ class DeckService:
 
     @classmethod
     def skills_for(cls, deck, card):
+        """Returns printed and assigned skills for a card"""
         assigned_cards = cls.assigned_cards_to(deck, card)
         names1 = [CardService.skill_names_for(tcard) for tcard in assigned_cards]
         names1 = list(chain.from_iterable(names1))
@@ -297,8 +315,17 @@ class DeckService:
         return sum(c.template.value for c in deck.cards) + team['tier_tax']
 
     @staticmethod
+    def assignable_players(deck):
+        return [card for card in DeckService.players(deck) if CardService.assignable(card)] + \
+            [card for card in DeckService.extra_players(deck) if CardService.assignable(card)]
+    
+    @staticmethod
     def players(deck):
       return [card for card in deck.cards if card.template.card_type == CardTemplate.TYPE_PLAYER]
+
+    @staticmethod
+    def extra_players(deck):
+      return [card for card in deck.extra_cards if card['template']['card_type'] == CardTemplate.TYPE_PLAYER]
 
     @staticmethod
     def training_cards(deck):

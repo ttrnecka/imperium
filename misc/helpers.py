@@ -8,12 +8,18 @@ import io
 
 class CardHelper:
     """CardHelper namespace"""
-    rarityorder = {"Starter":10, "Common":5, "Rare":4, "Epic":3, "Legendary":2, "Unique":1}
+    rarityorder = {"Starter":10, "Common":9, "Rare":8, "Epic":7, "Inducement":6, "Blessed":5, "Cursed":4, "Legendary":2, "Unique":1}
+
+    @staticmethod
+    def card_fix(card):
+        if isinstance(card, dict):
+            return card['template']
+        return card
 
     @classmethod
     def sort_cards_by_rarity(cls, cards):
         """sorts cards by rarity"""
-        return sorted(cards, key=lambda x: (cls.rarityorder[x.get('rarity')], x.get('name')))
+        return sorted(cards, key=lambda x: (cls.rarityorder[cls.card_fix(x).get('rarity')], cls.card_fix(x).get('name')))
 
     @classmethod
     def sort_cards_by_rarity_with_quatity(cls, cards):

@@ -3,8 +3,9 @@ import re
 
 from models.data_models import Card, Coach, CardTemplate, CrackerCardTemplate, CrackerCard
 from models.base_model import db
-from misc.helpers import represents_int
+from misc.helpers import represents_int, CardHelper
 from misc import INJURYREG, SKILLREG
+from misc.base_statline import mutation_positionals
 from .imperium_sheet_service import ImperiumSheetService
 
 
@@ -14,6 +15,14 @@ name_map = {'Card ID':'id', 'Card Name':'name', 'Description':'description', 'Ra
 
 cracker_name_map = {'Card ID':'id', 'Card Name':'name', 'Description':'description', 'Race':'race', 'Rarity':'rarity', 'Card Type':'card_type',
     'Team':'team', 'Notes':'notes', 'Class':'klass', 'Multiplier':'multiplier', 'One Time Use':'one_time_use', "Position":"position", "Built-In Skill":"built_in_skill"}
+
+skills_map = {
+    'G': ['Dauntless', 'Dirty Player', 'Fend', 'Kick-Off Return', 'Pass Block', 'Shadowing', 'Tackle', 'Wrestle', 'Block', 'Frenzy', 'Kick', 'Pro', 'Strip Ball', 'Sure Hands'],
+    'A': ['Catch', 'Diving Catch', 'Diving Tackle', 'Jump Up', 'Leap', 'Sidestep', 'SideStep', 'Sneaky Git', 'Sprint', 'Dodge', 'Sure Feet'],
+    'P': ['Accurate', 'Dump-Off', 'Hail Mary Pass', 'Nerves of Steel', 'Pass', 'Safe Throw', 'Leader'],
+    'S': ['Break Tackle', 'Grab', 'Juggernaut', 'Multiple Block', 'Piling On', 'Stand Firm', 'Strong Arm', 'Thick Skull', 'Guard', 'Mighty Blow'],
+    'M': ['Big Hand', 'Disturbing Presence', 'Extra Arms', 'Foul Appearance', 'Horns', 'Prehensile Tail', 'Tentacles', 'Two Heads', 'Very Long Legs', 'Claw'],
+}
 
 class CardService:
     skillreg = r"(Kick-Off Return|Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off)( |,|\.|$)"
@@ -96,7 +105,37 @@ class CardService:
         return [skill[0] for skill in skills]
 
     @staticmethod
-    def skill_names_for(card):
+    def mutation_allowed(card):
+        c = CardHelper.card_fix(card)
+        positional = f"{c.get('race').split('/')[0]}_{c.get('position')}"
+        return positional in mutation_positionals
+
+    @staticmethod
+    def can_take_skills(player_card, skills):
+        p_skills = CardService.skill_names_for_player_card(player_card, api_format=False) + CardService.default_skill_names_for(player_card, api_format=False)
+        if set(skills) & set(p_skills):
+            return False
+        
+        # check for mutation access
+        for skill in skills:
+            if skill in skills_map['M'] and not CardService.mutation_allowed(player_card):
+                return False
+
+        return True
+
+    @staticmethod
+    def default_skill_names_for(card, api_format=True):
+      if isinstance(card,dict):
+          matches = card['default_skills']
+      else:
+          matches = card.default_skills()
+
+      if api_format:
+        return [skill_to_api_skill(match) for match in matches]
+      return matches
+
+    @staticmethod
+    def skill_names_for(card, api_format=True):
       if isinstance(card,dict):
           name = card['template']['name']
       else:
@@ -106,29 +145,29 @@ class CardService:
       elif name == "Dodge like a Honeybadger, Sting like the Floor":
           skills = ["Tackle"]
       elif name == "Gengar Mode":
-          skills = ["DirtyPlayer"]
+          skills = ["Dirty Player"]
       elif name == "Roger Dodger":
           skills = ["Dodge"]
       elif name == "Packing a Punch":
-          skills = ["MightyBlow"]
+          skills = ["Mighty Blow"]
       elif name == "Ballhawk":
-          skills = ["Wrestle","Tackle","StripBall"]
+          skills = ["Wrestle","Tackle","Strip Ball"]
       elif name == "Roadblock":
-          skills = ["Block","Dodge","StandFirm"]
+          skills = ["Block","Dodge","Stand Firm"]
       elif name == "Cold-Blooded Killer":
-          skills = ["MightyBlow","PilingOn"]
+          skills = ["Mighty Blow","Piling On"]
       elif name == "Sniper":
-          skills = ["Accurate","StrongArm"]
+          skills = ["Accurate","Strong Arm"]
       elif name == "A Real Nuisance":
-          skills = ["SideStep","DivingTackle"]
+          skills = ["Side Step","Diving Tackle"]
       elif name == "Insect DNA":
-          skills = ["TwoHeads","ExtraArms"]
+          skills = ["Two Heads","Extra Arms"]
       elif name == "Super Wildcard":
           skills = ["MVPCondition"]
       elif name == "I Didn't Read The Rules":
           skills = ["MVPCondition","MVPCondition","MVPCondition"]
       elif name == "Counterfeit Skill Shop":
-          skills = ["DivingTackle"]
+          skills = ["Diving Tackle"]
       elif name == "Laying the Smackdown":
           skills = ["Wrestle"]
       elif name == "Need for Speed":
@@ -136,20 +175,42 @@ class CardService:
       elif name == "The Great Wall":
           skills = ["Guard"]
       elif name == "Tubthumping":
-          skills = ["PilingOn","JumpUp","Dauntless"]
+          skills = ["Piling On","Jump Up","Dauntless"]
       elif name == "Training Wildcard":
           skills = ["MVPCondition2"]
       elif name == "Sidestep":
-          skills = ["SideStep"]
+          skills = ["Side Step"]
       elif name == "Crowd Pleaser":
           skills = ["Frenzy","Juggernaut"]
       elif name == "Designated Ball Carrier":
-          skills = ["Block", "SureHands"]
+          skills = ["Block", "Sure Hands"]
       elif name in ["Bodyguard","Hired Muscle","Personal Army"]:
           skills = []
       else:
           skills = [name]
-      return [skill_to_api_skill(match) for match in skills]
+      if api_format:
+        return [skill_to_api_skill(match) for match in skills]
+      return skills
+
+    @staticmethod
+    def number_of_assignments(card):
+      c = CardHelper.card_fix(card)
+      name = c.get('name')
+      if c.get('card_type') != 'Training':
+        return 0
+      if name == 'Bodyguard':
+        return 1
+      if name == 'Hired Muscle':
+        return 2
+      if name == 'Personal Army':
+        return 3
+      if name == 'Super Wildcard':
+        return 3
+      if ' one ' in c.get('description'):
+        return 1
+      if ' three ' in c.get('description'):
+        return 3
+      return 1
 
     @classmethod
     def template_pool(cls):
@@ -171,8 +232,21 @@ class CardService:
         return pool
 
     @staticmethod
+    def assignable(card):
+        """Return true if card can be assigned training card"""
+        if isinstance(card, Card):
+            rarity = card.get('rarity')
+        else:
+            rarity = card['template']['rarity']
+        
+        return rarity not in ['Legendary', 'Inducement', 'Unique', 'Blessed', 'Cursed']
+
+    @staticmethod
     def card_id_or_uuid(card):
-      id = card.id if card.id else card.uuid
+      if isinstance(card, dict):
+        id = card.get('id') if card.get('id', None) else card.get('uuid')
+      else:
+        id = card.id if card.id else card.uuid
       return str(id)
 
     @staticmethod
@@ -192,16 +266,17 @@ class CardService:
       return [injury_to_api_injury(match) for match in matches]
 
     @staticmethod
-    def skill_names_for_player_card(card):
+    def skill_names_for_player_card(card, api_format=True):
+      card = CardHelper.card_fix(card)
       #return card descritpion for non player cards
-      if card.template.card_type!=CardTemplate.TYPE_PLAYER:
-          return card.template.name
+      if card.get('card_type')!=CardTemplate.TYPE_PLAYER:
+          return card.get('name')
 
       string = ""
-      if card.template.rarity in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
-          string = card.template.description
+      if card.get('rarity') in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
+          string = card.get('description')
       else:
-          string = card.template.name
+          string = card.get('name')
 
       matches = [match[0] for match in SKILLREG.findall(string)]
 
@@ -209,8 +284,9 @@ class CardService:
       if len(re.findall("Pro Elf",string)):
           # remove one accidental Pro skill
           matches.remove("Pro")
-      
-      return [skill_to_api_skill(match) for match in matches]
+      if api_format:
+        return [skill_to_api_skill(match) for match in matches]
+      return matches
 
 def injury_to_api_injury(injury):
     if injury == "Smashed Collarbone":

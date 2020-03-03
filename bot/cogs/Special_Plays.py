@@ -115,5 +115,9 @@ class SpecialPlays(commands.Cog):
         me = CoachService.discord_user_to_coach(ctx.author)
         data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
         await send_embed(data, ctx)
+    
+    #async def cog_command_error(self, ctx, error):
+    #    await ctx.send(error)
+
 def setup(bot):
     bot.add_cog(SpecialPlays(bot))

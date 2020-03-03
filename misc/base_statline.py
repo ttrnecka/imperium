@@ -223,3 +223,19 @@ base_skills = {
     "Human/Norse/Kislev/Bretonnian_Lineman":"",
     "Chaos/Nurgle_Beastman/Pestigor":"Horns",
 }
+
+mutation_positionals = [
+    "Skaven_Thrower", "Underworld_Thrower", "Skaven_Gutter Runner",
+    "Underworld_Goblin", "Nurgle_BeastOfNurgle",
+    "Chaos Dwarf_Minotaur", "Chaos_Warrior",
+    "Chaos_Minotaur", "Nurgle_Pestigor",
+    "Nurgle_NurgleWarrior", "Skaven_Rat Ogre",
+    "Underworld_Troll", "Chaos_Beastman",
+    "Chaos Dwarf_Blocker", "Chaos Dwarf_Hobgoblin",
+    "Skaven_Blitzer", "Underworld_Blitzer",
+    "Skaven_Lineman", "Underworld_Lineman",
+    "Skaven/Underworld_Lineman",
+    "Skaven/Underworld_Storm Vermin",
+    "Chaos/Chaos Dwarf_Minotaur",
+    "Chaos/Nurgle_Beastman/Pestigor",
+]
