@@ -35,6 +35,7 @@ def randomize_packs(decks, packs):
               local_skill_map[uid] = []  
             local_skill_map[uid].extend(skills)
 
+          idx = None
           if selected:
             existing_skills = DeckService.skills_for(deck, selected)
             # get player index in the deck
