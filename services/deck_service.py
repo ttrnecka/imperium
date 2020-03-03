@@ -257,16 +257,12 @@ class DeckService:
         eligible = []
         for player in players:
             # check if the card does not have the skill assigned in the dekc already
-            assigned_cards = cls.assigned_cards_to(deck,player)
-            valid = True
-            for ac in assigned_cards:
-                askills = CardService.skill_names_for(ac, api_format=False)
-                # if the new skills at least partially in the assigned skills
-                if (set(skills) & set(askills)):
-                    valid = False
-                    break
+            askills = DeckService.skills_for(deck, player)
+            if not CardService.valid_skill_combination(askills, skills):
+              continue
+
             # check if card can be assigned the skill
-            if valid and CardService.can_take_skills(player, skills):
+            if CardService.can_take_skills(player, skills):
                 eligible.append(player)
         return eligible
 

@@ -1,5 +1,6 @@
 """CardsService helpers"""
 import re
+from collections import Counter
 
 from models.data_models import Card, Coach, CardTemplate, CrackerCardTemplate, CrackerCard
 from models.base_model import db
@@ -23,6 +24,8 @@ skills_map = {
     'S': ['Break Tackle', 'Grab', 'Juggernaut', 'Multiple Block', 'Piling On', 'Stand Firm', 'Strong Arm', 'Thick Skull', 'Guard', 'Mighty Blow'],
     'M': ['Big Hand', 'Disturbing Presence', 'Extra Arms', 'Foul Appearance', 'Horns', 'Prehensile Tail', 'Tentacles', 'Two Heads', 'Very Long Legs', 'Claw'],
 }
+
+stat_skills = ['Movement Up!', 'Agility Up!', 'Strength Up!', 'Armour Up!']
 
 class CardService:
     skillreg = r"(Kick-Off Return|Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off)( |,|\.|$)"
@@ -287,6 +290,26 @@ class CardService:
       if api_format:
         return [skill_to_api_skill(match) for match in matches]
       return matches
+
+    def valid_skill_combination(skill_list1, skill_list2):
+      """Returns True if the skills in both list can coexists"""
+      print(skill_list1)
+      print(skill_list2)
+      if len(skill_list1+skill_list2) > 6:
+        return False
+
+      # Frenzy/Grab corner case
+      if ('Frenzy' in skill_list1 and 'Grab' in skill_list2) or ('Frenzy' in skill_list2 and 'Grab' in skill_list1):
+        return False
+      tallies = Counter(skill_list1+skill_list2)
+      for skill in tallies:
+        if skill in stat_skills and tallies[skill] > 2:
+          return False
+        elif skill not in stat_skills and tallies[skill] > 1:
+          return False
+      
+      return True
+        
 
 def injury_to_api_injury(injury):
     if injury == "Smashed Collarbone":

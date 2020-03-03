@@ -24,7 +24,7 @@ def randomize_packs(decks, packs):
         player_list = DeckService.eligible_players(deck, card)
         skills = CardService.skill_names_for(card)
         for _ in range(CardService.number_of_assignments(card)):
-          local_player_list = [player for player in player_list if not local_skill_map.get(CardService.card_id_or_uuid(player), None) or not list(set(local_skill_map[CardService.card_id_or_uuid(player)]) & set(skills)) ]
+          local_player_list = [player for player in player_list if CardService.valid_skill_combination(local_skill_map.get(CardService.card_id_or_uuid(player), []), skills+DeckService.skills_for(deck, player))]
 
           selected = None
 
