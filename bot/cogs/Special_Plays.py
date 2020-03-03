@@ -1,9 +1,10 @@
 import discord
 import inspect
+import traceback
 
 from discord.ext import commands
 from discord.utils import get
-from bot.helpers import transform_message
+from bot.helpers import transform_message, logger
 from services import CoachService
 from ..actions import special_play
 
@@ -116,8 +117,11 @@ class SpecialPlays(commands.Cog):
         data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
         await send_embed(data, ctx)
     
-    #async def cog_command_error(self, ctx, error):
-    #    await ctx.send(error)
+    async def cog_command_error(self, ctx, error):
+        await ctx.send(error)
+        text = type(error).__name__ +": "+str(error)
+        logger.error(text)
+        logger.error(traceback.format_exc())
 
 def setup(bot):
     bot.add_cog(SpecialPlays(bot))
