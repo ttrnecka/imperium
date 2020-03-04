@@ -26,6 +26,16 @@ skills_map = {
 }
 
 stat_skills = ['Movement Up!', 'Agility Up!', 'Strength Up!', 'Armour Up!']
+stat_name_map = {
+    "ST+": 'Strength Up!',
+    "+ST": 'Strength Up!',
+    "MA+": 'Movement Up!',
+    "+MA": 'Movement Up!',
+    "AG+": 'Agility Up!',
+    "+AG": 'Agility Up!',
+    "AV+": 'Armour Up!',
+    "+AV": 'Armour Up!',
+}
 
 class CardService:
     skillreg = r"(Kick-Off Return|Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off)( |,|\.|$)"
@@ -104,8 +114,8 @@ class CardService:
             else:
                 string = card['name']
 
-        skills = re.findall(cls.skillreg,string)
-        return [skill[0] for skill in skills]
+        skills = [skill[0] for skill in re.findall(cls.skillreg,string)]
+        return [stat_name_map.get(skill,skill) for skill in skills]
 
     @staticmethod
     def mutation_allowed(card):

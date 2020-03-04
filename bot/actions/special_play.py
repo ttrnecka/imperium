@@ -22,9 +22,9 @@ def randomize_packs(decks, packs):
         coach = deck.tournament_signup.coach
         sorted_player_cards = CardHelper.sort_cards_by_rarity(DeckService.assignable_players(deck))
         player_list = DeckService.eligible_players(deck, card)
-        skills = CardService.skill_names_for(card)
+        skills = CardService.skill_names_for(card, api_format=False)
         for _ in range(CardService.number_of_assignments(card)):
-          local_player_list = [player for player in player_list if CardService.valid_skill_combination(local_skill_map.get(CardService.card_id_or_uuid(player), []), skills+DeckService.skills_for(deck, player))]
+          local_player_list = [player for player in player_list if CardService.valid_skill_combination(local_skill_map.get(CardService.card_id_or_uuid(player), []), skills+DeckService.skills_for(deck, player, api_format=False))]
 
           selected = None
 

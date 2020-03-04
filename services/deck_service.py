@@ -257,7 +257,7 @@ class DeckService:
         eligible = []
         for player in players:
             # check if the card does not have the skill assigned in the dekc already
-            askills = DeckService.skills_for(deck, player)
+            askills = DeckService.skills_for(deck, player, api_format=False)
             if not CardService.valid_skill_combination(askills, skills):
               continue
 
@@ -287,10 +287,10 @@ class DeckService:
             return [tcard for tcard in assigned_cards if str(card['uuid']) in getattr(tcard, 'assigned_to_array')[str(deck.id)]] + [tcard for tcard in assigned_extra_cards if str(card['uuid']) in tcard['assigned_to_array'][str(deck.id)]]
 
     @classmethod
-    def skills_for(cls, deck, card):
+    def skills_for(cls, deck, card, api_format=True):
         """Returns printed and assigned skills for a card"""
         assigned_cards = cls.assigned_cards_to(deck, card)
-        names1 = [CardService.skill_names_for(tcard) for tcard in assigned_cards]
+        names1 = [CardService.skill_names_for(tcard, api_format=api_format) for tcard in assigned_cards]
         names1 = list(chain.from_iterable(names1))
         printed_skills = CardService.builtin_skills_for(card)
         return printed_skills + names1
