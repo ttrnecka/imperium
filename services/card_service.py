@@ -38,7 +38,6 @@ stat_name_map = {
 }
 
 class CardService:
-    skillreg = r"(Kick-Off Return|Safe Throw|Shadowing|Disturbing Presence|Sneaky Git|Horns|Guard|Mighty Blow|ST\+|\+ST|MA\+|\+MA|AG\+|\+AG|AV\+|\+AV|Block|Accurate|Strong Arm|Dodge|Juggernaut|Claw|Sure Feet|Break Tackle|Jump Up|Two Heads|Wrestle|Frenzy|Multiple Block|Tentacles|Pro|Strip Ball|Sure Hands|Stand Firm|Grab|Hail Mary Pass|Dirty Player|Extra Arms|Foul Appearance|Dauntless|Thick Skull|Tackle|Nerves of Steel|Catch|Pass Block|Piling On|Pass|Fend|Sprint|Grab|Kick|Pass Block|Leap|Sprint|Leader|Diving Tackle|Tentacles|Prehensile Tail|Sidestep|Dump-Off)( |,|\.|$)"
     """CardService helper namespace"""
 
     @classmethod
@@ -109,12 +108,12 @@ class CardService:
             else:
                 string = card.get('name')
         else:
-            if card['rarity'] in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
-                string = card['description']
+            if card['template']['rarity'] in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
+                string = card['template']['description']
             else:
-                string = card['name']
+                string = card['template']['name']
 
-        skills = [skill[0] for skill in re.findall(cls.skillreg,string)]
+        skills = [skill[0] for skill in SKILLREG.findall(string)]
         return [stat_name_map.get(skill,skill) for skill in skills]
 
     @staticmethod
