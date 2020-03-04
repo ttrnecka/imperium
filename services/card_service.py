@@ -301,6 +301,8 @@ class CardService:
         return False
       tallies = Counter(skill_list1+skill_list2)
       for skill in tallies:
+        if skill in ['MVPCondition']:
+            continue
         if skill in stat_skills and tallies[skill] > 2:
           return False
         elif skill not in stat_skills and tallies[skill] > 1:
