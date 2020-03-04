@@ -6,7 +6,7 @@
       <coach-content v-if="menu=='Coaches'"></coach-content>
       <tournament-content v-if="menu=='Tournaments'"></tournament-content>
       <leaderboard-content v-if="menu=='Leaderboard'"></leaderboard-content>
-      <signup-modal :user="user" ref="signupModal"></signup-modal>
+      <signup-modal ref="signupModal"></signup-modal>
     </div><!-- /.container -->
   </div>
 </template>

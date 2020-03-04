@@ -14,7 +14,7 @@
             </div>
             <div class="modal-body">
                 <template v-if="!is_user">
-                    <p>To be able to use this site you need to <a href="#" @click="signin">Sign in</a> using Discord credentials first!</p>
+                    <p>To be able to use this site you need to <a href="/signin">Sign in</a> using Discord credentials first!</p>
                 </template>
                 <template v-if="is_user && !is_coach">
                     <h5>Welcome to REBBL Imperium!</h5>
@@ -41,45 +41,9 @@
                                 <h5>Eligible Cards</h5>
                             </div>
                         </div>
-                        <div id="migrationCollection">
-                            <div class="card" v-for="(ctype,index) in card_types" :key="index">
-                                <div class="card-header" :id="ctype.replace(/\\s/g, '')+'MigrationCollection'">
-                                    <h5 class="mb-0">
-                                        <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapseMigrationCollection'+ctype.replace(/\\s/g, '')" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\\s/g, '')">
-                                        {{ ctype }} Cards
-                                        </button>
-                                    </h5>
-                                </div>
-                                <div :id="'collapseMigrationCollection'+ctype.replace(/\\s/g, '')" class="deck_ctype collapse show" :aria-labelledby="ctype.replace(/\\s/g, '')+'Cards'" data-parent="migrationCollection">
-                                    <div class="card-body table-responsive">
-                                        <table class="table  table-striped table-hover">
-                                            <thead>
-                                            <tr>
-                                                <th class="d-none d-xl-table-cell">Rarity</th>
-                                                <th class="d-xl-none">R</th>
-                                                <th class="d-none d-xl-table-cell">Value</th>
-                                                <th class="d-xl-none">V</th>
-                                                <th>Name</th>
-                                                <th v-if="ctype=='Training' || ctype=='Special Play'">Skills</th>
-                                                <th v-if="ctype=='Player'">Race</th>
-                                                <th v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">Subtype</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <tr @click="addToMigrationPack(card)" v-for="card in sortedCardsWithoutQuantity(eligible_cards,ctype)" :key="card.id" :class="[rarityclass(card.template.rarity)]">
-                                                <td><img class="rarity" :src="'static/images/'+card.template.rarity+'.jpg'" :alt="card.template.rarity" :title="card.template.rarity" width="20" height="25" /></td>
-                                                <td>{{ card.template.value }}</td>
-                                                <td :title="card.template.description">{{ card.template.name }}</td>
-                                                <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
-                                                <td v-if="ctype=='Player'">{{ card.template.race }}</td>
-                                                <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">{{ card.template.subtype }}</td>
-                                            </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <card-list id="migrationCollection" :cards="eligible_cards" :owner="user.coach"
+                        :starter="false" :quantity="false" :column_list="collection_colums"
+                        @card-click="addToMigrationPack"></card-list>
                     </div>
                     <div class="col-lg-6">
                         <div class="row mt-1">
@@ -93,47 +57,9 @@
                                 <h5>Value {{pack_value}}/{{max_value}}</h5>
                             </div>
                         </div>
-                        <div id="migrationPack">
-                            <div class="card" v-for="(ctype,index) in card_types" :key="index">
-                                <div class="card-header" :id="ctype.replace(/\\s/g, '')+'MigrationPack'">
-                                    <h5 class="mb-0">
-                                        <button class="btn btn-link" data-toggle="collapse" :data-target="'#migrationDeck'+ctype.replace(/\\s/g, '')" aria-expanded="true" :aria-controls="'collapse'+ctype.replace(/\\s/g, '')">
-                                        {{ ctype }} Cards
-                                        </button>
-                                    </h5>
-                                </div>
-                                <div :id="'migrationDeck'+ctype.replace(/\\s/g, '')" class="deck_ctype collapse show" :aria-labelledby="ctype.replace(/\\s/g, '')+'Cards'" data-parent="#migrationPack">
-                                    <div class="card-body table-responsive">
-                                        <table class="table  table-striped table-hover">
-                                            <thead>
-                                            <tr>
-                                                <th class="d-none d-xl-table-cell">Rarity</th>
-                                                <th class="d-xl-none">R</th>
-                                                <th class="d-none d-xl-table-cell">Value</th>
-                                                <th class="d-xl-none">V</th>
-                                                <th>Name</th>
-                                                <th v-if="ctype=='Training' || ctype=='Special Play'">Skills</th>
-                                                <th v-if="ctype=='Player'">Race</th>
-                                                <th v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">Subtype</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            <template v-for="card in sortedCardsWithoutQuantity(pack_cards.concat(uniques),ctype,false)">
-                                            <tr @click="removeFromMigrationPack(card)" :key="card.id" :class="[rarityclass(card.template.rarity)]">
-                                                <td><img class="rarity" :src="'static/images/'+card.template.rarity+'.jpg'" :alt="card.template.rarity" :title="card.template.rarity" width="20" height="25" /></td>
-                                                <td>{{ card.template.value }}</td>
-                                                <td :title="card.template.description">{{ card.template.name }}</td>
-                                                <td v-if="ctype=='Training' || ctype=='Special Play'"><span v-html="skills_for(card)"></span></td>
-                                                <td v-if="ctype=='Player'">{{ card.template.race }}</td>
-                                                <td v-if="ctype=='Player' || ctype=='Training'" class="d-none d-sm-table-cell">{{ card.template.subtype }}</td>
-                                            </tr>
-                                            </template>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <card-list id="migrationPack" :cards="pack_cards.concat(uniques)" :owner="user.coach"
+                        :starter="false" :quantity="false" :column_list="collection_colums"
+                        @card-click="removeFromMigrationPack"></card-list>
                     </div>
                 </div>
             </div>
@@ -142,16 +68,17 @@
     </div>
 </template>
 <script>
+import { mapState } from 'vuex';
 import Api from '@/mixins/api';
-import confirmationButton from './confirmation-button.vue';
+import confirmationButton from '@/components/confirmation-button.vue';
+import cardList from '@/components/card_list.vue';
 
 export default {
-  name: 'singup-modal',
+  name: 'signup-modal',
   mixins: [Api],
-  delimiters: ['{{', '}}'],
-  props: ['user'],
   components: {
     'confirmation-button': confirmationButton,
+    cardList,
   },
   data() {
     return {
@@ -160,12 +87,11 @@ export default {
       pack_cards: [],
       migration_on: false,
       selected_team: 'All',
-      show_starter: false,
-      rarity_order: 1,
       max_value: 35,
       max_cards: 5,
       max_legends: 1,
       migrated: false,
+      collection_colums: ['Rarity', 'Value', 'Name', 'Skills', 'Race', 'Subtype'],
     };
   },
   methods: {
@@ -308,6 +234,9 @@ export default {
     to_migrate() {
       return this.pack_cards.concat(this.uniques).map((c) => c.id);
     },
+    ...mapState([
+      'user',
+    ]),
   },
 };
 </script>
