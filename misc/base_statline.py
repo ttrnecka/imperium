@@ -231,7 +231,7 @@ mutation_positionals = [
     "Chaos_Minotaur", "Nurgle_Pestigor",
     "Nurgle_NurgleWarrior", "Skaven_Rat Ogre",
     "Underworld_Troll", "Chaos_Beastman",
-    "Chaos Dwarf_Blocker", "Chaos Dwarf_Hobgoblin",
+    "Chaos Dwarf_Blocker",
     "Skaven_Blitzer", "Underworld_Blitzer",
     "Skaven_Lineman", "Underworld_Lineman",
     "Skaven/Underworld_Lineman",
