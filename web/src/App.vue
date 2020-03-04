@@ -59,12 +59,6 @@ export default {
     ]),
   },
   computed: {
-    loaded_user_and_coaches() {
-      if (this.loaded_user && this.loaded_coaches) {
-        return true;
-      }
-      return false;
-    },
     is_active() {
       if (this.user.id && this.loggedCoach && !this.loggedCoach.deleted) {
         return true;
@@ -72,14 +66,14 @@ export default {
       return false;
     },
     ...mapState([
-      'user',
+      'user', 'initially_loaded',
     ]),
     ...mapGetters([
       'loggedCoach',
     ]),
   },
   watch: {
-    loaded_user_and_coaches: function (value) {
+    initially_loaded: function (value) {
       if (value === true && !this.is_active) {
         this.$refs.signupModal.open();
       }
