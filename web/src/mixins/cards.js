@@ -298,7 +298,8 @@ const Cards = {
       let match;
       match = this.skillreg.exec(str);
       while (match) {
-        if (!(card.name === 'The Apple Pie Killer' && match[1] === 'Block')) {
+        if (!(card.template.name === 'The Apple Pie Killer' && match[1] === 'Block')
+            && !(match.input.match('Pro Elf') && match[1] === 'Pro')) {
           if (match[1]) {
             matches.push(match[1]);
           } else if (match[2]) {
