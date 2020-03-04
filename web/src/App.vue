@@ -66,14 +66,14 @@ export default {
       return false;
     },
     ...mapState([
-      'user', 'initially_loaded',
+      'user', 'initial_load',
     ]),
     ...mapGetters([
       'loggedCoach',
     ]),
   },
   watch: {
-    initially_loaded: function (value) {
+    initial_load: function (value) {
       if (value === true && !this.is_active) {
         this.$refs.signupModal.open();
       }
