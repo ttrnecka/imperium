@@ -7,6 +7,8 @@
             <template v-if="doneable_phase">
               <button v-if="deck.phase_done" type="button" disabled class="btn btn-success">Done</button>
               <button v-if="!deck.phase_done && is_owner" type="button" class="btn btn-danger" @click="phaseDone()">Done</button>
+            </template>
+            <template>
               <button type="button" :disabled="processing" class="btn btn-danger" v-if="is_owner && !deck.commited && !locked" @click="reset()">Reset</button>
               <button type="button" disabled class="btn btn-success" v-if="deck.commited && !locked">Committed</button>
               <button type="button" disabled class="btn btn-info" v-if="locked">Locked</button>
@@ -170,7 +172,7 @@
                 <div :id="'collapselog'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
                   <div class="card-body">
                     <div class="row">
-                      <template v-for="(line, index) in deck.log.split(/\r?\n/).slice(1)">
+                      <template v-for="(line, index) in deck.log.split(/\r?\n/).reverse().slice(1)">
                         {{line}} <br :key="index" />
                       </template>
                     </div>
