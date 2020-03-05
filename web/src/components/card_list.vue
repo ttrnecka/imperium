@@ -41,7 +41,7 @@
               <template v-for="card in sorted(ctype)">
                 <tr @click="$emit('card-click', card)" :key="card.id" :class="[rarityclass(card), extra_type(card.deck_type), 'pointer']"
                   :title="card.template.name"
-                  :data-toggle="duster ? '': 'popover'" data-placement="top" data-html="true" :data-content="markdown.makeHtml(card.template.description)">
+                  :data-toggle="'popover'" data-placement="top" data-html="true" :data-content="markdown.makeHtml(card.template.description)">
                   <td v-if="should_diplay('Lock')">
                     <i v-if="is_locked(card) && is_loggedcoach(owner.short_name)" class="fas fa-lock"></i>
                   </td>
@@ -60,12 +60,12 @@
                   <td v-if="duster" class="text-right">
                     <button v-if="is_in_duster(card)" :disabled="processing"
                       type="button" class="col-12 btn btn-danger"
-                      @click.prevent="dust_remove(card)">Remove</button>
+                      @click.stop="dust_remove(card)">Remove</button>
                     <button v-else type="button" :disabled="processing"
                       class="col-12 btn btn-success"
-                      @click.prevent="dust_add(card)">Add</button>
+                      @click.stop="dust_add(card)">Add</button>
                   </td>
-                  <th v-if="isDeck">
+                  <th v-if="isDeck" @click.stop>
                     <div :id="'player'+card_id_or_uuid(card)" class="float-right"><i class="fas fa-cog fa-2x"></i></div>
                     <b-popover :target="'player'+card_id_or_uuid(card)" triggers="hover" placement="left">
                       <template v-slot:title>{{ card.template.name }}</template>
