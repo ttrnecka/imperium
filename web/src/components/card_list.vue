@@ -213,9 +213,10 @@ export default {
         return cards;
       }
       const order = this.rarityorder;
+      const that = this;
       function compare(a, b) {
         return (order[a.template.rarity] - order[b.template.rarity])
-          || a.template.name.localeCompare(b.template.name);
+          || a.template.name.localeCompare(b.template.name) || that.card_id_or_uuid(a).localeCompare(that.card_id_or_uuid(b));
       }
       return cards.slice().sort(compare);
     },

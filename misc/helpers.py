@@ -19,7 +19,7 @@ class CardHelper:
     @classmethod
     def sort_cards_by_rarity(cls, cards):
         """sorts cards by rarity"""
-        return sorted(cards, key=lambda x: (cls.rarityorder[cls.card_fix(x).get('rarity')], cls.card_fix(x).get('name')))
+        return sorted(cards, key=lambda x: (cls.rarityorder[cls.card_fix(x).get('rarity')], cls.card_fix(x).get('name'), cls.card_id_or_uuid(x)))
 
     @classmethod
     def sort_cards_by_rarity_with_quatity(cls, cards):
@@ -35,6 +35,14 @@ class CardHelper:
 
         return [(card["card"], card["quantity"]) for card in list(new_collection.values())]
     
+    @staticmethod
+    def card_id_or_uuid(card):
+      if isinstance(card, dict):
+        id = card.get('id') if card.get('id', None) else card.get('uuid')
+      else:
+        id = card.id if card.id else card.uuid
+      return str(id)
+
     @staticmethod
     def dummy_template_dict():
         template = {
