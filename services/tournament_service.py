@@ -314,12 +314,10 @@ class TournamentService:
             tran = Transaction(description=reason, price=tournament.fee)
 
             # deck
-            deck = Deck(team_name="", mixed_team="", tournament_signup=signup,
-                        extra_cards=[], unused_extra_cards=[], injury_map = {})
+            deck = Deck(team_name="", mixed_team="", tournament_signup=signup)
             db.session.add(deck)
 
             coach.make_transaction(tran)
-            # db.session.commit()
             if tournament.fee > 0:
                 coach_mention = f'<@{coach.disc_id}>'
                 fee_msg = f'Fee: {tournament.fee} coins'

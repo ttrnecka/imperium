@@ -34,11 +34,12 @@
                   Q
                 </th>
                 <th v-if="duster" style="width: 15%"></th>
+                <th v-if="isDeck"></th>
               </tr>
               </thead>
               <tbody>
               <template v-for="card in sorted(ctype)">
-                <tr @click="$emit('card-click', card)" :key="card.id" :class="[rarityclass(card.template.rarity), extra_type(card.deck_type), 'pointer']"
+                <tr @click="$emit('card-click', card)" :key="card.id" :class="[rarityclass(card), extra_type(card.deck_type), 'pointer']"
                   :title="card.template.name"
                   :data-toggle="duster ? '': 'popover'" data-placement="top" data-html="true" :data-content="markdown.makeHtml(card.template.description)">
                   <td v-if="should_diplay('Lock')">
@@ -64,19 +65,30 @@
                       class="col-12 btn btn-success"
                       @click.prevent="dust_add(card)">Add</button>
                   </td>
+                  <th v-if="isDeck">
+                    <div :id="'player'+card_id_or_uuid(card)" class="float-right"><i class="fas fa-cog fa-2x"></i></div>
+                    <b-popover :target="'player'+card_id_or_uuid(card)" triggers="hover" placement="left">
+                      <template v-slot:title>{{ card.template.name }}</template>
+                      <b-button class="m-1" v-if="isEnabled(card)" variant="danger" @click="$emit('card-disable', card)">Disable</b-button>
+                      <b-button class="m-1" v-else variant="success" @click="$emit('card-enable', card)">Enable</b-button>
+                      <b-button class="m-1" variant="info" @click="$emit('card-unskill', card)">Unskill</b-button>
+                    </b-popover>
+                  </th>
                 </tr>
                 <template v-if="isDeck">
-                  <tr :class="[rarityclass(card.template.rarity)]" v-for="(idx,index) in number_of_assignments(card)" :key="`assignment${index}${card_id_or_uuid(card)}`">
-                    <td :colspan="column_list.length">
+                  <tr :class="[rarityclass(card)]" v-for="(idx,index) in number_of_assignments(card)" :key="`assignment${index}${card_id_or_uuid(card)}`">
+                    <td :colspan="column_list.length+1">
                       <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="$emit('card-assign', card)" :disabled="!canEdit">
                         <option default :value="undefined" disabled>Select Player</option>
-                        <option v-for="(card,index) in sortedCards(assignable_player_cards)" :key="index" :value="card_id_or_uuid(card)">{{index+1}}. {{ card.template.name }}</option>
+                        <option v-for="(pcard,index) in sortedCards(assignable_player_cards)" :disabled="!isEnabled(pcard) || assigned_cards(pcard).includes(card)" :key="index" :value="card_id_or_uuid(pcard)">{{index+1}}. {{ pcard.template.name }}</option>
                       </select>
                     </td>
                   </tr>
-                  <tr v-if="ctype=='Player'" :class="[rarityclass(card.template.rarity)]" :key="'player'+card_id_or_uuid(card)">
-                    <th colspan="1"><i class="fas fa-angle-double-right fa-2x" title="Added skills and injuries"></i></th>
-                    <td :colspan="column_list.length-2">
+                  <tr v-if="ctype=='Player'" :class="[rarityclass(card)]" :key="'player'+card_id_or_uuid(card)">
+                    <th colspan="1">
+                      <i class="fas fa-angle-double-right fa-2x"></i>
+                    </th>
+                    <td :colspan="column_list.length-1">
                       <span v-html="deck_skills_for(card)"></span>
                       <span v-if="is_guarded(card)" title="No Special Play effects possible">&#128170;</span>
                       <template v-if="canEdit">
@@ -84,7 +96,7 @@
                         <injury-picker v-else v-on:injured="addInjury(card,$event)"></injury-picker>
                       </template>
                     </td>
-                    <td class="d-none d-sm-table-cell"><b>Doubles:</b> {{doubles_count(card)}}</td>
+                    <td><div class="float-right"><b>Doubles:</b> {{doubles_count(card)}}</div></td>
                   </tr>
                 </template>
               </template>
@@ -207,9 +219,12 @@ export default {
       }
       return cards.slice().sort(compare);
     },
-    rarityclass(rarity) {
+    rarityclass(card) {
       let klass;
-      switch (rarity) {
+      if (!this.isEnabled(card)) {
+        return 'table-secondary';
+      }
+      switch (card.template.rarity) {
         case 'Common':
         case 'Starter':
           klass = 'table-light';
@@ -261,12 +276,6 @@ export default {
       if (assignedCards.find((c) => ['Bodyguard', 'Hired Muscle', 'Personal Army'].includes(c.template.name)) !== undefined) { return true; }
       return false;
     },
-    get_card_assignment(card) {
-      if (this.deck.id && card.assigned_to_array[this.deck.id]) {
-        return card.assigned_to_array[this.deck.id];
-      }
-      return [];
-    },
     deck_skills_for(card) {
       const assignedCards = this.assigned_cards(card);
       const injuries = this.player_injuries(card);
@@ -281,9 +290,6 @@ export default {
         });
         return this.skills_for(c, double);
       }).join('') + injuries.map((c) => this.imgs_for_skill(c)).join('');
-    },
-    assigned_cards(card) {
-      return this.cards.filter((c) => this.get_card_assignment(c).includes(this.card_id_or_uuid(card)));
     },
     player_injuries(card) {
       return this.assigned_injuries(card).concat(this.injury_names_for_player_card(card));
@@ -374,4 +380,9 @@ export default {
 .pointer {
   cursor: pointer;
 }
+
+.table-hover > tbody > tr.table-secondary:hover > td {
+     background-color: #d6d8db;
+}
+
 </style>

@@ -458,7 +458,7 @@ def locked(deck):
 
 def get_deck_or_abort(deck_id):
     """Returns deck or aborts"""
-    deck = Deck.query.get(deck_id)
+    deck = db.session.query(Deck).with_for_update().get(deck_id)
     if deck is None:
         abort(404)
     return deck
@@ -552,6 +552,36 @@ def assigncard_deck(deck_id):
     card = request.get_json()
     try:
         deck = DeckService.assigncard(deck, card)
+    except (DeckError) as exc:
+        raise InvalidUsage(str(exc), status_code=403)
+
+    return deck_response(deck)
+
+@app.route("/decks/<int:deck_id>/disable", methods=["POST"])
+@authenticated
+def disablecard_deck(deck_id):
+    """Assigns card in deck"""
+    deck = get_unlocked_deck_or_abort(deck_id)
+    can_edit_deck(deck)
+
+    card = request.get_json()
+    try:
+        deck = DeckService.disable_card(deck, card)
+    except (DeckError) as exc:
+        raise InvalidUsage(str(exc), status_code=403)
+
+    return deck_response(deck)
+
+@app.route("/decks/<int:deck_id>/enable", methods=["POST"])
+@authenticated
+def enablecard_deck(deck_id):
+    """Assigns card in deck"""
+    deck = get_unlocked_deck_or_abort(deck_id)
+    can_edit_deck(deck)
+
+    card = request.get_json()
+    try:
+        deck = DeckService.enable_card(deck, card)
     except (DeckError) as exc:
         raise InvalidUsage(str(exc), status_code=403)
 

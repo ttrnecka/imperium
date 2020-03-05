@@ -18,7 +18,9 @@ TODO
 inducement calaculation in special phase should be saved and send later - blessing updates.demotes could mess tge values
 make blessings/curses limited to avialable list + add command to rerol
 make the deck skills to be removable
-
+Glarty glackfly - team checker does not work for Skaven BLitzer?
+Mutliple skills with same name - assigning changes order
+Resigning tournamnet does not release cards(immediately)?
 
 VERY HIGH
 add deck templates

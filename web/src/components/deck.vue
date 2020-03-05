@@ -170,7 +170,7 @@
                 <div :id="'collapselog'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
                   <div class="card-body">
                     <div class="row">
-                      <template v-for="(line, index) in deck.log.split(/\r?\n/).reverse().slice(1)">
+                      <template v-for="(line, index) in deck.log.split(/\r?\n/).slice(1)">
                         {{line}} <br :key="index" />
                       </template>
                     </div>
@@ -187,7 +187,7 @@
                 </div>
                 <div v-if="has_deck_upgrade" :id="'collapsedeckupgrade'+id" class="collapse show" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
                   <div class="card-body deck_upgrade">
-                    <div class="row" v-for="card in deck_upgrades" :key="card.template.name">
+                    <div class="row" v-for="card in deck_upgrades" :key="card.id">
                       <div class="col-md-3">
                         <b>{{card.template.name}}:</b>
                       </div>
@@ -238,7 +238,7 @@
               <card-list id="accordionCardsDeck" :cards="deck_cards" :selected_team="selected_team" :owner="coach"
                   :starter="starter" :quantity="false" :type_list="deck_card_types" :column_list="collection_colums"
                   @card-click="removeFromDeck" @card-assign="assignCard" :rarity_sort="rarity_order" :deck="deck" :edit="canEdit"
-                  @update-deck="updateDeck"></card-list>
+                  @update-deck="updateDeck" @card-disable="disableCard" @card-enable="enableCard" @card-unskill="unskillCard" ></card-list>
             </div>
           </div>
         </div>
@@ -350,21 +350,8 @@ export default {
       }
       this.addCard(card);
     },
-    canRemoveFromDeck() {
-      if (!this.is_owner) {
-        return false;
-      }
-      if (this.locked) {
-        this.flash('Deck is locked!', 'info', { timeout: 3000 });
-        return false;
-      }
-      if (this.processing === true) {
-        return false;
-      }
-      return true;
-    },
     removeFromDeck(card) {
-      if (!this.canRemoveFromDeck(card)) {
+      if (!this.isEditable()) {
         return;
       }
       this.removeCard(card);
@@ -454,6 +441,8 @@ export default {
           msg: 'Player not found',
         };
         this.deck_cards.forEach((c) => {
+          // ignore disabled cards
+          if (!this.isEnabled(c)) { return; }
           // if the cards has been linked with another -> skip
           if (ignore.includes(this.card_id_or_uuid(c))) { return; }
           // if the player is already valid -> skip
@@ -543,12 +532,18 @@ export default {
     cloneExtraCard(card) {
       this.addExtraCard(card.template.name);
     },
-    addExtraCard(name) {
+    isEditable() {
       if (!this.is_owner) {
-        return;
+        return false;
       }
       if (this.locked) {
         this.flash('Deck is locked!', 'info', { timeout: 3000 });
+        return false;
+      }
+      return true;
+    },
+    addExtraCard(name) {
+      if (!this.isEditable()) {
         return;
       }
       const path = `/decks/${this.deck_id}/addcard/extra`;
@@ -568,11 +563,7 @@ export default {
         });
     },
     removeExtraCard(card) {
-      if (!this.is_owner) {
-        return;
-      }
-      if (this.locked) {
-        this.flash('Deck is locked!', 'info', { timeout: 3000 });
+      if (!this.isEditable()) {
         return;
       }
       const path = `/decks/${this.deck_id}/removecard/extra`;
@@ -620,11 +611,7 @@ export default {
       return true;
     },
     commit() {
-      if (!this.is_owner) {
-        return;
-      }
-      if (this.locked) {
-        this.flash('Deck is locked!', 'info', { timeout: 3000 });
+      if (!this.isEditable()) {
         return;
       }
       if (!this.deck_valid()) {
@@ -647,11 +634,7 @@ export default {
         });
     },
     reset() {
-      if (!this.is_owner) {
-        return;
-      }
-      if (this.locked) {
-        this.flash('Deck is locked!', 'info', { timeout: 3000 });
+      if (!this.isEditable()) {
         return;
       }
       const path = `/decks/${this.deck_id}/reset`;
@@ -692,11 +675,7 @@ export default {
     },
 
     assignCard(card) {
-      if (!this.is_owner) {
-        return;
-      }
-      if (this.locked) {
-        this.flash('Deck is locked!', 'info', { timeout: 3000 });
+      if (!this.isEditable()) {
         return;
       }
       const path = `/decks/${this.deck_id}/assign`;
@@ -704,7 +683,64 @@ export default {
       const processingMsg = this.flash('Processing...', 'info');
       this.axios.post(path, card)
         .then((res) => {
-          const msg = 'Card assigned!';
+          const msg = 'Card re-assigned!';
+          this.flash(msg, 'success', { timeout: 1000 });
+          this.deck = res.data;
+        })
+        .catch(this.async_error)
+        .then(() => {
+          processingMsg.destroy();
+          this.processing = false;
+        });
+    },
+
+    unskillCard(card) {
+      if (!this.isEditable()) {
+        return;
+      }
+      this.assigned_cards(card).forEach((c) => {
+        const newAssignmentToArray = c.assigned_to_array[this.deck.id].filter((id) => String(id) !== this.card_id_or_uuid(card));
+        c.assigned_to_array[this.deck.id] = newAssignmentToArray;
+        this.assignCard(c);
+      });
+
+      if (card.assigned_to_array[this.deck.id].length !== 0) {
+        card.assigned_to_array[this.deck.id] = [];
+        this.assignCard(card);
+      }
+    },
+
+    disableCard(card) {
+      if (!this.isEditable()) {
+        return;
+      }
+      const path = `/decks/${this.deck_id}/disable`;
+      this.processing = true;
+      const processingMsg = this.flash('Processing...', 'info');
+      this.axios.post(path, card)
+        .then((res) => {
+          const msg = 'Card disabled!';
+          this.flash(msg, 'success', { timeout: 1000 });
+          this.deck = res.data;
+          this.unskillCard(card);
+        })
+        .catch(this.async_error)
+        .then(() => {
+          processingMsg.destroy();
+          this.processing = false;
+        });
+    },
+
+    enableCard(card) {
+      if (!this.isEditable()) {
+        return;
+      }
+      const path = `/decks/${this.deck_id}/enable`;
+      this.processing = true;
+      const processingMsg = this.flash('Processing...', 'info');
+      this.axios.post(path, card)
+        .then((res) => {
+          const msg = 'Card enabled!';
           this.flash(msg, 'success', { timeout: 1000 });
           this.deck = res.data;
         })
@@ -728,6 +764,7 @@ export default {
             this.clearCard(card);
           }
           this.removeAllInjuries(card);
+          this.unskillCard(card);
         })
         .catch(this.async_error)
         .then(() => {
@@ -745,11 +782,7 @@ export default {
       ccard[check] = false;
     },
     updateDeck() {
-      if (!this.is_owner) {
-        return;
-      }
-      if (this.locked) {
-        this.flash('Deck is locked!', 'info', { timeout: 3000 });
+      if (!this.isEditable()) {
         return;
       }
       const path = `/decks/${this.deck_id}`;

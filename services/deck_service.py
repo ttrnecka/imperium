@@ -8,6 +8,7 @@ from models.base_model import db
 from models.marsh_models import card_schema
 from models.data_models import date_now, Card, Coach, Tournament, CardTemplate
 from models.general import MIXED_TEAMS
+from misc.helpers import CardHelper
 
 from .card_service import CardService
 from .notification_service import LedgerNotificationService
@@ -37,6 +38,37 @@ class DeckService:
     def deck_type(cls, deck):
         """Returns deck type based on tournament type"""
         return deck.tournament_signup.tournament.type
+
+    @classmethod
+    def disable_card(cls, deck, card):
+        """Disable `card` in `deck`"""
+        id = CardService.card_id_or_uuid(card)
+        # init for old decks
+        if deck.disabled_cards == "":
+            deck.disabled_cards = []
+
+        if id in deck.disabled_cards:
+            raise DeckError(f"Card is already disabled")
+        deck.disabled_cards.append(id)
+        flag_modified(deck, "disabled_cards")
+        c = CardHelper.card_fix(card)
+        deck.to_log(f"{date_now()}: Card Id. {id}. {c.get('name')} was disabled")
+        db.session.commit()
+        return deck
+
+    @classmethod
+    def enable_card(cls, deck, card):
+        """Disable `card` in `deck`"""
+        id = CardService.card_id_or_uuid(card)
+
+        if id not in deck.disabled_cards:
+            raise DeckError(f"Card is not disabled")
+        deck.disabled_cards.remove(id)
+        flag_modified(deck, "disabled_cards")
+        c = CardHelper.card_fix(card)
+        deck.to_log(f"{date_now()}: Card Id. {id}. {c.get('name')} was enabled")
+        db.session.commit()
+        return deck
 
     @classmethod
     def addextracard(cls, deck, name):

@@ -76,6 +76,7 @@ class DeckSchema(ma.ModelSchema):
     cards = ma.Nested(CardSchema, many=True)
     injury_map = ma.Dict()
     deck_upgrade_cards = ma.Nested(CardSchema, many=True)
+    disabled_cards = ma.List(ma.String)
 
 class CrackerCardTemplateSchema(ma.ModelSchema):
     class Meta:

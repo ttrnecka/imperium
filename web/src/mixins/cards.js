@@ -454,6 +454,21 @@ const Cards = {
       }
       return true;
     },
+    isEnabled(card) {
+      if (this.deck.id && this.deck.disabled_cards !== '' && this.deck.disabled_cards.includes(this.card_id_or_uuid(card))) {
+        return false;
+      }
+      return true;
+    },
+    get_card_assignment(card) {
+      if (this.deck.id && card.assigned_to_array[this.deck.id]) {
+        return card.assigned_to_array[this.deck.id];
+      }
+      return [];
+    },
+    assigned_cards(card) {
+      return this.cards.filter((c) => this.get_card_assignment(c).includes(this.card_id_or_uuid(card)));
+    },
   },
   computed: {
     skill_to_group_map() {

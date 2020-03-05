@@ -434,12 +434,13 @@ class Deck(Base):
     cards = db.relationship("Card", secondary=deck_card_table, backref=db.backref('decks', lazy="dynamic"), lazy="dynamic")
 
     commited = db.Column(db.Boolean(), default=False)
-    extra_cards = db.Column(TextPickleType(), nullable=False)
-    unused_extra_cards = db.Column(TextPickleType(), nullable=False)
+    extra_cards = db.Column(TextPickleType(), nullable=False, default=[])
+    unused_extra_cards = db.Column(TextPickleType(), nullable=False, default=[])
     comment = db.Column(db.Text(),nullable=False, default="")
     log = db.Column(db.Text(),nullable=False, default="")
-    injury_map = db.Column(TextPickleType(), nullable=False)
+    injury_map = db.Column(TextPickleType(), nullable=False, default={})
     phase_done = db.Column(db.Boolean(), default=False)
+    disabled_cards = db.Column(TextPickleType(), nullable=False, default=[])
 
     def deck_upgrade_cards(self):
         return [card for card in self.tournament_signup.coach.active_cards() if card.template.subtype=="Deck Upgrade"]
