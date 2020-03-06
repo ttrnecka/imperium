@@ -431,7 +431,7 @@ export default {
     },
     checkRoster() {
       // roster size
-      if (this.team.roster.length !== this.deck_cards.filter((c) => c.template.card_type === 'Player').length) {
+      if (this.team.roster.length !== this.deck_cards.filter((c) => c.template.card_type === 'Player' && this.isEnabled(c)).length) {
         this.team_check.roster.value = false;
         this.team_check.roster.msg = 'Number of players does not match';
       }
