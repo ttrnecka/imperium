@@ -284,6 +284,8 @@ class DeckService:
         """Returns list of eligible player Cards or cards that can be assigned given training card"""
         # only players that can be assigned skill
         players = DeckService.assignable_players(deck)
+        # remove disabled ones
+        players = [player for player in players if cls.is_enabled(deck, player)]
         # get the skills the cards gives
         skills = CardService.skill_names_for(card, api_format=False)
         eligible = []
@@ -344,6 +346,7 @@ class DeckService:
 
     @staticmethod
     def assignable_players(deck):
+        """Return list of cards that can be assigned a card"""
         return [card for card in DeckService.players(deck) if CardService.assignable(card)] + \
             [card for card in DeckService.extra_players(deck) if CardService.assignable(card)]
     
@@ -378,6 +381,12 @@ class DeckService:
       if deck.injury_map.get(uid,None):
           injuries.append(deck.injury_map[uid])
       return injuries
+
+    @staticmethod
+    def is_enabled(deck, card):
+      if deck.disabled_cards and CardService.card_id_or_uuid(card) in deck.disabled_cards:
+        return False
+      return True
 
 class DeckError(Exception):
     """Exception for Deck related issues"""
