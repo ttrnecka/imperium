@@ -1,5 +1,7 @@
 from flask import Blueprint, jsonify, abort, request
 
+import functools
+
 from models.data_models import db, Tournament, Deck
 from models.marsh_models import deck_schema
 from misc.decorators import authenticated
@@ -38,6 +40,20 @@ def deck_response(deck):
     result = deck_schema.dump(deck)
     return jsonify(result.data)
 
+def deck_response_deco(func):
+    """Standard deck response"""
+    @functools.wraps(func)
+    @authenticated
+    def wrapper_deck_response(deck_id):
+        deck = get_unlocked_deck_or_abort(deck_id)
+        can_edit_deck(deck)
+        try:
+          deck = func(deck)
+        except (DeckError) as exc:
+          raise InvalidUsage(str(exc), status_code=403)
+        return deck_response(deck)
+    return wrapper_deck_response
+
 @deck.route("/<int:deck_id>", methods=["GET"])
 @authenticated
 def get_deck(deck_id):
@@ -73,146 +89,61 @@ def get_deck(deck_id):
     return deck_response(deck)
 
 @deck.route("/<int:deck_id>", methods=["POST"])
-@authenticated
-def update_deck(deck_id):
+@deck_response_deco
+def update_deck(deck):
     """Updates base deck info not cards"""
-    deck = get_unlocked_deck_or_abort(deck_id)
-    can_edit_deck(deck)
+    return DeckService.update(deck, request.get_json()['deck'])
 
-    received_deck = request.get_json()['deck']
-    deck = DeckService.update(deck, received_deck)
-    return deck_response(deck)
-
-# updates just base deck info not cards
 @deck.route("/<int:deck_id>/addcard", methods=["POST"])
-@authenticated
-def addcard_deck(deck_id):
+@deck_response_deco
+def addcard_deck(deck):
     """Adds cards to deck"""
-    deck = get_unlocked_deck_or_abort(deck_id)
-    can_edit_deck(deck)
-
-    card = request.get_json()
-    try:
-        deck = DeckService.addcard(deck, card)
-    except (DeckError) as exc:
-        raise InvalidUsage(str(exc), status_code=403)
-
-    return deck_response(deck)
+    return DeckService.addcard(deck, request.get_json())
 
 @deck.route("/<int:deck_id>/assign", methods=["POST"])
-@authenticated
-def assigncard_deck(deck_id):
+@deck_response_deco
+def assigncard_deck(deck):
     """Assigns card in deck"""
-    deck = get_unlocked_deck_or_abort(deck_id)
-    can_edit_deck(deck)
-
-    card = request.get_json()
-    try:
-        deck = DeckService.assigncard(deck, card)
-    except (DeckError) as exc:
-        raise InvalidUsage(str(exc), status_code=403)
-
-    return deck_response(deck)
+    return DeckService.assigncard(deck, request.get_json())
 
 @deck.route("/<int:deck_id>/disable", methods=["POST"])
-@authenticated
-def disablecard_deck(deck_id):
+@deck_response_deco
+def disablecard_deck(deck):
     """Assigns card in deck"""
-    deck = get_unlocked_deck_or_abort(deck_id)
-    can_edit_deck(deck)
-
-    card = request.get_json()
-    try:
-        deck = DeckService.disable_card(deck, card)
-    except (DeckError) as exc:
-        raise InvalidUsage(str(exc), status_code=403)
-
-    return deck_response(deck)
+    return DeckService.disable_card(deck, request.get_json())
 
 @deck.route("/<int:deck_id>/enable", methods=["POST"])
-@authenticated
-def enablecard_deck(deck_id):
+@deck_response_deco
+def enablecard_deck(deck):
     """Assigns card in deck"""
-    deck = get_unlocked_deck_or_abort(deck_id)
-    can_edit_deck(deck)
-
-    card = request.get_json()
-    try:
-        deck = DeckService.enable_card(deck, card)
-    except (DeckError) as exc:
-        raise InvalidUsage(str(exc), status_code=403)
-
-    return deck_response(deck)
+    return DeckService.enable_card(deck, request.get_json())
 
 @deck.route("/<int:deck_id>/addcard/extra", methods=["POST"])
-@authenticated
-def addcardextra_deck(deck_id):
+@deck_response_deco
+def addcardextra_deck(deck):
     """Adds extra card to deck"""
-    deck = get_unlocked_deck_or_abort(deck_id)
-    can_edit_deck(deck)
-
-    name = request.get_json()['name']
-    try:
-        deck = DeckService.addextracard(deck, name)
-    except (DeckError) as exc:
-        raise InvalidUsage(str(exc), status_code=403)
-
-    return deck_response(deck)
+    return DeckService.addextracard(deck, request.get_json()['name'])
 
 @deck.route("/<int:deck_id>/removecard/extra", methods=["POST"])
-@authenticated
-def removecardextra_deck(deck_id):
+@deck_response_deco
+def removecardextra_deck(deck):
     """Removes extra card from deck"""
-    deck = get_unlocked_deck_or_abort(deck_id)
-    can_edit_deck(deck)
-
-    card = request.get_json()
-    try:
-        deck = DeckService.removeextracard(deck, card)
-    except (DeckError) as exc:
-        raise InvalidUsage(str(exc), status_code=403)
-
-    return deck_response(deck)
+    return DeckService.removeextracard(deck, request.get_json())
 
 @deck.route("/<int:deck_id>/remove", methods=["POST"])
-@authenticated
-def removecard_deck(deck_id):
+@deck_response_deco
+def removecard_deck(deck):
     """Removes cards from deck"""
-    deck = get_unlocked_deck_or_abort(deck_id)
-    can_edit_deck(deck)
-
-    card = request.get_json()
-    try:
-        deck = DeckService.removecard(deck, card)
-    except (DeckError) as exc:
-        raise InvalidUsage(str(exc), status_code=403)
-
-    return deck_response(deck)
+    return DeckService.removecard(deck, request.get_json())
 
 @deck.route("/<int:deck_id>/commit", methods=["GET"])
-@authenticated
-def commit_deck(deck_id):
+@deck_response_deco
+def commit_deck(deck):
     """Commits deck"""
-    deck = get_unlocked_deck_or_abort(deck_id)
-    can_edit_deck(deck)
-
-    try:
-        deck = DeckService.commit(deck)
-    except (DeckError) as exc:
-        raise InvalidUsage(str(exc), status_code=403)
-
-    return deck_response(deck)
+    return DeckService.commit(deck)
 
 @deck.route("/<int:deck_id>/reset", methods=["GET"])
-@authenticated
-def reset_deck(deck_id):
+@deck_response_deco
+def reset_deck(deck):
     """Resets deck"""
-    deck = get_unlocked_deck_or_abort(deck_id)
-    can_edit_deck(deck)
-
-    try:
-        deck = DeckService.reset(deck)
-    except (DeckError) as exc:
-        raise InvalidUsage(str(exc), status_code=403)
-
-    return deck_response(deck)
+    return DeckService.reset(deck)
