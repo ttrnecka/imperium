@@ -11,7 +11,7 @@ from bot.command import DiscordCommand
 
 import web
 
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix='!', case_insensitive=True)
 
 ROOT = os.path.dirname(__file__)
 
