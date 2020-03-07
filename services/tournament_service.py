@@ -8,7 +8,7 @@ from models.data_models import Tournament, TournamentSignups, Transaction, Deck,
 from models.data_models import TournamentSponsor, TournamentRoom, ConclaveRule, Competition
 from models.base_model import db
 from misc import imperium_keywords
-from .notification_service import NotificationService, AdminNotificationService
+from .notification_service import Notificator
 from .imperium_sheet_service import ImperiumSheetService
 from .deck_service import DeckService
 from .conclave_service import ConclaveService
@@ -325,13 +325,13 @@ class TournamentService:
                 coach_mention = coach.short_name()
                 fee_msg = ""
 
-            NotificationService.notify(
+            Notificator("bank").notify(
                 f'{coach_mention} successfuly signed to tournament. {fee_msg}'
             )
             # if tournament is full initiate update in extra thread, this will recreate free tournaments if needed
             
             if tournament.is_full():
-                AdminNotificationService.notify("!admincomp update")
+                Notificator("admin").notify("!admincomp update")
 
         except Exception as exc:
             raise RegistrationError(str(exc))
@@ -377,7 +377,7 @@ class TournamentService:
                 coach_mention = coach.short_name()
                 fee_msg = ""
 
-            NotificationService.notify(
+            Notificator("bank").notify(
                 f'{coach_mention} successfuly resigned from tournament. {fee_msg}'
             )
 
@@ -396,7 +396,7 @@ class TournamentService:
                 coach_mention = card.coach.mention()
                 db.session.delete(card)
                 db.session.commit()
-                NotificationService.notify(
+                Notificator("bank").notify(
                     f'Card {card.get("name")} removed from {coach_mention} collection - one time use.'
                 )
 
@@ -758,7 +758,7 @@ class TournamentService:
         if err:
             raise TournamentError(err)
         
-        AdminNotificationService.notify(
+        Notificator("admin").notify(
             f"!admincomp start {tournament.tournament_id}"
         )
         

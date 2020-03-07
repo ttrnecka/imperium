@@ -11,7 +11,7 @@ from models.general import MIXED_TEAMS
 from misc.helpers import CardHelper
 
 from .card_service import CardService
-from .notification_service import LedgerNotificationService
+from .notification_service import Notificator
 
 class DeckService:
     """DeckService namespace"""
@@ -256,14 +256,14 @@ class DeckService:
 
         coach_mention = coach.short_name()
 
-        LedgerNotificationService.notify(
+        Notificator("ledger").notify(
             f'{admin_mention} - {coach_mention} submitted ledger for ' +
             f'{tournament.tournament_id}. {tournament.name} - channel {tournament.discord_channel}')
 
         # check if all ledgers are commited
         deck_states = [ts.deck.commited for ts in tournament.tournament_signups]
         if False not in deck_states:
-            LedgerNotificationService.notify(
+            Notificator("ledger").notify(
                 f'{admin_mention} - All ledgers are locked & committed now for ' +
                 f'{tournament.tournament_id}. {tournament.name} - channel ' +
                 f'{tournament.discord_channel}'

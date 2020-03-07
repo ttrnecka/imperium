@@ -4,7 +4,7 @@ from sqlalchemy import func
 from models.data_models import Competition, Coach, Tournament
 from models.base_model import db
 from .bb2_service import BB2Service, SighanideError
-from .notification_service import TournamentNotificationService
+from .notification_service import Notificator
 
 
 class CompetitionError(Exception):
@@ -61,7 +61,7 @@ class CompetitionService:
             BB2Service.delete_competition(competition.comp_id)
             db.session.delete(competition)
             db.session.commit()
-            TournamentNotificationService.notify(f"Created in-game room **{competition.name}** in **{competition.league_name}**")
+            Notificator('tournament').notify(f"Created in-game room **{competition.name}** in **{competition.league_name}**")
         except SighanideError as e:
             raise CompetitionError(str(e))
 
@@ -133,7 +133,7 @@ class CompetitionService:
             raise CompetitionError(f"Team {team_name} does not belong to coach {coach.bb2_name}")
         try:
             result = BB2Service.api().send_ticket(comp.comp_id, 0, coach_id, team_id)
-            TournamentNotificationService.notify(f"{coach.short_name()} ticketed **{deck.team_name}** into **{competition_name}**")
+            Notificator('tournament').notify(f"{coach.short_name()} ticketed **{deck.team_name}** into **{competition_name}**")
         except SighanideError as e:
             raise CompetitionError(str(e))
         return result
@@ -183,5 +183,5 @@ class CompetitionService:
 
         db.session.add(c)
         db.session.commit()
-        TournamentNotificationService.notify(f"Created in-game room **{c.name}** in **{c.league_name}**")
+        Notificator('tournament').notify(f"Created in-game room **{c.name}** in **{c.league_name}**")
         return c

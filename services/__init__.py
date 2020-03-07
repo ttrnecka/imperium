@@ -11,8 +11,7 @@ from .card_service import CardService
 from .coach_service import CoachService
 from .transaction_service import TransactionService
 from .imperium_sheet_service import ImperiumSheetService
-from .notification_service import NotificationService, LedgerNotificationService, AdminNotificationService
-from .notification_service import AchievementNotificationService, Notificator, NotificationRegister, TournamentNotificationService
+from .notification_service import Notificator
 from .tournament_service import RegistrationError, TournamentService, TournamentError
 from .bb2_service import BB2Service
 from .web_hook_service import WebHook
@@ -31,7 +30,7 @@ def after_phase_set_hook(target, value, oldvalue, initiator):
             decks = [signup.deck for signup in target.tournament_signups]
             for deck in decks:
                 deck.phase_done = False
-            AdminNotificationService.notify(
+            Notificator("admin").notify(
                 f"!admincomp {value} {target.tournament_id}"
             )
         

@@ -1,7 +1,7 @@
 """resets coaches and tournaments in DB"""
 from web import db, app
 from models.data_models import Coach, Tournament
-from services import TournamentNotificationService, TournamentService, ImperiumSheetService, TournamentError
+from services import Notificator, TournamentService, ImperiumSheetService, TournamentError
 
 app.app_context().push()
 
@@ -17,4 +17,4 @@ if manual:
     msg=f"{c[0].mention()}\nFull tournaments:\n"
     for t in manual:
         msg += f"{t.tournament_id}. {t.name}\n"
-    TournamentNotificationService.notify(msg)
+    Notificator('tournament').notify(msg)

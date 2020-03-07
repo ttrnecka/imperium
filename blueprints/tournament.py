@@ -8,7 +8,7 @@ from misc.decorators import authenticated, webadmin, masteradmin, registered
 from misc.helpers import InvalidUsage, current_coach
 
 from services import TournamentService, RegistrationError, TransactionService, TournamentError
-from services import NotificationService
+from services import Notificator
 
 tournament = Blueprint('tournaments', __name__)
 
@@ -139,7 +139,7 @@ def tournament_resign(tournament_id, **kwargs):
         if signups:
             coaches = [signup.coach for signup in signups]
             msg = (", ").join([f"<@{coach.disc_id}>" for coach in coaches])
-            NotificationService.notify(
+            Notificator("bank").notify(
                 f"{msg}: Your signup to {tourn.name} has been updated from RESERVE to ACTIVE"
             )
 

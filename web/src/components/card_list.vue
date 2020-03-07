@@ -66,13 +66,15 @@
                       @click.stop="dust_add(card)">Add</button>
                   </td>
                   <th v-if="isDeck" @click.stop>
-                    <div :id="'player'+card_id_or_uuid(card)" class="float-right"><i class="fas fa-cog fa-2x"></i></div>
-                    <b-popover :target="'player'+card_id_or_uuid(card)" triggers="hover" placement="left">
-                      <template v-slot:title>{{ card.template.name }}</template>
-                      <b-button class="m-1" v-if="isEnabled(card)" variant="danger" @click="$emit('card-disable', card)">Disable</b-button>
-                      <b-button class="m-1" v-else variant="success" @click="$emit('card-enable', card)">Enable</b-button>
-                      <b-button class="m-1" variant="info" @click="$emit('card-unskill', card)">Unskill</b-button>
-                    </b-popover>
+                    <template v-if="canEdit">
+                      <div :id="'player'+card_id_or_uuid(card)" class="float-right"><i class="fas fa-cog fa-2x"></i></div>
+                      <b-popover :target="'player'+card_id_or_uuid(card)" triggers="hover" placement="left">
+                        <template v-slot:title>{{ card.template.name }}</template>
+                        <b-button class="m-1" v-if="isEnabled(card)" variant="danger" @click="$emit('card-disable', card)">Disable</b-button>
+                        <b-button class="m-1" v-else variant="success" @click="$emit('card-enable', card)">Enable</b-button>
+                        <b-button class="m-1" variant="info" @click="$emit('card-unskill', card)">Unskill</b-button>
+                      </b-popover>
+                    </template>
                   </th>
                 </tr>
                 <template v-if="isDeck">

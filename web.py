@@ -13,8 +13,7 @@ from sqlalchemy.orm import selectinload
 from models.base_model import db
 from models.data_models import Coach
 from models.marsh_models import ma, coach_schema
-from services import NotificationService, LedgerNotificationService, AchievementNotificationService
-from services import AdminNotificationService, TournamentNotificationService
+from services import Notificator
 from services import BB2Service, WebHook
 from services import stats
 from misc.helpers import InvalidUsage, current_user
@@ -40,17 +39,13 @@ def create_app():
     fapp.register_blueprint(cracker.cracker, url_prefix='/api/cracker')
 
     # register wehook as Tournament service notifier
-    NotificationService.register_notifier(WebHook(fapp.config['DISCORD_WEBHOOK_BANK']).send)
-    LedgerNotificationService.register_notifier(WebHook(fapp.config['DISCORD_WEBHOOK_LEDGER']).send)
-    AchievementNotificationService.register_notifier(
-        WebHook(fapp.config['DISCORD_WEBHOOK_ACHIEVEMENTS']).send
-    )
-    AdminNotificationService.register_notifier(
+    Notificator("bank").register_notifier(WebHook(fapp.config['DISCORD_WEBHOOK_BANK']).send)
+    Notificator("ledger").register_notifier(WebHook(fapp.config['DISCORD_WEBHOOK_LEDGER']).send)
+    Notificator("achievement").register_notifier(WebHook(fapp.config['DISCORD_WEBHOOK_ACHIEVEMENTS']).send)
+    Notificator("admin").register_notifier(
         WebHook(fapp.config['DISCORD_WEBHOOK_ADMIN']).send
     )
-    TournamentNotificationService.register_notifier(
-        WebHook(fapp.config['DISCORD_WEBHOOK_TOURNAMENT']).send
-    )
+    Notificator('tournament').register_notifier(WebHook(fapp.config['DISCORD_WEBHOOK_TOURNAMENT']).send)
     BB2Service.register_agent(bb2.api.Agent(fapp.config['BB2_API_KEY']))
     return fapp
 
