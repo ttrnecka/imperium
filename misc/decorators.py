@@ -69,3 +69,12 @@ def masteradmin(func):
         return func(*args, **kwargs)
     return wrapper_masteradmin
 
+
+def remove_session(func):
+    """Removes session at the end"""
+    @functools.wraps(func)
+    def wrapper_remove_session(*args, **kwargs):
+        retval = func(*args, **kwargs)
+        db.session.remove()
+        return retval
+    return wrapper_remove_session
