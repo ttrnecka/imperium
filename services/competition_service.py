@@ -61,6 +61,7 @@ class CompetitionService:
             BB2Service.delete_competition(competition.comp_id)
             db.session.delete(competition)
             db.session.commit()
+            TournamentNotificationService.notify(f"Created in-game room **{competition.name}** in **{competition.league_name}**")
         except SighanideError as e:
             raise CompetitionError(str(e))
 

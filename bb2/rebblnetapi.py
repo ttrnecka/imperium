@@ -5,6 +5,7 @@ import functools, urllib
 import logging
 from threading import Timer
 from models.base_model import db
+from .adapter import adapter
 
 logger = logging.getLogger('discord')
 
@@ -33,6 +34,11 @@ class Api:
         self.api_url = conf["API_URL"]
         self.scope = conf["API_SCOPE"]
         self.token = ""
+
+        http = requests.Session()
+        http.mount("https://", adapter)
+        http.mount("http://", adapter)
+        self.http = http
     
     def _headers(self):
         return {'Authorization': f"Bearer {self.token}"}
@@ -43,7 +49,7 @@ class Api:
     def get_token(self):
         url = f"https://login.microsoftonline.com/{self.tennant_id}/oauth2/v2.0/token"
         headers = {'content-type': 'application/x-www-form-urlencoded'}
-        r = requests.post(url=url, data = {
+        r = self.http.post(url=url, data = {
             'client_id':self.client_id,
             'client_secret':self.client_secret,
             'grant_type':"client_credentials",
@@ -56,55 +62,55 @@ class Api:
 
     @needs_token
     def get_coach_info(self,coach_id):
-        r = requests.get(f"{self.api_url}/api/coach/{coach_id}", headers=self._headers())
+        r = self.http.get(f"{self.api_url}/api/coach/{coach_id}", headers=self._headers())
         self.check_response(r)
         return r.json()
 
     @needs_token
     def expel(self,competition_id, team_id):
-        r = requests.delete(f"{self.api_url}/api/competition/{competition_id}/expel/{team_id}", headers=self._headers())
+        r = self.http.delete(f"{self.api_url}/api/competition/{competition_id}/expel/{team_id}", headers=self._headers())
         self.check_response(r)
         return r.json()
 
     @needs_token
     def search_coach(self, coach_name):
-        r = requests.get(f"{self.api_url}/api/coach/{encodeURIComponent(coach_name)}/search", headers=self._headers())
+        r = self.http.get(f"{self.api_url}/api/coach/{encodeURIComponent(coach_name)}/search", headers=self._headers())
         self.check_response(r)
         return r.json()
 
     @needs_token
     def get_league_info(self, leagueId):
-        r = requests.get(f"{self.api_url}/api/league/{leagueId}", headers=self._headers())
+        r = self.http.get(f"{self.api_url}/api/league/{leagueId}", headers=self._headers())
         self.check_response(r)
         return r.json()
 
     @needs_token
     def get_competition_info(self, competition_id):
-        r = requests.get(f"{self.api_url}/api/competition/{competition_id}", headers=self._headers())
+        r = self.http.get(f"{self.api_url}/api/competition/{competition_id}", headers=self._headers())
         self.check_response(r)
         return r.json()
 
     @needs_token
     def get_board_info(self, leagueId):
-        r = requests.get(f"{self.api_url}/api/league/{leagueId}/board", headers=self._headers())
+        r = self.http.get(f"{self.api_url}/api/league/{leagueId}/board", headers=self._headers())
         self.check_response(r)
         return r.json()
 
     @needs_token
     def delete_competition(self, competition_id):
-        r = requests.delete(f"{self.api_url}/api/competition/{competition_id}", headers=self._headers())
+        r = self.http.delete(f"{self.api_url}/api/competition/{competition_id}", headers=self._headers())
         self.check_response(r)
         return r.json()
 
     @needs_token
     def get_competition_ticket_info(self, competition_id):
-        r = requests.get(f"{self.api_url}/api/ticket/{competition_id}", headers=self._headers())
+        r = self.http.get(f"{self.api_url}/api/ticket/{competition_id}", headers=self._headers())
         self.check_response(r)
         return r.json()
 
     @needs_token
     def get_tickets(self, competition_id):
-        r = requests.get(f"{self.api_url}/api/competition/{competition_id}/tickets", headers=self._headers())
+        r = self.http.get(f"{self.api_url}/api/competition/{competition_id}/tickets", headers=self._headers())
         self.check_response(r)
         return r.json()
 
@@ -119,7 +125,7 @@ class Api:
 
         headers = self._headers()
         headers['content-type'] = 'application/json'
-        r = requests.post(f"{self.api_url}/api/ticket", data=json.dumps(data), headers=headers)
+        r = self.http.post(f"{self.api_url}/api/ticket", data=json.dumps(data), headers=headers)
         self.check_response(r)
         return r.json()
 
