@@ -102,18 +102,16 @@ class CardService:
 
     @classmethod
     def builtin_skills_for(cls, card):
-        if isinstance(card, Card):
-            if card.get('rarity') in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
-                string = card.get('description')
-            else:
-                string = card.get('name')
+        c = CardHelper.card_fix(card)
+        if c.get('rarity') in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
+            string = c.get('description')
         else:
-            if card['template']['rarity'] in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
-                string = card['template']['description']
-            else:
-                string = card['template']['name']
+            string = c.get('name')
 
         skills = [skill[0] for skill in SKILLREG.findall(string)]
+        # pro elf extra case
+        if "Pro Elf" in string:
+          skills.remove("Pro")
         return [stat_name_map.get(skill,skill) for skill in skills]
 
     @staticmethod
