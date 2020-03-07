@@ -24,6 +24,7 @@ from services import AdminNotificationService, CardService, TournamentNotificati
 from services import TournamentService, RegistrationError
 from services import BB2Service, DusterService, WebHook, DustingError, InvalidCrackerType, InvalidCrackerTeam
 from services import TransactionService, DeckService, DeckError, TournamentError
+from services import stats
 from misc.helpers import InvalidUsage, current_coach, current_user, current_coach_with_inactive, CardHelper
 from misc.helpers import owning_coach
 from misc.helpers import represents_int
@@ -65,23 +66,6 @@ migrate = Migrate(app, db)
 API_BASE_URL = os.environ.get('API_BASE_URL', 'https://discordapp.com/api')
 AUTHORIZATION_BASE_URL = API_BASE_URL + '/oauth2/authorize'
 TOKEN_URL = API_BASE_URL + '/oauth2/token'
-
-STORE = os.path.join(ROOT, 'data', f"season{app.config['SEASON']}")
-STATS_FILE = os.path.join(STORE, "stats.json")
-
-def get_stats(fresh=False):
-    """pulls data from stats file"""
-    if not fresh and os.path.isfile(STATS_FILE):
-        file = open(STATS_FILE, "r")
-        data = json.loads(file.read())
-        file.close()
-        return data
-    else:
-        return {
-            'coaches': {},
-            'teams': {},
-            'matchfiles':[]
-        }
 
 if 'http://' in app.config["OAUTH2_REDIRECT_URI"]:
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'
@@ -175,13 +159,12 @@ def me():
 @app.route("/")
 def index():
     """render index"""
-    # bb2_names = sorted(list(get_stats()['coaches'].keys()))
     return render_template("index.html")
 
 @app.route("/bb2_names")
 def bb2_names():
     """render index"""
-    bb2_names = sorted(list(get_stats()['coaches'].keys()))
+    bb2_names = sorted(list(stats.get_stats()['coaches'].keys()))
     return jsonify(bb2_names)
 
 @app.route("/coaches", methods=["GET"])
@@ -209,8 +192,8 @@ def new_coach():
 def get_coaches_leaderboard():
     """return leaderboard json"""
     result = {}
-    result['coaches'] = get_stats()['coaches_extra']
-    result['coach_stats'] = list(get_stats()['coaches'].values())
+    result['coaches'] = stats.get_stats()['coaches_extra']
+    result['coach_stats'] = list(stats.get_stats()['coaches'].values())
     return jsonify(result)
 
 @app.route("/tournaments", methods=["GET"])

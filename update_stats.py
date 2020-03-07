@@ -8,10 +8,11 @@ import datetime as DT
 from sqlalchemy.orm.attributes import flag_modified
 
 import bb2
-from web import db, app, STORE, STATS_FILE, get_stats
+from web import db, app
 from models.data_models import Coach
 from models.marsh_models import leaderboard_coach_schema
 from services import NotificationService, AchievementNotificationService, CoachService
+from services import stats as st
 
 app.app_context().push()
 
@@ -40,12 +41,13 @@ def main(argv):
     handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
     logger.addHandler(handler)
 
-    matches_folder = os.path.join(STORE, "matches")
+    matches_folder = st.matches_folder()
+
     start_date = DT.date.today() - DT.timedelta(days=1)
 
     agent = bb2.api.Agent(app.config['BB2_API_KEY'])
 
-    stats = get_stats(refresh)
+    stats = st.get_stats(refresh)
 
     logger.info("Getting matches since %s", start_date)
 
@@ -57,11 +59,7 @@ def main(argv):
 
     logger.info("Matches colleted")
 
-    if not os.path.isdir(STORE):
-        os.mkdir(STORE)
-
-    if not os.path.isdir(matches_folder):
-        os.mkdir(matches_folder)
+    st.set_folders()
 
     for match in data['matches']:
         filename = os.path.join(matches_folder, f"{match['uuid']}.json")
@@ -337,9 +335,7 @@ def main(argv):
         all_coaches = Coach.query.all()
         stats['coaches_extra']=leaderboard_coach_schema.dump(all_coaches).data
         stats['coaches'].pop('', None)
-        file = open(STATS_FILE, "w")
-        file.write(json.dumps(stats))
-        file.close()
+        st.save_stats(stats)
     except Exception as exp:
         logger.error(exp)
         raise exp
