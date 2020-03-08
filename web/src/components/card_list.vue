@@ -80,7 +80,7 @@
                 <template v-if="isDeck">
                   <tr :class="[rarityclass(card)]" v-for="(idx,index) in number_of_assignments(card)" :key="`assignment${index}${card_id_or_uuid(card)}`">
                     <td :colspan="column_list.length+1">
-                      <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="$emit('card-assign', card)" :disabled="!canEdit">
+                      <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="$emit('card-assign', card, idx-1)" :disabled="!canEdit">
                         <option default :value="undefined" disabled>Select Player</option>
                         <option v-for="(pcard,index) in sortedCards(assignable_player_cards)" :disabled="!isEnabled(pcard) || assigned_cards(pcard).includes(card)" :key="index" :value="card_id_or_uuid(pcard)">{{index+1}}. {{ pcard.template.name }}</option>
                       </select>

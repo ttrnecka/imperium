@@ -120,8 +120,24 @@ class DeckService:
         """Assign assignable `card` in `deck`"""
         if card['template']['card_type'] != "Training" and card['template']['name'] not in ["Bodyguard", "Hired Muscle", "Personal Army"]:
             raise DeckError(f"{card['template']['name']} is not assignable!")
+
+        new_players = [player for player in cls.players(deck) if CardHelper.card_id_or_uuid(player) in card["assigned_to_array"][str(deck.id)]]
+        def valid_skill_or_raise(card):
+            if isinstance(card, dict):
+              assigned_ids = card['assigned_to_array'][str(deck.id)]
+            else:
+              assigned_ids = card.assigned_to_array[str(deck.id)]
+
+            old_players = [player for player in cls.players(deck) if CardHelper.card_id_or_uuid(player) in assigned_ids]
+            diff_players = list(set(new_players) - set(old_players))
+            for player in diff_players:
+              skills = DeckService.skills_for(deck, player, api_format=False)
+              cskills = CardService.skill_names_for(card, api_format=False)
+              if not CardService.valid_skill_combination(skills, cskills) or not CardService.can_take_skills(player, cskills):
+                raise DeckError(f"Invalid skill assignment!")
         if card["id"]:
             tmp_card = Card.query.get(card["id"])
+            valid_skill_or_raise(tmp_card)
             tmp_card.assigned_to_array = card["assigned_to_array"]
             deck.to_log(f"{date_now()}: Card {card['template']['name']} assignment changed")
             db.session.commit()
@@ -131,6 +147,7 @@ class DeckService:
             tcard = next((c for c in deck.unused_extra_cards
                             if c['uuid'] == card['uuid']), None)
             if tcard:
+                valid_skill_or_raise(tcard)
                 # remove the card from both arrays, update it and stick it back
                 deck.unused_extra_cards.remove(tcard)
                 deck.extra_cards.remove(tcard)

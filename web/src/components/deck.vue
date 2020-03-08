@@ -676,7 +676,7 @@ export default {
         });
     },
 
-    assignCard(card) {
+    assignCard(card, idx) {
       if (!this.isEditable()) {
         return;
       }
@@ -688,6 +688,10 @@ export default {
           const msg = 'Card re-assigned!';
           this.flash(msg, 'success', { timeout: 1000 });
           this.deck = res.data;
+        })
+        .catch((error) => {
+          this.$set(card.assigned_to_array[this.deck.id], idx, undefined);
+          throw error;
         })
         .catch(this.async_error)
         .then(() => {
