@@ -324,7 +324,7 @@ class TournamentService:
             else:
                 coach_mention = coach.short_name()
                 fee_msg = ""
-
+  
             Notificator("bank").notify(
                 f'{coach_mention} successfuly signed to tournament. {fee_msg}'
             )

@@ -16,12 +16,13 @@ class Notificator:
       notifier = NotificationRegister.lookup(descriptor)
       if not notifier:
         notifier = super(Notificator, cls).__new__(cls, *args, **kwargs)
+        notifier.descriptor = descriptor
+        notifier.notificators = []
+        NotificationRegister.register(notifier)
       return notifier
 
     def __init__(self,descriptor):
-      self.descriptor = descriptor
-      self.notificators = []
-      NotificationRegister.register(self)
+      pass
 
     def register_notifier(self, func):
         """register notifications function, the function needs to accept one string parameter"""
