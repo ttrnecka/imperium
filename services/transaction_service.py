@@ -1,6 +1,6 @@
 """TransactionService helpers"""
 from models.data_models import Transaction
-from .notification_service import NotificationService
+from .notification_service import Notificator
 
 class TransactionService:
     """Namespace class for Transaction actions"""
@@ -11,5 +11,5 @@ class TransactionService:
         transaction = Transaction(description=reason, price=amount)
         coach.make_transaction(transaction)
         msg = f"<@{coach.disc_id}>: Your bank has been updated by **{-1*amount}** coins - {reason}"
-        NotificationService.notify(msg)
+        Notificator("bank").notify(msg)
         return True

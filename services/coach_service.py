@@ -6,7 +6,7 @@ from models.data_models import Coach, Deck, Tournament, Card, Transaction, Pack
 from models.base_model import db
 from .pack_service import PackService
 from .deck_service import DeckService
-from .notification_service import AchievementNotificationService, NotificationService
+from .notification_service import Notificator
 
 class CoachService:
     """CoachService helpers namespace"""
@@ -137,7 +137,7 @@ class CoachService:
 
         if achievement['target'] <= achievement['best'] and not achievement['completed']:
             achievement_bank_text = f"{achievement['award_text']} awarded - {achievement['desc']}"
-            AchievementNotificationService.notify(
+            Notificator("achievement").notify(
                 f"{coach.short_name()}: {achievement['desc']} - completed"
             )
 
@@ -145,12 +145,12 @@ class CoachService:
             res, error = getattr(coach, call)(arg, achievement['desc'], commit=commit)
 
             if res:
-                NotificationService.notify(
+                Notificator("bank").notify(
                     f"{coach.mention()}: {achievement_bank_text}"
                 )
                 return True
             else:
-                NotificationService.notify(
+                Notificator("bank").notify(
                     f"{coach.mention()}: {achievement['award_text']} " +
                     f"could not be awarded - {error}"
                 )

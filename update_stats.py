@@ -8,10 +8,11 @@ import datetime as DT
 from sqlalchemy.orm.attributes import flag_modified
 
 import bb2
-from web import db, app, STORE, STATS_FILE, get_stats
+from web import db, app
 from models.data_models import Coach
 from models.marsh_models import leaderboard_coach_schema
-from services import NotificationService, AchievementNotificationService, CoachService
+from services import Notificator, CoachService
+from services import stats as st
 
 app.app_context().push()
 
@@ -40,12 +41,13 @@ def main(argv):
     handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
     logger.addHandler(handler)
 
-    matches_folder = os.path.join(STORE, "matches")
+    matches_folder = st.matches_folder()
+
     start_date = DT.date.today() - DT.timedelta(days=1)
 
     agent = bb2.api.Agent(app.config['BB2_API_KEY'])
 
-    stats = get_stats(refresh)
+    stats = st.get_stats(refresh)
 
     logger.info("Getting matches since %s", start_date)
 
@@ -57,11 +59,7 @@ def main(argv):
 
     logger.info("Matches colleted")
 
-    if not os.path.isdir(STORE):
-        os.mkdir(STORE)
-
-    if not os.path.isdir(matches_folder):
-        os.mkdir(matches_folder)
+    st.set_folders()
 
     for match in data['matches']:
         filename = os.path.join(matches_folder, f"{match['uuid']}.json")
@@ -323,12 +321,12 @@ def main(argv):
         tcoach = CoachService.link_bb2_coach(coach1['coachname'],team1['teamname'])
         if tcoach:
             msg = f"{coach1['coachname']} account linked to {tcoach.short_name()}"
-            AchievementNotificationService.notify(msg)
+            Notificator("achievement").notify(msg)
             logger.info(msg)
         tcoach = CoachService.link_bb2_coach(coach2['coachname'],team2['teamname'])
         if tcoach:
             msg = f"{coach2['coachname']} account linked to {tcoach.short_name()}"
-            AchievementNotificationService.notify(msg)
+            Notificator("achievement").notify(msg)
             logger.info(msg)
         db.session.commit()
         logger.info("Stats calculation of match %s completed", data['uuid'])
@@ -337,9 +335,7 @@ def main(argv):
         all_coaches = Coach.query.all()
         stats['coaches_extra']=leaderboard_coach_schema.dump(all_coaches).data
         stats['coaches'].pop('', None)
-        file = open(STATS_FILE, "w")
-        file.write(json.dumps(stats))
-        file.close()
+        st.save_stats(stats)
     except Exception as exp:
         logger.error(exp)
         raise exp
@@ -411,21 +407,21 @@ def main(argv):
         for key, achievement in coach.achievements['match'].items():
             if achievement['target'] <= achievement['best'] and not achievement['completed']:
                 achievement_bank_text = f"{achievement['award_text']} awarded - {achievement['desc']}"
-                AchievementNotificationService.notify(
+                Notificator("achievement").notify(
                     f"{coach.short_name()}: {achievement['desc']} - completed"
                 )
                 call, arg = achievement['award'].split(",")
                 res, error = getattr(coach, call)(arg, achievement['desc'])
                 if res:
                     logger.info("%s: %s awarded", coach_mention, {achievement['desc']})
-                    NotificationService.notify(
+                    Notificator("bank").notify(
                         f"{coach_mention}: {achievement_bank_text}"
                     )
                     coach.achievements['match'][key]['completed'] = True
                     flag_modified(coach, "achievements")
                 else:
                     logger.error(error)
-                    NotificationService.notify(
+                    Notificator("bank").notify(
                         f"{coach_mention}: {achievement['award_text']} " +
                         f"could not be awarded - {error}"
                     )
@@ -435,7 +431,7 @@ def main(argv):
                     if (achievement['target'] <= achievement['best'] and
                             not achievement['completed']):
                         achievement_bank_text = f"{achievement['award_text']} awarded - {achievement['desc']}"
-                        AchievementNotificationService.notify(
+                        Notificator("achievement").notify(
                             f"{coach.short_name()}: {achievement['desc']} - completed"
                         )
                         call, arg = achievement['award'].split(",")
@@ -444,12 +440,12 @@ def main(argv):
                             logger.info("%s: %s awarded", coach_mention, {achievement['desc']})
                             coach.achievements['team'][key1][key2][key3]['completed'] = True
                             flag_modified(coach, "achievements")
-                            NotificationService.notify(
+                            Notificator("bank").notify(
                                 f"{coach_mention}: {achievement_bank_text}"
                             )
                         else:
                             logger.error(error)
-                            NotificationService.notify(
+                            Notificator("bank").notify(
                                 f"{coach_mention}: {achievement['award_text']} could " +
                                 f"not be awarded - {error}"
                             )

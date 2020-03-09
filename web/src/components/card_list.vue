@@ -66,19 +66,21 @@
                       @click.stop="dust_add(card)">Add</button>
                   </td>
                   <th v-if="isDeck" @click.stop>
-                    <div :id="'player'+card_id_or_uuid(card)" class="float-right"><i class="fas fa-cog fa-2x"></i></div>
-                    <b-popover :target="'player'+card_id_or_uuid(card)" triggers="hover" placement="left">
-                      <template v-slot:title>{{ card.template.name }}</template>
-                      <b-button class="m-1" v-if="isEnabled(card)" variant="danger" @click="$emit('card-disable', card)">Disable</b-button>
-                      <b-button class="m-1" v-else variant="success" @click="$emit('card-enable', card)">Enable</b-button>
-                      <b-button class="m-1" variant="info" @click="$emit('card-unskill', card)">Unskill</b-button>
-                    </b-popover>
+                    <template v-if="canEdit">
+                      <div :id="'player'+card_id_or_uuid(card)" class="float-right"><i class="fas fa-cog fa-2x"></i></div>
+                      <b-popover :target="'player'+card_id_or_uuid(card)" triggers="hover" placement="left">
+                        <template v-slot:title>{{ card.template.name }}</template>
+                        <b-button class="m-1" v-if="isEnabled(card)" variant="danger" @click="$emit('card-disable', card)">Disable</b-button>
+                        <b-button class="m-1" v-else variant="success" @click="$emit('card-enable', card)">Enable</b-button>
+                        <b-button class="m-1" variant="info" @click="$emit('card-unskill', card)">Unskill</b-button>
+                      </b-popover>
+                    </template>
                   </th>
                 </tr>
                 <template v-if="isDeck">
                   <tr :class="[rarityclass(card)]" v-for="(idx,index) in number_of_assignments(card)" :key="`assignment${index}${card_id_or_uuid(card)}`">
                     <td :colspan="column_list.length+1">
-                      <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="$emit('card-assign', card)" :disabled="!canEdit">
+                      <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="$emit('card-assign', card, idx-1)" :disabled="!canEdit">
                         <option default :value="undefined" disabled>Select Player</option>
                         <option v-for="(pcard,index) in sortedCards(assignable_player_cards)" :disabled="!isEnabled(pcard) || assigned_cards(pcard).includes(card)" :key="index" :value="card_id_or_uuid(pcard)">{{index+1}}. {{ pcard.template.name }}</option>
                       </select>

@@ -3,7 +3,7 @@
 from models.data_models import Duster, Card, Transaction
 from models.base_model import db
 from .card_service import CardService
-from .notification_service import NotificationService
+from .notification_service import Notificator
 
 class DustingError(Exception):
     """Exception used for Dusting Errors"""
@@ -128,7 +128,7 @@ class DusterService:
             db.session.delete(card)
         duster.status = "COMMITTED"
         coach.make_transaction(tran)
-        NotificationService.notify(
+        Notificator("bank").notify(
             f"<@{coach.disc_id}>: Card(s) **{', '.join([card.get('name') for card in cards])}** " +
             f"removed from your collection by {duster.type}"
         )

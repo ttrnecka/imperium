@@ -2,9 +2,9 @@ import random
 from bot import dice
 from bot.command import DiscordCommand
 from misc.helpers import CardHelper
+from misc.decorators import remove_session
 from services import TournamentService, CoachService, PackService, DeckService, CardService
-from models.data_models import Coach
-from web import db
+from models.data_models import Coach, db
 
 def get_coach_deck_for_room_or_raise(room, coach):
     tourn = TournamentService.get_tournament_using_room(room)
@@ -165,7 +165,7 @@ def HalflingMasterCheerleaders():
         'rolls': result
     }
 
-
+@remove_session
 def CelebrityMasterChef(room, caller: Coach):
     tourn = TournamentService.get_tournament_using_room(room)
     coaches = TournamentService.coaches_for(tourn)
@@ -210,6 +210,7 @@ def CelebrityMasterChef(room, caller: Coach):
         'rolls': result
     }
 
+@remove_session
 def CoM2000(room, caller: Coach):
     deck = get_coach_deck_for_room_or_raise(room, caller)
 
@@ -239,6 +240,7 @@ def CoM2000(room, caller: Coach):
         'rolls': pack
     }
 
+@remove_session
 def CoM5000(room, caller: Coach):
     deck = get_coach_deck_for_room_or_raise(room, caller)
     title = 'Coach-o-Matic 5000'
@@ -277,6 +279,7 @@ def CoM5000(room, caller: Coach):
         'rolls': packs
     }
 
+@remove_session
 def CoM9000(room, caller: Coach):
     deck = get_coach_deck_for_room_or_raise(room, caller)
     title = 'Coach-o-Matic 9000'
@@ -308,6 +311,7 @@ def CoM9000(room, caller: Coach):
         'rolls': packs
     }
 
+@remove_session
 def CoMWithFriends(room, caller: Coach):
     tourn = TournamentService.get_tournament_using_room(room)
     decks = [ts.deck for ts in tourn.tournament_signups]
