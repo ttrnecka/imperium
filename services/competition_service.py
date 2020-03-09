@@ -130,7 +130,7 @@ class CompetitionService:
         coach_id = result['coach']['id']
         coach_name = result['coach']['name']
         if coach.bb2_name and coach.bb2_name != coach_name:
-            raise CompetitionError(f"Team {team_name} does not belong to coach {coach.bb2_name}")
+            raise CompetitionError(f"Team {deck.team_name} does not belong to coach {coach.bb2_name}")
         try:
             result = BB2Service.api().send_ticket(comp.comp_id, 0, coach_id, team_id)
             Notificator('tournament').notify(f"{coach.short_name()} ticketed **{deck.team_name}** into **{competition_name}**")
