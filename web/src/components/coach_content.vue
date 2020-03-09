@@ -113,7 +113,7 @@
                         <tbody>
                             <tr
                               v-for="transaction in
-                              selectedCoach.account.transactions.slice().reverse()"
+                              selectedCoach.account.transactions.slice()"
                               :key="transaction.id">
                                 <td>
                                   {{ print_date(transaction.date_confirmed) }}
