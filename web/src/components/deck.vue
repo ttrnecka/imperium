@@ -842,7 +842,7 @@ export default {
       }
     },
     deck_size_for(type) {
-      return this.deck_cards.filter((e) => e.template.card_type === type).length;
+      return this.deck_cards.filter((e) => e.template.card_type === type && this.isEnabled(e)).length;
     },
     assigned_cards(card) {
       return this.deck_cards.filter((c) => this.get_card_assignment(c).includes(this.card_id_or_uuid(card)));
