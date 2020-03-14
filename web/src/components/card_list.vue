@@ -352,7 +352,7 @@ export default {
       this.$emit('update-deck');
     },
     number_of_cards(ctype) {
-      return this.cards.filter((c) => c.template.card_type === ctype && (this.starter || !c.is_starter)).length;
+      return this.cards.filter((c) => c.template.card_type === ctype && (this.starter || !c.is_starter) && this.isEnabled(c)).length;
     },
   },
   computed: {

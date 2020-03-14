@@ -345,3 +345,30 @@ def CoMWithFriends(room, caller: Coach):
         'embed_fields': efs,
         'rolls': packs
     }
+
+def returnoftheking():
+    result = dice.dice(6,1)
+    title = "Return Of The King!"
+    skills = ['Agility Up!', 'Strength Up!', '2 x Strength Up!']
+    description = ""
+    if result[0] in [1,2,3]:
+        gain = skills[0]
+    elif result[0] in [4,5]:
+        gain = skills[1]
+    else:
+        gain = skills[2]
+    value_field1 = f'King Arthur gains {gain}'
+
+    return {
+        'embed_title': title,
+        'embed_desc': description,
+        'thumbnail_url': 'https://cdn2.rebbl.net/images/logo/256x256/logo_bretonnia_02.png',
+        'embed_fields': [
+            {
+                'name': f':game_die: : {",".join(map(str,result))}',
+                'value': value_field1,
+                'inline': False,
+            }
+        ],
+        'rolls': result
+    }
