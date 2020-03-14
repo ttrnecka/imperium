@@ -515,7 +515,7 @@ export default {
       if (race === 'Afterlife United') {
         return 0;
       }
-      if (this.deck.cards.find((c) => ['Apothecary', 'Clever Management', 'Inspirational Boss'].includes(c.template.name) && this.isEnabled(c)) !== undefined) {
+      if (this.deck_cards.find((c) => ['Apothecary', 'Clever Management', 'Inspirational Boss'].includes(c.template.name) && this.isEnabled(c)) !== undefined) {
         return 1;
       }
       return 0;
@@ -526,10 +526,10 @@ export default {
       if (race === 'Afterlife United') {
         rrs = [3, 2, 2];
       }
-      const r1 = this.deck.cards.filter((c) => c.template.name === 'Inspirational Boss').length * rrs[0];
-      const r2 = this.deck.cards.filter((c) => c.template.name === 'Motivational Speaker').length * rrs[1];
-      const r3 = this.deck.cards.filter((c) => c.template.name === 'Clever Management').length * rrs[2];
-      return this.deck.cards.filter((c) => c.template.name === 'Re-roll' && this.isEnabled(c)).length + r1 + r2 + r3;
+      const r1 = this.deck_cards.filter((c) => c.template.name === 'Inspirational Boss').length * rrs[0];
+      const r2 = this.deck_cards.filter((c) => c.template.name === 'Motivational Speaker').length * rrs[1];
+      const r3 = this.deck_cards.filter((c) => c.template.name === 'Clever Management').length * rrs[2];
+      return this.deck_cards.filter((c) => c.template.name === 'Re-roll' && this.isEnabled(c)).length + r1 + r2 + r3;
     },
     cloneExtraCard(card) {
       this.addExtraCard(card.template.name);
