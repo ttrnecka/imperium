@@ -1,5 +1,7 @@
 """Match helpers"""
 
+from collections import Counter
+
 def is_concede(data):
     """Given match data returns True if the match was conceded"""
     if (data['match']['teams'][0]['mvp'] == 2
@@ -46,23 +48,49 @@ class Tournament:
       for match in self.matches:
         for coach in [match.coach1(), match.coach2()]:
           if not coach['coachname'] in coaches:
-            coaches[coach['coachname']] = {'name': coach['coachname'], 'wins':0, 'losses':0, 'draws':0, 'matches':0, 'points':0}
+            coaches[coach['coachname']] = Counter({'name': coach['coachname']})
         winner = match.winner()
-        coaches[match.coach1()['coachname']]['matches'] += 1
-        coaches[match.coach2()['coachname']]['matches'] += 1
+        coach1_name = match.coach1()['coachname']
+        coach2_name = match.coach2()['coachname']
+        coaches[coach1_name]['matches'] += 1
+        coaches[coach2_name]['matches'] += 1
+        for stat in ["inflictedtouchdowns", "inflictedtackles", "inflictedcasualties",
+                     'inflictedinjuries', 'inflictedko', 'inflicteddead', 'inflictedmetersrunning',
+                     'inflictedpasses', 'inflictedcatches', 'inflictedinterceptions',
+                     'sustainedexpulsions', 'sustainedcasualties', 'sustainedko',
+                     'sustainedinjuries', 'sustaineddead', 'inflictedmeterspassing',]:
+          coaches[coach1_name][stat] += match.team1()[stat]
+          coaches[coach2_name][stat] += match.team2()[stat]
+
+        coaches[coach1_name]['sustainedtouchdowns'] += match.team2()['inflictedtouchdowns']
+        coaches[coach2_name]['sustainedtouchdowns'] += match.team1()['inflictedtouchdowns']
+
+        coaches[coach1_name]['inflictedpushouts'] += sum(
+            [player['stats']['inflictedpushouts'] for player in match.team1()['roster']]
+        )
+        coaches[coach2_name]['inflictedpushouts'] += sum(
+            [player['stats']['inflictedpushouts'] for player in match.team2()['roster']]
+        )
+        coaches[coach1_name]['sustainedtackles'] += sum(
+            [player['stats']['sustainedtackles'] for player in match.team1()['roster']]
+        )
+        coaches[coach2_name]['sustainedtackles'] += sum(
+            [player['stats']['sustainedtackles'] for player in match.team2()['roster']]
+        )
+
         if winner:
           if winner == match.coach1():
-            coaches[match.coach1()['coachname']]['wins'] += 1
-            coaches[match.coach1()['coachname']]['points'] += 3
-            coaches[match.coach2()['coachname']]['losses'] += 1
+            coaches[coach1_name]['wins'] += 1
+            coaches[coach1_name]['points'] += 3
+            coaches[coach2_name]['losses'] += 1
           else:
-            coaches[match.coach2()['coachname']]['wins'] += 1
-            coaches[match.coach2()['coachname']]['points'] += 3
-            coaches[match.coach1()['coachname']]['losses'] += 1
+            coaches[coach2_name]['wins'] += 1
+            coaches[coach2_name]['points'] += 3
+            coaches[coach1_name]['losses'] += 1
         else:
-          coaches[match.coach1()['coachname']]['draws'] += 1
-          coaches[match.coach1()['coachname']]['points'] += 1
-          coaches[match.coach2()['coachname']]['draws'] += 1
-          coaches[match.coach2()['coachname']]['points'] += 1
+          coaches[coach1_name]['draws'] += 1
+          coaches[coach1_name]['points'] += 1
+          coaches[coach2_name]['draws'] += 1
+          coaches[coach2_name]['points'] += 1
 
       return [v for k, v in sorted(coaches.items(), key=lambda item: item[1]['points'], reverse=True)]

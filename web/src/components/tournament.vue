@@ -92,7 +92,7 @@
                     <div class="col-12"><b>Leaderboard</b>:</div>
                 </div>
                 <div>
-                  <b-table striped hover :items="leaderboard" :fields="fields"></b-table>
+                  <b-table striped hover responsive :items="leaderboard" :fields="fields"></b-table>
                 </div>
                 <div v-if="is_webadmin" class="row tournament_info_line">
                     <div class="col-12"><b>Management:</b></div>
@@ -175,17 +175,77 @@ export default {
         { name: 'blood_bowl', desc: 'Blood Bowl' },
       ],
       fields: [
-        { key: 'name' },
-        { key: 'matches', sortable: true },
-        { key: 'points', sortable: true },
-        { key: 'wins', sortable: true },
-        { key: 'draws', sortable: true },
-        { key: 'losses', sortable: true },
+        { key: 'name', stickyColumn: true },
+        { key: 'matches', sortable: true, formatter: 'nonZero' },
+        { key: 'points', sortable: true, formatter: 'nonZero' },
+        { key: 'wins', sortable: true, formatter: 'nonZero' },
+        { key: 'draws', sortable: true, formatter: 'nonZero' },
+        { key: 'losses', sortable: true, formatter: 'nonZero' },
+        {
+          key: 'inflictedtouchdowns', label: 'TD+', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'sustainedtouchdowns', label: 'TD-', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'inflictedtackles', label: 'Blocks+', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'sustainedtackles', label: 'Blocks-', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'inflictedinjuries', label: 'AB+', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'sustainedinjuries', label: 'AB-', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'inflictedko', label: 'KO+', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'sustainedko', label: 'KO-', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'inflictedcasualties', label: 'CAS+', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'sustainedcasualties', label: 'CAS-', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'inflicteddead', label: '💀+', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'sustaineddead', label: '💀-', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'inflictedpasses', label: 'Pass', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'inflictedmeterspassing', label: 'Pass [m]', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'inflictedmetersrunning', label: 'Run [m]', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'inflictedpushouts', label: 'Surfs', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'inflictedinterceptions', label: 'Int.', headerTitle: 'Interceptions', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'sustainedexpulsions', label: 'Exp.', headerTitle: 'Expulsions', sortable: true, formatter: 'nonZero',
+        },
       ],
     };
   },
   props: ['tournament', 'coaches', 'data-parent', 'user'],
   methods: {
+    nonZero(value) {
+      if (value) {
+        return value;
+      }
+      return 0;
+    },
     getProperty: function (name) {
       return this[name];
     },
