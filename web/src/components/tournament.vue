@@ -212,19 +212,19 @@ export default {
           key: 'sustainedcasualties', label: 'CAS-', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'inflicteddead', label: '💀+', sortable: true, formatter: 'nonZero',
+          key: 'inflicteddead', label: 'Dead+', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'sustaineddead', label: '💀-', sortable: true, formatter: 'nonZero',
+          key: 'sustaineddead', label: 'Dead-', sortable: true, formatter: 'nonZero',
         },
         {
           key: 'inflictedpasses', label: 'Pass', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'inflictedmeterspassing', label: 'Pass [m]', sortable: true, formatter: 'nonZero',
+          key: 'inflictedmeterspassing', label: 'Pass[m]', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'inflictedmetersrunning', label: 'Run [m]', sortable: true, formatter: 'nonZero',
+          key: 'inflictedmetersrunning', label: 'Run[m]', sortable: true, formatter: 'nonZero',
         },
         {
           key: 'inflictedpushouts', label: 'Surfs', sortable: true, formatter: 'nonZero',
