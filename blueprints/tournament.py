@@ -1,4 +1,4 @@
-import itertools
+import itertools, os, json
 from flask import Blueprint, jsonify, request
 from sqlalchemy.orm import raiseload
 
@@ -6,9 +6,11 @@ from models.data_models import db, Tournament, Coach, TransactionError
 from models.marsh_models import tournaments_schema, tournament_schema, cards_schema
 from misc.decorators import authenticated, webadmin, masteradmin, registered
 from misc.helpers import InvalidUsage, current_coach
+import bb2
 
 from services import TournamentService, RegistrationError, TransactionService, TournamentError
 from services import Notificator
+from services import stats as st
 
 tournament = Blueprint('tournaments', __name__)
 
@@ -28,6 +30,24 @@ def get_tournament(tournament_id):
     tourn = Tournament.query.get(tournament_id)
     result = tournament_schema.dump(tourn)
     return jsonify(result.data)
+
+@tournament.route("/<int:tournament_id>/leaderboard", methods=["GET"])
+def get_tournament_leaderboard(tournament_id):
+    """returns tournamnet as json"""
+    tourn = Tournament.query.get(tournament_id)
+    matches = []
+    for comp in tourn.competitions:
+      folder = st.competition_folder(comp.name)
+      matchfiles = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+
+      for file_name in matchfiles:
+        file = open(os.path.join(folder, file_name), "r")
+        data = json.loads(file.read())
+        file.close()
+        matches.append(bb2.Match(data))
+    t = bb2.Tournament(*matches)
+    
+    return jsonify(t.leaderboard())
 
 @tournament.route("/<int:tournament_id>/cards", methods=["GET"])
 @authenticated

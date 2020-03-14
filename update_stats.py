@@ -89,6 +89,11 @@ def main(argv):
         data = json.loads(file.read())
         file.close()
 
+        match = bb2.Match(data)
+
+        st.create_folder(st.competition_folder(match.competition()))
+        st.write_file(os.path.join(st.competition_folder(match.competition()), match.uuid()), data)
+
         if data['uuid'] in stats['matchfiles']:
             continue
         stats['matchfiles'].append(data['uuid'])

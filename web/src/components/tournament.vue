@@ -2,7 +2,7 @@
     <div class="tournament">
         <div class="card-header" :id="'tournament'+tournament.tournament_id">
         <h5 class="mb-0">
-            <div class="row">
+            <div class="row" @click="load_leaderboard">
                 <button class="col-md-9 btn btn-link btn-block" data-toggle="collapse" :data-target="'#collapseTournament'+tournament.tournament_id" aria-expanded="true" aria-controls="collapseTournament">
                     <div class="row">
                         <div class="col-6 col-md-5 text-left">{{ tournament.tournament_id }}. {{ tournament.name }}</div>
@@ -88,6 +88,12 @@
                 <div class="row tournament_info_line">
                     <div class="col-12">{{ tournament.unique_prize }}</div>
                 </div>
+                <div class="row tournament_info_line">
+                    <div class="col-12"><b>Leaderboard</b>:</div>
+                </div>
+                <div>
+                  <b-table striped hover :items="leaderboard" :fields="fields"></b-table>
+                </div>
                 <div v-if="is_webadmin" class="row tournament_info_line">
                     <div class="col-12"><b>Management:</b></div>
                 </div>
@@ -159,6 +165,7 @@ export default {
         deck_id: null,
         phase: 'deck_building',
       },
+      leaderboard: [],
       show_deck: false,
       phases: [
         { name: 'deck_building', desc: 'Deck Building' },
@@ -166,6 +173,14 @@ export default {
         { name: 'special_play', desc: 'Special Play' },
         { name: 'inducement', desc: 'Inducement' },
         { name: 'blood_bowl', desc: 'Blood Bowl' },
+      ],
+      fields: [
+        { key: 'name' },
+        { key: 'matches', sortable: true },
+        { key: 'points', sortable: true },
+        { key: 'wins', sortable: true },
+        { key: 'draws', sortable: true },
+        { key: 'losses', sortable: true },
       ],
     };
   },
@@ -249,6 +264,20 @@ export default {
         }
       }
       return true;
+    },
+    load_leaderboard() {
+      const path = `/tournaments/${this.tournament.id}/leaderboard`;
+      this.axios.get(path)
+        .then((res) => {
+          this.leaderboard = res.data;
+        })
+        .catch((error) => {
+          if (error.response) {
+            this.flash(error.response.data.message, 'error', { timeout: 3000 });
+          } else {
+            console.error(error);
+          }
+        });
     },
     award_and_stop() {
       if (this.check_prizes()) {
