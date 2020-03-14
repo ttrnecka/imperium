@@ -5,7 +5,7 @@ import random
 
 from models.data_models import Deck, ConclaveRule, CardTemplate
 from models.base_model import db
-from misc import imperium_keywords
+from misc import KEYWORDS
 
 from .deck_service import DeckService
 from .card_service import CardService
@@ -206,7 +206,7 @@ class ConclaveService:
 
     @classmethod
     def coach_o_matic(cls,deck):
-        return len([card for card in DeckService.special_play_cards(deck) if "Randomise" in imperium_keywords(card.template.description)])
+        return len([card for card in DeckService.special_play_cards(deck) if KEYWORDS(card.template.description).is_randomise()])
 
     #TESTED
     @classmethod

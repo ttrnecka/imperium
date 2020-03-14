@@ -82,7 +82,7 @@
                     <td :colspan="column_list.length+1">
                       <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="$emit('card-assign', card, idx-1)" :disabled="!canEdit">
                         <option default :value="undefined" disabled>Select Player</option>
-                        <option v-for="(pcard,index) in sortedCards(assignable_player_cards)" :disabled="!isEnabled(pcard) || assigned_cards(pcard).includes(card)" :key="index" :value="card_id_or_uuid(pcard)">{{index+1}}. {{ pcard.template.name }}</option>
+                        <option v-for="(pcard,index) in sortedCards(assignable_player_cards)" :disabled="!isEnabled(pcard) || is_guarded(pcard) || assigned_cards(pcard).includes(card)" :key="index" :value="card_id_or_uuid(pcard)">{{index+1}}. {{ pcard.template.name }}</option>
                       </select>
                     </td>
                   </tr>
@@ -276,7 +276,7 @@ export default {
     is_guarded(card) {
       if (card.template.card_type !== 'Player') { return false; }
       const assignedCards = this.cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
-      if (assignedCards.find((c) => ['Bodyguard', 'Hired Muscle', 'Personal Army'].includes(c.template.name)) !== undefined) { return true; }
+      if (assignedCards.find((c) => this.guards.includes(c.template.name)) !== undefined) { return true; }
       return false;
     },
     deck_skills_for(card) {
@@ -360,7 +360,7 @@ export default {
       return (Object.keys(this.deck).length !== 0);
     },
     assignable_player_cards() {
-      return this.player_cards.filter((e) => !['Legendary', 'Inducement', 'Unique', 'Blessed', 'Cursed'].includes(e.template.rarity));
+      return this.player_cards.filter((e) => !['Legendary', 'Inducement', 'Unique', 'Blessed', 'Cursed'].includes(e.template.rarity) || this.nonassignable_exceptions.includes(e.template.name));
     },
 
     player_cards() {

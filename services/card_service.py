@@ -37,6 +37,12 @@ stat_name_map = {
     "+AV": 'Armour Up!',
 }
 
+nonassignable_exceptions = [
+  "Brock Ferth", "Snotty",
+]
+
+GUARDS = ["Bodyguard", "Hired Muscle", "Personal Army"]
+
 class CardService:
     """CardService helper namespace"""
 
@@ -246,8 +252,13 @@ class CardService:
         """Return true if card can be assigned training card"""
         if isinstance(card, Card):
             rarity = card.get('rarity')
+            name = card.get('name')
         else:
             rarity = card['template']['rarity']
+            name = card['template']['name']
+
+        if name in nonassignable_exceptions:
+          return True
         
         return rarity not in ['Legendary', 'Inducement', 'Unique', 'Blessed', 'Cursed']
 

@@ -7,7 +7,7 @@ from sqlalchemy import asc, func
 from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card, TournamentTemplate, TournamentAdmin
 from models.data_models import TournamentSponsor, TournamentRoom, ConclaveRule, Competition
 from models.base_model import db
-from misc import imperium_keywords
+from misc import KEYWORDS
 from .notification_service import Notificator
 from .imperium_sheet_service import ImperiumSheetService
 from .deck_service import DeckService
@@ -482,8 +482,8 @@ class TournamentService:
                     msg2.append(f"{signup.coach.mention()} triggered {rule.name}: {getattr(rule,f'level{rule_level}')}, run **!{word} {rule_level}**")
             
             # Announce cards
-            announce1 = [card for card in signup.deck.cards if "Announce" in imperium_keywords(card.template.description)]
-            announce2 = [card for card in signup.deck.extra_cards if "Announce" in imperium_keywords(card.get('template').get('description'))]
+            announce1 = [card for card in signup.deck.cards if KEYWORDS(card.template.description).is_announce()]
+            announce2 = [card for card in signup.deck.extra_cards if KEYWORDS(card.get('template').get('description')).is_announce()]
             announce = announce1 + announce2
             if announce:
                 announces.append((signup.coach.mention(), announce))

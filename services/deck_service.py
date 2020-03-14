@@ -8,9 +8,10 @@ from models.base_model import db
 from models.marsh_models import card_schema
 from models.data_models import date_now, Card, Coach, Tournament, CardTemplate
 from models.general import MIXED_TEAMS
+from misc import KEYWORDS
 from misc.helpers import CardHelper
 
-from .card_service import CardService
+from .card_service import CardService, GUARDS
 from .notification_service import Notificator
 
 class DeckService:
@@ -118,7 +119,7 @@ class DeckService:
     @classmethod
     def assigncard(cls, deck, card):
         """Assign assignable `card` in `deck`"""
-        if card['template']['card_type'] != "Training" and card['template']['name'] not in ["Bodyguard", "Hired Muscle", "Personal Army"]:
+        if card['template']['card_type'] != "Training" and card['template']['name'] not in GUARDS:
             raise DeckError(f"{card['template']['name']} is not assignable!")
 
         new_players = [player for player in cls.players(deck) if CardHelper.card_id_or_uuid(player) in card["assigned_to_array"][str(deck.id)]]
@@ -301,8 +302,8 @@ class DeckService:
         """Returns list of eligible player Cards or cards that can be assigned given training card"""
         # only players that can be assigned skill
         players = DeckService.assignable_players(deck)
-        # remove disabled ones
-        players = [player for player in players if cls.is_enabled(deck, player)]
+        # remove disabled or guarded ones
+        players = [player for player in players if cls.is_enabled(deck, player) and not cls.is_guarded(deck, player)]
         # get the skills the cards gives
         skills = CardService.skill_names_for(card, api_format=False)
         eligible = []
@@ -404,6 +405,16 @@ class DeckService:
       if deck.disabled_cards and CardService.card_id_or_uuid(card) in deck.disabled_cards:
         return False
       return True
+
+    @staticmethod
+    def is_guarded(deck, card):
+      assigned = DeckService.assigned_cards_to(deck, card)
+      for card in assigned:
+        c = CardHelper.card_fix(card)
+        if c.get('name') in GUARDS:
+          return True
+      return False
+
 
 class DeckError(Exception):
     """Exception for Deck related issues"""
