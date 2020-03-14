@@ -346,7 +346,7 @@ def CoMWithFriends(room, caller: Coach):
         'rolls': packs
     }
 
-def returnoftheking():
+def ReturnOfTheKing():
     result = dice.dice(6,1)
     title = "Return Of The King!"
     skills = ['Agility Up!', 'Strength Up!', '2 x Strength Up!']

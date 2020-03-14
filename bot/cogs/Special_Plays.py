@@ -118,7 +118,7 @@ class SpecialPlays(commands.Cog):
         await send_embed(data, ctx)
     
     @commands.command()
-    async def returnoftheking(self, ctx):
+    async def ReturnOfTheKing(self, ctx):
         """Add a Bretonnian Blitzer named Arthur to your team and give him the Sure Hands skill. Roll a D6.
            On a result of 1-3, give the Blitzer +AG. On a result of 4-5, give the Blitzer +ST. On a result of 6, 
            give the Blitzer two +ST stat-ups."""
