@@ -61,7 +61,7 @@ def Bullcanoe():
     subtitles = ['*Get the paddles ready!*','*it definitely rhymes with volcano!*']
     skills = ['Sprint & Sure Feet', 'Mighty Blow & Piling On']
     description = subtitles[result[0]-1]
-    value_field1 = f'All player with Strength 4 or higher gain {skills[result[0]-1]}'
+    value_field1 = f'All players with Strength 4 or higher gain {skills[result[0]-1]}'
 
     return {
         'embed_title': title,

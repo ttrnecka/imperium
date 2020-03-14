@@ -25,7 +25,7 @@ class SpecialPlays(commands.Cog):
         """Roll a D2. On a result of 1, get the paddles ready! 
           All players with Strength 4 or higher gain Sprint and Sure Feet. 
         On a result of 2, it definitely rhymes with volcano! 
-          All player with Strength 4 or higher gain Mighty Blow and Piling On"""
+          All players with Strength 4 or higher gain Mighty Blow and Piling On"""
         
         # calls the same named method from special_play
         data = getattr(special_play, inspect.currentframe().f_code.co_name)()
