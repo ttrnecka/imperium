@@ -304,13 +304,10 @@ export default {
 
       // sponsors
       if (this.tournament.sponsor !== 'None' && this.tournament.sponsor !== '') {
-        while (this.prizes.length < 2 * this.tournament.coach_limit) {
-          this.add_prize({
-            coach: '',
-            amount: 0,
-            reason: `${this.tournament.sponsor} Bonus`,
-          });
-        }
+        this.add_prize({ coach: '', amount: 20, reason: `${this.tournament.sponsor} Bonus 1st` });
+        this.add_prize({ coach: '', amount: 15, reason: `${this.tournament.sponsor} Bonus 2nd` });
+        this.add_prize({ coach: '', amount: 10, reason: `${this.tournament.sponsor} Bonus 3rd` });
+        this.add_prize({ coach: '', amount: 5, reason: `${this.tournament.sponsor} Bonus 4th` });
       }
     },
     add_prize(prize = { coach: '', amount: 0, reason: '' }) {
@@ -507,10 +504,7 @@ export default {
       if (card.template.name === 'For Whom The Bell Tolls') {
         return (stats.inflictedko) * 2;
       }
-      if (card.template.name === 'For Whom The Bell Tolls') {
-        return (stats.opponentinflictedcasualties - stats.opponentinflicteddead) * 2 + (stats.opponentinflicteddead * 5);
-      }
-      if (card.template.name === 'For Whom The Bell Tolls') {
+      if (card.template.name === 'Strife Insurance') {
         return (stats.opponentinflictedcasualties - stats.opponentinflicteddead) * 2 + (stats.opponentinflicteddead * 5);
       }
       return 0;
