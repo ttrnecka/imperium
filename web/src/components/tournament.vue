@@ -101,7 +101,7 @@
                     <div class="col-sm-4"><button :disabled="processing" type="button" class="col-12 m-1 btn btn-primary" @click="start()">Start</button></div>
                     <div class="col-sm-4">
                         <button v-if="prize_menu" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="award_and_stop()">Award & Stop</button>
-                        <button v-else :disabled="processing" type="button" class="col-12 m-1 btn btn-success" @click="setprizes()">Set Prizes</button>
+                        <button v-else :disabled="processing" type="button" class="col-12 m-1 btn btn-success" @click="reset_prizes()">Set Prizes</button>
                     </div>
                 </div>
                 <div v-if="is_webadmin && prize_menu" class="row">
@@ -295,8 +295,9 @@ export default {
           matches = reg.exec(this.tournament.prizes);
           prize = (matches !== null ? matches[1].trim() : 0);
         }
+        const coach = this.coaches.find((c) => c.short_name === this.leaderboard[this.prizes.length].name);
         this.add_prize({
-          coach: '',
+          coach: coach ? coach.id : '',
           amount: prize,
           reason: `${this.tournament.type} ${this.tournament.mode} ${reason}`,
         });

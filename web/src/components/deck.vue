@@ -65,6 +65,7 @@
                       <div class="col-sm-4"><b>Assistant Coaches:</b> {{team.team.assistantcoaches}}</div>
                       <div class="col-sm-4"><b>Cheerleaders:</b> {{team.team.cheerleaders}}</div>
                       <div class="col-sm-4"><b>Stadium Enhancement:</b> {{stadium_enhacement(team.team)}}</div>
+                      <div class="col-sm-4"><b>Cash:</b> {{team.team.cash}}</div>
                     </div>
                     <h6 class="mt-2">Roster size:
                       <span v-if="team_check.roster.value" class="deck_valid_check">✓</span>
