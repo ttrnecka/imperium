@@ -28,6 +28,7 @@ class CardSchema(ma.ModelSchema):
     assigned_to_array = ma.Dict(ma.List(ma.String))
     template = ma.Nested(CardTemplateSchema)
     default_skills = ma.List(ma.String())
+    coach_data = ma.Dict(attribute = 'coach_dict')
 
 class TournamentSignupSchema(ma.ModelSchema):
     class Meta:

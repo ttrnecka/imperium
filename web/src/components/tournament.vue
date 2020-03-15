@@ -181,40 +181,52 @@ export default {
         { key: 'draws', sortable: true, formatter: 'nonZero' },
         { key: 'losses', sortable: true, formatter: 'nonZero' },
         {
-          key: 'inflictedtouchdowns', label: 'TD+', sortable: true, formatter: 'nonZero',
+          key: 'inflictedtouchdowns', label: 'TD⁺', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'sustainedtouchdowns', label: 'TD-', sortable: true, formatter: 'nonZero',
+          key: 'sustainedtouchdowns', label: 'TD⁻', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'inflictedtackles', label: 'Blocks+', sortable: true, formatter: 'nonZero',
+          key: 'inflictedtackles', label: 'Blocks⁺', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'sustainedtackles', label: 'Blocks-', sortable: true, formatter: 'nonZero',
+          key: 'sustainedtackles', label: 'Blocks⁻', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'inflictedinjuries', label: 'AB+', sortable: true, formatter: 'nonZero',
+          key: 'inflictedinjuries', label: 'AB⁺', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'sustainedinjuries', label: 'AB-', sortable: true, formatter: 'nonZero',
+          key: 'sustainedinjuries', label: 'AB⁻', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'inflictedko', label: 'KO+', sortable: true, formatter: 'nonZero',
+          key: 'opponentinflictedinjuries', label: 'ABᵒ', headerTitle: 'Armor Breaks by opponent', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'sustainedko', label: 'KO-', sortable: true, formatter: 'nonZero',
+          key: 'inflictedko', label: 'KO⁺', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'inflictedcasualties', label: 'CAS+', sortable: true, formatter: 'nonZero',
+          key: 'sustainedko', label: 'KO⁻', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'sustainedcasualties', label: 'CAS-', sortable: true, formatter: 'nonZero',
+          key: 'opponentinflictedko', label: 'KOᵒ', headerTitle: 'KOs by opponent', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'inflicteddead', label: 'Dead+', sortable: true, formatter: 'nonZero',
+          key: 'inflictedcasualties', label: 'CAS⁺', sortable: true, formatter: 'nonZero',
         },
         {
-          key: 'sustaineddead', label: 'Dead-', sortable: true, formatter: 'nonZero',
+          key: 'sustainedcasualties', label: 'CAS⁻', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'opponentinflictedcasualties', label: 'CASᵒ', headerTitle: 'Casualties by opponent', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'inflicteddead', label: 'Dead⁺', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'sustaineddead', label: 'Dead⁻', sortable: true, formatter: 'nonZero',
+        },
+        {
+          key: 'opponentinflicteddead', label: 'Deadᵒ', headerTitle: 'Deaths by opponent', sortable: true, formatter: 'nonZero',
         },
         {
           key: 'inflictedpasses', label: 'Pass', sortable: true, formatter: 'nonZero',
@@ -450,8 +462,8 @@ export default {
             res.data.forEach((card) => {
               if (this.has_keyword(card, 'Payout')) {
                 this.add_prize({
-                  coach: '',
-                  amount: 0,
+                  coach: card.coach_data.id,
+                  amount: this.payout(card),
                   reason: card.template.name,
                 });
               }
@@ -477,6 +489,31 @@ export default {
       this.selected.deck_id = signup.deck;
       this.selected.coach = coach;
       this.show_deck = true;
+    },
+    payout(card) {
+      const stats = this.leaderboard.find((e) => e.name === card.coach_data.name);
+      if (stats === undefined) {
+        return 0;
+      }
+      if (card.template.name === 'Cash Incorporated') {
+        return (stats.inflictedcasualties - stats.inflicteddead) * 2 + (stats.inflicteddead * 5);
+      }
+      if (card.template.name === 'Fruity Kisses Machine') {
+        return (stats.inflictedpasses) * 1 + (stats.inflictedinterceptions * 5);
+      }
+      if (card.template.name === 'Pleasing the Sponsors') {
+        return 20;
+      }
+      if (card.template.name === 'For Whom The Bell Tolls') {
+        return (stats.inflictedko) * 2;
+      }
+      if (card.template.name === 'For Whom The Bell Tolls') {
+        return (stats.opponentinflictedcasualties - stats.opponentinflicteddead) * 2 + (stats.opponentinflicteddead * 5);
+      }
+      if (card.template.name === 'For Whom The Bell Tolls') {
+        return (stats.opponentinflictedcasualties - stats.opponentinflicteddead) * 2 + (stats.opponentinflicteddead * 5);
+      }
+      return 0;
     },
     ...mapMutations([
       'updateTournament', 'storeTournaments',

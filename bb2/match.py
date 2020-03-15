@@ -58,9 +58,21 @@ class Tournament:
                      'inflictedinjuries', 'inflictedko', 'inflicteddead', 'inflictedmetersrunning',
                      'inflictedpasses', 'inflictedcatches', 'inflictedinterceptions',
                      'sustainedexpulsions', 'sustainedcasualties', 'sustainedko',
-                     'sustainedinjuries', 'sustaineddead', 'inflictedmeterspassing',]:
+                     'sustainedinjuries', 'sustaineddead', 'inflictedmeterspassing']:
           coaches[coach1_name][stat] += match.team1()[stat]
           coaches[coach2_name][stat] += match.team2()[stat]
+
+        coaches[coach1_name]['opponentinflictedinjuries'] += match.team2()['inflictedinjuries']
+        coaches[coach2_name]['opponentinflictedinjuries'] += match.team1()['inflictedinjuries']
+
+        coaches[coach1_name]['opponentinflictedko'] += match.team2()['inflictedko']
+        coaches[coach2_name]['opponentinflictedko'] += match.team1()['inflictedko']
+
+        coaches[coach1_name]['opponentinflictedcasualties'] += match.team2()['inflictedcasualties']
+        coaches[coach2_name]['opponentinflictedcasualties'] += match.team1()['inflictedcasualties']
+
+        coaches[coach1_name]['opponentinflicteddead'] += match.team2()['inflicteddead']
+        coaches[coach2_name]['opponentinflicteddead'] += match.team1()['inflicteddead']
 
         coaches[coach1_name]['sustainedtouchdowns'] += match.team2()['inflictedtouchdowns']
         coaches[coach2_name]['sustainedtouchdowns'] += match.team1()['inflictedtouchdowns']

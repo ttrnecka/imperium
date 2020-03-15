@@ -170,6 +170,11 @@ class Card(Base):
     def __repr__(self):
         return f'<Card {self.template.name}, rarity: {self.template.rarity}, pack_id: {self.pack_id}>'
 
+    def coach_dict(self):
+      if self.pack and self.pack.coach:
+        return { 'id': self.pack.coach_id, 'name': self.pack.coach.short_name() }
+      return { 'id': None, 'name': None }
+      
     @classmethod
     def from_template(cls, template):
         model = cls()
