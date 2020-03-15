@@ -3,7 +3,7 @@ from flask import Blueprint, jsonify, request
 from sqlalchemy.orm import raiseload
 
 from models.data_models import db, Tournament, Coach, TransactionError
-from models.marsh_models import tournaments_schema, tournament_schema, cards_schema
+from models.marsh_models import tournaments_schema, tournament_schema
 from misc.decorators import authenticated, webadmin, masteradmin, registered
 from misc.helpers import InvalidUsage, current_coach
 import bb2
@@ -55,9 +55,7 @@ def get_tournament_leaderboard(tournament_id):
 def tournaments_cards(tournament_id):
     """Update tournaments from sheet"""
     tourn = Tournament.query.get(tournament_id)
-    cards = list(itertools.chain.from_iterable([ts.deck.cards for ts in tourn.tournament_signups]))
-    result = cards_schema.dump(cards)
-    return jsonify(result.data)
+    return jsonify(TournamentService.cards(tourn))
 
 
 @tournament.route("/update", methods=["GET"])

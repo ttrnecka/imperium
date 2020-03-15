@@ -7,6 +7,7 @@ from sqlalchemy import asc, func
 from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card, TournamentTemplate, TournamentAdmin
 from models.data_models import TournamentSponsor, TournamentRoom, ConclaveRule, Competition
 from models.base_model import db
+from models.marsh_models import cards_schema
 from misc import KEYWORDS
 from .notification_service import Notificator
 from .imperium_sheet_service import ImperiumSheetService
@@ -618,6 +619,21 @@ class TournamentService:
     def coaches_for(tourn):
         signups = tourn.tournament_signups
         return [ts.deck.tournament_signup.coach for ts in signups]
+
+    @staticmethod
+    def cards(tourn):
+      cards = list(itertools.chain.from_iterable([ts.deck.cards for ts in tourn.tournament_signups]))
+      extra_cards = []
+      for ts in tourn.tournament_signups:
+        for c in ts.deck.extra_cards:
+          c['coach_data'] = {
+            'id': ts.coach.id,
+            'name': ts.coach.short_name()
+          }
+          extra_cards.append(c)
+      result = cards_schema.dump(cards).data
+      return result + extra_cards
+
 
     @staticmethod
     def start_check(tourn):
