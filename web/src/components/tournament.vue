@@ -88,8 +88,8 @@
                 <div class="row tournament_info_line">
                     <div class="col-12">{{ tournament.unique_prize }}</div>
                 </div>
-                <div>
-                  <b-table striped hover outlined small responsive caption-top :items="leaderboard" :fields="fields">
+                <div class="row tournament_info_line">
+                  <b-table class="col-12" striped hover outlined small responsive caption-top :items="leaderboard" :fields="fields">
                     <template v-slot:table-caption><b>Leaderboard</b></template>
                   </b-table>
                 </div>

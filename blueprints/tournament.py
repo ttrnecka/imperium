@@ -38,13 +38,14 @@ def get_tournament_leaderboard(tournament_id):
     matches = []
     for comp in tourn.competitions:
       folder = st.competition_folder(comp.name)
-      matchfiles = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+      if os.path.isdir(folder):
+        matchfiles = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
 
-      for file_name in matchfiles:
-        file = open(os.path.join(folder, file_name), "r")
-        data = json.loads(file.read())
-        file.close()
-        matches.append(bb2.Match(data))
+        for file_name in matchfiles:
+          file = open(os.path.join(folder, file_name), "r")
+          data = json.loads(file.read())
+          file.close()
+          matches.append(bb2.Match(data))
     t = bb2.Tournament(*matches)
     
     return jsonify(t.leaderboard())
