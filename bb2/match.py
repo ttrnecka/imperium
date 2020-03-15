@@ -39,6 +39,9 @@ class Match:
       else:
         return None
 
+    def is_concede(self):
+      return is_concede(self.data)
+
 class Tournament:
     def __init__(self, *args:Match):
       self.matches = args
@@ -46,6 +49,8 @@ class Tournament:
     def leaderboard(self):
       coaches = {}
       for match in self.matches:
+        if match.is_concede():
+          continue
         for coach in [match.coach1(), match.coach2()]:
           if not coach['coachname'] in coaches:
             coaches[coach['coachname']] = Counter({'name': coach['coachname']})
