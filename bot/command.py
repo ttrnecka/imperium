@@ -932,6 +932,7 @@ class DiscordCommand(BotHelp):
                     if submit_deck_channel:
                         msg.append(f"Please submit decks as instructed in {submit_deck_channel.mention}")
                     msg.append(f"We start on {tourn.expected_start_date}!")
+                    msg.append(f"Deadline is on {tourn.deadline_date}")
                     msg.append(f"Your tournament admin is {admin.mention}")
                     msg.append(f"**Deck Limit:** {tourn.deck_limit}")
                     msg.append(f"**Tournament Sponsor:** {tourn.sponsor}")

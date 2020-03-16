@@ -295,7 +295,10 @@ export default {
           matches = reg.exec(this.tournament.prizes);
           prize = (matches !== null ? matches[1].trim() : 0);
         }
-        const coach = this.coaches.find((c) => c.short_name === this.leaderboard[this.prizes.length].name);
+        let coach;
+        if (this.leaderboard.length > this.prizes.length) {
+          coach = this.coaches.find((c) => c.short_name === this.leaderboard[this.prizes.length].name);
+        }
         this.add_prize({
           coach: coach ? coach.id : '',
           amount: prize,

@@ -90,9 +90,21 @@
                     </div>
                     <div class="tab-content show col-12"
                       id="accordionTournamentsCoach">
-                        <h5 class="coach_info">Tournaments:</h5>
+                        <h5 class="coach_info">Joined Tournaments:</h5>
                         <tournament
                           v-for="tournament in tournamentsFor(selectedCoach)"
+                          :key="tournament.tournament_id"
+                          :id="'tourn'+tournament.tournament_id+'coach'"
+                          role="tabpanel" aria-labelledby="tournament"
+                          :tournament="tournament" :coaches="coaches"
+                          data-parent="#accordionTournamentsCoach" :user="user">
+                        </tournament>
+                    </div>
+                    <div class="tab-content show col-12"
+                      id="accordionTournamentsAdmined">
+                        <h5 class="coach_info">Admined Tournaments:</h5>
+                        <tournament
+                          v-for="tournament in tournamentsAdminedBy(selectedCoach)"
                           :key="tournament.tournament_id"
                           :id="'tourn'+tournament.tournament_id+'coach'"
                           role="tabpanel" aria-labelledby="tournament"
@@ -460,6 +472,9 @@ export default {
     },
     tournamentsFor(coach) {
       return this.tournaments.filter((e) => coach.tournaments.includes(e.id));
+    },
+    tournamentsAdminedBy(coach) {
+      return this.tournaments.filter((e) => e.admin === coach.short_name);
     },
     quest_achievements(coach) {
       if (coach.achievements.quests) {
