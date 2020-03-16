@@ -172,7 +172,7 @@ class Card(Base):
 
     def coach_dict(self):
       if self.pack and self.pack.coach:
-        return { 'id': self.pack.coach_id, 'name': self.pack.coach.short_name() }
+        return { 'id': self.pack.coach_id, 'name': self.pack.coach.short_name(), 'bb2_name': self.pack.coach.bb2_name }
       return { 'id': None, 'name': None }
       
     @classmethod

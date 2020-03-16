@@ -492,7 +492,7 @@ export default {
       this.show_deck = true;
     },
     payout(card) {
-      const stats = this.leaderboard.find((e) => e.name === card.coach_data.name);
+      const stats = this.leaderboard.find((e) => e.name === card.coach_data.bb2_name);
       if (stats === undefined) {
         return 0;
       }

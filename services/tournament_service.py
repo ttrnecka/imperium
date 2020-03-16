@@ -629,6 +629,7 @@ class TournamentService:
           c['coach_data'] = {
             'id': ts.coach.id,
             'name': ts.coach.short_name()
+            'bb2_name': ts.coach.bb2_name
           }
           extra_cards.append(c)
       result = cards_schema.dump(cards).data
