@@ -297,7 +297,7 @@ export default {
         }
         let coach;
         if (this.leaderboard.length > this.prizes.length) {
-          coach = this.coaches.find((c) => c.short_name === this.leaderboard[this.prizes.length].name);
+          coach = this.coaches.find((c) => c.bb2_name === this.leaderboard[this.prizes.length].name);
         }
         this.add_prize({
           coach: coach ? coach.id : '',
