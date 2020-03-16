@@ -628,7 +628,7 @@ class TournamentService:
         for c in ts.deck.extra_cards:
           c['coach_data'] = {
             'id': ts.coach.id,
-            'name': ts.coach.short_name()
+            'name': ts.coach.short_name(),
             'bb2_name': ts.coach.bb2_name
           }
           extra_cards.append(c)
