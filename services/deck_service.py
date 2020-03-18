@@ -234,15 +234,17 @@ class DeckService:
                 raise DeckError("Card not found")
         else:
             #extra cards
-            if card in deck.unused_extra_cards:
-                deck.unused_extra_cards.remove(card)
-                deck.extra_cards.remove(card)
+            tcard = next((c for c in deck.unused_extra_cards
+                            if c['uuid'] == card['uuid']), None)
+            if tcard:
+                deck.unused_extra_cards.remove(tcard)
+                deck.extra_cards.remove(tcard)
                 if cls.deck_type(deck) == "Development":
-                    card['in_development_deck'] = False
+                    tcard['in_development_deck'] = False
                 else:
-                    card['in_imperium_deck'] = False
-                card['assigned_to_array'][deck.id] = []
-                deck.unused_extra_cards.append(card)
+                    tcard['in_imperium_deck'] = False
+                tcard['assigned_to_array'][deck.id] = []
+                deck.unused_extra_cards.append(tcard)
                 flag_modified(deck, "extra_cards")
                 flag_modified(deck, "unused_extra_cards")
             else:

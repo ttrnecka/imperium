@@ -38,7 +38,7 @@ stat_name_map = {
 }
 
 nonassignable_exceptions = [
-  "Brock Ferth", "Snotty",
+  "Brock Ferth", "Snotty", 'Arthur 1-3', 'Arthur 4-5', 'Arthur 6',
 ]
 
 GUARDS = ["Bodyguard", "Hired Muscle", "Personal Army"]
