@@ -82,7 +82,7 @@
                     <td :colspan="column_list.length+1">
                       <select class="form-control" v-model="card.assigned_to_array[deck.id][idx-1]" v-on:click.stop @change="$emit('card-assign', card, idx-1)" :disabled="!canEdit">
                         <option default :value="undefined" disabled>Select Player</option>
-                        <option v-for="(pcard,index) in sortedCards(assignable_player_cards)" :disabled="!isEnabled(pcard) || is_guarded(pcard) || assigned_cards(pcard).includes(card)" :key="index" :value="card_id_or_uuid(pcard)">{{index+1}}. {{ pcard.template.name }}</option>
+                        <option v-for="(pcard,index) in sortedCards(assignable_player_card_list_for(card))" :disabled="!isEnabled(pcard) || is_guarded(pcard) || assigned_cards(pcard).includes(card)" :key="index" :value="card_id_or_uuid(pcard)">{{index+1}}. {{ pcard.template.name }}</option>
                       </select>
                     </td>
                   </tr>
@@ -92,7 +92,7 @@
                     </th>
                     <td :colspan="column_list.length-1">
                       <span v-html="deck_skills_for(card)"></span>
-                      <span v-if="is_guarded(card)" title="No Special Play effects possible">&#128170;</span>
+                      <span v-if="is_guarded(card)" title="Immune">&#128170;</span>
                       <template v-if="canEdit">
                         <img v-if="injuryPickerOpened(card)" @click="openInjuryPicker(card)" class="skill_icon skill_single pointer" src="https://cdn2.rebbl.net/images/skills/SmashedHand.png" title="Add Injury">
                         <injury-picker v-else v-on:injured="addInjury(card,$event)"></injury-picker>
@@ -354,6 +354,12 @@ export default {
     number_of_cards(ctype) {
       return this.cards.filter((c) => c.template.card_type === ctype && (this.starter || !c.is_starter) && this.isEnabled(c)).length;
     },
+    assignable_player_card_list_for(card) {
+      if (this.guards.includes(card.template.name)) {
+        return this.immunable_player_cards;
+      }
+      return this.assignable_player_cards;
+    },
   },
   computed: {
     isDeck() {
@@ -361,6 +367,10 @@ export default {
     },
     assignable_player_cards() {
       return this.player_cards.filter((e) => !['Legendary', 'Inducement', 'Unique', 'Blessed', 'Cursed'].includes(e.template.rarity) || this.nonassignable_exceptions.includes(e.template.name));
+    },
+
+    immunable_player_cards() {
+      return this.player_cards.filter((e) => !['Inducement', 'Blessed', 'Cursed'].includes(e.template.rarity) || this.nonassignable_exceptions.includes(e.template.name));
     },
 
     player_cards() {
