@@ -34,7 +34,7 @@ achievements_template = {
         "getcursed2": {
             'desc': "Get cursed 10 times",
             'completed': False,
-            'award_text': "10 Coins",
+            'award_text': "15 Coins",
             'award': 'grant,15',
             'best':0,
             'target':10
@@ -58,7 +58,7 @@ achievements_template = {
         "getblessed2": {
             'desc': "Get blessed 10 times",
             'completed': False,
-            'award_text': "10 Coins",
+            'award_text': "15 Coins",
             'award': 'grant,15',
             'best':0,
             'target':10
