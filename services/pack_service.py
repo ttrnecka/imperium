@@ -104,7 +104,7 @@ class PackService:
         {"roll":0.35, "rarities":["Rare", "Rare", "Rare"]},
         {"roll":0.6, "rarities":["Epic", "Rare", "Rare"]},
         {"roll":0.8, "rarities":["Epic", "Epic", "Rare"]},
-        {"roll":0.1, "rarities":["Epic", "Epic", "Epic"]},
+        {"roll":1, "rarities":["Epic", "Epic", "Epic"]},
     ]
 
     LEGENDARY_COMBOS = [
