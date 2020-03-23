@@ -122,15 +122,16 @@ class DeckService:
         if card['template']['card_type'] != "Training" and card['template']['name'] not in GUARDS:
             raise DeckError(f"{card['template']['name']} is not assignable!")
 
-        new_players = [player for player in cls.players(deck) if CardHelper.card_id_or_uuid(player) in card["assigned_to_array"][str(deck.id)]]
+        new_players = [player for player in cls.all_players(deck) if CardHelper.card_id_or_uuid(player) in card["assigned_to_array"][str(deck.id)]]
         def valid_skill_or_raise(card):
             if isinstance(card, dict):
               assigned_ids = card['assigned_to_array'][str(deck.id)]
             else:
               assigned_ids = card.assigned_to_array[str(deck.id)]
 
-            old_players = [player for player in cls.players(deck) if CardHelper.card_id_or_uuid(player) in assigned_ids]
-            diff_players = list(set(new_players) - set(old_players))
+            old_players = [player for player in cls.all_players(deck) if CardHelper.card_id_or_uuid(player) in assigned_ids]
+            diff_players = [player for player in new_players if player not in old_players]
+
             for player in diff_players:
               skills = DeckService.skills_for(deck, player, api_format=False)
               cskills = CardService.skill_names_for(card, api_format=False)
@@ -145,7 +146,7 @@ class DeckService:
         else:
             # extra cards
             # find it my uuid in the holder array
-            tcard = next((c for c in deck.unused_extra_cards
+            tcard = next((c for c in deck.extra_cards
                             if c['uuid'] == card['uuid']), None)
             if tcard:
                 valid_skill_or_raise(tcard)
@@ -377,6 +378,10 @@ class DeckService:
     @staticmethod
     def extra_players(deck):
       return [card for card in deck.extra_cards if card['template']['card_type'] == CardTemplate.TYPE_PLAYER]
+
+    @staticmethod
+    def all_players(deck):
+        return DeckService.players(deck) + DeckService.extra_players(deck)
 
     @staticmethod
     def training_cards(deck):
