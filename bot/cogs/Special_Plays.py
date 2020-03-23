@@ -6,7 +6,7 @@ from discord.ext import commands
 from discord.utils import get
 from bot.helpers import transform_message, logger
 from services import CoachService
-from ..actions import special_play
+from bot.actions import special_play
 
 async def send_embed(data, ctx):
     embed = discord.Embed(title=data['embed_title'], description=data['embed_desc'], color=0xEE8700)
