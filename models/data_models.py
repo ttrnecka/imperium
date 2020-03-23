@@ -136,8 +136,11 @@ class Card(Base):
         self.template = template
         
     def statline(self):
-        return base_statline.get(f"{self.first_race()}_{self.template.position}","")
-    
+        statline = base_statline.get(f"{self.first_race()}_{self.template.position}", None)
+        if statline is None:
+          raise Exception(f"Unknow position {self.template.position} for {self.template.name}")
+        return statline
+        
     def default_skills(self):
         string = base_skills.get(f"{self.first_race()}_{self.template.position}","")
         if string:
