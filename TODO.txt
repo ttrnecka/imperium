@@ -16,8 +16,8 @@ DONE schedule tournament auto check for every hour
 
 TODO
 make blessings/curses limited to avialable list + add command to rerol
-Resigning tournamnet does not release cards(immediately)?
 Skill override on wilcard cards
+disable skills on players
 
 VERY HIGH
 add deck templates

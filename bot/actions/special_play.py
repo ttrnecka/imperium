@@ -346,6 +346,48 @@ def CoMWithFriends(room, caller: Coach):
         'rolls': packs
     }
 
+@remove_session
+def SoM3000(room, caller: Coach):
+    tourn = TournamentService.get_tournament_using_room(room)
+    coaches = TournamentService.coaches_for(tourn)
+
+    if not caller in coaches:
+        raise f"#{caller.short_name()} is not signed into the tournament"
+
+    title = 'Stadium-o-Matic 3000'
+    description = "Each team in the tournament receives a random stadium enhancement"
+    efs = []
+
+    stadiums = {
+      1: 'Security Gate',
+      2: 'Beer Stand',
+      3: 'Magician\' Shop',
+      4: 'Referee Rest Area',
+      5: 'Astrogranite',
+      6: 'Elf Turf',
+      7: 'Royal Box',
+      8: 'Squig Sandwich Kiosk',
+      9: 'Magic Dome',
+      10: 'Nuffle\'s Altar'
+    }
+
+    for coach in coaches:
+        result = dice.dice(10,1)[0]
+        value = f'{coach.mention()} gets {stadiums.get(result)}'
+        efs.append({
+            'name': f':game_die: : {result}',
+            'value': value,
+            'inline': True,
+        })
+
+    return {
+        'embed_title': title,
+        'embed_desc': description,
+        'thumbnail_url': 'https://cdn2.rebbl.net/images/stadium/refreshmentarea.png',
+        'embed_fields': efs,
+        'rolls': result
+    }
+
 def ReturnOfTheKing():
     result = dice.dice(6,1)
     title = "Return Of The King!"

@@ -118,6 +118,13 @@ class SpecialPlays(commands.Cog):
         await send_embed(data, ctx)
     
     @commands.command()
+    async def SoM3000(self, ctx):
+        """Each team in the tournament receives a random stadium enhancement. Other stadium enhancement cards are ignored and may not be replaced."""
+        me = CoachService.discord_user_to_coach(ctx.author)
+        data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
+        await send_embed(data, ctx)
+
+    @commands.command()
     async def ReturnOfTheKing(self, ctx):
         """Add a Bretonnian Blitzer named Arthur to your team and give him the Sure Hands skill. Roll a D6.
            On a result of 1-3, give the Blitzer +AG. On a result of 4-5, give the Blitzer +ST. On a result of 6, 
