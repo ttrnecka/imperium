@@ -12,10 +12,18 @@ injuries = {
     8: "Smashed Collar Bone (STR-)",
 }
 
+descriptions = [
+  "What is on the menu?",
+  "The doctor prescribed",
+  "Eeny, Meeny, Miny, Moe"
+]
+
 def injury():
     result = dice.dice(8,1)
     title = "Injury randomizer"
-    description = "What is on the menu?"
+    description = random.choice(descriptions)
+    if result[0] in [5,6]:
+      description = "Bargain Boozers last minute sale" 
     value_field1 = injuries.get(result[0])
 
     return {

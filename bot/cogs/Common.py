@@ -2,15 +2,8 @@ import discord
 import inspect
 
 from discord.ext import commands
-from bot.helpers import transform_message
+from bot.helpers import send_embed
 from bot.actions import common
-
-async def send_embed(data, ctx):
-    embed = discord.Embed(title=data['embed_title'], description=data['embed_desc'], color=0xEE8700)
-    embed.set_thumbnail(url=data['thumbnail_url'])
-    for field in data['embed_fields']:
-        embed.add_field(name=field['name'], value=transform_message(field['value'], ctx), inline=field['inline'])
-    await ctx.send(embed=embed)
 
 class Common(commands.Cog):
     def __init__(self, bot):

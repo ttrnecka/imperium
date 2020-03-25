@@ -4,16 +4,9 @@ import traceback
 
 from discord.ext import commands
 from discord.utils import get
-from bot.helpers import transform_message, logger
+from bot.helpers import send_embed, logger
 from services import CoachService
 from bot.actions import special_play
-
-async def send_embed(data, ctx):
-    embed = discord.Embed(title=data['embed_title'], description=data['embed_desc'], color=0xEE8700)
-    embed.set_thumbnail(url=data['thumbnail_url'])
-    for field in data['embed_fields']:
-        embed.add_field(name=field['name'], value=transform_message(field['value'], ctx), inline=field['inline'])
-    await ctx.send(embed=embed)
 
 class SpecialPlays(commands.Cog):
     def __init__(self, bot):

@@ -3,6 +3,7 @@ from services import PackService
 import os
 import re
 import logging
+import discord
 from discord.ext.commands import Context
 from discord.utils import get
 from logging.handlers import RotatingFileHandler
@@ -397,3 +398,10 @@ def transform_message(message, ctx: Context):
         return f'{skill_emoji} {m.group(1)}{m.group(2)}'
     trans_message = re.sub(SKILLREG, skill_transform, message)
     return trans_message
+
+async def send_embed(data, ctx):
+    embed = discord.Embed(title=data['embed_title'], description=data['embed_desc'], color=0xEE8700)
+    embed.set_thumbnail(url=data['thumbnail_url'])
+    for field in data['embed_fields']:
+        embed.add_field(name=field['name'], value=transform_message(field['value'], ctx), inline=field['inline'])
+    await ctx.send(embed=embed)
