@@ -434,13 +434,12 @@ class TournamentService:
 
     @classmethod
     def generate_conclave_triggers(cls,tournament):
-        triggered_conclave_rules = []
+        triggered_conclave_rule_counters = []
         if not tournament.conclave_triggers:
             for signup in tournament.tournament_signups:
-                triggered_conclave_rules.append(ConclaveService.all_triggered(signup.deck))
+                triggered_conclave_rule_counters.append(ConclaveService.all_triggered(signup.deck))
             #flatten and make it unique
-            triggered_conclave_rules = list(set(list(itertools.chain.from_iterable(triggered_conclave_rules))))
-            selected_conlave_rules = ConclaveService.select_rules(triggered_conclave_rules)
+            selected_conlave_rules = ConclaveService.select_rules(triggered_conclave_rule_counters)
 
             tournament.conclave_triggers = ",".join([rule.name for rule in selected_conlave_rules])
             db.session.commit()

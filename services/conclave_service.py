@@ -2,6 +2,7 @@
 import re
 import itertools
 import random
+from collections import Counter
 
 from models.data_models import Deck, ConclaveRule, CardTemplate
 from models.base_model import db
@@ -20,22 +21,29 @@ class ConclaveService:
     @classmethod
     def all_triggered(cls,deck):
         """Returns all ConclaveRule that would trigger based on the deck"""
-        return [rule for rule in [*ConclaveRule.consecrations(), *ConclaveRule.corruptions()] if cls.check_trigger(deck,name=rule.name)]
-
+        triggered = Counter()
+        for rule in [*ConclaveRule.consecrations(), *ConclaveRule.corruptions()]:
+          level = cls.check_trigger(deck,name=rule.name)
+          if level:
+            triggered[rule] = level
+        return triggered
+        
     @classmethod
-    def select_rules(cls,rules):
+    def select_rules(cls,rules_counters):
         """Randomly select rules from the list"""
+        sum_counter = sum(rules_counters,Counter())
+        sorted_sum_counter = sum_counter.most_common()
+
         max_rules = 3
         max_same_type_rules = 2
         selected = []
-        i = 0
-        max_i = len(rules)*2
-        while len(selected) < max_rules and i < max_i:
-            pick = random.choice(rules)
-            if pick not in selected and not any(pick.same_class(rule) for rule in selected) \
-                and not len([rule for rule in selected if rule.type == pick.type])>=max_same_type_rules:
-                selected.append(pick)
-            i+=1
+
+        for rule in sorted_sum_counter:
+          if rule[0] not in selected and not any(rule[0].same_class(srule) for srule in selected) \
+                and not len([rule[0] for srule in selected if srule.type == rule[0].type])>=max_same_type_rules:
+                selected.append(rule[0])
+          if len(selected) == max_rules:
+            break
         
         return selected
     
