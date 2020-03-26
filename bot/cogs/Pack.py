@@ -226,6 +226,7 @@ class Pack(commands.Cog):
         await ctx.send(BotHelp.gentemp_help())
       if ctx.command.name == "genpack":
         await ctx.send(BotHelp.gen_help())
+      db.session.remove()
 
 def setup(bot):
     bot.add_cog(Pack(bot))

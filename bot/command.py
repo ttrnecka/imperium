@@ -205,9 +205,10 @@ class DiscordCommand(BotHelp):
                 await self.__run_comp()
             else:
               return
-            db.session.close
+            db.session.close()
         except Exception as e:
             await self.transaction_error(e)
+            db.session.close()
             #raising will not kill the discord bot but will cause it to log this to log as well
             raise
 
