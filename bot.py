@@ -41,7 +41,8 @@ async def on_message(message):
         command = DiscordCommand(message, bot)
         await command.process()
     finally:
-        db.session.close()
+      pass
+    #    db.session.close()
 
 @bot.event
 async def on_ready():

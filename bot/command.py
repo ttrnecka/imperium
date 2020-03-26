@@ -19,9 +19,6 @@ app.app_context().push()
 
 
 RULES_LINK = "https://bit.ly/2P9Y07F"
-GEN_QUALITY = ["premium", "budget"]
-GEN_PACKS = ["player", "training", "booster", "special"]
-GEN_PACKS_TMP = ["player", "training", "booster", "special", "skill", "coaching", "positional", "legendary","brawl"]
 
 AUTO_CARDS = {
     'Loose Change!':5,
@@ -172,33 +169,6 @@ class DiscordCommand(BotHelp):
 
         return msg
 
-    @classmethod
-    def check_gen_command(cls, command):
-        """Checks the validity if genpack command"""
-        args = command.split()
-        length = len(args)
-        if length not in [2, 3]:
-            return False
-
-        if args[1] not in GEN_PACKS:
-            return False
-        # training/booster/special without quality
-        if length == 2 and args[1] not in ["training", "booster", "special"]:
-            return False
-        # training/special takes not other parameter
-        if length > 2 and args[1] in ["training", "special"]:
-            return False
-        # booster with allowed quality
-        if length == 3 and args[1] == "booster" and args[2] not in GEN_QUALITY:
-            return False
-        # player with teams
-        if length == 3 and args[1] == "player" and args[2] not in PackService.team_codes():
-            return False
-        if length > 3:
-            return False
-
-        return True
-
     def __init__(self, dmessage, dclient):
         self.message = dmessage
         self.client = dclient
@@ -215,8 +185,6 @@ class DiscordCommand(BotHelp):
                 await self.__run_admin()
             elif self.cmd.startswith('!list'):
                 await self.__run_list()
-            elif self.cmd.startswith('!genpack '):
-                await self.__run_genpack()
             elif self.cmd.startswith('!complist'):
                 await self.__run_complist()
             elif self.cmd.startswith('!sign'):
@@ -235,12 +203,16 @@ class DiscordCommand(BotHelp):
                 await self.__run_curse()
             elif self.cmd.startswith('!comp'):
                 await self.__run_comp()
+            else:
+              return
+            db.session.close
         except Exception as e:
             await self.transaction_error(e)
             #raising will not kill the discord bot but will cause it to log this to log as well
             raise
 
-    async def send_message(self, channel, message_list):
+    @classmethod
+    async def send_message(cls, channel, message_list):
         """Sends messages to channel"""
         msg = LongMessage(channel)
         for message in message_list:
@@ -274,25 +246,6 @@ class DiscordCommand(BotHelp):
 
         channel = discord.utils.get(self.client.get_all_channels(), name='bank-notifications')
         await self.send_message(channel, [f"{mention}: "+msg])
-        return
-
-    #checks pack for AUTO_CARDS and process them
-    async def auto_cards(self, pack):
-        """Routine to process auto cards from the pack"""
-        for card in pack.cards:
-            if card.get('name') in AUTO_CARDS.keys():
-                reason = "Autoprocessing "+card.get('name')
-                amount = AUTO_CARDS[card.get('name')]
-                msg = f"Your card {card.get('name')} has been processed. You were granted {amount} coins"
-                tran = Transaction(description=reason, price=-1*amount)
-                try:
-                    db.session.delete(card)
-                    pack.coach.make_transaction(tran)
-                except TransactionError as e:
-                    await self.transaction_error(e)
-                    return
-                else:
-                    await  self.bank_notification(msg, pack.coach)
         return
 
     async def coach_unique(self, name):
@@ -533,81 +486,6 @@ class DiscordCommand(BotHelp):
             team_name = result['ResponseCreateCompetitionTicket']['TicketInfos']['RowTeam']['Name']
             await self.reply([f"Ticket sent to **{team_name}** for competition **{comp_name}**"])
             return
-
-    async def __run_genpack(self):
-        if self.__class__.check_gen_command(self.cmd):
-            ptype = self.args[1]
-            coach = Coach.get_by_discord_id(self.message.author.id)
-
-            if coach is None:
-                await self.reply([f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
-                return
-
-            pp_count = db.session.query(Pack.id).filter_by(coach_id=coach.id, pack_type="player").count()
-
-            if ptype == "player":
-                team = self.args[2]
-                first = True if pp_count == 0 else False
-                pack = PackService.generate(ptype, team=team, first=first, coach=coach)
-            elif ptype == "training" or ptype == "special":
-                pack = PackService.generate(ptype, coach=coach)
-            elif ptype == "booster":
-                ptype = "booster_budget" if len(self.args) < 3 else f"booster_{self.args[2]}"
-                pack = PackService.generate(ptype, coach=coach)
-
-            try:
-                duster = coach.duster
-                duster_on = False
-                duster_txt = ""
-                if pp_count > 0 and duster and duster.status == "COMMITTED":
-                    if (ptype == "player" and duster.type == "Tryouts" or
-                            ptype == "training" and duster.type == "Drills" or
-                            ptype == "special" and duster.type == "Drills"):
-                        duster_on = True
-                        duster_txt = f" ({duster.type})"
-                        db.session.delete(duster)
-
-                free_packs = coach.get_freepacks()
-
-                if ptype in ["player"] and not duster_on:
-                    if ptype in free_packs:
-                        pack.price = 0
-                        coach.remove_from_freepacks(ptype)
-                    else:
-                        raise TransactionError(
-                            "You need to commit Tryouts or earn the pack through" +
-                            " Achievements to be able to generate this pack!"
-                        )
-
-                if ptype in ["training", "special"] and not duster_on:
-                    raise TransactionError(
-                        "You need to commit Drills to be able to generate this pack!"
-                    )
-
-                if ptype in ["booster_budget", "booster_premium"]:
-                    if ptype in free_packs:
-                        pack.price = 0
-                        coach.remove_from_freepacks(ptype)
-
-                tran = Transaction(pack=pack, price=pack.price, description=PackService.description(pack))
-                coach.make_transaction(tran)
-            except TransactionError as e:
-                await self.transaction_error(e)
-                return
-            else:
-                # transaction is ok and coach is saved
-                msg = [
-                    f"**{PackService.description(pack)}** for **{self.message.author}** - **{pack.price}** coins{duster_txt}:\n",
-                    f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))}\n",
-                    f"**Bank:** {coach.account.amount} coins"
-                ]
-                await self.reply(msg)
-                await self.auto_cards(pack)
-                CoachService.check_collect_three_legends_quest(coach)
-
-                return
-        else:
-            await self.short_reply(self.__class__.gen_help())
 
     async def __run_admin(self):
         # if not started from admin-channel
