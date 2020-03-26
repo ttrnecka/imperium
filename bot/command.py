@@ -11,7 +11,7 @@ from models.data_models import TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
 from misc.helpers import represents_int, image_merge
 from services import PackService, CardService, TournamentService, CoachService, CompetitionError, CompetitionService
-from services import DusterService, RegistrationError, DustingError, TournamentError
+from services import RegistrationError, TournamentError
 
 from .helpers import BotHelp, LongMessage, log_response, logger
 
@@ -191,8 +191,6 @@ class DiscordCommand(BotHelp):
                 await self.__run_sign()
             elif self.cmd.startswith('!resign'):
                 await self.__run_resign()
-            elif self.cmd.startswith('!dust'):
-                await self.__run_dust()
             elif self.cmd.startswith('!done'):
                 await self.__run_done()
             elif self.cmd.startswith('!left'):
@@ -406,7 +404,9 @@ class DiscordCommand(BotHelp):
             )
             return
         try:
-            if TournamentService.confirm_phase(coach,room):
+            if TournamentService.get_phase(room) in [Tournament.DB_PHASE, Tournament.LOCKED_PHASE]:
+                msg = "This command has no effect in this phase. Go and commit your deck!"
+            elif TournamentService.confirm_phase(coach,room):
                 msg = f"Phase confirmed for {coach.short_name()}"
             else:
                 msg = "No deck found!"
@@ -987,74 +987,3 @@ class DiscordCommand(BotHelp):
             else:
                 await self.reply([f"Conclave casts upon you **{rule1.name}**: {getattr(rule1,f'level{level}_description')}"])
         return
-
-    async def __run_dust(self):
-        if (len(self.args) < 2 or
-                (self.args[1] not in ["show", "add", "remove", "cancel", "commit"]) or
-                self.args[1] in ["show", "cancel", "commit"] and len(self.args) != 2 or
-                self.args[1] in ["add", "remove"] and len(self.args) < 3):
-            await self.reply([self.__class__.dust_help()])
-            return
-
-        name = str(self.message.author)
-        coach = Coach.get_by_discord_id(self.message.author.id)
-        if coach is None:
-            await self.reply([f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
-
-        duster = DusterService.get_duster(coach)
-
-        if duster.status != "OPEN":
-            free_cmd = "!genpack player <type>" if duster.type == "Tryouts" else "!genpack training or !genpack special"
-            await self.reply([f"Dusting has been already committed, Use **{free_cmd}** to generate a free pack first!"])
-            return
-
-        if self.args[1] in ["add", "remove"]:
-            card_names = [card.strip() for card in " ".join(self.args[2:]).split(";")]
-
-        #show
-        if self.args[1] == "show":
-            count = len(duster.cards)
-            msg = [f"**{duster.type}** ({count}/10):"]
-            for card in duster.cards:
-                msg.append(card.get('name'))
-            if count == 10:
-                msg.append(" \nList full. You can commit the dusting now!!!")
-            await self.reply(msg)
-            return
-
-        #cancel
-        if self.args[1] == "cancel":
-            DusterService.cancel_duster(coach)
-            await self.reply(["Dusting canceled!!!"])
-            return
-
-        #commit
-        if self.args[1] == "commit":
-            try:
-                DusterService.commit_duster(coach)
-            except (TransactionError, DustingError) as e:
-                await self.transaction_error(e)
-                return
-            else:
-                msg = []
-                free_cmd = "!genpack player <type>" if duster.type == "Tryouts" else "!genpack training or !genpack special"
-                msg.append(f"Dusting committed! Use **{free_cmd}** to generate a free pack.\n")
-                await self.reply(msg)
-                return
-
-        #add/remove
-        if self.args[1] in ["add", "remove"]:
-            msg = []
-            for name in card_names:
-                try:
-                    if self.args[1] == "add":
-                        result = DusterService.dust_card_by_name(coach, name)
-                    if  self.args[1] == "remove":
-                        result = DusterService.undust_card_by_name(coach, name)
-                    if result is not None:
-                        msg.append(result)
-                except DustingError as e:
-                    msg.append(str(e))
-
-            await self.reply(msg)
-            return

@@ -129,7 +129,6 @@ class Pack(commands.Cog):
           'embed_fields': efs,
         }
         await send_embed(embed, ctx)
-        db.session.remove()
 
     @commands.command()
     async def genpack(self, ctx, pack_type:str, subtype:str=None):
@@ -215,7 +214,6 @@ class Pack(commands.Cog):
           'embed_fields': efs,
         }
         await send_embed(embed, ctx)
-        db.session.remove()
 
     async def cog_command_error(self, ctx, error):
       await ctx.send(error)
@@ -226,6 +224,10 @@ class Pack(commands.Cog):
         await ctx.send(BotHelp.gentemp_help())
       if ctx.command.name == "genpack":
         await ctx.send(BotHelp.gen_help())
+
+      await self.cog_after_invoke(ctx)
+
+    async def cog_after_invoke(self, ctx):
       db.session.remove()
 
 def setup(bot):
