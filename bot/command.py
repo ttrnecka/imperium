@@ -102,6 +102,49 @@ class DiscordCommand(BotHelp):
         return msg.strip("\n")
 
     @classmethod
+    def format_pack_to_pieces(cls, cards, show_hidden=False):
+        """formats response message for pack"""
+        pieces = {
+          'cards': "",
+          'descriptions': [],
+        }
+        value = 0
+        def display():
+          if not show_hidden and card.get('card_type') == "Reaction":
+            return False
+          return True
+
+        for card, quantity in cards:
+          pieces['cards'] += cls.number_emoji(quantity)
+          pieces['cards'] += " x "
+          pieces['cards'] += cls.rarity_emoji(card.get('rarity'))
+          if not display():
+              name = "Reaction Card"
+              cvalue = "?"
+          else:
+              value += card.get('value') * quantity
+              name = card.get("name")
+              cvalue = card.get("value")
+          pieces['cards'] += f' **{name}** ('
+          pieces['cards'] += f'{card.get("card_type")} Card) ({cvalue})\n'
+
+        pieces['cards'] += f"\n \n__Total value__: {value}\n \n"
+        for card, quantity in cards:
+          desc = {
+            'name': '',
+            'description': '',
+          }
+          if display() and card.get('description') != "":
+            desc['name'] = f"**{card.get('name')}**"
+            desc['description'] = card.get('description')
+            pieces['descriptions'].append(desc)
+          elif card.get('card_type') == "Reaction":
+            desc['name'] = "Reaction"
+            desc['description'] = "Owner can use !list or web to see the card detail"
+            pieces['descriptions'].append(desc)
+        return pieces
+
+    @classmethod
     def coach_collection_msg(cls, coach):
         """Creates message out of coaches collection"""
         msg = [
@@ -156,34 +199,6 @@ class DiscordCommand(BotHelp):
 
         return True
 
-    @classmethod
-    def check_gentemp_command(cls, command):
-        """Checks the validity if genpacktemp command"""
-        args = command.split()
-        length = len(args)
-        if length not in [2, 3]:
-            return False
-
-        if args[1] not in GEN_PACKS_TMP:
-            return False
-        # skill/coaching/special/booster without quality
-        if length == 2 and args[1] not in ["skill", "coaching", "special", "booster", "training", "brawl"]:
-            return False
-        # skill/coaching/special takes not other parameter
-        if length > 2 and args[1] in ["skill", "coaching", "special", "training", "brawl"]:
-            return False
-        # booster with allowed quality
-        if length == 3 and args[1] == "booster" and args[2] not in GEN_QUALITY:
-            return False
-        # player with teams
-        if (length == 3 and args[1] in ["player", "positional", "legendary"]
-                and args[2] not in PackService.team_codes()):
-            return False
-        if length > 3:
-            return False
-
-        return True
-
     def __init__(self, dmessage, dclient):
         self.message = dmessage
         self.client = dclient
@@ -200,9 +215,7 @@ class DiscordCommand(BotHelp):
                 await self.__run_admin()
             elif self.cmd.startswith('!list'):
                 await self.__run_list()
-            elif self.cmd.startswith('!genpacktemp'):
-                await self.__run_genpacktemp()
-            elif self.cmd.startswith('!genpack'):
+            elif self.cmd.startswith('!genpack '):
                 await self.__run_genpack()
             elif self.cmd.startswith('!complist'):
                 await self.__run_complist()
@@ -520,33 +533,6 @@ class DiscordCommand(BotHelp):
             team_name = result['ResponseCreateCompetitionTicket']['TicketInfos']['RowTeam']['Name']
             await self.reply([f"Ticket sent to **{team_name}** for competition **{comp_name}**"])
             return
-
-
-    async def __run_genpacktemp(self):
-        if self.__class__.check_gentemp_command(self.cmd):
-            ptype = self.args[1]
-            coach = Coach.get_by_discord_id(self.message.author.id)
-
-            if coach is None:
-                await self.reply([f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
-                return
-
-            if ptype in ["player", "positional", "legendary"]:
-                team = self.args[2]
-                pack = PackService.generate(ptype, team=team)
-            elif ptype in ["training", "special", "skill", "coaching", "brawl"]:
-                pack = PackService.generate(ptype)
-            elif ptype == "booster":
-                ptype = "booster_budget" if len(self.args) < 3 else f"booster_{self.args[2]}"
-                pack = PackService.generate(ptype)
-
-            msg = [
-                f"**Temporary {PackService.description(pack)}**:\n",
-                f"{self.__class__.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)}\n",
-                "**Note**: This is one time pack for Special Play or Inducement purposes only!!!"]
-            await self.reply(msg)
-        else:
-            await self.short_reply(self.__class__.gentemp_help())
 
     async def __run_genpack(self):
         if self.__class__.check_gen_command(self.cmd):
