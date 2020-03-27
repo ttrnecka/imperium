@@ -165,7 +165,7 @@ base_skills = {
     "Ogre_Ogre":"Bone-Head,Throw Team-Mate,Thick Skull,Mighty Blow",
     "Orc_Troll":"Really Stupid,Throw Team-Mate,Always Hungry,Regeneration,Mighty Blow,Loner",
     "Lizardman_Saurus":"",
-    "Skaven_Rat Ogre":"Wild Animal,Frenzy,Thick Skull,Mighty Blow,Loner",
+    "Skaven_Rat Ogre":"Wild Animal,Frenzy,Prehensile Tail,Mighty Blow,Loner",
     "Undead_Mummy":"Mighty Blow,Regeneration",
     "Underworld_Troll":"Really Stupid,Throw Team-Mate,Always Hungry,Regeneration,Mighty Blow,Loner",
     "Wood Elf_Treeman":"Take Root,Mighty Blow,Strong Arm,Stand Firm,Thick Skull,Throw Team-Mate,Loner",
