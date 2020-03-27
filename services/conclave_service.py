@@ -32,18 +32,20 @@ class ConclaveService:
     def select_rules(cls,rules_counters):
         """Randomly select rules from the list"""
         sum_counter = sum(rules_counters,Counter())
-        sorted_sum_counter = sum_counter.most_common()
-
+        #sorted_sum_counter = sum_counter.most_common()
+        rules = list(sum_counter.elements())
+        print(rules)
         max_rules = 3
         max_same_type_rules = 2
         selected = []
-
-        for rule in sorted_sum_counter:
-          if rule[0] not in selected and not any(rule[0].same_class(srule) for srule in selected) \
-                and not len([rule[0] for srule in selected if srule.type == rule[0].type])>=max_same_type_rules:
-                selected.append(rule[0])
-          if len(selected) == max_rules:
-            break
+        max_i = len(rules) * 2
+        i = 0
+        while len(selected) < max_rules and i < max_i:
+          pick = random.choice(rules)
+          if pick not in selected and not any(pick.same_class(srule) for srule in selected) \
+                and not len([pick for srule in selected if srule.type == pick.type])>=max_same_type_rules:
+                selected.append(pick)
+          i += 1
         
         return selected
     
