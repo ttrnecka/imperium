@@ -122,7 +122,8 @@ class DiscordCommand(BotHelp):
               value += card.get('value') * quantity
               name = card.get("name")
               cvalue = card.get("value")
-          pieces['cards'] += f' **{name}** ('
+          race = "" if card.get('race') == "All" else f"{card.get('race')} "
+          pieces['cards'] += f' **{name}** ({race}'
           pieces['cards'] += f'{card.get("card_type")} Card) ({cvalue})\n'
 
         pieces['cards'] += f"\n \n__Total value__: {value}\n \n"
