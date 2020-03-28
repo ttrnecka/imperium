@@ -218,8 +218,8 @@ class BotHelp:
         msg = "```"
         msg += "Signs coach to tournament\n"
         msg += "USAGE:\n"
-        msg += "!sign <id>\n"
-        msg += "\t<id>: id of tournament from !complist\n"
+        msg += "!sign <tournament_id>\n"
+        msg += "\t<tournament_id>: id of tournament from !complist\n"
         msg += "```"
         return msg
 
@@ -229,8 +229,8 @@ class BotHelp:
         msg = "```"
         msg += "Resigns coach from tournament\n"
         msg += "USAGE:\n"
-        msg += "!resign <id>\n"
-        msg += "\t<id>: id of tournament from !complist\n"
+        msg += "!resign <tournament_id>\n"
+        msg += "\t<tournament_id>: id of tournament from !complist\n"
         msg += "```"
         return msg
 

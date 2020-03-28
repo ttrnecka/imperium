@@ -1,0 +1,100 @@
+import discord
+import traceback
+
+from discord.ext import commands
+from bot.helpers import logger, BotHelp
+from bot.actions import common
+from models.data_models import db, Tournament as Tourn
+from services import TournamentService, CoachService
+
+
+async def sign(tournament_id, coach, ctx, admin=False):
+  """routine to sign a coach to tournament"""
+  if admin:
+      tourn = Tourn.query.filter_by(tournament_id=tournament_id).one_or_none()
+  else:
+      tourn = Tourn.query.filter_by(
+          status="OPEN", tournament_id=tournament_id
+      ).one_or_none()
+  if not tourn:
+      raise Exception("Incorrect **tournament_id** specified")
+
+  signup = TournamentService.register(tourn, coach, admin)
+  add_msg = "" if signup.mode == "active" else " as RESERVE"
+  await ctx.send(f"Signup succeeded{add_msg}!!!")
+  return True
+
+async def resign(tournament_id, coach, ctx, admin=False):
+  """routine to resign a coach to tournament"""
+  if admin:
+      tourn = Tourn.query.filter_by(tournament_id=tournament_id).one_or_none()
+  else:
+      tourn = Tourn.query.filter_by(
+          status="OPEN", tournament_id=tournament_id
+      ).one_or_none()
+
+  if not tourn:
+      raise Exception("Incorrect **tournament_id** specified")
+
+  if TournamentService.unregister(tourn, coach, admin):
+      await ctx.send(f"Resignation succeeded!!!")
+
+      coaches = [
+          discord.utils.get(ctx.guild.members, id=str(signup.coach.disc_id))
+          for signup in TournamentService.update_signups(tourn)
+      ]
+      msg = [coach.mention for coach in coaches if coach]
+      msg.append(f"Your signup to {tourn.name} has been updated from RESERVE to ACTIVE")
+
+      if len(msg) > 1:
+          tourn_channel = discord.utils.get(
+              ctx.bot.get_all_channels(), name='tournament-notice-board'
+          )
+          if tourn_channel:
+              await tourn_channel.send("\n".join(msg))
+          else:
+              await ctx.send("\n".join(msg))
+  return True
+class Tournament(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        self._last_member = None
+
+    @commands.command()
+    async def sign(self, ctx, tournament_id:int):
+      """Sign to the tournament"""
+      coach = CoachService.discord_user_to_coach(ctx.author)
+      if coach is None:
+          await ctx.send(f"Coach {ctx.author.mention} does not exist. Use !newcoach to create coach first.")
+          return
+      await sign(tournament_id, coach, ctx)
+      return
+
+    @commands.command()
+    async def resign(self, ctx, tournament_id:int):
+      """Resign from the tournament"""
+      coach = CoachService.discord_user_to_coach(ctx.author)
+      if coach is None:
+          await ctx.send(f"Coach {ctx.author.mention} does not exist. Use !newcoach to create coach first.")
+          return
+      await resign(tournament_id, coach, ctx)
+      return
+
+    async def cog_command_error(self, ctx, error):
+      await ctx.send(error)
+      text = type(error).__name__ +": "+str(error)
+      logger.error(text)
+      logger.error(traceback.format_exc())
+
+      if ctx.command.name == "sign":
+        await ctx.send(BotHelp.sign_help())
+      if ctx.command.name == "resign":
+        await ctx.send(BotHelp.resign_help())
+
+      await self.cog_after_invoke(ctx)
+
+    async def cog_after_invoke(self, ctx):
+      db.session.remove()
+
+def setup(bot):
+    bot.add_cog(Tournament(bot))

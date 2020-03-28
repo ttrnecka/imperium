@@ -17,9 +17,6 @@ from .helpers import BotHelp, LongMessage, log_response, logger
 
 app.app_context().push()
 
-
-RULES_LINK = "https://bit.ly/2P9Y07F"
-
 AUTO_CARDS = {
     'Loose Change!':5,
     'Bank Error!':10,
@@ -180,18 +177,12 @@ class DiscordCommand(BotHelp):
     async def process(self):
         """Process the command"""
         try:
-            if self.cmd.startswith('!newcoach'):
-                await self.__run_newcoach()
-            elif self.cmd.startswith('!admin'):
+            if self.cmd.startswith('!admin'):
                 await self.__run_admin()
             elif self.cmd.startswith('!list'):
                 await self.__run_list()
             elif self.cmd.startswith('!complist'):
                 await self.__run_complist()
-            elif self.cmd.startswith('!sign'):
-                await self.__run_sign()
-            elif self.cmd.startswith('!resign'):
-                await self.__run_resign()
             elif self.cmd.startswith('!done'):
                 await self.__run_done()
             elif self.cmd.startswith('!left'):
@@ -331,24 +322,6 @@ class DiscordCommand(BotHelp):
                     await self.reply(msg)
         return True
     # commands
-    async def __run_newcoach(self):
-        if Coach.get_by_discord_id(self.message.author.id):
-            await self.reply([f"**{self.message.author.mention}** account exists already\n"])
-        elif Coach.get_by_discord_id(self.message.author.id, deleted=True):
-            await self.reply([f"**{self.message.author.mention}** account is inactive, use the web page to activate it\n"])
-        else:
-            try:
-                coach = CoachService.new_coach(self.message.author, self.message.author.id)
-            except TransactionError as e:
-                await self.transaction_error(e)
-                return
-            msg = [
-                f"**{self.message.author.mention}** account created\n",
-                f"**Bank:** {coach.account.amount} coins",
-                f"**Rules**: <{RULES_LINK}>"
-            ]
-            await self.reply(msg)
-
     async def __run_list(self):
         with db.session.no_autoflush:
             coach = Coach.get_by_discord_id(self.message.author.id)
@@ -921,24 +894,6 @@ class DiscordCommand(BotHelp):
             msg.append("Use **!resign <id>** to resign from tournament")
             await self.reply(msg)
             return
-
-    async def __run_sign(self):
-        coach = Coach.get_by_discord_id(self.message.author.id)
-        if coach is None:
-            await self.reply([f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
-            return
-        if not await self.sign(self.args, coach):
-            await self.short_reply(self.__class__.sign_help())
-        return
-
-    async def __run_resign(self):
-        coach = Coach.get_by_discord_id(self.message.author.id)
-        if coach is None:
-            await self.reply([f"Coach {self.message.author.mention} does not exist. Use !newcoach to create coach first."])
-            return
-        if not await self.resign(self.args, coach):
-            await self.short_reply(self.__class__.resign_help())
-        return
 
     async def __run_blessing(self):
         await self.__conclave("blessing")
