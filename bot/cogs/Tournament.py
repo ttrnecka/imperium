@@ -1,10 +1,12 @@
 import discord
 import traceback
+import random
 
 from discord.ext import commands
 from bot.helpers import logger, BotHelp
 from bot.actions import common
-from models.data_models import db, Tournament as Tourn
+from models.data_models import db, Tournament as Tourn, ConclaveRule
+from misc.helpers import image_merge
 from services import TournamentService, CoachService
 
 
@@ -55,6 +57,39 @@ async def resign(tournament_id, coach, ctx, admin=False):
           else:
               await ctx.send("\n".join(msg))
   return True
+
+async def conclave(ctype, level, ctx):
+  rule1 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
+  rule2 = None
+
+  if ctype == "blessing":
+    rule2 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
+    while rule1.same_class(rule2):
+      rule2 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
+
+  r1_file = rule1.img(level)
+  files = []
+  if ctype == "blessing":
+    r2_file = rule2.img(level)
+    if r1_file and r2_file:
+      files = [r1_file,ConclaveRule.divider_img(),r2_file]
+  else:
+    if r1_file:
+      files = [r1_file]
+
+  if files:
+    buf = image_merge(files)
+    d_file = discord.File(image_merge(files), filename=f"{ctype}.png")
+    buf.close()
+    async with ctx.channel.typing():
+      await ctx.send(f"Conclave is undergoing the ritual, please stand by...")
+      await ctx.send(file=d_file)
+  else:
+    if rule2:
+      await ctx.send(f"Conclave casts upon you:\n**{rule1.name}**: {getattr(rule1,f'level{level}_description')}\nOR\n**{rule2.name}**: {getattr(rule2,f'level{level}_description')}")
+    else:
+      await ctx.send(f"Conclave casts upon you **{rule1.name}**: {getattr(rule1,f'level{level}_description')}")
+  return
 class Tournament(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -80,6 +115,16 @@ class Tournament(commands.Cog):
       await resign(tournament_id, coach, ctx)
       return
 
+    @commands.command()
+    async def blessing(self, ctx, level:int):
+      """Generates blessing"""
+      await conclave("blessing", level, ctx)
+
+    @commands.command()
+    async def curse(self, ctx, level:int):
+      """Generates curse"""
+      await conclave("curse", level, ctx)
+
     async def cog_command_error(self, ctx, error):
       await ctx.send(error)
       text = type(error).__name__ +": "+str(error)
@@ -90,11 +135,16 @@ class Tournament(commands.Cog):
         await ctx.send(BotHelp.sign_help())
       if ctx.command.name == "resign":
         await ctx.send(BotHelp.resign_help())
+      if ctx.command.name == "curse":
+        await ctx.send(BotHelp.curse_help())
+      if ctx.command.name == "blessing":
+        await ctx.send(BotHelp.blessing_help())
 
       await self.cog_after_invoke(ctx)
 
     async def cog_after_invoke(self, ctx):
       db.session.remove()
 
+  
 def setup(bot):
     bot.add_cog(Tournament(bot))

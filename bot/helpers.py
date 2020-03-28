@@ -317,7 +317,7 @@ class BotHelp:
         msg += "Returns random blessing\n"
         msg += "USAGE:\n"
         msg += "!blessing <level>\n"
-        msg += "\t<leve>: 1,2 or 3\n"
+        msg += "\t<level>: 1,2 or 3\n"
         msg += "```"
         return msg
 
@@ -328,7 +328,7 @@ class BotHelp:
         msg += "Returns random curse\n"
         msg += "USAGE:\n"
         msg += "!curse <level>\n"
-        msg += "\t<leve>: 1,2 or 3\n"
+        msg += "\t<level>: 1,2 or 3\n"
         msg += "```"
         return msg
 

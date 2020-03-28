@@ -6,10 +6,10 @@ import discord
 from sqlalchemy import func
 
 from web import db, app
-from models.data_models import Coach, Pack, Transaction, ConclaveRule, Competition
+from models.data_models import Coach, Pack, Transaction, Competition
 from models.data_models import TransactionError, Tournament, TournamentSignups
 from misc.helpers import CardHelper
-from misc.helpers import represents_int, image_merge
+from misc.helpers import represents_int
 from services import PackService, CardService, TournamentService, CoachService, CompetitionError, CompetitionService
 from services import RegistrationError, TournamentError
 
@@ -187,10 +187,6 @@ class DiscordCommand(BotHelp):
                 await self.__run_done()
             elif self.cmd.startswith('!left'):
                 await self.__run_left()
-            elif self.cmd.startswith('!blessing'):
-                await self.__run_blessing()
-            elif self.cmd.startswith('!curse'):
-                await self.__run_curse()
             elif self.cmd.startswith('!comp'):
                 await self.__run_comp()
             else:
@@ -894,52 +890,3 @@ class DiscordCommand(BotHelp):
             msg.append("Use **!resign <id>** to resign from tournament")
             await self.reply(msg)
             return
-
-    async def __run_blessing(self):
-        await self.__conclave("blessing")
-
-    async def __run_curse(self):
-        await self.__conclave("curse")
-
-    def __check_conclave_args(self):
-        if len(self.args) != 2 or not represents_int(self.args[1]) or int(self.args[1])>3 or int(self.args[1])<1:
-            return False
-        return True
-
-    async def __conclave(self,ctype):
-        if not self.__check_conclave_args():
-            await self.short_reply(getattr(self,f'{ctype}_help')())
-            return
-        rule1 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
-        rule2 = None
-
-        if ctype == "blessing":
-            rule2 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
-            while rule1.same_class(rule2):
-                rule2 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
-
-        level = int(self.args[1])
-
-        r1_file = rule1.img(level)
-        files = []
-        if ctype == "blessing":
-            r2_file = rule2.img(level)
-            if r1_file and r2_file:
-                files = [r1_file,ConclaveRule.divider_img(),r2_file]
-        else:
-            if r1_file:
-                files =[r1_file]
-
-        if files:
-            buf = image_merge(files)
-            d_file = discord.File(image_merge(files), filename=f"{ctype}.png")
-            buf.close()
-            async with self.message.channel.typing():
-                await self.reply([f"Conclave is undergoing the ritual, please stand by..."])
-                await self.message.channel.send(file=d_file)
-        else:
-            if rule2:
-                await self.reply(["Conclave casts upon you:", f"**{rule1.name}**: {getattr(rule1,f'level{level}_description')}","OR", f"**{rule2.name}**: {getattr(rule2,f'level{level}_description')}"])
-            else:
-                await self.reply([f"Conclave casts upon you **{rule1.name}**: {getattr(rule1,f'level{level}_description')}"])
-        return
