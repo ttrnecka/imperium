@@ -183,10 +183,6 @@ class DiscordCommand(BotHelp):
                 await self.__run_list()
             elif self.cmd.startswith('!complist'):
                 await self.__run_complist()
-            elif self.cmd.startswith('!done'):
-                await self.__run_done()
-            elif self.cmd.startswith('!left'):
-                await self.__run_left()
             elif self.cmd.startswith('!comp'):
                 await self.__run_comp()
             else:
@@ -362,41 +358,6 @@ class DiscordCommand(BotHelp):
 
             await self.send_message(self.message.author, msg)
             await self.short_reply("Info sent to PM")
-    
-    async def __run_done(self):
-        coach = Coach.get_by_discord_id(self.message.author.id)
-        room = self.message.channel.name
-
-        if coach is None:
-            await self.reply(
-                [(f"Coach {self.message.author.mention} does not exist."
-                "Use !newcoach to create coach first.")]
-            )
-            return
-        try:
-            if TournamentService.get_phase(room) in [Tournament.DB_PHASE, Tournament.LOCKED_PHASE]:
-                msg = "This command has no effect in this phase. Go and commit your deck!"
-            elif TournamentService.confirm_phase(coach,room):
-                msg = f"Phase confirmed for {coach.short_name()}"
-            else:
-                msg = "No deck found!"
-        except TournamentError as e:
-            await self.transaction_error(e)
-            return
-        await self.short_reply(msg)
-
-    async def __run_left(self):
-        room = self.message.channel.name
-        try:
-            coaches = TournamentService.left_phase(room)
-            phase = TournamentService.get_phase(room)
-            msg = [f"**Phase:** {phase}","**Left:**"]
-            for coach in coaches:
-                msg.append(coach.short_name())
-        except TournamentError as e:
-            await self.transaction_error(e)
-            return
-        await self.reply(msg)
     
     async def __run_comp(self):
         room = self.message.channel.name

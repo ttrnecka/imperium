@@ -125,6 +125,36 @@ class Tournament(commands.Cog):
       """Generates curse"""
       await conclave("curse", level, ctx)
 
+    @commands.command()
+    async def left(self, ctx):
+      """List coaches left to finish current tournament phase"""
+      room = ctx.channel.name
+
+      coaches = TournamentService.left_phase(room)
+      phase = TournamentService.get_phase(room)
+      msg = f"**Phase:** {phase}\n**Left:**\n"
+      for coach in coaches:
+        msg += f"{coach.short_name()}\n"
+      await ctx.send(msg)
+
+    @commands.command()
+    async def done(self, ctx):
+      """Confirm Special Play, Inducement and Blood Bowl phase"""
+      coach = CoachService.discord_user_to_coach(ctx.author)
+      room = ctx.channel.name
+
+      if coach is None:
+        await ctx.send(f"Coach {ctx.author.mention} does not exist. Use !newcoach to create coach first.")
+        return
+
+      if TournamentService.get_phase(room) in [Tourn.DB_PHASE, Tourn.LOCKED_PHASE]:
+          msg = "This command has no effect in this phase. Go and commit your deck!"
+      elif TournamentService.confirm_phase(coach,room):
+          msg = f"Phase confirmed for {coach.short_name()}"
+      else:
+          msg = "No deck found!"
+      await ctx.send(msg)
+
     async def cog_command_error(self, ctx, error):
       await ctx.send(error)
       text = type(error).__name__ +": "+str(error)
