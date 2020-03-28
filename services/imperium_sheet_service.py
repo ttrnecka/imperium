@@ -13,9 +13,9 @@ CREDS = ServiceAccountCredentials.from_json_keyfile_name(
 
 class ImperiumSheetService:
     """Namespace class"""
-    #SPREADSHEET_ID = "1t5IoiIjPAS2CD63P6xI4hWwx9c1SEzW9AL1LJ4LK6og"
+    SPREADSHEET_ID = "1t5IoiIjPAS2CD63P6xI4hWwx9c1SEzW9AL1LJ4LK6og"
     # dev spreadsheet below
-    SPREADSHEET_ID = "1z59ftfIYxsSZ_OwQs2KaFGzSuYizSMdSCdW6DGAj4Ms"
+    #SPREADSHEET_ID = "1z59ftfIYxsSZ_OwQs2KaFGzSuYizSMdSCdW6DGAj4Ms"
     ALL_CARDS_SHEET = "All Cards"
     TOURNAMENT_SHEET = "Tournaments"
     TOURNAMENT_TEMPLATES_SHEET = "Tournament Templates"
