@@ -20,14 +20,19 @@ ROOT = os.path.dirname(__file__)
 @bot.check
 async def check_if_can_respond(ctx):
   logger.info("%s: %s", ctx.author, ctx.message.content)
-  if ctx.author == bot.user:
-    return False
   #ignore DM
   if isinstance(ctx.channel, discord.abc.PrivateChannel):
     raise discord.ext.commands.CommandError("PM commands are not allowed. Please use the Imperium discord server.")
 
   return True
-  
+
+@bot.event
+async def on_message(message):
+  if message.author.bot:
+    print(message.content)
+    ctx = await bot.get_context(message)
+    await bot.invoke(ctx)
+
 @bot.event
 async def on_ready():
     """loads custom emojis upon ready"""
