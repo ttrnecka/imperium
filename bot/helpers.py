@@ -27,14 +27,6 @@ class BotHelp:
         msg += "__**Coach Commands**__\n"
         msg += "!list           - sends details of coach's own account by PM\n"
         msg += "!complist       - displays tournaments\n"
-        msg += "!sign           - sign to tournament\n"
-        msg += "!resign         - resign from tournament\n"
-        msg += "!newcoach       - creates coach's account\n"
-        msg += "!genpack        - generates pack and assigns it to coach\n"
-        msg += "!genpacktemp    - generates inducement or special play pack,"
-        msg += " does not assign it to coach, costs nothing\n"
-        msg += "!blessing       - returns random blessing\n"
-        msg += "!curse          - returns random curse\n"
         msg += "!comp           - manages in-game comps\n"
         msg += " \n__**Admin Commands**__\n"
         msg += "!adminlist      - lists coach's account \n"
@@ -405,3 +397,10 @@ async def send_embed(data, ctx):
     for field in data['embed_fields']:
         embed.add_field(name=field['name'], value=transform_message(field['value'], ctx), inline=field['inline'])
     await ctx.send(embed=embed)
+
+async def send_message(channel, message_list):
+  """Sends messages to channel"""
+  msg = LongMessage(channel)
+  for message in message_list:
+      msg.add(message)
+  await msg.send()
