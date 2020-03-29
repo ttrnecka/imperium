@@ -8,7 +8,7 @@ from discord.ext.commands import Context
 from discord.utils import get
 from logging.handlers import RotatingFileHandler
 from misc import SKILLREG
-from models.data_models import Tournament, Coach, Transaction
+from models.data_models import Tournament, Coach, Transaction, db
 from services import TournamentService
 
 ROOT = os.path.dirname(__file__)
@@ -481,5 +481,5 @@ async def auto_cards(pack, ctx):
 
       db.session.delete(card)
       pack.coach.make_transaction(tran)
-      await bank_notification(msg, pack.coach, ctx)
+      await bank_notification(ctx, msg, pack.coach)
   return

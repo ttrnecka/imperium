@@ -26,6 +26,8 @@ async def check_if_can_respond(ctx):
   if isinstance(ctx.channel, discord.abc.PrivateChannel):
     raise discord.ext.commands.CommandError("PM commands are not allowed. Please use the Imperium discord server.")
 
+  return True
+  
 @bot.event
 async def on_ready():
     """loads custom emojis upon ready"""

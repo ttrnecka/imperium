@@ -51,18 +51,6 @@ def check_gen_command(pack_type, subtype):
         return False
     return True
 
-async def bank_notification(msg, coach, ctx):
-  """Notifies coach about bank change"""
-  member = discord.utils.get(ctx.guild.members, id=coach.disc_id)
-  if member is None:
-      mention = coach.name
-  else:
-      mention = member.mention
-
-  channel = discord.utils.get(ctx.bot.get_all_channels(), name='bank-notifications')
-  await DiscordCommand.send_message(channel, [f"{mention}: "+msg])
-  return
-
 class Pack(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
