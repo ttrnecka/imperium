@@ -27,9 +27,9 @@ async def check_if_can_respond(ctx):
   return True
 
 # hack to be able process admincomp commands from webhooks in the cog command (that my default disables bots)
-@bot.event
+@bot.listen()
 async def on_message(message):
-  #if message.author.bot:
+  if message.author.bot:
     ctx = await bot.get_context(message)
     await bot.invoke(ctx)
 

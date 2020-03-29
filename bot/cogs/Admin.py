@@ -238,6 +238,7 @@ class Admin(commands.Cog):
         if action == Tournament.BB_PHASE:
             msg = TournamentService.blood_bowl_msg(tourn)
         await send_message(channel, msg)
+        await ctx.send("Done.")
       return
 
     @commands.command()
