@@ -293,7 +293,7 @@ class Tournament(commands.Cog):
         return
 
       if args[0] == "ticket":
-        comp_name = " ".join(self.args[1:])
+        comp_name = " ".join(args[1:])
         # get coach
         coach = CoachService.discord_user_to_coach(ctx.author)
         result = CompetitionService.ticket_competition(comp_name, coach, tourn)
