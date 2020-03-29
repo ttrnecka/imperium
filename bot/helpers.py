@@ -8,7 +8,7 @@ from discord.ext.commands import Context
 from discord.utils import get
 from logging.handlers import RotatingFileHandler
 from misc import SKILLREG
-from models.data_models import Tournament, Coach
+from models.data_models import Tournament, Coach, Transaction
 from services import TournamentService
 
 ROOT = os.path.dirname(__file__)
@@ -150,8 +150,8 @@ class BotHelp:
         msg = "```"
         msg += "USAGE 1:\n"
         msg += "Adds or removes card or cards from the coach\n"
-        msg += "!admincard add|remove <coach> <card>;...;<card>\n"
-        msg += "\tadd|remove: select one based on desired operation\n"
+        msg += "!admincard <action> <coach> <card>;...;<card>\n"
+        msg += "\t<action>: add or remove\n"
         msg += "\t<coach>: coach discord name or its part, must be unique\n"
         msg += "\t<card>: Exact card name as is in the All Cards list, "
         msg += "if mutliple cards are specified separate them by **;**\n"
@@ -250,7 +250,7 @@ class BotHelp:
         msg = "```"
         msg += "Tournament helper\n"
         msg += "USAGE:\n"
-        msg += "!admincomp start|stop|update|special_play|inducements|blood_bowl <id>\n"
+        msg += "!admincomp <action> [tournament_id]\n"
         msg += "\tstart: Notifies all registered coaches that tournament started "
         msg += "in the tournament channel and links the ledger\n"
         msg += "\tstop: Resigns all coaches from the tournament\n"
@@ -258,7 +258,7 @@ class BotHelp:
         msg += "\tspecial_play: Initiates special play phase\n"
         msg += "\tinducement: Initiates inducement phase\n"
         msg += "\tblood_bowl: Initiates blood bowl phase\n"
-        msg += "\t<id>: id of tournament from Tournamet master sheet\n"
+        msg += "\t<tournament_id>: id of tournament from Tournamet master sheet\n"
         msg += "```"
         return msg
 
@@ -461,4 +461,25 @@ async def bank_notification(ctx, msg, coach):
 
   channel = discord.utils.get(ctx.bot.get_all_channels(), name='bank-notifications')
   await send_message(channel, [f"{mention}: "+msg])
+  return
+
+AUTO_CARDS = {
+    'Loose Change!':5,
+    'Bank Error!':10,
+    'Lottery Win!':15
+}
+
+#checks pack for AUTO_CARDS and process them
+async def auto_cards(pack, ctx):
+  """Routine to process auto cards from the pack"""
+  for card in pack.cards:
+    if card.get('name') in AUTO_CARDS.keys():
+      reason = "Autoprocessing "+card.get('name')
+      amount = AUTO_CARDS[card.get('name')]
+      msg = f"Your card {card.get('name')} has been processed. You were granted {amount} coins"
+      tran = Transaction(description=reason, price=-1*amount)
+
+      db.session.delete(card)
+      pack.coach.make_transaction(tran)
+      await bank_notification(msg, pack.coach, ctx)
   return

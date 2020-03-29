@@ -3,7 +3,7 @@ import inspect
 import traceback
 
 from discord.ext import commands
-from bot.helpers import send_embed, logger, BotHelp
+from bot.helpers import send_embed, logger, BotHelp, auto_cards
 from bot.command import DiscordCommand
 from services import PackService, CoachService
 from models.data_models import db, Pack as Pck, TransactionError, Transaction
@@ -13,11 +13,6 @@ from misc.helpers import CardHelper
 GEN_PACKS = ["player", "training", "booster", "special"]
 GEN_PACKS_TMP = ["player", "training", "booster", "special", "skill", "coaching", "positional", "legendary","brawl"]
 GEN_QUALITY = ["premium", "budget"]
-AUTO_CARDS = {
-    'Loose Change!':5,
-    'Bank Error!':10,
-    'Lottery Win!':15
-}
 
 def check_gentemp_command(pack_type, subtype):
     """Checks the validity of genpacktemp parameters"""  
@@ -55,21 +50,6 @@ def check_gen_command(pack_type, subtype):
     if subtype and pack_type == "player" and subtype not in PackService.team_codes():
         return False
     return True
-
-#checks pack for AUTO_CARDS and process them
-async def auto_cards(pack, ctx):
-  """Routine to process auto cards from the pack"""
-  for card in pack.cards:
-    if card.get('name') in AUTO_CARDS.keys():
-      reason = "Autoprocessing "+card.get('name')
-      amount = AUTO_CARDS[card.get('name')]
-      msg = f"Your card {card.get('name')} has been processed. You were granted {amount} coins"
-      tran = Transaction(description=reason, price=-1*amount)
-
-      db.session.delete(card)
-      pack.coach.make_transaction(tran)
-      await bank_notification(msg, pack.coach, ctx)
-  return
 
 async def bank_notification(msg, coach, ctx):
   """Notifies coach about bank change"""

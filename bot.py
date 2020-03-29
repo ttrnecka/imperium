@@ -17,32 +17,14 @@ ROOT = os.path.dirname(__file__)
 
 # client = discord.Client()
 
-@bot.listen()
-async def on_message(message):
-    """Message event handler"""
-    # we do not want the bot to reply to itself
-    if message.author == bot.user:
-        return
-
-    #ignore DM
-    if isinstance(message.channel, discord.abc.PrivateChannel):
-        await message.channel.send(
-            "PM commands are not allowed. Please use the Imperium discord server."
-        )
-        return
-
-    #ignore commands not starting with !
-    if not message.content.startswith("!"):
-        return
-
-    logger.info("%s: %s", message.author, message.content)
-
-    try:
-        command = DiscordCommand(message, bot)
-        await command.process()
-    finally:
-      pass
-    #    db.session.close()
+@bot.check
+async def check_if_can_respond(ctx):
+  logger.info("%s: %s", ctx.author, ctx.message.content)
+  if ctx.author == bot.user:
+    return False
+  #ignore DM
+  if isinstance(ctx.channel, discord.abc.PrivateChannel):
+    raise discord.ext.commands.CommandError("PM commands are not allowed. Please use the Imperium discord server.")
 
 @bot.event
 async def on_ready():
@@ -57,10 +39,6 @@ async def on_ready():
 
     act = discord.Game("Imperium Season 3")
     await bot.change_presence(status=discord.Status.online, activity=act)
-
-#@bot.event
-#async def on_command_error(ctx, error):
-#    await ctx.send(error)
 
 with open(os.path.join(ROOT, 'config/TOKEN'), 'r') as token_file:
     TOKEN = token_file.read()
