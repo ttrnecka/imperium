@@ -158,6 +158,7 @@ class Tournament(commands.Cog):
 
     @commands.command()
     async def complist(self, ctx, *args):
+      """List all available tournaments"""
       if len(args) == 1 and not (represents_int(args[0]) or args[0] in ["all", "full", "free"]):
         raise ValueError(f"**{args[0]}** is not a number or 'all', 'full' or 'free'!!!")
 
@@ -241,6 +242,7 @@ class Tournament(commands.Cog):
     
     @commands.command()
     async def comp(self, ctx, *args):
+      """Create in-game competition and send tickets"""
       room = ctx.channel.name
       args_len = len(args)
       if args_len == 0 \
@@ -253,9 +255,9 @@ class Tournament(commands.Cog):
           
       tourn = TournamentService.get_tournament_using_room(room)
       
-      #if tourn.status != "RUNNING":
-      #  await ctx.send("Tournament is not running!")
-      #  return
+      if tourn.status != "RUNNING":
+        await ctx.send("Tournament is not running!")
+        return
 
       if args[0] == "create":
         if args[1] == "ladder":
