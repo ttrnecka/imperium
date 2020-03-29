@@ -139,34 +139,6 @@ class DiscordCommand(BotHelp):
             pieces['descriptions'].append(desc)
         return pieces
 
-    @classmethod
-    def coach_collection_msg(cls, coach):
-        """Creates message out of coaches collection"""
-        msg = [
-            f"Coach **{coach.name}**\n",
-            f"**Bank:** {coach.account.amount} coins\n",
-            f"**Tournaments:**",
-            *[f'{t.tournament_id}. {t.name}, status: {t.status}, '+
-              f'expected start: {t.expected_start_date}' for t in coach.tournaments],
-            "\n**Collection**:",
-            "-" * 65 + "",
-            f"{cls.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.active_cards()), show_hidden=True)}",
-            "-" * 65 + "\n"
-        ]
-
-        admin_in = Tournament.query.filter(
-            Tournament.admin == coach.short_name(), Tournament.status.in_(("OPEN", "RUNNING"))
-        ).all()
-
-        if admin_in:
-            msg.append(f"**Tournament Admin:**")
-            msg.extend(
-                [(f'{t.tournament_id}. {t.name}, status: {t.status}, channel: {t.discord_channel}')
-                 for t in admin_in]
-            )
-
-        return msg
-
     def __init__(self, dmessage, dclient):
         self.message = dmessage
         self.client = dclient
@@ -177,7 +149,7 @@ class DiscordCommand(BotHelp):
     async def process(self):
         """Process the command"""
         try:
-            if self.cmd.startswith('!admin'):
+            if self.args[0] in ['admincard','admincomp']:
                 await self.__run_admin()
             else:
               return
@@ -242,206 +214,11 @@ class DiscordCommand(BotHelp):
             return None
         return coaches[0]
 
-    async def sign(self, args, coach, admin=False):
-        """routine to sign a coach to tournament"""
-        if len(args) != 2:
-            await self.reply(["Incorrect number of arguments!!!\n"])
-            return False
-
-        if not represents_int(args[1]):
-            await self.reply([f"**{args[1]}** is not a number!!!\n"])
-            return False
-
-        if admin:
-            tourn = Tournament.query.filter_by(tournament_id=int(args[1])).one_or_none()
-        else:
-            tourn = Tournament.query.filter_by(
-                status="OPEN", tournament_id=int(args[1])
-            ).one_or_none()
-        if not tourn:
-            await self.reply([f"Incorrect tournament **id** specified\n"])
-            return False
-
-        signup = TournamentService.register(tourn, coach, admin)
-        add_msg = "" if signup.mode == "active" else " as RESERVE"
-        await self.reply([f"Signup succeeded{add_msg}!!!\n"])
-        return True
-
-    async def resign(self, args, coach, admin=False):
-        """routine to resign a coach to tournament"""
-        if len(args) != 2:
-            await self.reply(["Incorrect number of arguments!!!\n"])
-            return False
-
-        if not represents_int(args[1]):
-            await self.reply([f"**{args[1]}** is not a number!!!\n"])
-            return False
-
-        if admin:
-            tourn = Tournament.query.filter_by(tournament_id=int(args[1])).one_or_none()
-        else:
-            tourn = Tournament.query.filter_by(
-                status="OPEN", tournament_id=int(args[1])
-            ).one_or_none()
-
-        if not tourn:
-            await self.reply([f"Incorrect tournament **id** specified\n"])
-            return False
-
-        if TournamentService.unregister(tourn, coach, admin):
-            await self.reply([f"Resignation succeeded!!!\n"])
-
-            coaches = [
-                discord.utils.get(self.message.guild.members, id=str(signup.coach.disc_id))
-                for signup in TournamentService.update_signups(tourn)
-            ]
-            msg = [coach.mention for coach in coaches if coach]
-            msg.append(f"Your signup to {tourn.name} has been updated from RESERVE to ACTIVE")
-
-            if len(msg) > 1:
-                tourn_channel = discord.utils.get(
-                    self.client.get_all_channels(), name='tournament-notice-board'
-                )
-                if tourn_channel:
-                    await self.send_message(tourn_channel, msg)
-                else:
-                    await self.reply(msg)
-        return True
-
     async def __run_admin(self):
         # if not started from admin-channel
         if not self.__class__.is_admin_channel(self.message.channel):
             await self.reply([f"Insuficient rights"])
             return
-
-        #adminhelp cmd
-        if self.message.content.startswith('!adminhelp'):
-            await self.short_reply(self.__class__.commands())
-            return
-
-        #adminlist cmd
-        if self.message.content.startswith('!adminlist'):
-            # require username argument
-            if len(self.args) == 1:
-                await self.reply(["Username missing"])
-                return
-
-            coaches = Coach.find_all_by_name(self.args[1])
-            msg = []
-
-            if not coaches:
-                msg.append("No coaches found")
-
-            for coach in coaches:
-                for messg in self.__class__.coach_collection_msg(coach):
-                    msg.append(messg)
-            await self.reply(msg)
-            return
-
-        if self.message.content.startswith('!adminbank'):
-            # require username argument
-            if len(self.args) < 4:
-                await self.reply(["Not enough arguments!!!\n"])
-                await self.short_reply(self.__class__.adminbank_help())
-                return
-
-            # amount must be int
-            if not represents_int(self.args[1]):
-                await self.reply(["<amount> is not whole number!!!\n"])
-                return
-
-            coach = await self.coach_unique(self.args[2])
-            if coach is None:
-                return
-
-            amount = int(self.args[1])
-            reason = ' '.join(str(x) for x in self.message.content.split(" ")[3:]) + " - updated by " + str(self.message.author.name)
-
-            tran = Transaction(description=reason, price=-1*amount)
-            try:
-                coach.make_transaction(tran)
-            except TransactionError as e:
-                await self.transaction_error(e)
-                return
-            else:
-                msg = [
-                    f"Bank for {coach.name} updated to **{coach.account.amount}** coins:\n",
-                    f"Note: {reason}\n",
-                    f"Change: {amount} coins"
-                ]
-                await self.reply(msg)
-                await self.bank_notification(f"Your bank has been updated by **{amount}** coins - {reason}", coach)
-
-        if self.message.content.startswith('!adminrole'):
-            if len(self.args) != 4:
-                await self.reply([self.__class__.adminrole_help()])
-                return
-
-            if self.args[1] not in ["add", "remove"]:
-                await self.reply(["Specify **add** or **remove** operation!!!\n"])
-                return
-
-            if self.args[3] not in ["webadmin"]:
-                await self.reply(["Specify **webadmin** role!!!\n"])
-                return
-
-            coach = await self.coach_unique(self.args[2])
-            if coach is None:
-                return
-
-            if self.args[1] == "add":
-                coach.web_admin = True
-            if self.args[1] == "remove":
-                coach.web_admin = False
-            db.session.commit()
-            await self.reply([f"Role updated for {coach.short_name()}: {self.args[3]} - {coach.web_admin}"])
-            return
-
-        if self.message.content.startswith('!adminquest'):
-            if len(self.args) != 4:
-                await self.reply([self.__class__.adminquest_help()])
-                return
-
-            if self.args[1] not in ["on", "off"]:
-                await self.reply(["Specify **on** or **off** operation!!!\n"])
-                return
-
-            if self.args[3] not in ["collect3legends", "buildyourownlegend"]:
-                await self.reply(["Specify **collect3legends** or **buildyourownlegend** quest!!!\n"])
-                return
-
-            coach = await self.coach_unique(self.args[2])
-            if coach is None:
-                return
-
-            if self.args[1] == "on":
-                value = True
-            if self.args[1] == "off":
-                value = False
-            CoachService.set_achievement(coach, ["quests",self.args[3]], value)
-            db.session.commit()
-            await self.reply([f"Quest updated for {coach.short_name()}: {self.args[3]} - {self.args[1]}"])
-            return
-
-        if self.message.content.startswith('!adminreset'):
-            # require username argument
-            if len(self.args) != 2:
-                await self.reply(["Bad number of arguments!!!\n"])
-                await self.reply([self.__class__.adminreset_help()])
-                return
-
-            coach = await self.coach_unique(self.args[1])
-            if coach is None:
-                return
-
-            try:
-                new_coach = coach.reset()
-            except TransactionError as e:
-                await self.transaction_error(e)
-                return
-            else:
-                await self.reply([f"Coach {new_coach.name} was reset"])
-                await self.bank_notification(f"Your account was reset", new_coach)
 
         if self.message.content.startswith('!admincard'):
             if len(self.args) == 1:
@@ -536,28 +313,6 @@ class DiscordCommand(BotHelp):
                             msg.append(f"{name}: **not found**")
                         await self.reply(msg)
                     return
-
-        if self.message.content.startswith("!adminsign"):
-            if len(self.args) != 3:
-                await self.reply(["Incorrect number of arguments!!!", self.__class__.adminsign_help()])
-                return
-            coach = await self.coach_unique(self.args[-1])
-            if coach is None:
-                return
-            if not await self.sign(self.args[:-1], coach, admin=True):
-                await self.reply([self.__class__.adminsign_help()])
-            return
-
-        if self.message.content.startswith("!adminresign"):
-            if len(self.args) != 3:
-                await self.reply(["Incorrect number of arguments!!!", self.__class__.adminresign_help()])
-                return
-            coach = await self.coach_unique(self.args[-1])
-            if coach is None:
-                return
-            if not await self.resign(self.args[:-1], coach, admin=True):
-                await self.reply([self.__class__.adminresign_help()])
-            return
 
         if self.message.content.startswith("!admincomp"):
             if len(self.args) not in [2, 3]:

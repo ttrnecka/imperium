@@ -4,7 +4,7 @@ import random
 
 from sqlalchemy import func
 from discord.ext import commands
-from bot.helpers import logger, BotHelp, send_message
+from bot.helpers import logger, BotHelp, send_message, sign, resign
 from bot.actions import common
 from models.data_models import db, Tournament as Tourn, ConclaveRule, TournamentSignups
 from misc.helpers import image_merge, represents_int
@@ -14,54 +14,6 @@ class Tournament(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
-
-    async def __sign(self, tournament_id, coach, ctx, admin=False):
-      """routine to sign a coach to tournament"""
-      if admin:
-          tourn = Tourn.query.filter_by(tournament_id=tournament_id).one_or_none()
-      else:
-          tourn = Tourn.query.filter_by(
-              status="OPEN", tournament_id=tournament_id
-          ).one_or_none()
-      if not tourn:
-          raise ValueError("Incorrect **tournament_id** specified")
-
-      signup = TournamentService.register(tourn, coach, admin)
-      add_msg = "" if signup.mode == "active" else " as RESERVE"
-      await ctx.send(f"Signup succeeded{add_msg}!!!")
-      return True
-
-    async def __resign(self, tournament_id, coach, ctx, admin=False):
-      """routine to resign a coach to tournament"""
-      if admin:
-          tourn = Tourn.query.filter_by(tournament_id=tournament_id).one_or_none()
-      else:
-          tourn = Tourn.query.filter_by(
-              status="OPEN", tournament_id=tournament_id
-          ).one_or_none()
-
-      if not tourn:
-          raise ValueError("Incorrect **tournament_id** specified")
-
-      if TournamentService.unregister(tourn, coach, admin):
-          await ctx.send(f"Resignation succeeded!!!")
-
-          coaches = [
-              discord.utils.get(ctx.guild.members, id=str(signup.coach.disc_id))
-              for signup in TournamentService.update_signups(tourn)
-          ]
-          msg = [coach.mention for coach in coaches if coach]
-          msg.append(f"Your signup to {tourn.name} has been updated from RESERVE to ACTIVE")
-
-          if len(msg) > 1:
-              tourn_channel = discord.utils.get(
-                  ctx.bot.get_all_channels(), name='tournament-notice-board'
-              )
-              if tourn_channel:
-                  await tourn_channel.send("\n".join(msg))
-              else:
-                  await ctx.send("\n".join(msg))
-      return True
 
     async def conclave(self, ctype, level, ctx):
       rule1 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
@@ -103,7 +55,7 @@ class Tournament(commands.Cog):
       if coach is None:
           await ctx.send(f"Coach {ctx.author.mention} does not exist. Use !newcoach to create coach first.")
           return
-      await self.__sign(tournament_id, coach, ctx)
+      await sign(tournament_id, coach, ctx)
       return
 
     @commands.command()
@@ -113,7 +65,7 @@ class Tournament(commands.Cog):
       if coach is None:
           await ctx.send(f"Coach {ctx.author.mention} does not exist. Use !newcoach to create coach first.")
           return
-      await self.__resign(tournament_id, coach, ctx)
+      await resign(tournament_id, coach, ctx)
       return
 
     @commands.command()

@@ -8,6 +8,8 @@ from discord.ext.commands import Context
 from discord.utils import get
 from logging.handlers import RotatingFileHandler
 from misc import SKILLREG
+from models.data_models import Tournament, Coach
+from services import TournamentService
 
 ROOT = os.path.dirname(__file__)
 logger = logging.getLogger('discord')
@@ -20,27 +22,6 @@ handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(me
 logger.addHandler(handler)
 
 class BotHelp:
-    @classmethod
-    def commands(cls):
-        """help message"""
-        msg = "```asciidoc\n"
-        msg += "__**Coach Commands**__\n"
-        msg += "!list           - sends details of coach's own account by PM\n"
-        msg += "!complist       - displays tournaments\n"
-        msg += "!comp           - manages in-game comps\n"
-        msg += " \n__**Admin Commands**__\n"
-        msg += "!adminlist      - lists coach's account \n"
-        msg += "!adminbank      - updates to coach's bank, sends notification to the coach \n"
-        msg += "!admincard      - updates to coach's collection, sends notification to the coach \n"
-        msg += "!adminreset     - resets coach's account, sends notification to the coach \n"
-        msg += "!adminexport    - exports all card collections to the master sheet\n"
-        msg += "!adminsign      - sign specified coach to tournament\n"
-        msg += "!adminresign    - resign specified coach from tournament\n"
-        msg += "!adminrole      - manage admin roles for web/bot\n"
-        msg += "!adminquest     - marks quests are achieved or not achieved\n"
-        msg += "```"
-        return msg
-
     @classmethod
     def gen_help(cls):
         """help message"""
@@ -186,8 +167,8 @@ class BotHelp:
         msg = "```"
         msg += "USAGE:\n"
         msg += "Adds or removes bot/web roles for coach\n"
-        msg += "!adminrole add|remove <coach> <role>\n"
-        msg += "\tadd|remove: select one based on desired operation\n"
+        msg += "!adminrole <action> <coach> <role>\n"
+        msg += "\t<action>: add or remove\n"
         msg += "\t<coach>: coach discord name or its part, must be unique\n"
         msg += "\t<role>: webadmin - enables coach to do admin tasks on web\n"
         msg += "```"
@@ -232,8 +213,8 @@ class BotHelp:
         msg = "```"
         msg += "Signs coach to tournament\n"
         msg += "USAGE:\n"
-        msg += "!adminsign <id> <coach>\n"
-        msg += "\t<id>: id of tournament from !complist\n"
+        msg += "!adminsign <tournament_id> <coach>\n"
+        msg += "\t<tournament_id>: id of tournament from !complist\n"
         msg += "\t<coach>: coach discord name or its part, must be unique\n"
         msg += "```"
         return msg
@@ -256,8 +237,8 @@ class BotHelp:
         msg = "```"
         msg += "Manually marks the quest as achieved or not. Does not award the prize\n"
         msg += "USAGE:\n"
-        msg += "!adminquest <on|off> <coach> <quest>\n"
-        msg += "\t<on|off>: on to mark, off the clear flag\n"
+        msg += "!adminquest <action> <coach> <quest>\n"
+        msg += "\t<action>: on to mark as complete, off the clear flag\n"
         msg += "\t<coach>: coach discord name or its part, must be unique\n"
         msg += "\t<quest>: *collect3legends* or *buildyourownlegend*\n"
         msg += "```"
@@ -404,3 +385,80 @@ async def send_message(channel, message_list):
   for message in message_list:
       msg.add(message)
   await msg.send()
+
+async def sign(tournament_id, coach, ctx, admin=False):
+  """routine to sign a coach to tournament"""
+  if admin:
+      tourn = Tournament.query.filter_by(tournament_id=tournament_id).one_or_none()
+  else:
+      tourn = Tournament.query.filter_by(
+          status="OPEN", tournament_id=tournament_id
+      ).one_or_none()
+  if not tourn:
+      raise ValueError("Incorrect **tournament_id** specified")
+
+  signup = TournamentService.register(tourn, coach, admin)
+  add_msg = "" if signup.mode == "active" else " as RESERVE"
+  await ctx.send(f"Signup succeeded{add_msg}!!!")
+  return True
+
+async def resign(tournament_id, coach, ctx, admin=False):
+  """routine to resign a coach to tournament"""
+  if admin:
+      tourn = Tournament.query.filter_by(tournament_id=tournament_id).one_or_none()
+  else:
+      tourn = Tournament.query.filter_by(
+          status="OPEN", tournament_id=tournament_id
+      ).one_or_none()
+
+  if not tourn:
+      raise ValueError("Incorrect **tournament_id** specified")
+
+  if TournamentService.unregister(tourn, coach, admin):
+      await ctx.send(f"Resignation succeeded!!!")
+
+      coaches = [
+          discord.utils.get(ctx.guild.members, id=str(signup.coach.disc_id))
+          for signup in TournamentService.update_signups(tourn)
+      ]
+      msg = [coach.mention for coach in coaches if coach]
+      msg.append(f"Your signup to {tourn.name} has been updated from RESERVE to ACTIVE")
+
+      if len(msg) > 1:
+          tourn_channel = discord.utils.get(
+              ctx.bot.get_all_channels(), name='tournament-notice-board'
+          )
+          if tourn_channel:
+              await tourn_channel.send("\n".join(msg))
+          else:
+              await ctx.send("\n".join(msg))
+  return True
+
+async def coach_unique(name, ctx):
+  """finds uniq coach by name"""
+  coaches = Coach.find_all_by_name(name)
+  if not coaches:
+      raise ValueError(f"<coach> __{name}__ not found!!!")
+
+  if len(coaches) > 1:
+      emsg = f"<coach> __{name}__ not **unique**!!!\n"
+      emsg += "Select one: "
+      for coach in coaches:
+          emsg += coach.name
+          emsg += " "
+      await ctx.send(emsg)
+      return None
+  return coaches[0]
+
+# must me under 2000 chars
+async def bank_notification(ctx, msg, coach):
+  """Notifies coach about bank change"""
+  member = discord.utils.get(ctx.guild.members, id=coach.disc_id)
+  if member is None:
+      mention = coach.name
+  else:
+      mention = member.mention
+
+  channel = discord.utils.get(ctx.bot.get_all_channels(), name='bank-notifications')
+  await send_message(channel, [f"{mention}: "+msg])
+  return

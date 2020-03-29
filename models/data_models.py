@@ -304,45 +304,6 @@ class Coach(Base):
 
         return transaction
 
-    # soft delete
-    def remove(self):
-        try:
-            self.deleted = True
-            self.deleted_name = self.name
-            self.name = f"{self.name}_{self.id}"
-            db.session.add(self)
-            db.session.commit()
-        except Exception as e:
-            raise TransactionError(str(e))
-        else:
-            logger.info(f"{self.deleted_name}: Coach soft deleted")
-
-    # restore data after the soft delete
-    def restore(self):
-        try:
-            self.deleted = False
-            self.name = self.deleted_name
-            self.deleted_name = None
-            db.session.add(self)
-            db.session.commit()
-        except Exception as e:
-            raise TransactionError(str(e))
-        else:
-            logger.info(f"{self.name}: Coach restored")
-
-    # soft deletes a coach adn reset its account to fresh one
-    def reset(self):
-        try:
-            name = self.name
-            disc_id = self.disc_id
-            self.remove()
-            new_coach=self.__class__.create(name,disc_id)
-        except Exception as e:
-            raise TransactionError(str(e))
-        else:
-            logger.info(f"{new_coach.name}: Coach reset")
-        return new_coach
-    
     def grant(self,item=0,description="", commit=True):
         if RepresentsInt(item):
             t = Transaction(description=description,price=-1*int(item))
