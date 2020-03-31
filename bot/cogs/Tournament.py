@@ -4,9 +4,9 @@ import random
 
 from sqlalchemy import func
 from discord.ext import commands
-from bot.helpers import logger, BotHelp, send_message, sign, resign
+from bot.helpers import logger, BotHelp, send_message, sign, resign, bank_notification
 from bot.actions import common
-from models.data_models import db, Tournament as Tourn, ConclaveRule, TournamentSignups
+from models.data_models import db, Tournament as Tourn, ConclaveRule, TournamentSignups, Transaction
 from misc.helpers import image_merge, represents_int
 from services import TournamentService, CoachService, CompetitionService
 
@@ -46,6 +46,27 @@ class Tournament(commands.Cog):
           await ctx.send(f"Conclave casts upon you:\n**{rule1.name}**: {getattr(rule1,f'level{level}_description')}\nOR\n**{rule2.name}**: {getattr(rule2,f'level{level}_description')}")
         else:
           await ctx.send(f"Conclave casts upon you **{rule1.name}**: {getattr(rule1,f'level{level}_description')}")
+      return
+
+    @commands.command()
+    async def ransom(self, ctx):
+      """Pay ransom for the kidnapped player"""
+      coach = CoachService.discord_user_to_coach(ctx.author)
+      if coach is None:
+          await ctx.send(f"Coach {ctx.author.mention} does not exist. Use !newcoach to create coach first.")
+          return
+      reason = 'Ransom'
+      amount = 5
+      tran = Transaction(description=reason, price=amount)
+      coach.make_transaction(tran)
+
+      msg = [
+          f"Bank for {coach.name} updated to **{coach.account.amount}** coins:\n",
+          f"Note: {reason}\n",
+          f"Change: {amount} coins"
+      ]
+      await send_message(ctx.channel, msg)
+      await bank_notification(ctx, f"Your bank has been updated by **{amount}** coins - {reason}", coach)
       return
 
     @commands.command()
