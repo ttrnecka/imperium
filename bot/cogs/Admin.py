@@ -247,7 +247,7 @@ class Admin(commands.Cog):
       if action not in ["add", "remove", "update"]:
         raise ValueError("Incorrect action")
 
-      if not cards and not coach and action in ["add", "remove"]:
+      if not cards and not coach_name and action in ["add", "remove"]:
         raise ValueError("Missing arguments")
 
       if action == "update":
