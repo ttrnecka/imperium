@@ -88,11 +88,13 @@ class DeckService:
                 tmp_card.deck_type = "extra"
             tmp_card.assigned_to_array = {}
             tmp_card.uuid = str(uuid.uuid4())
-            deck.unused_extra_cards.append(card_schema.dump(tmp_card).data)
+            card_dump=card_schema.dump(tmp_card).data
+            deck.unused_extra_cards.append(card_dump)
             flag_modified(deck, "unused_extra_cards")
             deck.to_log(f"{date_now()}: Extra Card {tmp_card.template.name} inserted into the collection")
             db.session.commit()
-            return deck
+            return cls.addcard(deck, card_dump)
+            #return deck
         else:
             raise DeckError(f"Card {name} does not exist")
 
