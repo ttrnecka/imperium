@@ -56,8 +56,8 @@ class Tournament(commands.Cog):
           await ctx.send(f"Coach {ctx.author.mention} does not exist. Use !newcoach to create coach first.")
           return
       reason = 'Ransom'
-      amount = 5
-      tran = Transaction(description=reason, price=amount)
+      amount = -5
+      tran = Transaction(description=reason, price=-1*amount)
       coach.make_transaction(tran)
 
       msg = [
