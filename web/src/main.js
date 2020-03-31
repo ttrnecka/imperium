@@ -5,6 +5,7 @@ import 'bootstrap';
 import { BootstrapVue } from 'bootstrap-vue';
 import $ from 'jquery';
 import showdown from 'showdown';
+import VueMobileDetection from 'vue-mobile-detection';
 import App from './App.vue';
 import VueFlashMessage from './components/VueFlashMessage/index';
 
@@ -19,6 +20,7 @@ Vue.use(VueAxios, axios);
 Vue.use(BootstrapVue);
 // Vue.use(IconsPlugin);
 Vue.use(VueFlashMessage);
+Vue.use(VueMobileDetection);
 Vue.prototype.$ = $;
 
 Vue.config.productionTip = false;
