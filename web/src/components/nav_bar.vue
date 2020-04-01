@@ -17,7 +17,7 @@
                   </li>
                   <li class="nav-item">
                       <a class="nav-link" target="_blank" title="Only to get us wasted, not for buying packs!!!" href="https://www.paypal.me/rebblimperium">
-                          <div class="d-inline-block">&#127867; Beer Fund</div>
+                          <div class="d-inline-block">&#127866; Beer Fund &#127866;</div>
                       </a>
                   </li>
                   <li v-if="user.username" class="nav-item dropdown">
