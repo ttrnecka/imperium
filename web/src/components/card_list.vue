@@ -14,7 +14,7 @@
           <table class="table  table-striped table-hover">
               <thead>
               <tr>
-                <th v-if="should_diplay('Lock')">
+                <th v-if="should_diplay('Lock') && !duster">
                   <i class="fas fa-lock"
                   title="Locked in another tournament">
                   </i>
@@ -39,10 +39,10 @@
               </thead>
               <tbody>
               <template v-for="card in sorted(ctype)">
-                <tr @click="$emit('card-click', card)" :key="card.id" :class="[rarityclass(card), extra_type(card.deck_type), 'pointer']"
+                <tr v-if="shouldDisplay(card)" @click="$emit('card-click', card)" :key="card.id" :class="[rarityclass(card), extra_type(card.deck_type), 'pointer']"
                   :title="card.template.name"
                   :data-toggle="'popover'" data-placement="top" data-html="true" :data-content="markdown.makeHtml(card.template.description)">
-                  <td v-if="should_diplay('Lock')">
+                  <td v-if="should_diplay('Lock') && !duster">
                     <i v-if="is_locked(card) && is_loggedcoach(owner.short_name)" class="fas fa-lock"></i>
                   </td>
                   <td v-if="should_diplay('Rarity')">
@@ -360,6 +360,13 @@ export default {
         return this.immunable_player_cards;
       }
       return this.assignable_player_cards;
+    },
+    // do not display locked cards in the deck
+    shouldDisplay(card) {
+      if (this.duster && this.is_locked(card)) {
+        return false;
+      }
+      return true;
     },
   },
   computed: {
