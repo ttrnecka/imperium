@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar navbar-dark fixed-top bg-dark navbar-expand-md">
+  <nav class="navbar navbar-dark fixed-top bg-primary navbar-expand-md">
       <div class="container-fluid">
           <a class="navbar-brand" href="#" @click="setMenu(options[0])">
               <img src="/static/images/Imperium.jpg" class="d-inline-block align-top" width="24" alt="">

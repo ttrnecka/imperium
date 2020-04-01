@@ -10,7 +10,7 @@ import App from './App.vue';
 import VueFlashMessage from './components/VueFlashMessage/index';
 
 // import 'bootstrap/dist/css/bootstrap.css';
-import 'bootswatch/dist/cerulean/bootstrap.min.css';
+import 'bootswatch/dist/sandstone/bootstrap.min.css';
 import './assets/css/main.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 import '@fortawesome/fontawesome-free/js/all';
