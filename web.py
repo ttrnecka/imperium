@@ -7,17 +7,18 @@ from flask import Flask, render_template, jsonify, session
 from blueprints import auth, coach, tournament, duster, deck, cracker
 from flask_fontawesome import FontAwesome
 from flask_migrate import Migrate
-from flask_swagger import swagger
 from sqlalchemy.orm import selectinload
+from flask_admin import Admin
 
 from models.base_model import db
-from models.data_models import Coach
+from models.data_models import Coach, Tournament
 from models.marsh_models import ma, coach_schema
 from services import Notificator
 from services import BB2Service, WebHook
 from services import stats
 from misc.helpers import InvalidUsage, current_user
 from misc.decorators import authenticated
+from misc.admin import TournamentView, CoachView
 import bb2
 
 os.environ["YOURAPPLICATION_SETTINGS"] = "config/config.py"
@@ -38,6 +39,11 @@ def create_app():
     fapp.register_blueprint(deck.deck, url_prefix='/decks')
     fapp.register_blueprint(cracker.cracker, url_prefix='/api/cracker')
 
+
+    admin = Admin(fapp, name='Management', template_mode='bootstrap3')
+    # Add administrative views here
+    admin.add_view(CoachView(Coach, db.session))
+    admin.add_view(TournamentView(Tournament, db.session))
     # register wehook as Tournament service notifier
     Notificator("bank").register_notifier(WebHook(fapp.config['DISCORD_WEBHOOK_BANK']).send)
     Notificator("ledger").register_notifier(WebHook(fapp.config['DISCORD_WEBHOOK_LEDGER']).send)
@@ -58,10 +64,6 @@ def handle_invalid_usage(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
     return response
-
-@app.route("/spec")
-def spec():
-    return jsonify(swagger(app))
     
 @app.before_request
 def before_request():
