@@ -401,7 +401,4 @@ export default {
 .pointer {
   cursor: pointer;
 }
-td {
-  color: #000000;
-}
 </style>

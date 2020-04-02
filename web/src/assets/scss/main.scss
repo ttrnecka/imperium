@@ -1,15 +1,105 @@
 @import '../../../node_modules/bootswatch/dist/solar/_variables.scss';
+
+$legendary: rgb(148, 83, 57);
+$unique: #30503e;
+$epic: #5a3a5d;
+$rare: #1d4e71;
+$common: #444444;
+$inducement: #1c6957;
 $theme-colors: (
-  "legendary": #d64507,
-  "common": #fdf6e3,
-  "unique": rgb(2, 143, 65),
-  "epic": rgb(209, 17, 226),
-  "rare": rgb(8, 144, 241),
-  "inducement": #fd007f,
+  "common": $common,
+  "inducement": $inducement,
+  "legendary": $legendary,
+  "unique": $unique,
+  "epic": $epic,
+  "rare": $rare,
 );
 @import "../../../node_modules/bootstrap/scss/bootstrap";
 @import '../../../node_modules/bootswatch/dist/solar/_bootswatch.scss';
 
+.table {
+
+  &-legendary {
+    &, > th, > td {
+      background-color: $legendary;
+      color: $gray-300;
+    }
+  }
+
+  &-unique {
+    &, > th, > td {
+      background-color: $unique;
+      color: $gray-300;
+    }
+  }
+
+  &-epic {
+    &, > th, > td {
+      background-color: $epic;
+      color: $gray-300;
+    }
+  }
+
+  &-rare {
+    &, > th, > td {
+      background-color: $rare;
+      color: $gray-300;
+    }
+  }
+
+  &-common {
+    &, > th, > td {
+      background-color: $common;
+      color: $gray-300;
+    }
+  }
+
+  &-inducement {
+    &, > th, > td {
+      background-color: $inducement;
+      color: $gray-300;
+    }
+  }
+
+  &-hover {
+
+    .table-legendary:hover {
+      &, > th, > td {
+        background-color: darken($legendary, 5%);
+      }
+    }
+
+    .table-unique:hover {
+      &, > th, > td {
+        background-color: darken($unique, 5%);
+      }
+    }
+
+    .table-epic:hover {
+      &, > th, > td {
+        background-color: darken($epic, 5%);
+      }
+    }
+
+    .table-rare:hover {
+      &, > th, > td {
+        background-color: darken($rare, 5%);
+      }
+    }
+
+    .table-common:hover {
+      &, > th, > td {
+        background-color: darken($common, 5%);
+      }
+    }
+
+    .table-inducement:hover {
+      &, > th, > td {
+        background-color: darken($inducement, 5%);
+      }
+    }
+  }
+}
 [v-cloak] { display: none; }
 
 body {
@@ -243,6 +333,7 @@ h5.coach_info, select.coach_info {
 
 .progress {
   height: 40px;
+  color: $gray-300;
 }
 
 .progress span {

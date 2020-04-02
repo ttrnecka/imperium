@@ -7,7 +7,7 @@
           :style="'width: '+progress+'%;'"
           aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
         </div>
-        <span class="justify-content-center d-flex position-absolute w-100" :class="data.completed ? 'text-dark':''">
+        <span class="justify-content-center d-flex position-absolute w-100">
           {{data.desc}} {{data.best}} / {{data.target}}
         </span>
       </div>
