@@ -1,5 +1,5 @@
 <template>
-  <div :id="id">
+  <div :id="id" class="card_list">
     <div class="card" v-for="(ctype,index) in type_list" :key="index">
       <div class="card-header" :id="ctype.replace(/\s/g, '')+id">
         <h5 class="mb-0">
@@ -65,7 +65,7 @@
                       class="col-12 btn btn-success"
                       @click.stop="dust_add(card)">Add</button>
                   </td>
-                  <th v-if="isDeck || $isMobile()" @click.stop>
+                  <td v-if="isDeck || $isMobile()" @click.stop>
                     <div :id="'player'+card_id_or_uuid(card)" class="float-right"><i class="fas fa-cog fa-2x"></i></div>
                     <b-popover :target="'player'+card_id_or_uuid(card)" triggers="hover" placement="left">
                       <template v-slot:title>{{ card.template.name }}</template>
@@ -76,7 +76,7 @@
                         <b-button class="m-1" variant="info" @click="$emit('card-unskill', card)">Unskill</b-button>
                       </template>
                     </b-popover>
-                  </th>
+                  </td>
                 </tr>
                 <template v-if="isDeck">
                   <tr :class="[rarityclass(card)]" v-for="(idx,index) in number_of_assignments(card)" :key="`assignment${index}${card_id_or_uuid(card)}`">
@@ -88,9 +88,9 @@
                     </td>
                   </tr>
                   <tr v-if="ctype=='Player'" :class="[rarityclass(card)]" :key="'player'+card_id_or_uuid(card)">
-                    <th colspan="1">
+                    <td colspan="1">
                       <i class="fas fa-angle-double-right fa-2x"></i>
-                    </th>
+                    </td>
                     <td :colspan="column_list.length-1">
                       <span v-html="deck_skills_for(card)"></span>
                       <span v-if="is_guarded(card)" title="Immune">&#128170;</span>
@@ -231,19 +231,19 @@ export default {
       switch (card.template.rarity) {
         case 'Common':
         case 'Starter':
-          klass = 'table-light';
+          klass = 'table-common';
           break;
         case 'Rare':
-          klass = 'table-info';
+          klass = 'table-rare';
           break;
         case 'Epic':
-          klass = 'table-danger';
+          klass = 'table-epic';
           break;
         case 'Legendary':
-          klass = 'table-warning';
+          klass = 'table-legendary';
           break;
         case 'Unique':
-          klass = 'table-success';
+          klass = 'table-unique';
           break;
         case 'Inducement':
         case 'Blessed':
@@ -401,9 +401,7 @@ export default {
 .pointer {
   cursor: pointer;
 }
-
-.table-hover > tbody > tr.table-secondary:hover > td {
-     background-color: #d6d8db;
+td {
+  color: #000000;
 }
-
 </style>

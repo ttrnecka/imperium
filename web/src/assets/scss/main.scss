@@ -1,0 +1,286 @@
+@import '../../../node_modules/bootswatch/dist/solar/_variables.scss';
+$theme-colors: (
+  "legendary": #d64507,
+  "common": #fdf6e3,
+  "unique": rgb(2, 143, 65),
+  "epic": rgb(209, 17, 226),
+  "rare": rgb(8, 144, 241),
+  "inducement": #fd007f,
+);
+@import "../../../node_modules/bootstrap/scss/bootstrap";
+@import '../../../node_modules/bootswatch/dist/solar/_bootswatch.scss';
+
+[v-cloak] { display: none; }
+
+body {
+  /* navbar fixed position */
+  padding-top: 59px;
+}
+.toggle-wrapper {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+    height: 2rem;
+    width: 4rem;
+    border-radius: 9999px;
+}
+
+.toggle-wrapper:focus {
+  outline: 0;
+  box-shadow: 0 0 0 4px rgba(52,144,220,.5);
+}
+
+.toggle-background {
+  display: inline-block;
+  border-radius: 9999px;
+  height: 100%;
+  width: 100%;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+  transition: background-color .2s ease;
+}
+
+.toggle-indicator {
+  position: absolute;
+  top: .25rem;
+  left: .25rem;
+  height: 1.5rem;
+  width: 1.5rem;
+  background-color: #fff;
+  border-radius: 9999px;
+  box-shadow:  0 2px 4px rgba(0,0,0,0.1);
+  transition: transform .2s ease;
+}
+
+@media only screen and (max-width: 992px) {
+  #coach-list{
+    overflow-y: auto;
+    height: 35vh;
+    padding-right: 1vw;
+  }
+  .deck_ctype {
+    font-size:0.8rem;
+    cursor: pointer;
+  }
+}
+
+@media only screen and (min-width: 992px) {
+  #coach-list{
+    overflow-y: auto;
+    height: 85vh;
+    padding-right: 1vw;
+  }
+  .deck_ctype {
+    cursor: pointer;
+  }
+}
+
+.card-header {
+  padding: 0.1rem;
+}
+
+#nav-tabContent {
+  font-size:0.8rem;
+}
+
+#nav-tabContent .form-control {
+  font-size: 0.8rem;
+}
+
+.card button {
+  font-size: 0.8rem;
+}
+
+.duster_info {
+  padding: 0.75rem;
+}
+
+.deck, .signup {
+  font-size: 0.8rem;
+}
+
+.deck .form-control, .signup .form-control  {
+  font-size: 0.8rem;
+}
+
+.tournament .tournament_info_line div[class^="col-"] {
+  padding-bottom: 0.1rem;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: rgba(0, 0, 0, 0.125);
+}
+
+.tournament .card-header h5 {
+  padding: 0.4rem 0.8rem;
+}
+
+.flashpool {
+  box-sizing: border-box;
+}
+
+.flashpool {
+  position: fixed;
+  top: 75px;
+  right: 20px;
+  max-height: 400px;
+  width: 260px;
+  -webkit-perspective: 400px;
+  perspective: 400px;
+  z-index: 1060;
+}
+
+.flash__message {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 15px 30px 15px 15px;
+  margin-bottom: 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background-color: #cccccc;
+  position: relative;
+}
+
+.flash__message.success {
+  color: #3c763d;
+  background-color: #dff0d8;
+  border-color: #d6e9c6;
+}
+
+.flash__message.warning {
+  color: #8a6d3b;
+  background-color: #fcf8e3;
+  border-color: #faebcc;
+}
+
+.flash__message.error {
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
+}
+
+.flash__message.info {
+  color: #37516A;
+  background-color: #F2F5FE;
+  border-color: rgb(223, 227, 240);
+}
+
+.flash__close-button {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  color: inherit;
+  -webkit-appearance: none;
+     -moz-appearance: none;
+          appearance: none;
+  background-color: transparent;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 10px;
+  margin: 0;
+  padding: 8px;
+}
+
+.flash__close-button:active,.flash__close-button:focus {
+  outline: none;
+}
+
+.modal-fullscreen {
+  padding: 0 !important;
+}
+.modal-fullscreen .modal-dialog {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.modal-fullscreen .modal-content {
+  height: auto;
+  min-height: 100%;
+  border: 0 none;
+  border-radius: 0;
+}
+
+.deck_header .close {
+  margin: -1rem !important;
+}
+
+.deck_header .btn {
+  margin: 0 1rem 0 auto;
+}
+
+.extra_card {
+  font-style: italic;
+  font-weight: bold;
+}
+
+img.skill_icon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 5px;
+}
+img.skill_single, img.skill_double {
+  border-style: ridge;
+  border-width: 1px;
+  border-color: transparent;
+}
+
+img.skill_double {
+  border-color:purple;
+}
+
+img.avatar {
+  width: 35px !important;
+  height: 35px !important;
+  border-radius: 5px;
+}
+
+h5.coach_info, select.coach_info {
+  margin:0.5rem 0.5rem 0 0.5rem;
+}
+
+.progress {
+  height: 40px;
+}
+
+.progress span {
+  line-height: 40px;
+}
+
+.deck_valid_check, .deck_invalid_check {
+  font-weight: bold;
+}
+
+.deck_valid_check {
+  color: #3c763d;
+}
+
+.deck_invalid_check {
+  color: red;
+}
+
+.deck_upgrade {
+  background: linear-gradient(227deg, #1cc69a, #2f92f3, #cce350);
+  background-size: 600% 600%;
+
+  -webkit-animation: ShinyDeck 5s ease infinite;
+  -moz-animation: ShinyDeck 5s ease infinite;
+animation: ShinyDeck 5s ease infinite;
+}
+@-webkit-keyframes ShinyDeck {
+  0%{background-position:0% 53%}
+  50%{background-position:100% 48%}
+  100%{background-position:0% 53%}
+}
+@-moz-keyframes ShinyDeck {
+  0%{background-position:0% 53%}
+  50%{background-position:100% 48%}
+  100%{background-position:0% 53%}
+}
+@keyframes ShinyDeck {
+  0%{background-position:0% 53%}
+  50%{background-position:100% 48%}
+  100%{background-position:0% 53%}
+}
