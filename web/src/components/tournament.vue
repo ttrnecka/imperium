@@ -1,5 +1,5 @@
 <template>
-    <div class="tournament">
+    <div class="tournament border rounded border-primary border-bottom-0">
         <div class="card-header" :id="'tournament'+tournament.tournament_id">
         <h5 class="mb-0">
             <div class="row" @click="load_leaderboard">

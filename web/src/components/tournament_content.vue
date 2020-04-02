@@ -35,7 +35,7 @@
             </div>
           </div>
         </div>
-        <tournament class="show col-lg-9 border rounded border-primary border-bottom-0" v-for="tournament in filteredTournaments"
+        <tournament class="show col-lg-9" v-for="tournament in filteredTournaments"
           :key="tournament.tournament_id" :id="'tourn'+tournament.tournament_id"
           role="tabpanel" aria-labelledby="tournament" :tournament="tournament"
           :coaches="coaches" :data-parent="'#accordionTournaments'" :user="user"></tournament>
