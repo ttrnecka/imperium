@@ -305,15 +305,17 @@ body {
   margin: 0 1rem 0 auto;
 }
 
-.extra_card {
+.extra_card td {
   font-style: italic;
   font-weight: bold;
+  color: #f7f7f7a6;
 }
 
 img.skill_icon {
   width: 28px !important;
   height: 28px !important;
   border-radius: 5px;
+  filter: brightness(0.7);
 }
 img.skill_single, img.skill_double {
   border-style: ridge;

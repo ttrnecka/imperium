@@ -401,4 +401,7 @@ export default {
 .pointer {
   cursor: pointer;
 }
+img {
+  filter: brightness(0.8);
+}
 </style>
