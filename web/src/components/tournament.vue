@@ -59,10 +59,10 @@
                     </div>
                 </div>
                 <div v-if="is_webadmin || is_running" class="row tournament_info_line">
-                    <div class="col-12"><b>Signed</b>: <span v-for="coach in signed_coaches" :key="coach.id">{{coach.short_name}} <b-badge href="#" @click="showDeck(coach)" variant="primary">Deck</b-badge></span></div>
+                    <div class="col-12"><b>Signed</b>: <span v-for="coach in signed_coaches" :key="coach.id">{{coach.short_name}} <b-badge class="mr-1" href="#" @click="showDeck(coach)" variant="primary">Deck</b-badge></span></div>
                 </div>
                 <div v-if="is_webadmin || is_running" class="row tournament_info_line">
-                    <div class="col-12"><b>Reserves</b>: <span v-for="coach in reserved_coaches" :key="coach.id">{{coach.short_name}} (<a href="#" @click="showDeck(coach)">Deck</a>) </span></div>
+                    <div class="col-12"><b>Reserves</b>: <span v-for="coach in reserved_coaches" :key="coach.id">{{coach.short_name}} <b-badge class="mr-1" href="#" @click="showDeck(coach)" variant="primary">Deck</b-badge></span></div>
                 </div>
                 <div class="row tournament_info_line">
                     <div class="col-12"><b>Prizes</b>:</div>
