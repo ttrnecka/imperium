@@ -11,7 +11,7 @@
       </div>
       <div :id="'collapse'+ctype.replace(/\s/g, '')" class="collapse show" :aria-labelledby="ctype.replace(/\s/g, '')+id" :data-parent="`#${id}`">
         <div class="card-body table-responsive">
-          <table class="table  table-striped table-hover">
+          <table class="table table-hover">
               <thead>
               <tr>
                 <th v-if="should_diplay('Lock') && !duster">
@@ -226,7 +226,7 @@ export default {
     rarityclass(card) {
       let klass;
       if (!this.isEnabled(card)) {
-        return 'table-secondary';
+        return '';
       }
       switch (card.template.rarity) {
         case 'Common':

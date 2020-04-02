@@ -1,10 +1,18 @@
 @import '../../../node_modules/bootswatch/dist/solar/_variables.scss';
 
-$legendary: rgb(148, 83, 57);
-$unique: #30503e;
-$epic: #5a3a5d;
-$rare: #1d4e71;
-$common: #444444;
+//$legendary: rgb(148, 83, 57);
+//$unique: #30503e;
+//$unique: #30503e4f;
+//$epic: #5a3a5d;
+//$rare: #1d4e71;
+//$common: #444444;
+//$inducement: #1c6957;
+
+$legendary: #9453398f;
+$unique: #30503e4f;
+$epic: #5a3a5d63;
+$rare: #1d4e7145;
+$common: #4444443b;
 $inducement: #1c6957;
 $theme-colors: (
   "common": $common,
