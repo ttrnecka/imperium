@@ -39,7 +39,7 @@
               </thead>
               <tbody>
               <template v-for="card in sorted(ctype)">
-                <tr v-if="shouldDisplay(card)" @click="$emit('card-click', card)" :key="card.id" :class="[rarityclass(card), extra_type(card.deck_type), 'pointer']"
+                <tr v-if="shouldDisplay(card)" @click="$emit('card-click', card)" :key="card.id" :class="[rarityclass(card), extra_type(card.deck_type), 'pointer', 'imperium_card']"
                   :title="card.template.name"
                   :data-toggle="'popover'" data-placement="top" data-html="true" :data-content="markdown.makeHtml(card.template.description)">
                   <td v-if="should_diplay('Lock') && !duster">
@@ -50,7 +50,9 @@
                       :title="card.template.rarity" width="20" height="25" />
                     </td>
                   <td v-if="should_diplay('Value')">{{ card.template.value }}</td>
-                  <td v-if="should_diplay('Name')" :title="card.template.description">{{card.template.name}}</td>
+                  <td v-if="should_diplay('Name')" :title="card.template.description">{{card.template.name}}
+                    <i v-if="extra_type(card.deck_type)=='extra_card'" class="ml-2 fas fa-plus-circle" title="Extra card"></i>
+                  </td>
                   <td v-if="should_diplay('Skills')"><span v-html="skills_for(card)"></span></td>
                   <td v-if="should_diplay('Race')">{{ card.template.race }}</td>
                   <td v-if="should_diplay('Subtype')" class="d-none d-sm-table-cell">
@@ -401,7 +403,17 @@ export default {
 .pointer {
   cursor: pointer;
 }
+
+.imperium_card {
+  font-weight: bold;
+}
+
 img {
   filter: brightness(0.8);
 }
+
+.extra_card td {
+  font-style: italic;
+}
+
 </style>
