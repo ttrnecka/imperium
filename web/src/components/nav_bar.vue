@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar navbar-dark fixed-top bg-primary navbar-expand-md">
+  <nav class="navbar navbar-dark fixed-top bg-dark navbar-expand-md">
       <div class="container-fluid">
           <a class="navbar-brand" href="#" @click="setMenu(options[0])">
               <img src="/static/images/Imperium.jpg" class="d-inline-block align-top" width="24" alt="">
@@ -48,6 +48,9 @@
                       </a>
                       <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                         <a class="dropdown-item" href="#">{{ user.username }}</a>
+                        <div class="dropdown-item">
+                          Dark <input type="checkbox" id='darkmodetoggle' @change="toggleDarkMode" v-model="darkmode">
+                        </div>
                         <a class="dropdown-item" href="/signout">Signout</a>
                       </div>
                   </li>
@@ -86,6 +89,7 @@ export default {
         { value: 'Key Cards', link: 'https://bit.ly/32J9oOE' },
         { value: 'Inducements', link: 'https://bit.ly/2PDlHX9' },
       ],
+      darkmode: false,
     };
   },
   methods: {
@@ -93,8 +97,23 @@ export default {
       this.menu = option.value;
       this.$emit('menu-change', option.value);
     },
+    toggleDarkMode() {
+      this.localstorage.setItem('darkmode', this.darkmode);
+      this.setMode();
+    },
+    setMode() {
+      const html = document.getElementsByTagName('html')[0];
+      if (this.darkmode) {
+        html.classList.add('darkmode');
+      } else {
+        html.classList.remove('darkmode');
+      }
+    },
   },
   computed: {
+    localstorage() {
+      return window.localStorage;
+    },
     ...mapState([
       'user',
     ]),
@@ -103,6 +122,20 @@ export default {
     if (this.default) {
       this.menu = this.default;
     }
+    this.darkmode = this.localstorage.getItem('darkmode') === 'true';
+    this.setMode();
   },
 };
 </script>
+
+<style scoped>
+label.custom-control-label {
+  position: relative;
+  padding-right: 1.5rem;
+}
+
+label.custom-control-label::before, label.custom-control-label::after{
+  right: 0;
+  left: auto;
+}
+</style>

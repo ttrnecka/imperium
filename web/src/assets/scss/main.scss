@@ -1,19 +1,11 @@
-@import '../../../node_modules/bootswatch/dist/solar/_variables.scss';
+@use "../../../node_modules/bootstrap/scss/bootstrap" as bootstrap;
 
-//$legendary: rgb(148, 83, 57);
-//$unique: #30503e;
-//$unique: #30503e4f;
-//$epic: #5a3a5d;
-//$rare: #1d4e71;
-//$common: #444444;
-//$inducement: #1c6957;
-
-$legendary: #9453398f;
-$unique: #30503e4f;
-$epic: #5a3a5d63;
-$rare: #1d4e7145;
-$common: #4444443b;
-$inducement: #1c6957;
+$legendary: #ffe8a1;
+$unique: #c3e6cb;
+$epic: #f5c6cb;
+$rare: #bee5eb;
+$common: #fdfdfe;
+$inducement: #efb6d3;
 $theme-colors: (
   "common": $common,
   "inducement": $inducement,
@@ -22,94 +14,33 @@ $theme-colors: (
   "epic": $epic,
   "rare": $rare,
 );
-@import "../../../node_modules/bootstrap/scss/bootstrap";
-@import '../../../node_modules/bootswatch/dist/solar/_bootswatch.scss';
+$card-color: bootstrap.$gray-700;
 
-.table {
-
-  &-legendary {
-    &, > th, > td {
-      background-color: $legendary;
-      color: $gray-300;
-    }
-  }
-
-  &-unique {
-    &, > th, > td {
-      background-color: $unique;
-      color: $gray-300;
-    }
-  }
-
-  &-epic {
-    &, > th, > td {
-      background-color: $epic;
-      color: $gray-300;
-    }
-  }
-
-  &-rare {
-    &, > th, > td {
-      background-color: $rare;
-      color: $gray-300;
-    }
-  }
-
-  &-common {
-    &, > th, > td {
-      background-color: $common;
-      color: $gray-300;
-    }
-  }
-
-  &-inducement {
-    &, > th, > td {
-      background-color: $inducement;
-      color: $gray-300;
-    }
-  }
-
-  &-hover {
-
-    .table-legendary:hover {
-      &, > th, > td {
-        background-color: darken($legendary, 5%);
-      }
-    }
-
-    .table-unique:hover {
-      &, > th, > td {
-        background-color: darken($unique, 5%);
-      }
-    }
-
-    .table-epic:hover {
-      &, > th, > td {
-        background-color: darken($epic, 5%);
-      }
-    }
-
-    .table-rare:hover {
-      &, > th, > td {
-        background-color: darken($rare, 5%);
-      }
-    }
-
-    .table-common:hover {
-      &, > th, > td {
-        background-color: darken($common, 5%);
-      }
-    }
-
-    .table-inducement:hover {
-      &, > th, > td {
-        background-color: darken($inducement, 5%);
-      }
-    }
-  }
+.darkmode {
+  $legendary: #9453398f;
+  $unique: #30503e4f;
+  $epic: #5a3a5d63;
+  $rare: #1d4e7145;
+  $common: #4444443b;
+  $inducement: #1c6957;
+  $theme-colors: (
+    "common": $common,
+    "inducement": $inducement,
+    "legendary": $legendary,
+    "unique": $unique,
+    "epic": $epic,
+    "rare": $rare,
+  );
+  $card-color: bootstrap.$gray-400;
+  @import '../../../node_modules/bootswatch/dist/solar/_variables.scss';
+  @import "../../../node_modules/bootstrap/scss/bootstrap";
+  @import '../../../node_modules/bootswatch/dist/solar/_bootswatch.scss';
+  @import 'rarity-tables.scss';
 }
+@import 'rarity-tables.scss';
+
 .navbar-dark .navbar-nav .nav-link {
-  color: $gray-300;
+  color: bootstrap.$gray-300;
 }
 
 [v-cloak] { display: none; }
@@ -313,11 +244,23 @@ body {
   margin: 0 1rem 0 auto;
 }
 
+.extra_card td {
+  font-style: italic;
+  font-weight: bold;
+  .darkmode {
+    color: #f7f7f7a6;
+  }
+}
+
 img.skill_icon {
   width: 28px !important;
   height: 28px !important;
   border-radius: 5px;
-  filter: brightness(0.7);
+}
+img {
+  .darkmode & {
+    filter: brightness(0.8);
+  }
 }
 img.skill_single, img.skill_double {
   border-style: ridge;
@@ -341,7 +284,9 @@ h5.coach_info, select.coach_info {
 
 .progress {
   height: 40px;
-  color: $gray-300;
+  .darkmode {
+    color: bootstrap.$gray-300;
+  }
 }
 
 .progress span {

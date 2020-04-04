@@ -408,10 +408,6 @@ export default {
   font-weight: bold;
 }
 
-img {
-  filter: brightness(0.8);
-}
-
 .extra_card td {
   font-style: italic;
 }

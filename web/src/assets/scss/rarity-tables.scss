@@ -1,0 +1,83 @@
+.table {
+  
+  &-legendary {
+    &, > th, > td {
+      background-color: $legendary;
+      color: $card-color;
+    }
+  }
+
+  &-unique {
+    &, > th, > td {
+      background-color: $unique;
+      color: $card-color;
+    }
+  }
+
+  &-epic {
+    &, > th, > td {
+      background-color: $epic;
+      color: $card-color;
+    }
+  }
+
+  &-rare {
+    &, > th, > td {
+      background-color: $rare;
+      color: $card-color;
+    }
+  }
+
+  &-common {
+    &, > th, > td {
+      background-color: $common;
+      color: $card-color;
+    }
+  }
+
+  &-inducement {
+    &, > th, > td {
+      background-color: $inducement;
+      color: $card-color;
+    }
+  }
+
+  &-hover {
+
+    .table-legendary:hover {
+      &, > th, > td {
+        background-color: darken($legendary, 5%);
+      }
+    }
+
+    .table-unique:hover {
+      &, > th, > td {
+        background-color: darken($unique, 5%);
+      }
+    }
+
+    .table-epic:hover {
+      &, > th, > td {
+        background-color: darken($epic, 5%);
+      }
+    }
+
+    .table-rare:hover {
+      &, > th, > td {
+        background-color: darken($rare, 5%);
+      }
+    }
+
+    .table-common:hover {
+      &, > th, > td {
+        background-color: darken($common, 5%);
+      }
+    }
+
+    .table-inducement:hover {
+      &, > th, > td {
+        background-color: darken($inducement, 5%);
+      }
+    }
+  }
+}
