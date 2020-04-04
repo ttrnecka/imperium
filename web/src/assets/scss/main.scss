@@ -285,6 +285,7 @@ h5.coach_info, select.coach_info {
 .progress {
   height: 40px;
   .darkmode & {
+    height: 40px;
     color: bootstrap.$gray-300;
   }
 }
