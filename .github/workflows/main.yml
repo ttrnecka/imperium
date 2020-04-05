@@ -37,3 +37,15 @@ jobs:
         port: ${{ secrets.PORT }}
         source: ".,!web,!tests"
         target: "imperium"
+  restart:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Restarting web
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: touch /var/www/imperium_rebbl_net_wsgi.py
