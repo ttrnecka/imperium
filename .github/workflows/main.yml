@@ -54,9 +54,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Discord Notification
-    env:
-      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-    uses: Ilshidur/action-discord@master
-    with:
-      args: 'Action called: {{ GITHUB_ACTION }} as {{ EVENT_PAYLOAD.pull_request.id }}'
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      uses: Ilshidur/action-discord@master
+      with:
+        args: 'Action called: {{ GITHUB_ACTION }} as {{ EVENT_PAYLOAD.pull_request.id }}'
 
