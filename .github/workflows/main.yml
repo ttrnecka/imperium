@@ -50,7 +50,7 @@ jobs:
         port: ${{ secrets.PORT }}
         script: touch /var/www/imperium_rebbl_net_wsgi.py
   notify:
-    name: notify
+    name: Notify
     runs-on: ubuntu-latest
     steps:
     - name: Discord Notification
@@ -58,5 +58,5 @@ jobs:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       uses: Ilshidur/action-discord@master
       with:
-        args: 'Action called: {{ GITHUB_ACTION }} as {{ EVENT_PAYLOAD.pull_request.id }}'
+        args: '{{ EVENT_PAYLOAD.commits.0.message }}'
 
