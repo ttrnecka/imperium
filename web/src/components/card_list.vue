@@ -228,7 +228,7 @@ export default {
     rarityclass(card) {
       let klass;
       if (!this.isEnabled(card)) {
-        return '';
+        return 'table-secondary';
       }
       switch (card.template.rarity) {
         case 'Common':
