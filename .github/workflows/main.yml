@@ -35,7 +35,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        source: ".,!web,!tests"
+        source: ".,!web,!tests,!.git,!.github,!.gitignore"
         target: "imperium"
     - name: Restarting web
       uses: appleboy/ssh-action@master
