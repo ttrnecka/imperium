@@ -52,7 +52,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        script: python3.7 /home/trnecka/restart_bot.py
+        script: python3.7 /home/trnecka/imperium/restart_bot.py
     - name: Discord Notification
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
