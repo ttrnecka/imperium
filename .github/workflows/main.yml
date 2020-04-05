@@ -23,8 +23,11 @@ jobs:
       with:
         node-version: '12.x'
     - run: npm install
+      working-directory: web
     - run: npm run build --if-present
+      working-directory: web
     - run: npm test
+      working-directory: web
     - name: copy file via ssh password
       uses: appleboy/scp-action@master
       with:
