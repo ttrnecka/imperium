@@ -35,5 +35,5 @@ jobs:
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        source: "."
+        source: ".,!web"
         target: "imperium_test"
