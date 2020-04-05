@@ -12,3 +12,7 @@ bot.bat
 web.bat
 shell.bat
 cleanup.py
+static/css/
+static/fonts
+static/img
+static/js
