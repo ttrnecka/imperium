@@ -158,7 +158,6 @@ class TournamentService:
         """Updates tournaments from sheet into DB"""
         for tournament in ImperiumSheetService.tournaments():
             t_dict = cls.init_dict_from_tournament(tournament)
-            print(t_dict)
             tourn = Tournament.query.filter_by(tournament_id=t_dict['tournament_id']).one_or_none()
             if not tourn:
                 tourn = Tournament()
