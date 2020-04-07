@@ -159,12 +159,10 @@ class TournamentService:
         for tournament in ImperiumSheetService.tournaments():
             t_dict = cls.init_dict_from_tournament(tournament)
             print(t_dict)
-            tourns = Tournament.query.filter_by(tournament_id=t_dict['tournament_id']).all()
-            if not tourns:
+            tourn = Tournament.query.filter_by(tournament_id=t_dict['tournament_id']).one_or_none()
+            if not tourn:
                 tourn = Tournament()
                 db.session.add(tourn)
-            else:
-                tourn = tourns[0]
             tourn.update(**t_dict)
 
         db.session.commit()
