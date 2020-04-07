@@ -34,7 +34,6 @@ class ConclaveService:
         sum_counter = sum(rules_counters,Counter())
         #sorted_sum_counter = sum_counter.most_common()
         rules = list(sum_counter.elements())
-        print(rules)
         max_rules = 3
         max_same_type_rules = 2
         selected = []

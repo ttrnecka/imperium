@@ -15,6 +15,8 @@ DONE run update_stats
 DONE schedule tournament auto check for every hour
 
 TODO
+Multiskills like Need for Speed cannot go to the same player - COM logic needs to be included
+
 make blessings/curses limited to avialable list + add command to rerol
 Skill override on wilcard cards
 disable skills on players
