@@ -18,12 +18,14 @@ ROOT = os.path.dirname(__file__)
 
 logger = logging.getLogger('transaction')
 logger.setLevel(logging.DEBUG)
+logger.propagate = False
 handler = RotatingFileHandler(os.path.join(ROOT, '../logs/transaction.log'), maxBytes=1000000, backupCount=5, encoding='utf-8', mode='a')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
 db_logger = logging.getLogger("DB logging")
 db_logger.setLevel(logging.INFO)
+db_logger.propagate = False
 handler = RotatingFileHandler(os.path.join(ROOT, '../logs/db.log'), maxBytes=1000000, backupCount=5, encoding='utf-8', mode='a')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 db_logger.addHandler(handler)

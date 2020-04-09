@@ -33,6 +33,7 @@ def main(argv):
             print("Recalculating statistics from the scratch")
         
     logger = logging.getLogger('collector')
+    logger.propagate = False
     logger.setLevel(logging.INFO)
     handler = RotatingFileHandler(
         os.path.join(ROOT, 'logs/collector.log'),
