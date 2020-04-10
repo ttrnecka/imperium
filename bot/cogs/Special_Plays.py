@@ -3,7 +3,6 @@ import inspect
 
 from discord.ext import commands
 from discord.utils import get
-from bot.helpers import send_embed
 from services import CoachService
 from bot.actions import special_play
 from bot.base_cog import ImperiumCog
@@ -22,7 +21,7 @@ class SpecialPlays(ImperiumCog):
         
         # calls the same named method from special_play
         data = getattr(special_play, inspect.currentframe().f_code.co_name)()
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
 
     @commands.command()
     async def TailsNeverFails(self, ctx):
@@ -33,7 +32,7 @@ class SpecialPlays(ImperiumCog):
         Once complete, all Training Cards awarded MUST be used and must also obey doubles restrictions."""
         
         data = getattr(special_play, inspect.currentframe().f_code.co_name)()
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
 
     @commands.command()
     async def EverythingMustGo(self, ctx):
@@ -42,7 +41,7 @@ class SpecialPlays(ImperiumCog):
         than one -AV injury as a result of this card."""
         
         data = getattr(special_play, inspect.currentframe().f_code.co_name)()
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
 
     @commands.command()
     async def HalflingMasterCheerleaders(self, ctx):
@@ -53,7 +52,7 @@ class SpecialPlays(ImperiumCog):
         (but only if they have any to lose)."""
 
         data = getattr(special_play, inspect.currentframe().f_code.co_name)()
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
 
     @commands.command()
     async def HalflingMasterCoaches(self, ctx):
@@ -63,7 +62,7 @@ class SpecialPlays(ImperiumCog):
            distracted by the idea of your team actually preparing that they quit on the spot. 
            Each opponent loses a coaching assistant (but only if they have any to lose)."""
         data = getattr(special_play, inspect.currentframe().f_code.co_name)()
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
     
     @commands.command()
     async def CelebrityMasterChef(self, ctx):
@@ -73,7 +72,7 @@ class SpecialPlays(ImperiumCog):
            of one team re-roll across all instances of the card."""
         me = CoachService.discord_user_to_coach(ctx.author)
         data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
 
     @commands.command()
     async def CoM2000(self, ctx):
@@ -82,7 +81,7 @@ class SpecialPlays(ImperiumCog):
            is removed from your collection after use."""
         me = CoachService.discord_user_to_coach(ctx.author)
         data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
 
     @commands.command()
     async def CoM5000(self, ctx):
@@ -91,7 +90,7 @@ class SpecialPlays(ImperiumCog):
            a random player on your team. This card is removed from your collection after use."""
         me = CoachService.discord_user_to_coach(ctx.author)
         data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
 
     @commands.command()
     async def CoM9000(self, ctx):
@@ -101,21 +100,21 @@ class SpecialPlays(ImperiumCog):
            player on your team. This card is removed from your collection after use."""
         me = CoachService.discord_user_to_coach(ctx.author)
         data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
 
     @commands.command()
     async def CoMWithFriends(self, ctx):
         """**Randomise**. Open an Inducement Skill Pack and randomly apply all Training cards across your opponents' teams."""
         me = CoachService.discord_user_to_coach(ctx.author)
         data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
     
     @commands.command()
     async def SoM3000(self, ctx):
         """Each team in the tournament receives a random stadium enhancement. Other stadium enhancement cards are ignored and may not be replaced."""
         me = CoachService.discord_user_to_coach(ctx.author)
         data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
 
     @commands.command()
     async def ReturnOfTheKing(self, ctx):
@@ -123,7 +122,7 @@ class SpecialPlays(ImperiumCog):
            On a result of 1-3, give the Blitzer +AG. On a result of 4-5, give the Blitzer +ST. On a result of 6, 
            give the Blitzer two +ST stat-ups."""
         data = getattr(special_play, inspect.currentframe().f_code.co_name)()
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
 
 def setup(bot):
     bot.add_cog(SpecialPlays(bot))

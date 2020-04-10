@@ -2,7 +2,6 @@ import discord
 import inspect
 
 from discord.ext import commands
-from bot.helpers import send_embed, send_message
 from bot.command import DiscordCommand
 from bot.actions import common
 from bot.base_cog import ImperiumCog
@@ -23,7 +22,7 @@ class Common(ImperiumCog):
 
         # calls the same named method from special_play
         data = getattr(common, inspect.currentframe().f_code.co_name)()
-        await send_embed(data, ctx)
+        await self.send_embed(data, ctx)
 
     @commands.command()
     async def newcoach(self, ctx):
@@ -81,7 +80,7 @@ class Common(ImperiumCog):
           msg.append(f"**Free Packs:**")
           msg.append((', ').join(free_packs))
 
-        await send_message(ctx.author, msg)
+        await self.send_message(ctx.author, msg)
         await ctx.send("Info sent to PM")
 
 def setup(bot):

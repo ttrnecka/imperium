@@ -7,7 +7,7 @@ from models.data_models import db, Tournament as Tourn, ConclaveRule, Tournament
 from misc.helpers import image_merge, represents_int
 from services import TournamentService, CoachService, CompetitionService
 from bot.base_cog import ImperiumCog
-from bot.helpers import send_message, sign, resign, bank_notification
+from bot.helpers import sign, resign
 
 class Tournament(ImperiumCog):
     def __init__(self, bot):
@@ -64,8 +64,8 @@ class Tournament(ImperiumCog):
           f"Note: {reason}\n",
           f"Change: {amount} coins"
       ]
-      await send_message(ctx.channel, msg)
-      await bank_notification(ctx, f"Your bank has been updated by **{amount}** coins - {reason}", coach)
+      await self.send_message(ctx.channel, msg)
+      await self.bank_notification(ctx, f"Your bank has been updated by **{amount}** coins - {reason}", coach)
       return
 
     @commands.command()
@@ -192,7 +192,7 @@ class Tournament(ImperiumCog):
           else:
             msg.append(f"**Reserves**: {count_res}/{tourn.reserve_limit}")
 
-        await send_message(ctx.channel, msg)
+        await self.send_message(ctx.channel, msg)
         return
       #list
       else:
@@ -225,7 +225,7 @@ class Tournament(ImperiumCog):
         msg.append("Use **!complist <id>** to display details of the tournament")
         msg.append("Use **!sign <id>** to register for tournament")
         msg.append("Use **!resign <id>** to resign from tournament")
-        await send_message(ctx.channel, msg)
+        await self.send_message(ctx.channel, msg)
         return
     
     @commands.command()

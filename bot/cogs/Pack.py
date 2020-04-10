@@ -3,7 +3,6 @@ import inspect
 import traceback
 
 from discord.ext import commands
-from bot.helpers import send_embed, auto_cards
 from bot.command import DiscordCommand
 from services import PackService, CoachService
 from models.data_models import db, Pack as Pck, TransactionError, Transaction
@@ -198,7 +197,7 @@ class Pack(ImperiumCog):
           'thumbnail_url': 'https://cdn2.rebbl.net/images/cards/dice_small.png',
           'embed_fields': efs,
         }
-        await send_embed(embed, ctx)
+        await self.send_embed(embed, ctx)
 
     @commands.command(help=gen_help())
     async def genpack(self, ctx, pack_type:str, subtype:str=None):
@@ -262,7 +261,7 @@ class Pack(ImperiumCog):
         description = f"**Bank:** {coach.account.amount} coins"
         pieces = DiscordCommand.format_pack_to_pieces(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))
 
-        await auto_cards(pack, ctx)
+        await self.auto_cards(pack, ctx)
         CoachService.check_collect_three_legends_quest(coach)
 
         efs = []
@@ -283,7 +282,7 @@ class Pack(ImperiumCog):
           'thumbnail_url': 'https://cdn2.rebbl.net/images/cards/dice_small.png',
           'embed_fields': efs,
         }
-        await send_embed(embed, ctx)
+        await self.send_embed(embed, ctx)
 
 def setup(bot):
     bot.add_cog(Pack(bot))

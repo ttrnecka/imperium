@@ -1,7 +1,7 @@
 import discord
 
 from discord.ext import commands
-from bot.helpers import send_embed, logger, send_message, sign, resign, coach_unique, bank_notification, auto_cards
+from bot.helpers import sign, resign, coach_unique
 from bot.command import DiscordCommand
 from misc.helpers import CardHelper
 from models.data_models import db, Transaction, Coach, Tournament, Competition, TournamentSignups
@@ -160,8 +160,8 @@ class Admin(ImperiumCog):
           f"Note: {reason}\n",
           f"Change: {amount} coins"
       ]
-      await send_message(ctx.channel, msg)
-      await bank_notification(ctx, f"Your bank has been updated by **{amount}** coins - {reason}", coach)
+      await self.send_message(ctx.channel, msg)
+      await self.bank_notification(ctx, f"Your bank has been updated by **{amount}** coins - {reason}", coach)
 
     @commands.command()
     async def adminlist(self, ctx, coach:str):
@@ -176,7 +176,7 @@ class Admin(ImperiumCog):
       for coach in coaches:
         for messg in self.coach_collection_msg(coach):
           msg.append(messg)
-      await send_message(ctx.channel, msg)
+      await self.send_message(ctx.channel, msg)
       return
 
     @commands.command()
@@ -274,7 +274,7 @@ class Admin(ImperiumCog):
             msg = TournamentService.inducement_msg(tourn)
         if action == Tournament.BB_PHASE:
             msg = TournamentService.blood_bowl_msg(tourn)
-        await send_message(channel, msg)
+        await self.send_message(channel, msg)
         await ctx.send("Done.")
       return
 
@@ -321,7 +321,7 @@ class Admin(ImperiumCog):
                 found = False
             found_msg = "**not found**" if not found else "found"
             msg.append(f"{card}: {found_msg}")
-          await send_message(ctx.channel, msg)
+          await self.send_message(ctx.channel, msg)
           return
         
         reason = f"{action.capitalize()} {';'.join([str(card.get('name')) for card in pack.cards])} - by " + str(ctx.author.name)
@@ -333,10 +333,10 @@ class Admin(ImperiumCog):
         # message sent to admin so display the hidden cards
         msg.append(f"{DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)}")
         msg.append(f"**Bank:** {coach.account.amount} coins")
-        await send_message(ctx.channel, msg)
+        await self.send_message(ctx.channel, msg)
         # message sent to discord so hide the names
-        await bank_notification(ctx, f"Card(s) **{', '.join([card.get('name', show_hidden=False) for card in pack.cards])}** added to your collection by {str(ctx.author.name)}", coach)
-        await auto_cards(pack, ctx)
+        await self.bank_notification(ctx, f"Card(s) **{', '.join([card.get('name', show_hidden=False) for card in pack.cards])}** added to your collection by {str(ctx.author.name)}", coach)
+        await self.auto_cards(pack, ctx)
         CoachService.check_collect_three_legends_quest(coach)
         return
 
@@ -360,14 +360,14 @@ class Admin(ImperiumCog):
           msg = []
           msg.append(f"Cards removed from @{coach.name} collection:\n")
           msg.append(f"{DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(removed_cards), show_hidden=True)}")
-          await send_message(ctx.channel, msg)
-          await bank_notification(ctx, f"Card(s) **{', '.join([card.get('name') for card in removed_cards])}** removed from your collection by {str(ctx.author.name)}", coach)
+          await self.send_message(ctx.channel, msg)
+          await self.bank_notification(ctx, f"Card(s) **{', '.join([card.get('name') for card in removed_cards])}** removed from your collection by {str(ctx.author.name)}", coach)
 
         if unknown_cards:
           msg = ["**Warning** - these cards have been skipped:"]
           for name in unknown_cards:
               msg.append(f"{name}: **not found**")
-          await send_message(ctx.channel, msg)
+          await self.send_message(ctx.channel, msg)
         return
 
 def setup(bot):

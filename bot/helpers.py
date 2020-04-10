@@ -1,13 +1,9 @@
 """Various helpers"""
 import os
-import re
 import logging
 import discord
-from discord.ext.commands import Context
-from discord.utils import get
 from logging.handlers import RotatingFileHandler
-from misc import SKILLREG
-from models.data_models import Tournament, Coach, Transaction, db
+from models.data_models import Tournament, Coach
 from services import TournamentService
 
 ROOT = os.path.dirname(__file__)
@@ -20,10 +16,6 @@ handler = RotatingFileHandler(
 )
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
-
-def log_response(response):
-    """Log command response"""
-    logger.info("Response:\n%s", response)
 
 class LongMessage:
     """Class to handle long message sending in chunks
@@ -42,7 +34,7 @@ class LongMessage:
         """sends the message to channel in limit chunks"""
         for chunk in self.chunks():
             await self.channel.send(chunk)
-        log_response('\n'.join(self.lines()))
+        logger.info("Response:\n%s", '\n'.join(self.lines()))
 
     def lines(self):
         """transforms the message to lines"""
@@ -61,27 +53,6 @@ class LongMessage:
             while lines and len(msg + lines[0]) < self.limit:
                 msg += lines.pop(0) + "\n"
             yield msg
-
-def transform_message(message, ctx: Context):
-    def skill_transform(m):
-        skill_emoji = get(ctx.guild.emojis, name=re.sub(r'[\s-]', '', m.group(1))) or ""
-        return f'{skill_emoji} {m.group(1)}{m.group(2)}'
-    trans_message = re.sub(SKILLREG, skill_transform, message)
-    return trans_message
-
-async def send_embed(data, ctx):
-    embed = discord.Embed(title=data['embed_title'], description=data['embed_desc'], color=0xEE8700)
-    embed.set_thumbnail(url=data['thumbnail_url'])
-    for field in data['embed_fields']:
-        embed.add_field(name=field['name'], value=transform_message(field['value'], ctx), inline=field['inline'])
-    await ctx.send(embed=embed)
-
-async def send_message(channel, message_list):
-  """Sends messages to channel"""
-  msg = LongMessage(channel)
-  for message in message_list:
-      msg.add(message)
-  await msg.send()
 
 async def sign(tournament_id, coach, ctx, admin=False):
   """routine to sign a coach to tournament"""
@@ -146,37 +117,3 @@ async def coach_unique(name, ctx):
       await ctx.send(emsg)
       return None
   return coaches[0]
-
-# must me under 2000 chars
-async def bank_notification(ctx, msg, coach):
-  """Notifies coach about bank change"""
-  member = discord.utils.get(ctx.guild.members, id=coach.disc_id)
-  if member is None:
-      mention = coach.name
-  else:
-      mention = member.mention
-
-  channel = discord.utils.get(ctx.bot.get_all_channels(), name='bank-notifications')
-  await send_message(channel, [f"{mention}: "+msg])
-  return
-
-AUTO_CARDS = {
-    'Loose Change!':5,
-    'Bank Error!':10,
-    'Lottery Win!':15
-}
-
-#checks pack for AUTO_CARDS and process them
-async def auto_cards(pack, ctx):
-  """Routine to process auto cards from the pack"""
-  for card in pack.cards:
-    if card.get('name') in AUTO_CARDS.keys():
-      reason = "Autoprocessing "+card.get('name')
-      amount = AUTO_CARDS[card.get('name')]
-      msg = f"Your card {card.get('name')} has been processed. You were granted {amount} coins"
-      tran = Transaction(description=reason, price=-1*amount)
-
-      db.session.delete(card)
-      pack.coach.make_transaction(tran)
-      await bank_notification(ctx, msg, pack.coach)
-  return
