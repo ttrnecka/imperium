@@ -1,10 +1,8 @@
 from web import app
 from misc.helpers import CardHelper
-from .helpers import BotHelp
-
 app.app_context().push()
 
-class DiscordCommand(BotHelp):
+class DiscordCommand():
     """Main class to process commands"""
     emojis = {
         "Common": "",

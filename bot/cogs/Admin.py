@@ -1,16 +1,14 @@
 import discord
-import inspect
-import traceback
 
 from discord.ext import commands
-from bot.helpers import send_embed, logger, send_message, sign, resign, coach_unique, BotHelp, bank_notification, auto_cards
+from bot.helpers import send_embed, logger, send_message, sign, resign, coach_unique, bank_notification, auto_cards
 from bot.command import DiscordCommand
 from misc.helpers import CardHelper
 from models.data_models import db, Transaction, Coach, Tournament, Competition, TournamentSignups
 from services import CoachService, TournamentService, CompetitionService, CardService, PackService
+from bot.base_cog import ImperiumCog
 
-
-class Admin(commands.Cog):
+class Admin(ImperiumCog):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
@@ -49,7 +47,12 @@ class Admin(commands.Cog):
     
     @commands.command()
     async def adminsign(self, ctx, tournament_id:int, coach_name):
-      """Sign coach to a tournament"""
+      """Signs coach to a tournament
+      USAGE:
+      !adminsign <tournament_id> <coach>
+        <tournament_id>: id of tournament from !complist
+        <coach>: coach discord name or its part, must be unique
+      """
       self.is_admin_channel(ctx.channel)
       coach = await coach_unique(coach_name, ctx)
       if coach is None:
@@ -60,7 +63,12 @@ class Admin(commands.Cog):
 
     @commands.command()
     async def adminresign(self, ctx, tournament_id:int, coach_name):
-      """Resign coach from a tournament"""
+      """Resigns coach from a tournament
+      USAGE:
+      !adminresign <id> <coach>
+        <id>: id of tournament from !complist
+        <coach>: coach discord name or its part, must be unique
+      """
       self.is_admin_channel(ctx.channel)
       coach = await coach_unique(coach_name, ctx)
       if coach is None:
@@ -71,7 +79,14 @@ class Admin(commands.Cog):
 
     @commands.command()
     async def adminrole(self, ctx, action:str, coach_name:str, role:str):
-      """Change role for a coach"""
+      """Change role for a coach
+      USAGE:
+      Adds or removes bot/web roles for coach
+      !adminrole <action> <coach> <role>
+        <action>: add or remove
+        <coach>: coach discord name or its part, must be unique
+        <role>: webadmin - enables coach to do admin tasks on web
+      """
       self.is_admin_channel(ctx.channel)
       if action not in ["add", "remove"]:
         raise ValueError("Invalid action")
@@ -93,7 +108,13 @@ class Admin(commands.Cog):
 
     @commands.command()
     async def adminquest(self, ctx, action:str, coach_name:str, quest:str):
-      """Set quest for a coach"""
+      """Manually marks the quest as achieved or not. Does not award the prize
+      USAGE:
+      !adminquest <action> <coach> <quest>
+        <action>: on to mark as complete, off the clear flag
+        <coach>: coach discord name or its part, must be unique
+        <quest>: *collect3legends* or *buildyourownlegend*
+      """
       self.is_admin_channel(ctx.channel)
       if action not in ["on", "off"]:
         raise ValueError("Invalid action")
@@ -116,7 +137,13 @@ class Admin(commands.Cog):
 
     @commands.command()
     async def adminbank(self, ctx, amount:int, coach_name:str, *reason):
-      """Add or remove cash from coach"""
+      """Add or remove cash from coach
+      USAGE:
+      !adminbank <amount> <coach> <reason>
+        <amount>: number of coins to add to bank, if negative is used, it will be deducted from bank
+        <coach>: coach discord name or its part, must be unique
+        <reason>: describe why you are changing the coach bank
+      """
       self.is_admin_channel(ctx.channel)
 
       coach = await coach_unique(coach_name, ctx)
@@ -154,7 +181,17 @@ class Admin(commands.Cog):
 
     @commands.command()
     async def admincomp(self, ctx, action:str, tournamnent_id:int=None):
-      """Manipulate tournaments"""
+      """Manipulate tournaments
+      USAGE:
+      !admincomp <action> [tournament_id]
+        start: Notifies all registered coaches that tournament started in the tournament channel and links the ledger
+        stop: Resigns all coaches from the tournament
+        update: Updates data from Tournament sheet
+        special_play: Initiates special play phase
+        inducement: Initiates inducement phase
+        blood_bowl: Initiates blood bowl phase
+        <tournament_id>: id of tournament from Tournament master sheet
+      """
       self.is_admin_channel(ctx.channel)
       if action not in ["start", "stop", "update", Tournament.SP_PHASE, Tournament.IND_PHASE, Tournament.BB_PHASE]:
           raise ValueError("Incorrect arguments!!!")
@@ -243,7 +280,17 @@ class Admin(commands.Cog):
 
     @commands.command()
     async def admincard(self, ctx, action:str, coach_name:str=None, *cards):
-      """Add or remove cards from coach"""
+      """Adds or removes cards from coach, or updates card database
+      USAGE 1:
+      Add or remove cards from coach
+      !admincard <action> <coach> <card>;...;<card>
+        <action>: add or remove
+        <coach>: coach discord name or its part, must be unique
+        <card>: Exact card name as is in the All Cards list, if mutliple cards are specified separate them by **;**
+      USAGE 2:
+      Updates card database from the master sheet
+      !admincard update
+      """
       if action not in ["add", "remove", "update"]:
         raise ValueError("Incorrect action")
 
@@ -322,30 +369,6 @@ class Admin(commands.Cog):
               msg.append(f"{name}: **not found**")
           await send_message(ctx.channel, msg)
         return
-
-    async def cog_command_error(self, ctx, error):
-      await ctx.send(error)
-      text = type(error).__name__ +": "+str(error)
-      logger.error(text)
-      logger.error(traceback.format_exc())
-      if ctx.command.name == "adminsign":
-        await ctx.send(BotHelp.adminsign_help())
-      if ctx.command.name == "adminresign":
-        await ctx.send(BotHelp.adminresign_help())
-      if ctx.command.name == "adminrole":
-        await ctx.send(BotHelp.adminrole_help())
-      if ctx.command.name == "adminquest":
-        await ctx.send(BotHelp.adminquest_help())
-      if ctx.command.name == "adminbank":
-        await ctx.send(BotHelp.adminbank_help())
-      if ctx.command.name == "admincomp":
-        await ctx.send(BotHelp.admincomp_help())
-      if ctx.command.name == "admincard":
-        await ctx.send(BotHelp.admincard_help())
-      await self.cog_after_invoke(ctx)
-
-    async def cog_after_invoke(self, ctx):
-      db.session.remove()
 
 def setup(bot):
     bot.add_cog(Admin(bot))

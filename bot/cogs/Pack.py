@@ -3,16 +3,118 @@ import inspect
 import traceback
 
 from discord.ext import commands
-from bot.helpers import send_embed, logger, BotHelp, auto_cards
+from bot.helpers import send_embed, auto_cards
 from bot.command import DiscordCommand
 from services import PackService, CoachService
 from models.data_models import db, Pack as Pck, TransactionError, Transaction
+from bot.base_cog import ImperiumCog
 
 from misc.helpers import CardHelper
 
 GEN_PACKS = ["player", "training", "booster", "special"]
 GEN_PACKS_TMP = ["player", "training", "booster", "special", "skill", "coaching", "positional", "legendary","brawl"]
 GEN_QUALITY = ["premium", "budget"]
+
+def gen_help():
+    """help message"""
+    msg = "!genpack command generates new pack and assigns it to coach. The coach "
+    msg += "needs to have enough coins to buy the pack or dust appropriate cards.\n \n"
+    msg += "= Booster budget pack =\n"
+    msg += "Content: 5 cards of any type\n"
+    msg += f"Price: {PackService.PACK_PRICES['booster_budget']} coins\n"
+    msg += "Rarity: 1 Rare and higher rarity, 4 Common and higher rarity\n"
+    msg += "Command: !genpack booster\n \n"
+
+    msg += "= Booster premium pack =\n"
+    msg += "Content: 5 cards any type\n"
+    msg += f"Price: {PackService.PACK_PRICES['booster_premium']} coins\n"
+    msg += "Rarity: Rare and higher\n"
+    msg += "Command: !genpack booster premium\n \n"
+
+    msg += "= Training pack =\n"
+    msg += "Content: 3 training type cards\n"
+    msg += f"Price: {PackService.PACK_PRICES['training']} coins. "
+    msg += "Available only by using Drills\n"
+    msg += "Rarity: Common or higher\n"
+    msg += "Command: !genpack training\n \n"
+
+    msg += "= Special play pack =\n"
+    msg += "Content: 3 special play type cards\n"
+    msg += f"Price: {PackService.PACK_PRICES['training']} coins. "
+    msg += "Available only by using Drills\n"
+    msg += "Rarity: Common or higher\n"
+    msg += "Command: !genpack special\n \n"
+
+    msg += "= Player pack =\n"
+    msg += "Content: 3 player type cards\n"
+    msg += f"Price: {PackService.PACK_PRICES['player']} coins. "
+    msg += "First player pack free of charge. Next available only by using Tryouts.\n"
+    msg += "Rarity: Rare or higher\n"
+    msg += "Command: !genpack player <team>\n"
+    msg += "where <team> is one of following:\n"
+    for team in PackService.MIXED_TEAMS:
+        msg += "\t"+team["code"] +" - "+ team["name"] +f" ({', '.join(team['races'])})\n"
+    return msg
+
+def gentemp_help():
+    """help message"""
+    msg = "!genpacktemp command generates temporary packs. "
+    msg += "These packs are for one time use"
+    msg += "permanent collection.\n \n"
+    msg += "= Booster budget pack =\n"
+    msg += "Content: 5 cards\n"
+    msg += "Rarity: 1 Rare+, 4 Common+\n"
+    msg += "Command: !genpacktemp booster\n \n"
+
+    msg += "= Booster premium pack =\n"
+    msg += "Content: 5 cards any type\n"
+    msg += "Rarity: Rare+\n"
+    msg += "Command: !genpacktemp booster premium\n \n"
+
+    msg += "= Training pack =\n"
+    msg += "Content: 3 training type cards\n"
+    msg += "Rarity: Common+\n"
+    msg += "Command: !genpacktemp training\n \n"
+
+    msg += "= Inducement Skill pack =\n"
+    msg += "Content: 5 training type cards\n"
+    msg += "Rarity: Common+\n"
+    msg += "Command: !genpacktemp skill\n \n"
+
+    msg += "= Inducement Coaching pack =\n"
+    msg += "Content: 3 training type cards\n"
+    msg += "Rarity: Rare or Epic\n"
+    msg += "Command: !genpacktemp coaching\n \n"
+
+    msg += "= Special Play pack (incl. Inducement) =\n"
+    msg += "Content: 3 special play type cards\n"
+    msg += "Rarity: Common+\n"
+    msg += "Command: !genpacktemp special\n \n"
+
+    msg += "= Player pack =\n"
+    msg += "Content: 3 player type cards\n"
+    msg += "Rarity: Rare+\n"
+    msg += "Command: !genpacktemp player <team>\n \n"
+
+    msg += "= Inducement Positional pack =\n"
+    msg += "Content: 3 positional player type cards\n"
+    msg += "Rarity: Rare+\n"
+    msg += "Command: !genpacktemp positional <team>\n \n"
+
+    msg += "= Legendary pack =\n"
+    msg += "Content: 1 legendary player type cards\n"
+    msg += "Rarity: Legendary\n"
+    msg += "Command: !genpacktemp legendary <team>\n \n"
+
+    msg += "where <team> is one of following:\n"
+    for team in PackService.MIXED_TEAMS:
+        msg += "\t"+team["code"] +" - "+ team["name"] +f" ({', '.join(team['races'])})\n"
+
+    msg += " \n"
+    msg += "= Bloodweiser pack =\n"
+    msg += "Content: 3 Bloodweiser Brawl Boost type cards\n"
+    msg += "Command: !genpacktemp brawl\n"
+    return msg
 
 def check_gentemp_command(pack_type, subtype):
     """Checks the validity of genpacktemp parameters"""  
@@ -51,12 +153,12 @@ def check_gen_command(pack_type, subtype):
         return False
     return True
 
-class Pack(commands.Cog):
+class Pack(ImperiumCog):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
 
-    @commands.command()
+    @commands.command(help=gentemp_help())
     async def genpacktemp(self, ctx, pack_type:str, subtype:str=None):
         """Generates special play or inducement packs. These packs are for one time use and are not assigned to coaches permanent collection"""
         if not check_gentemp_command(pack_type, subtype):
@@ -98,7 +200,7 @@ class Pack(commands.Cog):
         }
         await send_embed(embed, ctx)
 
-    @commands.command()
+    @commands.command(help=gen_help())
     async def genpack(self, ctx, pack_type:str, subtype:str=None):
         """Generates packs"""
         if not check_gen_command(pack_type, subtype):
@@ -182,21 +284,6 @@ class Pack(commands.Cog):
           'embed_fields': efs,
         }
         await send_embed(embed, ctx)
-
-    async def cog_command_error(self, ctx, error):
-      await ctx.send(error)
-      text = type(error).__name__ +": "+str(error)
-      logger.error(text)
-      logger.error(traceback.format_exc())
-      if ctx.command.name == "genpacktemp":
-        await ctx.send(BotHelp.gentemp_help())
-      if ctx.command.name == "genpack":
-        await ctx.send(BotHelp.gen_help())
-
-      await self.cog_after_invoke(ctx)
-
-    async def cog_after_invoke(self, ctx):
-      db.session.remove()
 
 def setup(bot):
     bot.add_cog(Pack(bot))

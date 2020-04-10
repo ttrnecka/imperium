@@ -1,14 +1,14 @@
 import discord
 import inspect
-import traceback
 
 from discord.ext import commands
 from discord.utils import get
-from bot.helpers import send_embed, logger
+from bot.helpers import send_embed
 from services import CoachService
 from bot.actions import special_play
+from bot.base_cog import ImperiumCog
 
-class SpecialPlays(commands.Cog):
+class SpecialPlays(ImperiumCog):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
@@ -124,12 +124,6 @@ class SpecialPlays(commands.Cog):
            give the Blitzer two +ST stat-ups."""
         data = getattr(special_play, inspect.currentframe().f_code.co_name)()
         await send_embed(data, ctx)
-
-    async def cog_command_error(self, ctx, error):
-        await ctx.send(error)
-        text = type(error).__name__ +": "+str(error)
-        logger.error(text)
-        logger.error(traceback.format_exc())
 
 def setup(bot):
     bot.add_cog(SpecialPlays(bot))

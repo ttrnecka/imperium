@@ -1,16 +1,15 @@
 import discord
-import traceback
 import random
 
 from sqlalchemy import func
 from discord.ext import commands
-from bot.helpers import logger, BotHelp, send_message, sign, resign, bank_notification
-from bot.actions import common
 from models.data_models import db, Tournament as Tourn, ConclaveRule, TournamentSignups, Transaction
 from misc.helpers import image_merge, represents_int
 from services import TournamentService, CoachService, CompetitionService
+from bot.base_cog import ImperiumCog
+from bot.helpers import send_message, sign, resign, bank_notification
 
-class Tournament(commands.Cog):
+class Tournament(ImperiumCog):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
@@ -71,7 +70,11 @@ class Tournament(commands.Cog):
 
     @commands.command()
     async def sign(self, ctx, tournament_id:int):
-      """Sign to the tournament"""
+      """Signs coach to tournament
+      USAGE:
+      !sign <tournament_id>
+        <tournament_id>: id of tournament from !complist
+      """
       coach = CoachService.discord_user_to_coach(ctx.author)
       if coach is None:
           await ctx.send(f"Coach {ctx.author.mention} does not exist. Use !newcoach to create coach first.")
@@ -81,7 +84,11 @@ class Tournament(commands.Cog):
 
     @commands.command()
     async def resign(self, ctx, tournament_id:int):
-      """Resign from the tournament"""
+      """Resigns coach from tournament
+      USAGE:
+      !resign <tournament_id>
+        <tournament_id>: id of tournament from !complist
+      """
       coach = CoachService.discord_user_to_coach(ctx.author)
       if coach is None:
           await ctx.send(f"Coach {ctx.author.mention} does not exist. Use !newcoach to create coach first.")
@@ -91,17 +98,25 @@ class Tournament(commands.Cog):
 
     @commands.command()
     async def blessing(self, ctx, level:int):
-      """Generates blessing"""
+      """Returns random blessing
+      USAGE:
+      !blessing <level>
+        <level>: 1,2 or 3
+      """
       await self.conclave("blessing", level, ctx)
 
     @commands.command()
     async def curse(self, ctx, level:int):
-      """Generates curse"""
+      """Returns random curse
+      USAGE:
+      !curse <level>
+        <level>: 1,2 or 3
+      """
       await self.conclave("curse", level, ctx)
 
     @commands.command()
     async def left(self, ctx):
-      """List coaches left to finish current tournament phase"""
+      """Lists coaches left to finish current tournament phase"""
       room = ctx.channel.name
 
       coaches = TournamentService.left_phase(room)
@@ -113,7 +128,7 @@ class Tournament(commands.Cog):
 
     @commands.command()
     async def done(self, ctx):
-      """Confirm Special Play, Inducement and Blood Bowl phase"""
+      """Confirms Special Play, Inducement and Blood Bowl phase"""
       coach = CoachService.discord_user_to_coach(ctx.author)
       room = ctx.channel.name
 
@@ -215,7 +230,19 @@ class Tournament(commands.Cog):
     
     @commands.command()
     async def comp(self, ctx, *args):
-      """Create in-game competition and send tickets"""
+      """Manages in-game competitions for tournaments. Needs to be run in the tournament discord channel
+      USAGE:
+      !comp list
+        list all competitions for tournament
+      !comp create ladder
+        creates ladder comp for tournament if it does not exists
+      !comp create 1on1 <name>
+        creates 1 on 1 comp with <name> for tournament if it does not exists
+      !comp create knockout <team_number> <name>
+        creates knockout comp with <name> for <team_number> teams
+      !comp ticket <competition_name>
+        sends ticket to the <competition_name> to the coach issuing the command in the tournament room
+      """
       room = ctx.channel.name
       args_len = len(args)
       if args_len == 0 \
@@ -273,29 +300,6 @@ class Tournament(commands.Cog):
         team_name = result['ResponseCreateCompetitionTicket']['TicketInfos']['RowTeam']['Name']
         await ctx.send(f"Ticket sent to **{team_name}** for competition **{comp_name}**")
         return
-
-    async def cog_command_error(self, ctx, error):
-      await ctx.send(error)
-      text = type(error).__name__ +": "+str(error)
-      logger.error(text)
-      logger.error(traceback.format_exc())
-
-      if ctx.command.name == "sign":
-        await ctx.send(BotHelp.sign_help())
-      if ctx.command.name == "resign":
-        await ctx.send(BotHelp.resign_help())
-      if ctx.command.name == "curse":
-        await ctx.send(BotHelp.curse_help())
-      if ctx.command.name == "blessing":
-        await ctx.send(BotHelp.blessing_help())
-      if ctx.command.name == "comp":
-        await ctx.send(BotHelp.comp_help())
-
-      await self.cog_after_invoke(ctx)
-
-    async def cog_after_invoke(self, ctx):
-      db.session.remove()
-
   
 def setup(bot):
     bot.add_cog(Tournament(bot))

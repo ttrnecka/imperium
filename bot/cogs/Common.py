@@ -1,18 +1,18 @@
 import discord
 import inspect
-import traceback
 
 from discord.ext import commands
-from bot.helpers import send_embed, logger, send_message
+from bot.helpers import send_embed, send_message
 from bot.command import DiscordCommand
 from bot.actions import common
+from bot.base_cog import ImperiumCog
 from misc.helpers import CardHelper
 from models.data_models import db, Coach, Tournament
 from services import CoachService
 
 RULES_LINK = "https://bit.ly/2P9Y07F"
 
-class Common(commands.Cog):
+class Common(ImperiumCog):
     def __init__(self, bot):
         self.bot = bot
         self._last_member = None
@@ -42,6 +42,7 @@ class Common(commands.Cog):
 
     @commands.command()
     async def list(self, ctx, all=None):
+      """List details about coach's collection"""
       with db.session.no_autoflush:
         coach = CoachService.discord_user_to_coach(ctx.author)
         show_starter = True if all == "all" else False
@@ -82,17 +83,6 @@ class Common(commands.Cog):
 
         await send_message(ctx.author, msg)
         await ctx.send("Info sent to PM")
-
-    async def cog_command_error(self, ctx, error):
-      await ctx.send(error)
-      text = type(error).__name__ +": "+str(error)
-      logger.error(text)
-      logger.error(traceback.format_exc())
-
-      await self.cog_after_invoke(ctx)
-
-    async def cog_after_invoke(self, ctx):
-      db.session.remove()
 
 def setup(bot):
     bot.add_cog(Common(bot))
