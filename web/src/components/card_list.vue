@@ -207,10 +207,11 @@ export default {
         tmCards = tmCards.filter((i) => i.template.card_type === filter);
       }
 
-      if (this.selected_team !== 'All' && filter === 'Player') {
+      if (this.selected_team !== 'All') {
         const { races } = this.mixed_teams.find((e) => e.name === this.selected_team);
-        tmCards = tmCards.filter((i) => i.template.race.split('/').some((r) => races.includes(r)));
+        tmCards = tmCards.filter((i) => i.template.race.split('/').some((r) => r === 'All' || races.includes(r)));
       }
+
       return this.sortedCards(tmCards);
     },
     sortedCards(cards) {
