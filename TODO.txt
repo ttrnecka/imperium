@@ -1,4 +1,4 @@
-Season 3
+Season 3 
 DONE python3.7 -m pip install discord.py --upgrade --user
 DONE Update sheet with all tabs
 DONE SWITCH SHEET in code BEFORE GOING live
