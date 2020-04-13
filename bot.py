@@ -4,7 +4,9 @@ import discord
 from discord.ext import commands
 from config.config import SEASON
 from bot.helpers import logger
-from bot.command import DiscordCommand
+from misc.helpers import PackHelper
+from web import app
+app.app_context().push()
 
 bot = commands.Bot(command_prefix='!', case_insensitive=True)
 
@@ -36,7 +38,7 @@ async def on_ready():
     logger.info('------')
     # rewrite default discord emojis with the server supported ones
     for emoji in bot.emojis:
-        DiscordCommand.emojis[emoji.name] = str(emoji)
+        PackHelper.emojis[emoji.name] = str(emoji)
 
     act = discord.Game(f"Imperium Season {SEASON}")
     await bot.change_presence(status=discord.Status.online, activity=act)

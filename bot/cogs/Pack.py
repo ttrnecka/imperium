@@ -3,12 +3,11 @@ import inspect
 import traceback
 
 from discord.ext import commands
-from bot.command import DiscordCommand
 from services import PackService, CoachService
 from models.data_models import db, Pack as Pck, TransactionError, Transaction
 from bot.base_cog import ImperiumCog
 
-from misc.helpers import CardHelper
+from misc.helpers import PackHelper
 
 GEN_PACKS = ["player", "training", "booster", "special"]
 GEN_PACKS_TMP = ["player", "training", "booster", "special", "skill", "coaching", "positional", "legendary","brawl"]
@@ -178,7 +177,7 @@ class Pack(ImperiumCog):
 
         title = f"**Temporary {PackService.description(pack)}**"
         description = "**Note**: This is one time pack for Special Play or Inducement purposes only!!!"
-        pieces = DiscordCommand.format_pack_to_pieces(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=False)
+        pieces = PackHelper.format_pack_to_pieces(pack.cards)
         efs = []
         efs.append({
             'name': "Cards:",
@@ -259,7 +258,7 @@ class Pack(ImperiumCog):
 
         title = f"**{PackService.description(pack)}** for **{ctx.message.author.name}** - **{pack.price}** coins{duster_txt}"
         description = f"**Bank:** {coach.account.amount} coins"
-        pieces = DiscordCommand.format_pack_to_pieces(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards))
+        pieces = PackHelper.format_pack_to_pieces(pack.cards)
 
         await self.auto_cards(pack, ctx)
         CoachService.check_collect_three_legends_quest(coach)

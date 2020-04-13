@@ -2,8 +2,7 @@ import discord
 
 from discord.ext import commands
 from bot.helpers import sign, resign, coach_unique
-from bot.command import DiscordCommand
-from misc.helpers import CardHelper
+from misc.helpers import PackHelper
 from models.data_models import db, Transaction, Coach, Tournament, Competition, TournamentSignups
 from services import CoachService, TournamentService, CompetitionService, CardService, PackService
 from bot.base_cog import ImperiumCog
@@ -29,7 +28,7 @@ class Admin(ImperiumCog):
           f'expected start: {t.expected_start_date}' for t in coach.tournaments],
         "\n**Collection**:",
         "-" * 65 + "",
-        f"{DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(coach.active_cards()), show_hidden=True)}",
+        f"{PackHelper.format_pack(coach.active_cards(), show_hidden=True)}",
         "-" * 65 + "\n"
       ]
 
@@ -331,7 +330,7 @@ class Admin(ImperiumCog):
         msg = []
         msg.append(f"**{PackService.description(pack)}** for @{coach.name} - **{pack.price}** coins:\n")
         # message sent to admin so display the hidden cards
-        msg.append(f"{DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)}")
+        msg.append(f"{PackHelper.format_pack(pack.cards, show_hidden=True)}")
         msg.append(f"**Bank:** {coach.account.amount} coins")
         await self.send_message(ctx.channel, msg)
         # message sent to discord so hide the names
@@ -359,7 +358,7 @@ class Admin(ImperiumCog):
         if removed_cards:
           msg = []
           msg.append(f"Cards removed from @{coach.name} collection:\n")
-          msg.append(f"{DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(removed_cards), show_hidden=True)}")
+          msg.append(f"{PackHelper.format_pack(removed_cards, show_hidden=True)}")
           await self.send_message(ctx.channel, msg)
           await self.bank_notification(ctx, f"Card(s) **{', '.join([card.get('name') for card in removed_cards])}** removed from your collection by {str(ctx.author.name)}", coach)
 

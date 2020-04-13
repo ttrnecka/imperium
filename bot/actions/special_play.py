@@ -1,7 +1,6 @@
 import random
 from bot import dice
-from bot.command import DiscordCommand
-from misc.helpers import CardHelper
+from misc.helpers import CardHelper, PackHelper
 from misc.decorators import remove_session
 from services import TournamentService, CoachService, PackService, DeckService, CardService
 from models.data_models import Coach, db
@@ -218,7 +217,7 @@ def CoM2000(room, caller: Coach):
     description = ""
     with db.session.no_autoflush:
       pack = PackService.generate('skill')
-      message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
+      message = PackHelper.format_pack(pack.cards, show_hidden=True)
       efs = [{
           'name': 'Skill Pack',
           'value': message,
@@ -250,7 +249,7 @@ def CoM5000(room, caller: Coach):
     with db.session.no_autoflush:
         pack = PackService.generate('skill')
         packs.append(pack)
-        message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
+        message = PackHelper.format_pack(pack.cards, show_hidden=True)
         efs.append({
             'name': 'Skill Pack',
             'value': message,
@@ -258,7 +257,7 @@ def CoM5000(room, caller: Coach):
         })
         pack = PackService.generate('coaching')
         packs.append(pack)
-        message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
+        message = PackHelper.format_pack(pack.cards, show_hidden=True)
         efs.append({
             'name': 'Coaching Pack',
             'value': message,
@@ -290,7 +289,7 @@ def CoM9000(room, caller: Coach):
         for i in range(3):
             pack = PackService.generate('coaching')
             packs.append(pack)
-            message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
+            message = PackHelper.format_pack(pack.cards, show_hidden=True)
             efs.append({
                 'name': f'Coaching Pack {i + 1}',
                 'value': message,
@@ -325,7 +324,7 @@ def CoMWithFriends(room, caller: Coach):
     with db.session.no_autoflush:
         pack = PackService.generate('skill')
         packs.append(pack)
-        message = DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(pack.cards), show_hidden=True)
+        message = PackHelper.format_pack(pack.cards, show_hidden=True)
         efs.append({
             'name': f'Skill Pack',
             'value': message,

@@ -2,10 +2,9 @@ import discord
 import inspect
 
 from discord.ext import commands
-from bot.command import DiscordCommand
 from bot.actions import common
 from bot.base_cog import ImperiumCog
-from misc.helpers import CardHelper
+from misc.helpers import PackHelper
 from models.data_models import db, Coach, Tournament
 from services import CoachService
 
@@ -62,7 +61,7 @@ class Common(ImperiumCog):
           *[f'{t.tournament_id}. {t.name}, status: {t.status}, expected start: {t.expected_start_date}' for t in coach.tournaments],
           f"\n**Collection**{sp_msg}:",
           "-" * 65 + "",
-          DiscordCommand.format_pack(CardHelper.sort_cards_by_rarity_with_quatity(all_cards), show_hidden=True),
+          PackHelper.format_pack(all_cards, show_hidden=True),
           "-" * 65 + "\n"
         ]
 
