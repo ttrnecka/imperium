@@ -57,6 +57,7 @@ jobs:
       uses: appleboy/ssh-action@master
       env:
         PA_TOKEN: ${{ secrets.PA_TOKEN }}
+        TEST: "TEST"
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
