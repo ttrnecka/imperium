@@ -22,17 +22,14 @@ jobs:
       uses: appleboy/ssh-action@master
       env:
         PA_TOKEN: ${{ secrets.PA_TOKEN }}
-        TEST: "TEST"
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        envs: PA_TOKEN, TEST
+        envs: PA_TOKEN
         script: |
-          echo "$PA_TOKEN"
-          echo "$TEST"
-          python3.8 /home/trnecka/imperium/post_deploy.py
+          PA_TOKEN=$PA_TOKEN python3.8 /home/trnecka/imperium/post_deploy.py
     - name: Discord Notification
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
