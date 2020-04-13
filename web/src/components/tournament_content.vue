@@ -98,7 +98,7 @@ export default {
       'user', 'coaches', 'tournaments',
     ]),
     ...mapGetters([
-      'loggedCoach', 'is_webadmin',
+      'loggedCoach',
     ]),
   },
   watch: {

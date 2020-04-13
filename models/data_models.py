@@ -218,6 +218,7 @@ class Coach(Base):
     deleted = db.Column(db.Boolean(), default=False)
     duster = db.relationship("Duster", backref=db.backref('coach'), cascade="all, delete-orphan",uselist=False)
     web_admin = db.Column(db.Boolean(), default=False)
+    super_admin = db.Column(db.Boolean(), default=False)
     bb2_name = db.Column(db.String(80), unique=True, nullable=True, index=True)
     achievements = db.Column(TextPickleType(), nullable=True)
     free_packs = db.Column(db.Text(), nullable=False, default="")

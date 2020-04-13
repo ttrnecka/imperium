@@ -45,14 +45,16 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         script: touch /var/www/imperium_rebbl_net_wsgi.py
-    - name: Restarting bot
+    - name: Deploying
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        script: python3.7 /home/trnecka/imperium/restart_bot.py
+        envs:
+          PA_TOKEN: ${{ secrets.PA_TOKEN }}
+        script: python3.8 /home/trnecka/imperium/deploy.py
     - name: Discord Notification
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}

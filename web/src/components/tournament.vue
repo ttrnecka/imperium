@@ -51,7 +51,7 @@
                 <div class="row tournament_info_line">
                     <div class="col-6"><b>Discord Channel</b>: #{{tournament.discord_channel}}</div>
                     <div class="col-3"><b>Deck Phase:</b></div>
-                    <div class="col-3" v-if="!is_tournament_admin">{{phase.desc}}</div>
+                    <div class="col-3" v-if="!is_tournament_admin && !is_superadmin">{{phase.desc}}</div>
                     <div class="col-3" v-else>
                         <select class="form-control" v-model="selected.phase" @change="set_phase()">
                             <option v-for="phase in phases" :value="phase.name" :key="phase.name">{{ phase.desc }}</option>
@@ -97,8 +97,8 @@
                     <div class="col-12"><b>Management:</b></div>
                 </div>
                 <div v-if="is_webadmin" class="row tournament_webadmin tournament_info_line">
-                    <div class="col-sm-4"><button :disabled="processing" type="button" class="col-12 m-1 btn btn-info" @click="update()">Update</button></div>
-                    <div class="col-sm-4"><button :disabled="processing" type="button" class="col-12 m-1 btn btn-primary" @click="start()">Start</button></div>
+                    <div class="col-sm-4"><button :disabled="processing || !is_superadmin" type="button" class="col-12 m-1 btn btn-info" @click="update()">Update</button></div>
+                    <div class="col-sm-4"><button :disabled="processing || !is_superadmin" type="button" class="col-12 m-1 btn btn-primary" @click="start()">Start</button></div>
                     <div class="col-sm-4">
                         <button v-if="prize_menu" :disabled="processing" type="button" class="col-12 m-1 btn btn-danger" @click="award_and_stop()">Award & Stop</button>
                         <button v-else :disabled="processing" type="button" class="col-12 m-1 btn btn-success" @click="reset_prizes()">Set Prizes</button>
@@ -558,12 +558,6 @@ export default {
       }
       return undefined;
     },
-    is_webadmin() {
-      if (this.loggedCoach && this.loggedCoach.web_admin) {
-        return true;
-      }
-      return false;
-    },
     is_tournament_admin() {
       if (this.loggedCoach && this.loggedCoach.short_name === this.tournament.admin) {
         return true;
@@ -595,7 +589,7 @@ export default {
       return this.tournament.status !== 'OPEN';
     },
     ...mapGetters([
-      'loggedCoach', 'is_webadmin', 'is_owner',
+      'loggedCoach', 'is_webadmin', 'is_owner', 'is_superadmin',
     ]),
   },
   mounted() {

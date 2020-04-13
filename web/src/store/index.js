@@ -84,6 +84,12 @@ export default new Vuex.Store({
       }
       return false;
     },
+    is_superadmin: (state, getters) => {
+      if (getters.loggedCoach && getters.loggedCoach.super_admin) {
+        return true;
+      }
+      return false;
+    },
 
     is_loggedcoach: (state, getters) => (name) => {
       if (getters.loggedCoach !== undefined

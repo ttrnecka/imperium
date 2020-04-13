@@ -4,7 +4,7 @@ from sqlalchemy.orm import raiseload
 
 from models.data_models import db, Tournament, Coach, TransactionError
 from models.marsh_models import tournaments_schema, tournament_schema
-from misc.decorators import authenticated, webadmin, masteradmin, registered
+from misc.decorators import authenticated, webadmin, registered, superadmin
 from misc.helpers import InvalidUsage, current_coach
 import bb2
 
@@ -61,7 +61,7 @@ def tournaments_cards(tournament_id):
 
 @tournament.route("/update", methods=["GET"])
 @authenticated
-@masteradmin
+@superadmin
 def tournaments_update():
     """Update tournaments from sheet"""
     try:
@@ -117,7 +117,7 @@ def tournament_set_phase(tournament_id):
 
 @tournament.route("/<int:tournament_id>/start", methods=["GET"])
 @authenticated
-@masteradmin
+@superadmin
 def tournament_start(tournament_id):
     """Set tournament phase"""
     try:

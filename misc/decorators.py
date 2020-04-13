@@ -57,18 +57,17 @@ def webadmin(func):
         return func(*args, **kwargs)
     return wrapper_webadmin
 
-def masteradmin(func):
-    """Raises exception if coach is master admin"""
+def superadmin(func):
+    """Raises exception if coach is not superadmin"""
     @functools.wraps(func)
-    def wrapper_masteradmin(*args, **kwargs):
+    def wrapper_superadmin(*args, **kwargs):
         coach = current_coach()
         if not coach:
             raise InvalidUsage("Coach not found", status_code=403)
-        if not coach.short_name() == db.get_app().config['TOURNAMENT_MASTER_ADMIN']:
-            raise InvalidUsage(f"Only {db.get_app().config['TOURNAMENT_MASTER_ADMIN']} can do this!", status_code=403)
+        if not coach.super_admin:
+            raise InvalidUsage("Coach does not have superadmin role", status_code=403)
         return func(*args, **kwargs)
-    return wrapper_masteradmin
-
+    return wrapper_superadmin
 
 def remove_session(func):
     """Removes session at the end"""

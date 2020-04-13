@@ -84,13 +84,15 @@ class Admin(ImperiumCog):
       !adminrole <action> <coach> <role>
         <action>: add or remove
         <coach>: coach discord name or its part, must be unique
-        <role>: webadmin - enables coach to do admin tasks on web
+        <role>: 
+          webadmin - enables coach to do admin tasks on web
+          superadmin - enables coach to do super admin tasks on web
       """
       self.is_admin_channel(ctx.channel)
       if action not in ["add", "remove"]:
         raise ValueError("Invalid action")
 
-      if role not in ["webadmin"]:
+      if role not in ["webadmin", "superadmin"]:
         raise ValueError("Invalid role")
 
       coach = await coach_unique(coach_name, ctx)
@@ -98,11 +100,19 @@ class Admin(ImperiumCog):
         return
 
       if action == "add":
-        coach.web_admin = True
+        state = True
+        if role == "webadmin":
+          coach.web_admin = state
+        if role == "superadmin":
+          coach.super_admin = state
       if action == "remove":
-        coach.web_admin = False
+        state = False
+        if role == "webadmin":
+          coach.web_admin = state
+        if role == "superadmin":
+          coach.super_admin = state
       db.session.commit()
-      await ctx.send(f"Role updated for {coach.short_name()}: {role} - {coach.web_admin}")
+      await ctx.send(f"Role updated for {coach.short_name()}: {role} - {state}")
       return
 
     @commands.command()

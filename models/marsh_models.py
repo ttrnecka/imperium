@@ -65,7 +65,7 @@ class CoachLeaderboardSchema(ma.Schema):
 
 class SimpleCoachSchema(ma.Schema):
     class Meta:
-        fields = ("id", "name", "short_name", "disc_id", "web_admin", "bb2_name")
+        fields = ("id", "name", "short_name", "disc_id", "web_admin", "super_admin", "bb2_name")
 
 class DeckSchema(ma.ModelSchema):
     class Meta:
