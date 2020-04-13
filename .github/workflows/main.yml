@@ -28,6 +28,14 @@ jobs:
       working-directory: web
     - run: npm test
       working-directory: web
+    - name: Pre Deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: python3.8 /home/trnecka/imperium/pre_deploy.py
     - name: copy file via ssh password
       uses: appleboy/scp-action@master
       with:
@@ -45,7 +53,7 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         script: touch /var/www/imperium_rebbl_net_wsgi.py
-    - name: Deploying
+    - name: Post Deploy
       uses: appleboy/ssh-action@master
       env:
         PA_TOKEN: ${{ secrets.PA_TOKEN }}
