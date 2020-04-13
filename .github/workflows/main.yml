@@ -55,7 +55,7 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         envs: PA_TOKEN
-        script: python3.8 /home/trnecka/imperium/deploy.py
+        script: python3.8 /home/trnecka/imperium/post_deploy.py
     - name: Discord Notification
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
