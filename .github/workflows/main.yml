@@ -47,13 +47,14 @@ jobs:
         script: touch /var/www/imperium_rebbl_net_wsgi.py
     - name: Deploying
       uses: appleboy/ssh-action@master
+      env:
+        PA_TOKEN: ${{ secrets.PA_TOKEN }}
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        envs:
-          PA_TOKEN: ${{ secrets.PA_TOKEN }}
+        envs: PA_TOKEN
         script: python3.8 /home/trnecka/imperium/deploy.py
     - name: Discord Notification
       env:
