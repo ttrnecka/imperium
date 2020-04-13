@@ -58,7 +58,16 @@ describe('Cards Mixin', () => {
     expect(wrapper.vm.number_of_assignments({ template: { card_type: 'Training', description: ' three skills' } })).toEqual(3);
     expect(wrapper.vm.number_of_assignments({ template: { card_type: 'Training', description: '' } })).toEqual(1);
     expect(wrapper.vm.number_of_assignments({ template: { card_type: 'Player', description: ' one skill' } })).toEqual(0);
+    expect(wrapper.vm.number_of_assignments({ template: { card_type: 'Staff', name: 'Bodyguard' } })).toEqual(1);
+    expect(wrapper.vm.number_of_assignments({ template: { card_type: 'Staff', name: 'Hired Muscle' } })).toEqual(2);
+    expect(wrapper.vm.number_of_assignments({ template: { card_type: 'Staff', name: 'Personal Army' } })).toEqual(3);
+    expect(wrapper.vm.number_of_assignments({ template: { card_type: 'Training', name: 'Super Wildcard' } })).toEqual(3);
   });
+
+  it('return default_skills_for_player', () => {
+    expect(wrapper.vm.default_skills_for_player({ default_skills: ['Block'] })).toEqual(['Block']);
+    expect(wrapper.vm.default_skills_for_player({ default_skills: ['Sidestep'] })).toEqual(['SideStep']);
+  });  
 });
 
 
@@ -66,5 +75,115 @@ describe('Cards Mixin skill_names_for_player_card method', () => {
   const wrapper = shallowMount(Component);
   it('Return empty array for non Player card', () => {
     expect(wrapper.vm.skill_names_for_player_card({ template: { card_type: 'Training' } })).toEqual([]);
+  });
+  it('Returns skills from description for Legendary, Unique, Induced, Cursed or Blessed player', () => {
+    ['Legendary','Unique','Inducement', 'Blessed', 'Cursed'].forEach((r) => {
+      expect(wrapper.vm.skill_names_for_player_card({ template: { rarity: r, card_type: 'Player', description: "Block, Dodge." } })).toEqual(["Block", "Dodge"]);
+    });
+  });
+  it('Returns skills from name for Common, Rare or Epic player', () => {
+    ['Common','Rare','Epic'].forEach((r) => {
+      expect(wrapper.vm.skill_names_for_player_card({ template: { rarity: r, card_type: 'Player', name: "Kick Player" } })).toEqual(["Kick"]);
+    });
+  });
+});
+
+
+describe('Cards Mixin Cyanide api mapper', () => {
+  const wrapper = shallowMount(Component);
+  it('return IncreaseStrength for stregths', () => {
+    expect(wrapper.vm.skill_to_api_skill('Strength Up!')).toEqual('IncreaseStrength');
+    expect(wrapper.vm.skill_to_api_skill('ST+')).toEqual('IncreaseStrength');
+    expect(wrapper.vm.skill_to_api_skill('+ST')).toEqual('IncreaseStrength');
+  });
+  it('return IncreaseAgility for agility', () => {
+    expect(wrapper.vm.skill_to_api_skill('Agility Up!')).toEqual('IncreaseAgility');
+    expect(wrapper.vm.skill_to_api_skill('AG+')).toEqual('IncreaseAgility');
+    expect(wrapper.vm.skill_to_api_skill('+AG')).toEqual('IncreaseAgility');
+  });
+  it('return IncreaseMovement for agility', () => {
+    expect(wrapper.vm.skill_to_api_skill('Movement Up!')).toEqual('IncreaseMovement');
+    expect(wrapper.vm.skill_to_api_skill('MA+')).toEqual('IncreaseMovement');
+    expect(wrapper.vm.skill_to_api_skill('+MA')).toEqual('IncreaseMovement');
+  });
+  it('return IncreaseArmour for armour', () => {
+    expect(wrapper.vm.skill_to_api_skill('Armour Up!')).toEqual('IncreaseArmour');
+    expect(wrapper.vm.skill_to_api_skill('AV+')).toEqual('IncreaseArmour');
+    expect(wrapper.vm.skill_to_api_skill('+AV')).toEqual('IncreaseArmour');
+  });
+  it('return NervesOfSteel', () => {
+    expect(wrapper.vm.skill_to_api_skill('Nerves of Steel')).toEqual('NervesOfSteel');
+  });
+  it('return SideStep', () => {
+    expect(wrapper.vm.skill_to_api_skill('Sidestep')).toEqual('SideStep');
+  });
+  it('return empty for Mutant', () => {
+    expect(wrapper.vm.skill_to_api_skill('Mutant Roshi\'s Scare School')).toEqual('');
+  });
+  it('return KickOffReturn for Kick-Off Return', () => {
+    expect(wrapper.vm.skill_to_api_skill('Kick-Off Return')).toEqual('KickOffReturn');
+  });
+});
+
+describe('Cards Mixin cards value', () => {
+  const wrapper = shallowMount(Component);
+  it('return 0 for starter cards', () => {
+    const cards = [
+      { is_starter: true, template: { value: 10 }},
+      { is_starter: true, template: { value: 20 }},
+    ]
+    expect(wrapper.vm.cardsValue(cards)).toEqual(0);
+  });
+  it('return sum of non-starter cards', () => {
+    const cards = [
+      { is_starter: true, template: { value: 10 }},
+      { is_starter: false, template: { value: 20 }},
+    ]
+    expect(wrapper.vm.cardsValue(cards)).toEqual(20);
+  });
+});
+
+describe('Cards Mixin injury picker opened', () => {
+  const wrapper = shallowMount(Component);
+  it('return true', () => {
+    expect(wrapper.vm.injuryPickerOpened({ cas_pick: false})).toBeTruthy();
+    expect(wrapper.vm.injuryPickerOpened({})).toBeTruthy();
+  });
+  it('return false', () => {
+    expect(wrapper.vm.injuryPickerOpened({ cas_pick: true})).toBeFalsy();
+  });
+  
+});
+
+describe('Cards Mixin isEnabled', () => {
+  const wrapper = shallowMount(Component);
+  const card = {
+    id: 1,
+  }
+  it('return true if no deck', () => {
+    wrapper.vm.deck = {};
+    expect(wrapper.vm.isEnabled(card)).toBeTruthy();
+  });
+
+  it('return true if deck but disabled_cards is empty', () => {
+    wrapper.vm.deck = { id: 1, disabled_cards: [] };
+    expect(wrapper.vm.isEnabled(card)).toBeTruthy();
+  });
+
+  it('return true if deck, disabled_cards is not empty', () => {
+    wrapper.vm.deck = { id: 1, disabled_cards: ['1']};
+    expect(wrapper.vm.isEnabled(card)).toBeFalsy();
+  });
+});
+
+describe('Cards Mixin card_id_or_uuid', () => {
+  const wrapper = shallowMount(Component);
+  it('return id as string if provided', () => {
+    const card = { id: 1, uuid: '32f3' }
+    expect(wrapper.vm.card_id_or_uuid(card)).toEqual('1');
+  });
+  it('return uuid as string if id not provided', () => {
+    const card = { id: undefined, uuid: '32f3' }
+    expect(wrapper.vm.card_id_or_uuid(card)).toEqual('32f3');
   });
 });
