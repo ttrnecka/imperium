@@ -18,41 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Use Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: '12.x'
-    - run: npm install
-      working-directory: web
-    - run: npm run build --if-present
-      working-directory: web
-    - run: npm test
-      working-directory: web
-    - name: Pre Deploy
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT }}
-        script: python3.8 /home/trnecka/imperium/pre_deploy.py
-    - name: copy file via ssh password
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT }}
-        source: ".,!web,!tests,!.git,!.github,!.gitignore"
-        target: "imperium"
-    - name: Restarting web
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT }}
-        script: touch /var/www/imperium_rebbl_net_wsgi.py
     - name: Post Deploy
       uses: appleboy/ssh-action@master
       env:
@@ -63,7 +28,7 @@ jobs:
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
-        envs: PA_TOKEN
+        envs: PA_TOKEN, TEST
         script: python3.8 /home/trnecka/imperium/post_deploy.py
     - name: Discord Notification
       env:
