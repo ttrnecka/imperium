@@ -8,6 +8,9 @@ username = 'trnecka'
 
 ROOT = os.path.dirname(__file__)
 
+print("Environment variables")
+print(os.environ)
+
 obsolete_files = [
   "bot/command.py"
 ]
