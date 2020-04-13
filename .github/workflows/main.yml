@@ -30,7 +30,8 @@ jobs:
         port: ${{ secrets.PORT }}
         envs: PA_TOKEN, TEST
         script: |
-          printenv  
+          echo "$PA_TOKEN"
+          echo "$TEST"
           python3.8 /home/trnecka/imperium/post_deploy.py
     - name: Discord Notification
       env:
