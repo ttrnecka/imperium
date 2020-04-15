@@ -266,7 +266,7 @@ const Cards = {
     },
     injury_names_for_player_card(card) {
       if (card.template.card_type !== 'Player') {
-        return card.template.name;
+        return [];
       }
       let str;
       if (['Unique', 'Legendary', 'Inducement', 'Blessed', 'Cursed'].includes(card.template.rarity)) {

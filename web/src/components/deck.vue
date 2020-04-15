@@ -301,7 +301,7 @@ export default {
         blood_bowl: 'Blood Bowl',
       },
       deck_card_types: ['Player', 'Training', 'Special Play', 'Staff'],
-      collection_colums: ['Rarity', 'Value', 'Name', 'Skills'],
+      collection_colums: ['Rarity', 'Value', 'Name', 'Skills', 'ShortSubtype'],
     };
   },
   methods: {

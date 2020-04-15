@@ -27,6 +27,9 @@
                 <th v-if="should_diplay('Subtype')" class="d-none d-sm-table-cell">
                   Subtype
                 </th>
+                <th v-if="should_diplay('ShortSubtype')" class="d-none d-sm-table-cell" title="Subtype">
+                  S
+                </th>
                 <th v-if="quantity" class="d-none d-sm-table-cell">
                   Quantity
                 </th>
@@ -58,6 +61,9 @@
                   <td v-if="should_diplay('Subtype')" class="d-none d-sm-table-cell">
                     {{ card.template.subtype }}
                   </td>
+                  <td v-if="should_diplay('ShortSubtype')" class="d-none d-sm-table-cell" :title="card.template.subtype">
+                    {{ card.template.subtype.match(/\b(\w)/g).join('') }}
+                  </td>
                   <td v-if="quantity">{{ card.quantity }}</td>
                   <td v-if="duster" class="text-right">
                     <button v-if="is_in_duster(card)" :disabled="processing"
@@ -70,7 +76,7 @@
                   <td v-if="isDeck || $isMobile()" @click.stop>
                     <div :id="'player'+card_id_or_uuid(card)" class="float-right"><i class="fas fa-cog fa-2x"></i></div>
                     <b-popover :target="'player'+card_id_or_uuid(card)" triggers="hover" placement="left">
-                      <template v-slot:title>{{ card.template.name }}</template>
+                      <template v-slot:title>{{ card.template.name }} ({{card.template.subtype}})</template>
                       <span v-html="markdown.makeHtml(card.template.description)"></span>
                       <template v-if="canEdit && isDeck">
                         <b-button class="m-1" v-if="isEnabled(card)" variant="danger" @click="$emit('card-disable', card)">Disable</b-button>

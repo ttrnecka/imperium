@@ -12,8 +12,13 @@ const Component = {
   render() {},
   mixins: [Cards],
 };
-describe('Cards Mixin', () => {
-  const wrapper = shallowMount(Component);
+
+let wrapper;
+
+beforeAll(() => {
+  wrapper = shallowMount(Component);
+});
+describe('Cards Mixin', () => {  
   it('has_keyword returns true for Payout', () => {
     expect(wrapper.vm.has_keyword(card_1, 'Payout')).toBe(true);
   });
@@ -70,9 +75,7 @@ describe('Cards Mixin', () => {
   });  
 });
 
-
 describe('Cards Mixin skill_names_for_player_card method', () => {
-  const wrapper = shallowMount(Component);
   it('Return empty array for non Player card', () => {
     expect(wrapper.vm.skill_names_for_player_card({ template: { card_type: 'Training' } })).toEqual([]);
   });
@@ -88,9 +91,7 @@ describe('Cards Mixin skill_names_for_player_card method', () => {
   });
 });
 
-
 describe('Cards Mixin Cyanide api mapper', () => {
-  const wrapper = shallowMount(Component);
   it('return IncreaseStrength for stregths', () => {
     expect(wrapper.vm.skill_to_api_skill('Strength Up!')).toEqual('IncreaseStrength');
     expect(wrapper.vm.skill_to_api_skill('ST+')).toEqual('IncreaseStrength');
@@ -123,10 +124,32 @@ describe('Cards Mixin Cyanide api mapper', () => {
   it('return KickOffReturn for Kick-Off Return', () => {
     expect(wrapper.vm.skill_to_api_skill('Kick-Off Return')).toEqual('KickOffReturn');
   });
+  it('return SmashedCollarBone for Smashed Collarbone', () => {
+    expect(wrapper.vm.injury_to_api_injury('Smashed Collarbone')).toEqual('SmashedCollarBone');
+  });
+  it('return - and spaces removed', () => {
+    expect(wrapper.vm.injury_to_api_injury('Smashed Hip')).toEqual('SmashedHip');
+    expect(wrapper.vm.injury_to_api_injury('Broken-Neck')).toEqual('BrokenNeck');
+  });
+});
+
+describe('Cards Mixin injury_names_for_player_card method', () => {
+  it('return empty array for non Player card', () => {
+    expect(wrapper.vm.injury_names_for_player_card({ template: { card_type: 'Training' } })).toEqual([]);
+  });
+  it('Returns injuries from description for Legendary, Unique, Induced, Cursed or Blessed player', () => {
+    ['Legendary','Unique','Inducement', 'Blessed', 'Cursed'].forEach((r) => {
+      expect(wrapper.vm.injury_names_for_player_card({ template: { rarity: r, card_type: 'Player', description: "Block, Dodge. Broken Neck." } })).toEqual(["BrokenNeck"]);
+    });
+  });
+  it('Returns injuries from name for Common, Rare or Epic player', () => {
+    ['Common','Rare','Epic'].forEach((r) => {
+      expect(wrapper.vm.injury_names_for_player_card({ template: { rarity: r, card_type: 'Player', name: "Broken Neck, Smashed Collarbone Kicker" } })).toEqual(["BrokenNeck", "SmashedCollarBone"]);
+    });
+  });
 });
 
 describe('Cards Mixin cards value', () => {
-  const wrapper = shallowMount(Component);
   it('return 0 for starter cards', () => {
     const cards = [
       { is_starter: true, template: { value: 10 }},
@@ -144,7 +167,6 @@ describe('Cards Mixin cards value', () => {
 });
 
 describe('Cards Mixin injury picker opened', () => {
-  const wrapper = shallowMount(Component);
   it('return true', () => {
     expect(wrapper.vm.injuryPickerOpened({ cas_pick: false})).toBeTruthy();
     expect(wrapper.vm.injuryPickerOpened({})).toBeTruthy();
@@ -156,7 +178,6 @@ describe('Cards Mixin injury picker opened', () => {
 });
 
 describe('Cards Mixin isEnabled', () => {
-  const wrapper = shallowMount(Component);
   const card = {
     id: 1,
   }
@@ -177,7 +198,6 @@ describe('Cards Mixin isEnabled', () => {
 });
 
 describe('Cards Mixin card_id_or_uuid', () => {
-  const wrapper = shallowMount(Component);
   it('return id as string if provided', () => {
     const card = { id: 1, uuid: '32f3' }
     expect(wrapper.vm.card_id_or_uuid(card)).toEqual('1');
@@ -185,5 +205,20 @@ describe('Cards Mixin card_id_or_uuid', () => {
   it('return uuid as string if id not provided', () => {
     const card = { id: undefined, uuid: '32f3' }
     expect(wrapper.vm.card_id_or_uuid(card)).toEqual('32f3');
+  });
+});
+
+describe('Cards Mixin assigned_cards', () => {
+  it('return return cards assigned to card', () => {
+    const card1 = { id: 1, uuid: '32f1', assigned_to_array: {} };
+    const card2 = { id: 2, uuid: '32f2', assigned_to_array: {1: ['1']} };
+    const card3 = { id: 3, uuid: '32f3', assigned_to_array: {} };
+    wrapper.vm.cards = [
+      card1, card2, card3,
+    ]
+    wrapper.vm.deck = {
+      id: 1
+    }
+    expect(wrapper.vm.assigned_cards(card1)).toEqual([card2]);
   });
 });
