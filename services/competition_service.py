@@ -65,6 +65,14 @@ class CompetitionService:
         except SighanideError as e:
             raise CompetitionError(str(e))
 
+    @staticmethod
+    def start_competition(competition: Competition):
+        try:
+            BB2Service.start_competition(competition.comp_id)
+            Notificator('tournament').notify(f"Started in-game room **{competition.name}** in **{competition.league_name}**")
+        except SighanideError as e:
+            raise CompetitionError(str(e))
+
     @classmethod
     def create_imperium_comp(cls, name, competition_type=0, team_count=0):
         CompetitionService.import_competitions()

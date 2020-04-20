@@ -3,9 +3,9 @@ import random
 
 from sqlalchemy import func
 from discord.ext import commands
-from models.data_models import db, Tournament as Tourn, ConclaveRule, TournamentSignups, Transaction
+from models.data_models import db, Tournament as Tourn, ConclaveRule, TournamentSignups, Transaction, Competition
 from misc.helpers import image_merge, represents_int
-from services import TournamentService, CoachService, CompetitionService
+from services import TournamentService, CoachService, CompetitionService, CompetitionError
 from bot.base_cog import ImperiumCog
 from bot.helpers import sign, resign
 
@@ -236,21 +236,23 @@ class Tournament(ImperiumCog):
         list all competitions for tournament
       !comp create ladder
         creates ladder comp for tournament if it does not exists
-      !comp create 1on1 <name>
-        creates 1 on 1 comp with <name> for tournament if it does not exists
+      !comp create 1on1 <competition_name>
+        creates 1 on 1 comp with <competition_name> for tournament if it does not exists
       !comp create knockout <team_number> <name>
         creates knockout comp with <name> for <team_number> teams
       !comp ticket <competition_name>
         sends ticket to the <competition_name> to the coach issuing the command in the tournament room
+      !comp start <competition_name>
+        starts comp with <competition_name> for tournament
       """
       room = ctx.channel.name
       args_len = len(args)
       if args_len == 0 \
-          or (args_len > 0 and args[0] not in ["list","create", "ticket"]) \
+          or (args_len > 0 and args[0] not in ["list","create", "ticket", "start"]) \
           or (args[0] == "create" and \
               (args_len < 2 or args[1] not in ["ladder", "1on1","knockout"] or (args[1] == "1on1" and args_len == 2) \
                   or (args[1] == "knockout" and args_len < 4 and not represents_int(args[2])))) \
-          or (args[0] == "ticket" and args_len < 2):
+          or (args[0] in ["ticket", "start"] and args_len < 2):
           raise ValueError("Incorrect arguments")
           
       tourn = TournamentService.get_tournament_using_room(room)
@@ -299,6 +301,15 @@ class Tournament(ImperiumCog):
         result = CompetitionService.ticket_competition(comp_name, coach, tourn)
         team_name = result['ResponseCreateCompetitionTicket']['TicketInfos']['RowTeam']['Name']
         await ctx.send(f"Ticket sent to **{team_name}** for competition **{comp_name}**")
+        return
+      
+      if args[0] == "start":
+        comp_name = " ".join(args[1:])
+        comp = Competition.query.filter_by(name=comp_name).one_or_none()
+        if not comp:
+            raise CompetitionError(f"Competition **{comp_name}** does not exist")
+        result = CompetitionService.start_competition(comp)
+        await ctx.send(f"Started competition **{comp_name}**")
         return
   
 def setup(bot):

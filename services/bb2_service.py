@@ -39,6 +39,11 @@ class BB2Service:
         return api.delete_competition(competition_id)
 
     @classmethod
+    def start_competition(cls,competition_id):
+        api = cls.api()
+        return api.start_competition(competition_id)
+
+    @classmethod
     def create_competition(cls,**kwargs):
         api = cls.api()
         return api.create_competition(

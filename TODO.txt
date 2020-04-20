@@ -15,7 +15,6 @@ DONE run update_stats
 DONE schedule tournament auto check for every hour
 
 TODO
-Multiskills like Need for Speed cannot go to the same player - COM logic needs to be included
 
 make blessings/curses limited to avialable list + add command to rerol
 Skill override on wilcard cards
@@ -40,6 +39,7 @@ test code
 
 
 DONE
+Multiskills like Need for Speed cannot go to the same player - COM logic needs to be included
 Leaderboard - timing when all coaches are loaded
 JS transpiling/packaging tool
 Collect tournament data from cyanide API and display on page

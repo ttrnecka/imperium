@@ -103,6 +103,12 @@ class Api:
         return r.json()
 
     @needs_token
+    def start_competition(self, competition_id):
+        r = self.http.put(f"{self.api_url}/api/competition/{competition_id}", headers=self._headers())
+        self.check_response(r)
+        return r.json()
+
+    @needs_token
     def get_competition_ticket_info(self, competition_id):
         r = self.http.get(f"{self.api_url}/api/ticket/{competition_id}", headers=self._headers())
         self.check_response(r)
