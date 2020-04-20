@@ -22,8 +22,11 @@ def randomize_packs(decks, packs):
         sorted_player_cards = CardHelper.sort_cards_by_rarity(DeckService.assignable_players(deck))
         player_list = DeckService.eligible_players(deck, card)
         skills = CardService.skill_names_for(card, api_format=False)
+        # variable used to check if the multitarget cards is not given to the same target 
+        local_assigned_cards = []
         for _ in range(CardService.number_of_assignments(card)):
-          local_player_list = [player for player in player_list if CardService.valid_skill_combination(local_skill_map.get(CardService.card_id_or_uuid(player), []), skills+DeckService.skills_for(deck, player, api_format=False))]
+          local_player_list = [player for player in player_list if CardService.valid_skill_combination(local_skill_map.get(CardService.card_id_or_uuid(player), []), skills+DeckService.skills_for(deck, player, api_format=False)) \
+            and player not in local_assigned_cards]
 
           selected = None
 
@@ -33,6 +36,7 @@ def randomize_packs(decks, packs):
             if not uid in local_skill_map:
               local_skill_map[uid] = []  
             local_skill_map[uid].extend(skills)
+            local_assigned_cards.append(selected)
 
           idx = None
           if selected:
