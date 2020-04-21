@@ -15,7 +15,7 @@ DONE run update_stats
 DONE schedule tournament auto check for every hour
 
 TODO
-
+negative valued cards should count as positive for the purpose of the migration pack
 make blessings/curses limited to avialable list + add command to rerol
 Skill override on wilcard cards
 disable skills on players

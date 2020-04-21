@@ -50,7 +50,8 @@ class CardHelper:
             'description': "",
             'card_type': "Reaction",
             'rarity': "Common",
-            'value': 0
+            'value': 0,
+            'race': "All",
         }
         return template
 
