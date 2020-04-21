@@ -229,7 +229,7 @@ export default {
       return this.pack_cards.length;
     },
     pack_value() {
-      return this.pack_cards.reduce((total, e) => total + e.template.value, 0);
+      return this.pack_cards.reduce((total, e) => total + Math.abs(e.template.value), 0);
     },
     to_migrate() {
       return this.pack_cards.concat(this.uniques).map((c) => c.id);
