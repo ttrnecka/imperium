@@ -23,7 +23,7 @@ class ConclaveService:
         """Returns all ConclaveRule that would trigger based on the deck"""
         triggered = Counter()
         for rule in [*ConclaveRule.consecrations(), *ConclaveRule.corruptions()]:
-          level = cls.check_trigger(deck,name=rule.name)
+          level = cls.check_trigger(deck,rule=rule)
           if level:
             triggered[rule] = level
         return triggered
@@ -62,23 +62,13 @@ class ConclaveService:
         False
 
     @classmethod
-    def check_trigger(cls, deck, name=""):
+    def check_trigger(cls, deck, rule: ConclaveRule):
         """Returns 0 if it does not trigger, otherwise returns 1 2 or 3 based on the trigger level
-           Returns None if rule does not exists
         """
-        
-        rule = cls.get_conclave_rule(name)
-        if not rule or cls.ignore(deck,rule):
-            return None
-
         checker = rule.klass().lower()
         value = getattr(cls,checker)(deck)
 
         return trigger_level(rule,value)
-
-    @classmethod
-    def get_conclave_rule(cls,name):
-        return ConclaveRule.query.filter_by(name=name).one_or_none()
 
     #conclave checkers
     #TESTED

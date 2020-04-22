@@ -467,7 +467,7 @@ class TournamentService:
         for signup in tournament.tournament_signups:
             #conclave
             for rule in rules:
-                rule_level = ConclaveService.check_trigger(signup.deck, rule.name)
+                rule_level = ConclaveService.check_trigger(signup.deck, rule)
                 if rule_level > 0:
                     if rule.type == "Consecration":
                         word = "blessing"
