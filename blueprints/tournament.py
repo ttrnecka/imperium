@@ -6,6 +6,7 @@ from models.data_models import db, Tournament, Coach, TransactionError
 from models.marsh_models import tournaments_schema, tournament_schema
 from misc.decorators import authenticated, webadmin, registered, superadmin
 from misc.helpers import InvalidUsage, current_coach
+from misc.stats import StatsHandler
 import bb2
 
 from services import TournamentService, RegistrationError, TransactionService, TournamentError
@@ -35,6 +36,7 @@ def get_tournament_leaderboard(tournament_id):
     """returns tournamnet as json"""
     tourn = Tournament.query.get(tournament_id)
     matches = []
+    st = StatsHandler()
     for comp in tourn.competitions:
       folder = st.competition_folder(comp.name)
       if os.path.isdir(folder):
