@@ -3,9 +3,6 @@ import os, sys, getopt
 import json
 import logging
 from logging.handlers import RotatingFileHandler
-import datetime as DT
-
-from sqlalchemy.orm.attributes import flag_modified
 
 import bb2
 from web import db, app
@@ -22,15 +19,18 @@ ROOT = os.path.dirname(__file__)
 def main(argv):
     """main()"""
     try:
-        opts, args = getopt.getopt(argv,"r")
+        opts, args = getopt.getopt(argv,"rs:")
     except getopt.GetoptError:
-        print('update_stats.py -r')
+        print('recalculate_old_stats.py -r -s <season>')
         sys.exit(2)
     refresh = False
     for opt, arg in opts:
         if opt == '-r':
             refresh = True
             print("Recalculating statistics from the scratch")
+        if opt == '-s':
+            season = arg
+            print(f"Using data for season {season}")
         
     logger = logging.getLogger('collector')
     logger.propagate = False
@@ -41,42 +41,12 @@ def main(argv):
         encoding='utf-8', mode='a')
     handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
     logger.addHandler(handler)
-    st = StatsHandler()
+
+    st = StatsHandler(season)
+    stats = st.get_stats(refresh)
     matches_folder = st.matches_folder()
 
-    start_date = DT.date.today() - DT.timedelta(days=1)
-
-    agent = bb2.api.Agent(app.config['BB2_API_KEY'])
-
-    stats = st.get_stats(refresh)
-
-    logger.info("Getting matches since %s", start_date)
-
-    try:
-        data = agent.matches(start=start_date)
-    except Exception as exc:
-        logger.error(exc)
-        raise exc
-
-    logger.info("Matches colleted")
-
     st.set_folders()
-
-    for match in data['matches']:
-        filename = os.path.join(matches_folder, f"{match['uuid']}.json")
-        if os.path.isfile(filename):
-            logger.info("File %s exists", filename)
-            continue
-        logger.info("Collecting match %s", match['uuid'])
-        try:
-            detailed = agent.match(id=match['uuid'])
-            file = open(filename, "a")
-            file.write(json.dumps(detailed))
-            file.close()
-        except Exception as exc:
-            logger.error(exc)
-            raise exc
-        logger.info("Match %s saved", match['uuid'])
 
     # stats rebuilding
     matchfiles = [f for f in os.listdir(matches_folder)
@@ -346,117 +316,6 @@ def main(argv):
         logger.error(exp)
         raise exp
     logger.info("Stats recalculated")
-
-    logger.info("Achievement processing")
-    # update achievements
-    for coach in Coach.query.all():
-        if not coach.bb2_name:
-            continue
-        coach_stats = stats['coaches'].get(coach.bb2_name, None)
-        if not coach_stats:
-            continue
-        coach.achievements['match']['winwithall']['best'] = 0
-        # team achievements
-        for team_id, data in coach_stats['teams'].items():
-            team_id = str(team_id)
-            # win for all achievement
-            if data['wins'] > 0:
-                coach.achievements['match']['winwithall']['best'] += 1
-
-            for key, ach in coach.achievements['team'][team_id]['played'].items():
-                ach['best'] = data['matches']
-            for key, ach in coach.achievements['team'][team_id]['wins'].items():
-                ach['best'] = data['wins']
-            for key, ach in coach.achievements['team'][team_id]['touchdowns'].items():
-                ach['best'] = data['inflictedtouchdowns']
-            for key, ach in coach.achievements['team'][team_id]['casualties'].items():
-                ach['best'] = data['inflictedcasualties']
-            for key, ach in coach.achievements['team'][team_id]['kills'].items():
-                ach['best'] = data['inflicteddead']
-            for key, ach in coach.achievements['team'][team_id]['passes'].items():
-                ach['best'] = data['inflictedpasses']
-
-        # match achievements
-        coach.achievements['match']['passingtotal1']['best'] = coach_stats['inflictedmeterspassing']
-        coach.achievements['match']['passingtotal2']['best'] = coach_stats['inflictedmeterspassing']
-
-        coach.achievements['match']['runningtotal1']['best'] = coach_stats['inflictedmetersrunning']
-        coach.achievements['match']['runningtotal2']['best'] = coach_stats['inflictedmetersrunning']
-
-        coach.achievements['match']['surfstotal1']['best'] = coach_stats['inflictedpushouts']
-        coach.achievements['match']['surfstotal2']['best'] = coach_stats['inflictedpushouts']
-
-        coach.achievements['match']['blocks1game1']['best'] = coach_stats['max']['inflictedtackles']
-        coach.achievements['match']['blocks1game2']['best'] = coach_stats['max']['inflictedtackles']
-
-        coach.achievements['match']['breaks1game1']['best'] = coach_stats['max']['inflictedinjuries']
-        coach.achievements['match']['breaks1game2']['best'] = coach_stats['max']['inflictedinjuries']
-
-        coach.achievements['match']['cas1game1']['best'] = coach_stats['max']['inflictedcasualties']
-        coach.achievements['match']['cas1game2']['best'] = coach_stats['max']['inflictedcasualties']
-
-        coach.achievements['match']['score1game1']['best'] = coach_stats['max']['inflictedtouchdowns']
-        coach.achievements['match']['score1game2']['best'] = coach_stats['max']['inflictedtouchdowns']
-
-        coach.achievements['match']['int1game1']['best'] = coach_stats['max']['inflictedinterceptions']
-
-        coach.achievements['match']['sufferandwin1']['best'] = coach_stats['max']['max_cas_win']
-        coach.achievements['match']['sufferandwin2']['best'] = coach_stats['max']['max_cas_win']
-
-        coach.achievements['match']['win500down']['best'] = coach_stats['max']['max_tvdiff_win']
-
-        flag_modified(coach, "achievements")
-        db.session.commit()
-
-        # update achievements
-        coach_mention = f'<@{coach.disc_id}>'
-        for key, achievement in coach.achievements['match'].items():
-            if achievement['target'] <= achievement['best'] and not achievement['completed']:
-                achievement_bank_text = f"{achievement['award_text']} awarded - {achievement['desc']}"
-                Notificator("achievement").notify(
-                    f"{coach.short_name()}: {achievement['desc']} - completed"
-                )
-                call, arg = achievement['award'].split(",")
-                res, error = getattr(coach, call)(arg, achievement['desc'])
-                if res:
-                    logger.info("%s: %s awarded", coach_mention, {achievement['desc']})
-                    Notificator("bank").notify(
-                        f"{coach_mention}: {achievement_bank_text}"
-                    )
-                    coach.achievements['match'][key]['completed'] = True
-                    flag_modified(coach, "achievements")
-                else:
-                    logger.error(error)
-                    Notificator("bank").notify(
-                        f"{coach_mention}: {achievement['award_text']} " +
-                        f"could not be awarded - {error}"
-                    )
-        for key1, stat in coach.achievements['team'].items():
-            for key2, item in stat.items():
-                for key3, achievement in item.items():
-                    if (achievement['target'] <= achievement['best'] and
-                            not achievement['completed']):
-                        achievement_bank_text = f"{achievement['award_text']} awarded - {achievement['desc']}"
-                        Notificator("achievement").notify(
-                            f"{coach.short_name()}: {achievement['desc']} - completed"
-                        )
-                        call, arg = achievement['award'].split(",")
-                        res, error = getattr(coach, call)(arg, achievement['desc'])
-                        if res:
-                            logger.info("%s: %s awarded", coach_mention, {achievement['desc']})
-                            coach.achievements['team'][key1][key2][key3]['completed'] = True
-                            flag_modified(coach, "achievements")
-                            Notificator("bank").notify(
-                                f"{coach_mention}: {achievement_bank_text}"
-                            )
-                        else:
-                            logger.error(error)
-                            Notificator("bank").notify(
-                                f"{coach_mention}: {achievement['award_text']} could " +
-                                f"not be awarded - {error}"
-                            )
-        db.session.commit()
-    logger.info("Achievement processed")
 
 if __name__ == "__main__":
     main(sys.argv[1:])

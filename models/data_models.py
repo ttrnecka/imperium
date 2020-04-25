@@ -12,6 +12,8 @@ from sqlalchemy.types import TypeDecorator
 from sqlalchemy.sql.expression import func
 from sqlalchemy.orm.attributes import flag_modified
 from misc.base_statline import base_statline, base_skills
+from misc.stats import StatsHandler
+from config.config import SEASON
 
 
 ROOT = os.path.dirname(__file__)
@@ -262,25 +264,17 @@ class Coach(Base):
                 cash += -1*tr.price
         return cash
 
-    def stats(self):
+    def stats(self,season=SEASON):
         app = db.get_app()
-        store = os.path.join(ROOT, '..', 'data', f"season{app.config['SEASON']}")
-        stats_file = os.path.join(store,"stats.json")
-        if os.path.isfile(stats_file):
-            f = open(stats_file, "r")
-            data = json.loads(f.read())
-            if self.bb2_name:
-                stats = data['coaches'].get(self.bb2_name, {})
-                return stats
+        stats = StatsHandler(season)
+        stats_data = stats.get_stats()
+        if self.bb2_name:
+          coach_stats = stats_data['coaches'].get(self.bb2_name, {})
+          return coach_stats
         return {}
 
     def active_cards(self):
         return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["SEASON"]).all()
-        #cards = []
-        #for card in self.cards:
-        #    if card.pack.season==db.get_app().config['SEASON']:
-        #        cards.append(card)
-        #return cards
 
     def inactive_cards(self):
         return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["PREVIOUS_SEASON"]).all()

@@ -10,7 +10,6 @@ import bb2
 
 from services import TournamentService, RegistrationError, TransactionService, TournamentError
 from services import Notificator
-from services import stats as st
 
 tournament = Blueprint('tournaments', __name__)
 

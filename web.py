@@ -15,7 +15,7 @@ from models.data_models import Coach, Tournament
 from models.marsh_models import ma, coach_schema
 from services import Notificator
 from services import BB2Service, WebHook
-from services import stats
+from misc.stats import StatsHandler
 from misc.helpers import InvalidUsage, current_user
 from misc.decorators import authenticated
 from misc.admin import TournamentView, CoachView
@@ -93,7 +93,7 @@ def me():
 @app.route("/bb2_names")
 def bb2_names():
     """return  bb2_names"""
-    bb2_names = sorted(list(stats.get_stats()['coaches'].keys()))
+    bb2_names = sorted(list(StatsHandler().get_stats()['coaches'].keys()))
     return jsonify(bb2_names)
 
 # BB teams
