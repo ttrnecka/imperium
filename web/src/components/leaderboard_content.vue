@@ -1,5 +1,8 @@
 <template>
   <div class="row">
+    <div class="col-12">
+      <b-form-select v-model="season" :options="seasons" size="lg" @change="getLeaderboard"></b-form-select>
+    </div>
     <leaderboard-table title="TOP 10 Collectors" :coaches="collectors_sorted" attr="collection_value" :coach="leaderboard_coach" ></leaderboard-table>
     <leaderboard-table title="TOP 10 Earners" :coaches="earners_sorted" attr="earned" :coach="leaderboard_coach" ></leaderboard-table>
     <leaderboard-table title="TOP 10 Grinders" :coaches="grinders_sorted" attr="matches" :coach="stats_coach" ></leaderboard-table>
@@ -16,7 +19,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters, mapState } from 'vuex';
 import leaderboardTable from '@/components/leaderboard_table.vue';
 
 export default {
@@ -37,7 +40,7 @@ export default {
   },
   methods: {
     getLeaderboard() {
-      const path = '/coaches/leaderboard';
+      const path = `/coaches/leaderboard?season=${this.season}`;
       this.axios.get(path)
         .then((res) => {
           this.leaderboard.coaches = res.data.coaches;
@@ -109,8 +112,19 @@ export default {
       return this.leaderboard.stats.slice().sort((a, b) => b.inflictedpushouts
         - a.inflictedpushouts);
     },
+    season: {
+      get() {
+        return this.$store.state.season;
+      },
+      set(value) {
+        this.$store.commit('updateSeason', value);
+      },
+    },
     ...mapGetters([
       'is_loggedcoach',
+    ]),
+    ...mapState([
+      'seasons',
     ]),
   },
   watch: {

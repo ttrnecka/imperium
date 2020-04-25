@@ -236,6 +236,7 @@
             <div class="tab-pane fade" id="coach_stats"
               role="tabpanel" aria-labelledby="coach-stats">
               <div class="col-auto my-1">
+                <b-form-select v-model="season" :options="seasons" size="lg" @change="getCoachStats"></b-form-select>
                 <div class="tab-pane fade show active"
                   id="coachStatsDisplay" role="tabpanel"
                   aria-labelledby="coachStats">
@@ -549,6 +550,20 @@ export default {
           console.error(error);
         });
     },
+    getCoachStats() {
+      const { id } = this.selectedCoach;
+      const path = `/coaches/${id}/stats?season=${this.season}`;
+      this.axios.get(path)
+        .then((res) => {
+          const idx = this.coaches.findIndex((x) => x.id === parseInt(id, 10));
+          // this.$set(this.coaches, idx, res.data);
+          this.coaches[idx].stats = res.data;
+          // this.selectedCoach = this.coaches[idx];
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    },
     debounceCoachSearch(val) {
       const that = this;
       if (this.search_timeout) clearTimeout(this.search_timeout);
@@ -606,8 +621,16 @@ export default {
       return this.orderedCoaches.filter((coach) => coach.name
         .toLowerCase().includes(this.coach_filter.toLowerCase()));
     },
+    season: {
+      get() {
+        return this.$store.state.season;
+      },
+      set(value) {
+        this.$store.commit('updateSeason', value);
+      },
+    },
     ...mapState([
-      'user', 'coaches', 'tournaments', 'bb2Names', 'initial_load',
+      'user', 'coaches', 'tournaments', 'bb2Names', 'initial_load', 'seasons',
     ]),
     ...mapGetters([
       'loggedCoach', 'is_webadmin', 'is_loggedcoach', 'is_duster', 'is_duster_full', 'is_duster_open', 'duster_type', 'is_owner',

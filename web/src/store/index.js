@@ -10,6 +10,13 @@ export default new Vuex.Store({
     tournaments: [],
     bb2Names: [],
     initial_load: false,
+    season: 3,
+    seasons: [
+      { value: 3, text: 'SEASON 3' },
+      { value: 2, text: 'SEASON 2' },
+      { value: 1, text: 'SEASON 1' },
+      { value: 'BETA', text: 'BETA' },
+    ],
   },
   mutations: {
     storeTournaments(state, tournaments) {
@@ -30,6 +37,9 @@ export default new Vuex.Store({
     updateTournament(state, tourn) {
       const idx = state.tournaments.findIndex((x) => x.id === parseInt(tourn.id, 10));
       Vue.set(state.tournaments, idx, tourn);
+    },
+    updateSeason(state, season) {
+      state.season = season;
     },
   },
   actions: {
