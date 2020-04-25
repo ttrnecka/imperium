@@ -1,6 +1,6 @@
 <template>
   <div class="row">
-    <div class="col-12">
+    <div class="col-12 sticky-top select">
       <b-form-select v-model="season" :options="seasons" size="lg" @change="getLeaderboard"></b-form-select>
     </div>
     <leaderboard-table title="TOP 10 Collectors" :coaches="collectors_sorted" attr="collection_value" :coach="leaderboard_coach" ></leaderboard-table>
