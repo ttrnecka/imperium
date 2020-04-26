@@ -2,8 +2,10 @@
 import os
 from datetime import timedelta
 from copy import deepcopy
+from functools import wraps
 
-from flask import Flask, render_template, jsonify, session
+from flask import Flask, render_template, session, request, jsonify
+from flask_caching import Cache
 from blueprints import auth, coach, tournament, duster, deck, cracker
 from flask_fontawesome import FontAwesome
 from flask_migrate import Migrate
@@ -19,6 +21,7 @@ from misc.stats import StatsHandler
 from misc.helpers import InvalidUsage, current_user
 from misc.decorators import authenticated
 from misc.admin import TournamentView, CoachView
+from misc.helpers2 import etagjsonify
 import bb2
 
 os.environ["YOURAPPLICATION_SETTINGS"] = "config/config.py"
@@ -57,6 +60,23 @@ def create_app():
 
 app = create_app()
 migrate = Migrate(app, db)
+cache = Cache(app,config={'CACHE_TYPE': 'simple'})
+
+def cache_header(max_age, **ckwargs):
+    def decorator(view):
+        f = cache.cached(max_age, **ckwargs)(view)
+
+        @wraps(f)
+        def wrapper(*args, **wkwargs):
+            response = f(*args, **wkwargs)
+            response.cache_control.max_age = max_age
+            response.cache_control.public = True
+            extra = timedelta(seconds=max_age)
+            response.expires = response.last_modified + extra
+            return response.make_conditional(request)
+        return wrapper
+
+    return decorator
 
 @app.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):
@@ -91,15 +111,17 @@ def me():
     return jsonify(user=cuser)
 
 @app.route("/bb2_names")
+@cache_header(300)
 def bb2_names():
     """return  bb2_names"""
     bb2_names = sorted(list(StatsHandler().get_stats()['coaches'].keys()))
-    return jsonify(bb2_names)
-
+    return etagjsonify(names=bb2_names)
+    
 @app.route("/seasons")
+@cache_header(300)
 def seasons():
     """return  seasons"""
-    return jsonify(app.config['SEASONS'])
+    return etagjsonify(seasons=app.config['SEASONS'])
 
 # BB teams
 @app.route("/teams/<teamname>", methods=["GET"])

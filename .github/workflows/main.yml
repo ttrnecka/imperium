@@ -45,6 +45,14 @@ jobs:
         port: ${{ secrets.PORT }}
         source: ".,!web,!tests,!.git,!.github,!.gitignore"
         target: "imperium"
+    - name: Dependency update
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: python3.8 -m pip install -r /home/trnecka/imperium/requirements.txt --user
     - name: Restarting web
       uses: appleboy/ssh-action@master
       with:

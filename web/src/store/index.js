@@ -68,14 +68,14 @@ export default new Vuex.Store({
       const path = '/bb2_names';
       return Vue.axios.get(path)
         .then((res) => {
-          commit('storeBBNames', res.data);
+          commit('storeBBNames', res.data.names);
         });
     },
     getSeasons({ commit }) {
       const path = '/seasons';
       return Vue.axios.get(path)
         .then((res) => {
-          commit('storeSeasons', res.data);
+          commit('storeSeasons', res.data.seasons);
         });
     },
     getMe({ commit }) {

@@ -13,3 +13,4 @@ flask-fontawesome
 flask-admin
 Pillow
 simplejson
+Flask-Caching
