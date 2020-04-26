@@ -8,17 +8,17 @@ from misc.helpers import InvalidUsage, current_user, owning_coach, CardHelper
 
 from services import CoachService
 from misc.stats import StatsHandler
-from misc.helpers2 import current_season
-
+from misc.helpers2 import current_season, etagjsonify, cache_header
 
 coach = Blueprint('coaches', __name__)
 
 @coach.route('', methods=["GET"])
+@cache_header(300)
 def get_coaches():
     """returns all coaches as json"""
     all_coaches = Coach.query.options(raiseload(Coach.cards), raiseload(Coach.packs)).all()
     result = coaches_schema.dump(all_coaches)
-    return jsonify(result.data)
+    return etagjsonify(result.data)
 
 
 @authenticated
@@ -36,6 +36,7 @@ def new_coach():
     return jsonify(result.data)
 
 @coach.route("/leaderboard", methods=["GET"])
+@cache_header(300)
 def get_coaches_leaderboard():
     """return leaderboard json"""
     season = request.args.get("season", current_season())
@@ -43,9 +44,10 @@ def get_coaches_leaderboard():
     result = {}
     result['coaches'] = stats.get_stats()['coaches_extra']
     result['coach_stats'] = list(stats.get_stats()['coaches'].values())
-    return jsonify(result)
+    return etagjsonify(result)
 
 @coach.route("/<int:coach_id>", methods=["GET"])
+@cache_header(300)
 def get_coach(coach_id):
     """get coach with detailed info"""
     coach = Coach.query.options(selectinload(Coach.packs)).get(coach_id)
@@ -54,16 +56,17 @@ def get_coach(coach_id):
     result = coach_schema.dump(coach)
     if not owning_coach(coach):
         CardHelper.censor_cards(result.data['cards'])
-    return jsonify(result.data)
+    return etagjsonify(result.data)
 
 @coach.route("/<int:coach_id>/stats", methods=["GET"])
+@cache_header(300)
 def get_coach_stats(coach_id):
     """get coach with detailed info"""
     coach = Coach.query.options(selectinload(Coach.packs)).get(coach_id)
     season = request.args.get("season", current_season())
     if coach is None:
         abort(404)
-    return jsonify(coach.stats(season))
+    return etagjsonify(coach.stats(season))
 
 @coach.route("/<int:coach_id>/activate", methods=["PUT"])
 @authenticated

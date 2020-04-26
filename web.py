@@ -2,10 +2,8 @@
 import os
 from datetime import timedelta
 from copy import deepcopy
-from functools import wraps
 
 from flask import Flask, render_template, session, request, jsonify
-from flask_caching import Cache
 from blueprints import auth, coach, tournament, duster, deck, cracker
 from flask_fontawesome import FontAwesome
 from flask_migrate import Migrate
@@ -21,7 +19,7 @@ from misc.stats import StatsHandler
 from misc.helpers import InvalidUsage, current_user
 from misc.decorators import authenticated
 from misc.admin import TournamentView, CoachView
-from misc.helpers2 import etagjsonify
+from misc.helpers2 import etagjsonify, cache, cache_header
 import bb2
 
 os.environ["YOURAPPLICATION_SETTINGS"] = "config/config.py"
@@ -60,23 +58,7 @@ def create_app():
 
 app = create_app()
 migrate = Migrate(app, db)
-cache = Cache(app,config={'CACHE_TYPE': 'simple'})
-
-def cache_header(max_age, **ckwargs):
-    def decorator(view):
-        f = cache.cached(max_age, **ckwargs)(view)
-
-        @wraps(f)
-        def wrapper(*args, **wkwargs):
-            response = f(*args, **wkwargs)
-            response.cache_control.max_age = max_age
-            response.cache_control.public = True
-            extra = timedelta(seconds=max_age)
-            response.expires = response.last_modified + extra
-            return response.make_conditional(request)
-        return wrapper
-
-    return decorator
+cache.init_app(app)
 
 @app.errorhandler(InvalidUsage)
 def handle_invalid_usage(error):
@@ -97,6 +79,7 @@ def index():
     return render_template("index.html")
 
 @app.route('/me')
+@cache_header(300)
 def me():
     """returns user from session"""
     user = session.get('discord_user', {'code':0})
@@ -108,7 +91,7 @@ def me():
         coach_data = {}
     cuser = deepcopy(user)
     cuser['coach'] = coach_data
-    return jsonify(user=cuser)
+    return etagjsonify(user=cuser)
 
 @app.route("/bb2_names")
 @cache_header(300)
