@@ -12,7 +12,7 @@ for tournament in tournaments:
         if not tournament.can_auto_start():
             manual.append(tournament)
 
-c = Coach.find_all_by_name(app.config['TOURNAMENT_MASTER_ADMIN'])
+c = Coach.find_all_by_name('zord')
 if manual:
     msg=f"{c[0].mention()}\nFull tournaments:\n"
     for t in manual:
