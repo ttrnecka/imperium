@@ -41,7 +41,7 @@ export default {
       this.menu = value;
     },
     getInitialData() {
-      this.axios.all([this.getMe(), this.getCoaches(), this.getTournaments(), this.getBBNames()])
+      this.axios.all([this.getMe(), this.getCoaches(), this.getTournaments(), this.getBBNames(), this.getSeasons()])
         .then(this.axios.spread(() => {
           this.$store.commit('initially_loaded');
         }))
@@ -55,7 +55,7 @@ export default {
       this.getCoaches();
     },
     ...mapActions([
-      'getCoaches', 'getTournaments', 'getBBNames', 'getMe',
+      'getCoaches', 'getTournaments', 'getBBNames', 'getMe', 'getSeasons',
     ]),
   },
   computed: {

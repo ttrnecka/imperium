@@ -8,7 +8,7 @@ from misc.helpers import InvalidUsage, current_user, owning_coach, CardHelper
 
 from services import CoachService
 from misc.stats import StatsHandler
-from config.config import SEASON
+from misc.helpers2 import current_season
 
 
 coach = Blueprint('coaches', __name__)
@@ -38,7 +38,7 @@ def new_coach():
 @coach.route("/leaderboard", methods=["GET"])
 def get_coaches_leaderboard():
     """return leaderboard json"""
-    season = request.args.get("season", SEASON)
+    season = request.args.get("season", current_season())
     stats = StatsHandler(season)
     result = {}
     result['coaches'] = stats.get_stats()['coaches_extra']
@@ -60,7 +60,7 @@ def get_coach(coach_id):
 def get_coach_stats(coach_id):
     """get coach with detailed info"""
     coach = Coach.query.options(selectinload(Coach.packs)).get(coach_id)
-    season = request.args.get("season", SEASON)
+    season = request.args.get("season", current_season())
     if coach is None:
         abort(404)
     return jsonify(coach.stats(season))

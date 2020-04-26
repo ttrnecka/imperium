@@ -13,7 +13,7 @@ from sqlalchemy.sql.expression import func
 from sqlalchemy.orm.attributes import flag_modified
 from misc.base_statline import base_statline, base_skills
 from misc.stats import StatsHandler
-from config.config import SEASON
+from misc.helpers2 import current_season, past_season
 
 
 ROOT = os.path.dirname(__file__)
@@ -206,7 +206,7 @@ class Pack(Base):
 
     def __init__(self,**kwargs):
         super(Pack, self).__init__(**kwargs)
-        self.season = db.get_app().config["SEASON"]
+        self.season = current_season()
 
 class Coach(Base):  
     __tablename__ = 'coaches'
@@ -260,11 +260,11 @@ class Coach(Base):
     def earned(self):
         cash = 0
         for tr in self.account.transactions:
-            if tr.price<0 and tr.season==db.get_app().config['SEASON']:
+            if tr.price<0 and tr.season==current_season():
                 cash += -1*tr.price
         return cash
 
-    def stats(self,season=SEASON):
+    def stats(self,season=current_season()):
         app = db.get_app()
         stats = StatsHandler(season)
         stats_data = stats.get_stats()
@@ -274,10 +274,10 @@ class Coach(Base):
         return {}
 
     def active_cards(self):
-        return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["SEASON"]).all()
+        return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == current_season()).all()
 
     def inactive_cards(self):
-        return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == db.get_app().config["PREVIOUS_SEASON"]).all()
+        return Card.query.join(Card.pack).filter(Pack.coach_id == self.id).filter(Pack.season == past_season()).all()
 
     def make_transaction(self,transaction, commit=True):
         # do nothing
@@ -385,7 +385,7 @@ class Transaction(Base):
 
     def __init__(self,**kwargs):
         super(Transaction, self).__init__(**kwargs)
-        self.season = db.get_app().config["SEASON"]
+        self.season = current_season()
 
 deck_card_table = db.Table('deck_cards', Base.metadata,
     db.Column('deck_id', db.Integer, db.ForeignKey('decks.id')),

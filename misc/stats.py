@@ -2,19 +2,15 @@
 
 import os
 import json
-
-from models.base_model import db
+from misc.helpers2 import current_season
 
 ROOT = os.path.dirname(__file__)
-
-def cfg():
-  return db.get_app().config
 
 class StatsHandler:
   """Handle stats for given season"""
   def __init__(self, season=None):
     if not season:
-      season = cfg()['SEASON']
+      season = current_season()
     self.__season = season
 
   def stat_folder(self):

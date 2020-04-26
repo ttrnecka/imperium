@@ -12,10 +12,6 @@ export default new Vuex.Store({
     initial_load: false,
     season: 3,
     seasons: [
-      { value: 3, text: 'SEASON 3' },
-      { value: 2, text: 'SEASON 2' },
-      { value: 1, text: 'SEASON 1' },
-      { value: 'BETA', text: 'BETA' },
     ],
   },
   mutations: {
@@ -30,6 +26,10 @@ export default new Vuex.Store({
     },
     storeBBNames(state, bb2Names) {
       state.bb2Names = bb2Names;
+    },
+    storeSeasons(state, seasons) {
+      state.seasons = seasons.reverse().map((s) => ({ value: s, text: `SEASON ${s}` }));
+      [state.season] = seasons;
     },
     initially_loaded(state) {
       state.initial_load = true;
@@ -69,6 +69,13 @@ export default new Vuex.Store({
       return Vue.axios.get(path)
         .then((res) => {
           commit('storeBBNames', res.data);
+        });
+    },
+    getSeasons({ commit }) {
+      const path = '/seasons';
+      return Vue.axios.get(path)
+        .then((res) => {
+          commit('storeSeasons', res.data);
         });
     },
     getMe({ commit }) {

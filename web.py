@@ -96,6 +96,11 @@ def bb2_names():
     bb2_names = sorted(list(StatsHandler().get_stats()['coaches'].keys()))
     return jsonify(bb2_names)
 
+@app.route("/seasons")
+def seasons():
+    """return  seasons"""
+    return jsonify(app.config['SEASONS'])
+
 # BB teams
 @app.route("/teams/<teamname>", methods=["GET"])
 @authenticated

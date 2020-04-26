@@ -2,9 +2,9 @@
 import os
 import discord
 from discord.ext import commands
-from config.config import SEASON
 from bot.helpers import logger
 from misc.helpers import PackHelper
+from misc.helpers2 import current_season
 from web import app
 app.app_context().push()
 
@@ -40,7 +40,7 @@ async def on_ready():
     for emoji in bot.emojis:
         PackHelper.emojis[emoji.name] = str(emoji)
 
-    act = discord.Game(f"Imperium Season {SEASON}")
+    act = discord.Game(f"Imperium Season {current_season()}")
     await bot.change_presence(status=discord.Status.online, activity=act)
 
 cogs_dir = os.path.join(ROOT, 'bot/cogs')
