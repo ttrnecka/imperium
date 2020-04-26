@@ -79,7 +79,6 @@ def index():
     return render_template("index.html")
 
 @app.route('/me')
-@cache_header(300)
 def me():
     """returns user from session"""
     user = session.get('discord_user', {'code':0})
@@ -91,7 +90,7 @@ def me():
         coach_data = {}
     cuser = deepcopy(user)
     cuser['coach'] = coach_data
-    return etagjsonify(user=cuser)
+    return jsonify(user=cuser)
 
 @app.route("/bb2_names")
 @cache_header(300)
