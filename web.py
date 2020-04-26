@@ -93,14 +93,14 @@ def me():
     return jsonify(user=cuser)
 
 @app.route("/bb2_names")
-@cache_header(300)
+@cache_header(3600)
 def bb2_names():
     """return  bb2_names"""
     bb2_names = sorted(list(StatsHandler().get_stats()['coaches'].keys()))
     return etagjsonify(names=bb2_names)
     
 @app.route("/seasons")
-@cache_header(300)
+@cache_header(3600)
 def seasons():
     """return  seasons"""
     return etagjsonify(seasons=app.config['SEASONS'])

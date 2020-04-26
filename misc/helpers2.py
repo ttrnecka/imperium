@@ -28,9 +28,9 @@ def make_cache_key(*args, **kwargs):
 
 def cache_header(max_age, **ckwargs):
     def decorator(view):
-        #ckwargs['key_prefix'] = make_cache_key
-        #f = cache.cached(max_age, **ckwargs)(view)
-        f = view
+        ckwargs['key_prefix'] = make_cache_key
+        f = cache.cached(max_age, **ckwargs)(view)
+        #f = view
         @wraps(f)
         def wrapper(*args, **wkwargs):
             response = f(*args, **wkwargs)

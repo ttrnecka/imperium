@@ -3,9 +3,7 @@
     <imperium-navbar @menu-change="setMenu" :default="menu"></imperium-navbar>
     <div class="container-fluid pt-2" v-cloak>
       <flash-message transitionIn="animated swing" class="flashpool"></flash-message>
-      <coach-content v-if="menu=='Coaches'"></coach-content>
-      <tournament-content v-if="menu=='Tournaments'"></tournament-content>
-      <leaderboard-content v-if="menu=='Leaderboard'"></leaderboard-content>
+      <component v-bind:is="currentTabComponent" class="tab"></component>
       <signup-modal ref="signupModal"></signup-modal>
     </div><!-- /.container -->
   </div>
@@ -59,6 +57,18 @@ export default {
     ]),
   },
   computed: {
+    currentTabComponent() {
+      if (this.menu === 'Coaches') {
+        return 'coach-content';
+      }
+      if (this.menu === 'Tournaments') {
+        return 'tournament-content';
+      }
+      if (this.menu === 'Leaderboard') {
+        return 'leaderboard-content';
+      }
+      return 'coach-content';
+    },
     is_active() {
       if (this.user.id && this.loggedCoach && !this.loggedCoach.deleted) {
         return true;

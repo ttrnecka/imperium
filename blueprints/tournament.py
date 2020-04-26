@@ -11,12 +11,11 @@ import bb2
 
 from services import TournamentService, RegistrationError, TransactionService, TournamentError
 from services import Notificator
-from misc.helpers2 import etagjsonify, cache_header
+from misc.helpers2 import etagjsonify
 
 tournament = Blueprint('tournaments', __name__)
 
 @tournament.route("", methods=["GET"])
-@cache_header(300)
 def get_tournaments():
     """returns all tournaments as json"""
     all_tournaments = Tournament.query.options(

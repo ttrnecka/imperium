@@ -47,7 +47,6 @@ def get_coaches_leaderboard():
     return etagjsonify(result)
 
 @coach.route("/<int:coach_id>", methods=["GET"])
-@cache_header(300)
 def get_coach(coach_id):
     """get coach with detailed info"""
     coach = Coach.query.options(selectinload(Coach.packs)).get(coach_id)
