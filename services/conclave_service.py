@@ -23,9 +23,10 @@ class ConclaveService:
         """Returns all ConclaveRule that would trigger based on the deck"""
         triggered = Counter()
         for rule in [*ConclaveRule.consecrations(), *ConclaveRule.corruptions()]:
-          level = cls.check_trigger(deck,rule=rule)
-          if level:
-            triggered[rule] = level
+          if not cls.ignore(deck, rule):
+            level = cls.check_trigger(deck,rule=rule)
+            if level:
+              triggered[rule] = level
         return triggered
         
     @classmethod
