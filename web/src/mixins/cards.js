@@ -150,6 +150,9 @@ const Cards = {
       if (card.template.description.match(/ three /)) {
         return 3;
       }
+      if (card.template.description.match(/ five /)) {
+        return 5;
+      }
       return 1;
     },
     skill_names_for_player_card(card) {

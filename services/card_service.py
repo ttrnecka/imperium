@@ -226,6 +226,8 @@ class CardService:
         return 1
       if ' three ' in c.get('description'):
         return 3
+      if ' five ' in c.get('description'):
+        return 5
       return 1
 
     @classmethod

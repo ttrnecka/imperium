@@ -15,6 +15,14 @@ DONE run update_stats
 DONE schedule tournament auto check for every hour
 
 TODO
+Card removed from the deck - fix the name - add uuid to the log
+arena mode
+skill picker
+dusting based on value?
+OT rules?
+Sponsor rule clarification
+store comp games in the competition folder based on the comp ID and not name
+Blessing/Curses orders
 negative valued cards should count as positive for the purpose of the migration pack
 make blessings/curses limited to avialable list + add command to rerol
 Skill override on wilcard cards
