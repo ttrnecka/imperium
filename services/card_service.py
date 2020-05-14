@@ -200,7 +200,7 @@ class CardService:
           skills = ["Frenzy","Juggernaut"]
       elif name == "Designated Ball Carrier":
           skills = ["Block", "Sure Hands"]
-      elif name in ["Bodyguard","Hired Muscle","Personal Army"]:
+      elif name in ["Bodyguard","Hired Muscle","Personal Army","Mutant Roshi's Scare School"]:
           skills = []
       else:
           skills = [name]
