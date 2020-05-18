@@ -5,9 +5,10 @@ from sqlalchemy import func
 from discord.ext import commands
 from models.data_models import db, Tournament as Tourn, ConclaveRule, TournamentSignups, Transaction, Competition
 from misc.helpers import image_merge, represents_int
-from services import TournamentService, CoachService, CompetitionService, CompetitionError
+from services import TournamentService, CoachService, CompetitionService, CompetitionError, CardService
 from bot.base_cog import ImperiumCog
 from bot.helpers import sign, resign
+from bot.actions.special_play import get_coach_deck_for_room_or_raise
 
 class Tournament(ImperiumCog):
     def __init__(self, bot):
@@ -66,6 +67,38 @@ class Tournament(ImperiumCog):
       ]
       await self.send_message(ctx.channel, msg)
       await self.bank_notification(ctx, f"Your bank has been updated by **{amount}** coins - {reason}", coach)
+      return
+
+    @commands.command()
+    async def reaction(self, ctx, *card_name):
+      """User reaction card
+       USAGE:
+      !reaction <card_name>
+        <card_name>: name of the reaction card
+      """
+      coach = CoachService.discord_user_to_coach(ctx.author)
+      room = ctx.channel.name
+
+      if coach is None:
+          await ctx.send(f"Coach {ctx.author.mention} does not exist. Use !newcoach to create coach first.")
+          return
+
+      get_coach_deck_for_room_or_raise(room, coach)
+
+      card_name = " ".join(card_name).strip()
+      card = CardService.get_card_from_coach(coach, card_name)
+      if card and card.template.card_type == "Reaction":
+        msg = [f"**{coach.short_name()}** plays **{card.get('name')}**: {card.get('description')}"]
+        notification = f"Card **{card.get('name')}** removed from your collection"
+        db.session.delete(card)
+        db.session.expire(coach, ['cards'])
+        reason = f"Reaction card {card.template.name} used in {room} tournament"
+        tran = Transaction(description=reason, price=0)
+        coach.make_transaction(tran)
+        await self.send_message(ctx.channel, msg)
+        await self.bank_notification(ctx, notification, coach)
+      else:
+        raise ValueError(f"Reaction card {card_name} was not found!!!")
       return
 
     @commands.command()
