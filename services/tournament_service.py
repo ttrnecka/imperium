@@ -449,7 +449,6 @@ class TournamentService:
 
     @classmethod
     def special_play_msg(cls, tournament):
-        return []
         rules = cls.generate_conclave_triggers(tournament)
         msg = ["__**Special Play Phase**__:"," "]
         
