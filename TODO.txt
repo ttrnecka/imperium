@@ -16,6 +16,9 @@ DONE schedule tournament auto check for every hour
 
 TODO
 Card removed from the deck - fix the name - add uuid to the log
+allow tournaments to have banned card list - deck will not allow their use
+prevent double tournament start?
+add more starter cards/packs, whatever
 arena mode
 skill picker
 dusting based on value?
