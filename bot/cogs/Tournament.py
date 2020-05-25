@@ -207,6 +207,7 @@ class Tournament(ImperiumCog):
             f"**Sponsor**: {tourn.sponsor}",
             f"**Sponsor Description**: {tourn.sponsor_description}",
             f"**Special Rules**: {tourn.special_rules}",
+            f"**Banned Cards**: {', '.join(tourn.banned_cards.split(';'))}",
             f"**Prizes**: {tourn.prizes}",
             f"**Unique Prize**: {tourn.unique_prize}",
             f"**Channel**: {tourn.discord_channel}",

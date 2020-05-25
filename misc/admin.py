@@ -23,7 +23,7 @@ class TournamentView(ImperiumModelView):
     column_labels = dict(discord_channel='Room', tournament_id='ID', deck_value_limit='Value Limit', deck_limit='Card Limit')
     column_exclude_list = [ 'date_created', 'date_modified', 'type', 'mode', 'signup_close_date',
       'expected_start_date', 'expected_end_date', 'deadline_date', 'reserve_limit',
-      'sponsor_description', 'special_rules', 'prizes', 'unique_prize', 'conclave_triggers', 'conclave_triggered'
+      'sponsor_description', 'special_rules', 'prizes', 'unique_prize', 'conclave_triggers', 'conclave_triggered', 'banned_cards'
     ]
     column_filters = ['region', 'status', 'admin', 'phase']
     column_editable_list = ['region', 'status', 'admin', 'phase']

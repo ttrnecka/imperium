@@ -174,6 +174,9 @@ class DeckService:
     @classmethod
     def addcard(cls, deck, card):
         """Adds card to the deck"""
+        if cls.is_banned(deck, card):
+          raise DeckError("Card is banned in the tournament!")
+
         if card["id"]:
             tmp_card = Card.query.get(card["id"])
             if tmp_card is not None:
@@ -422,6 +425,18 @@ class DeckService:
         c = CardHelper.card_fix(card)
         if c.get('name') in GUARDS:
           return True
+      return False
+
+    @staticmethod
+    def is_banned(deck, card):
+      if isinstance(card, dict):
+        name = card['template']['name']
+      else:
+        name = card.template.name
+
+      if name in deck.tournament_signup.tournament.banned_cards.split(";"):
+        return True
+      
       return False
 
 

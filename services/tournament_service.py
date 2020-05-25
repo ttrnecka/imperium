@@ -50,7 +50,8 @@ class TournamentService:
             "prizes":tournament["Prizes"],
             "unique_prize":tournament["Unique Prize"],
             "sponsor_description":tournament["Sponsor Description"],
-            "conclave_triggers":tournament["Conclave Triggers"]
+            "conclave_triggers":tournament["Conclave Triggers"],
+            "banned_cards":tournament["Banned Cards"]
         }
 
     @classmethod
@@ -79,7 +80,8 @@ class TournamentService:
             "Special Rules": tournament.special_rules,
             "Prizes": tournament.prizes,
             "Unique Prize": tournament.unique_prize,
-            "Conclave Triggers": tournament.conclave_triggers
+            "Conclave Triggers": tournament.conclave_triggers,
+            "Banned Cards": tournament.banned_cards
         }
 
     @classmethod

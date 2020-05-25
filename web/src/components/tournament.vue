@@ -77,6 +77,12 @@
                     <div class="col-12">{{ tournament.special_rules }}</div>
                 </div>
                 <div class="row tournament_info_line">
+                    <div class="col-12"><b>Banned Cards</b>:</div>
+                </div>
+                <div class="row tournament_info_line">
+                    <div class="col-12">{{ tournament.banned_cards.replace(';',', ') }}</div>
+                </div>
+                <div class="row tournament_info_line">
                     <div class="col-12"><b>Sponsor</b>: {{ tournament.sponsor }}</div>
                 </div>
                 <div class="row tournament_info_line">
