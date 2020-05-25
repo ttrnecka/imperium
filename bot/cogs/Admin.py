@@ -259,6 +259,8 @@ class Admin(ImperiumCog):
           msg.append(f"{tourn.sponsor_description}")
           msg.append(f"**Special Rules:**")
           msg.append(f"{tourn.special_rules}")
+          msg.append(f"**Banned Cards:**")
+          msg.append(', '.join(tourn.banned_cards.split(';')))
           msg.append(f"**Prizes:**")
           msg.append(f"{tourn.prizes}")
           msg.append(f"**Unique Prize:**")
