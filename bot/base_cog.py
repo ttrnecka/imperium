@@ -6,6 +6,7 @@ from misc import SKILLREG
 from discord.ext import commands
 from bot.helpers import logger, LongMessage
 from models.data_models import db, Transaction
+from config.config import BB2_API_KEY
 
 AUTO_CARDS = {
     'Loose Change!':5,
@@ -22,7 +23,7 @@ def transform_message(message, ctx):
 
 class ImperiumCog(commands.Cog):
   async def cog_command_error(self, ctx, error):
-      await ctx.send(error)
+      await ctx.send(str(error).replace(BB2_API_KEY,"***"))
       text = type(error).__name__ +": "+str(error)
       logger.error(text)
       logger.error(traceback.format_exc())

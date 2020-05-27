@@ -1,29 +1,23 @@
-Season 3
-DONE python3.7 -m pip install discord.py --upgrade --user
-DONE Update sheet with all tabs
-DONE SWITCH SHEET in code BEFORE GOING live
-DONE PATCH
-DONE python3.7 -m pip install -r requirements.txt --user
-DONE upgrade db
-DONE achievement_insert
-DONE Tournamnet test with the team
-AFTER GREEN LIGHT
-DONE season_reset
-DONE update config.py (with season old seasons)
-DONE restart bot/web
-DONE run update_stats
-DONE schedule tournament auto check for every hour
+Season 4
+Pre-Season Training cards - how to do this? One time cards with Unique name and Rarity that is not found in the packs
+Tournament - add new Target value and create 6 ranges for blessings that assign points
+            - deck will show what range you are in
+            - special play tells you how many blessing/curse points you have
+            - blessing/curses rolled in inducement phase in the order
+            - new blessings/curses will have to be imported
 
-TODO
+Conclave - scrub consecrations/corruptions from the code, DB and sheet
+New Staff pack
+  - new card type ot part of deck
+  - apo and RR will remain in the deck
+  - cards with limited X use 
+
+TODO FIXES
 Card removed from the deck - fix the name - add uuid to the log
-allow tournaments to have banned card list - deck will not allow their use
 prevent double tournament start?
-add more starter cards/packs, whatever
-arena mode
 skill picker
 dusting based on value?
 OT rules?
-Sponsor rule clarification
 store comp games in the competition folder based on the comp ID and not name
 Blessing/Curses orders
 negative valued cards should count as positive for the purpose of the migration pack
@@ -48,8 +42,26 @@ randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is 
 VERY LOW:
 test code
 
+Season 3
+DONE python3.7 -m pip install discord.py --upgrade --user
+DONE Update sheet with all tabs
+DONE SWITCH SHEET in code BEFORE GOING live
+DONE PATCH
+DONE python3.7 -m pip install -r requirements.txt --user
+DONE upgrade db
+DONE achievement_insert
+DONE Tournamnet test with the team
+AFTER GREEN LIGHT
+DONE season_reset
+DONE update config.py (with season old seasons)
+DONE restart bot/web
+DONE run update_stats
+DONE schedule tournament auto check for every hour
+
+
 
 DONE
+allow tournaments to have banned card list - deck will not allow their use
 Multiskills like Need for Speed cannot go to the same player - COM logic needs to be included
 Leaderboard - timing when all coaches are loaded
 JS transpiling/packaging tool
