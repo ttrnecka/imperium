@@ -31,7 +31,7 @@
                 </template>
                 <template v-if="is_coach && !is_active">
                     <h5>Welcome back to REBBL Imperium!</h5>
-                    <p>Conclave is waiting for you to curse or bless you. As returning coach you can migrate some cards from previous season.</p>
+                    <p>High Command welcomes you and awaits your orders! As returning coach you can migrate some cards from previous season.</p>
                     <button v-if="!migration_on" type="button" class="btn btn-primary" @click="migrate()">Migrate</button>
                 </template>
                 <div v-if="migration_on" class="row">

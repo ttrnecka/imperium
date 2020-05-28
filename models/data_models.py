@@ -474,8 +474,6 @@ class Tournament(Base):
     unique_prize = db.Column(db.Text,nullable=True)
     phase = db.Column(db.String(255),nullable=False, default="deck_building")
     deck_value_limit =  db.Column(db.Integer(), default=150, nullable=False)
-    conclave_triggers =  db.Column(db.Text(),nullable=True)
-    conclave_triggered = db.Column(db.Boolean(),nullable=False, default=False)
     banned_cards =  db.Column(db.Text(),nullable=True)
     
 
@@ -598,14 +596,6 @@ class ConclaveRule(Base):
     notes = db.Column(db.Text(), nullable=False)
 
     @classmethod
-    def consecrations(cls):
-        return cls._get_type("Consecration")
-
-    @classmethod
-    def corruptions(cls):
-        return cls._get_type("Corruption")
-
-    @classmethod
     def blessings(cls):
         return cls._get_type("Blessing")
 
@@ -625,7 +615,7 @@ class ConclaveRule(Base):
 
     def klass(self):
         """Return the klass of the rule"""
-        return self.name.replace("Consecration of ","").replace("Corruption of ","").replace("Blessing of ","").replace("Curse of ","").replace("the ","").replace("-","_").replace(' ','_')
+        return self.name.replace("Blessing of ","").replace("Curse of ","").replace("the ","").replace("-","_").replace(' ','_')
     
     def img(self,level):
         #Returns image file if exists, otherwise returns None

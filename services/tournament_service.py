@@ -12,7 +12,6 @@ from misc import KEYWORDS
 from .notification_service import Notificator
 from .imperium_sheet_service import ImperiumSheetService
 from .deck_service import DeckService
-from .conclave_service import ConclaveService
 from .coach_service import CoachService
 from .competition_service import CompetitionService, CompetitionError
 
@@ -50,7 +49,6 @@ class TournamentService:
             "prizes":tournament["Prizes"],
             "unique_prize":tournament["Unique Prize"],
             "sponsor_description":tournament["Sponsor Description"],
-            "conclave_triggers":tournament["Conclave Triggers"],
             "banned_cards":tournament["Banned Cards"]
         }
 
@@ -80,7 +78,6 @@ class TournamentService:
             "Special Rules": tournament.special_rules,
             "Prizes": tournament.prizes,
             "Unique Prize": tournament.unique_prize,
-            "Conclave Triggers": tournament.conclave_triggers,
             "Banned Cards": tournament.banned_cards
         }
 
@@ -171,6 +168,7 @@ class TournamentService:
     @classmethod
     def update_conclave(cls):
         """Updates conclave rules from sheet into DB"""
+        ConclaveRule.query.delete()
         for rule in ImperiumSheetService.conclave_rules():
             r_dict = cls.init_dict_from_conclave_rule(rule)
             d_rule = ConclaveRule.query.filter_by(name=r_dict['name']).one_or_none()
@@ -432,55 +430,18 @@ class TournamentService:
         if max > next:
             tournament.phase = Tournament.PHASES[next]
 
-    @classmethod
-    def generate_conclave_triggers(cls,tournament):
-        triggered_conclave_rule_counters = []
-        if not tournament.conclave_triggers:
-            for signup in tournament.tournament_signups:
-                triggered_conclave_rule_counters.append(ConclaveService.all_triggered(signup.deck))
-            #flatten and make it unique
-            selected_conlave_rules = ConclaveService.select_rules(triggered_conclave_rule_counters)
-
-            tournament.conclave_triggers = ",".join([rule.name for rule in selected_conlave_rules])
-            db.session.commit()
-            cls.update_tournament_in_sheet(tournament)
-        
-        rules = [ConclaveRule.query.filter_by(name=tr.strip()).one_or_none() for tr in tournament.conclave_triggers.split(",")]
-        rules = list(filter(lambda a: a != None, rules))
-        return rules
 
     @classmethod
     def special_play_msg(cls, tournament):
-        rules = cls.generate_conclave_triggers(tournament)
         msg = ["__**Special Play Phase**__:"," "]
         
         decks = []
         announces = []
         max_special_plays = 0
-
-        msg.append("**Conclave rituals in place for this tournament:**")
-        for rule in rules:
-            msg.append(f"{rule.name} - {rule.description}")
         
         msg.append(" ")
-        msg2 = []
-        msg2.append("**Blessings & Curses:**")
         
         for signup in tournament.tournament_signups:
-            #conclave
-            for rule in rules:
-                rule_level = ConclaveService.check_trigger(signup.deck, rule)
-                if rule_level > 0:
-                    if rule.type == "Consecration":
-                        word = "blessing"
-                        if not tournament.conclave_triggered:
-                            CoachService.increment_blessings(signup.coach)
-                    else:
-                        word = "curse"
-                        if not tournament.conclave_triggered:
-                            CoachService.increment_curses(signup.coach)
-                    msg2.append(f"{signup.coach.mention()} triggered {rule.name}: {getattr(rule,f'level{rule_level}')}, run **!{word} {rule_level}**")
-            
             # Announce cards
             announce1 = [card for card in signup.deck.cards if KEYWORDS(card.template.description).is_announce()]
             announce2 = [card for card in signup.deck.extra_cards if KEYWORDS(card.get('template').get('description')).is_announce()]
@@ -496,7 +457,6 @@ class TournamentService:
 
             decks.append((signup.coach.mention(), DeckService.value(signup.deck), special_plays))
         
-        msg2.append(" ")
         sorted_decks = sorted(decks, key=lambda d: d[1])
         msg.append("**Special Plays:**")
         for deck in sorted_decks:
@@ -525,13 +485,10 @@ class TournamentService:
                         msg.append(f"{deck[0]} plays **{deck[2][index]['template'].get('name')}**:")
                         msg.append(deck[2][index]['template'].get('description'))
             msg.append(" ")
-        
-        msg.extend(msg2)
 
         msg.append("**Note**: No Inducement shopping in this phase")
         msg.append("**Note 2**: Blessings & Curses are rolled AFTER the special plays")
         msg.append("**Note 3**: Use !done to confirm you are done with the phase, use !left to see who is left")
-        tournament.conclave_triggered = True
         db.session.commit()
         return msg
             
