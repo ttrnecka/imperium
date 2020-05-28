@@ -267,16 +267,16 @@ class Admin(ImperiumCog):
           msg.append(f"{tourn.unique_prize}")
 
           #room setup
-          if tourn.is_development():
-            comp = Competition.query.filter_by(name=tourn.ladder_room_name()).one_or_none()
-            if not comp:
-              comp = CompetitionService.create_imperium_ladder(tourn.ladder_room_name())
+          #if tourn.is_development():
+          #  comp = Competition.query.filter_by(name=tourn.ladder_room_name()).one_or_none()
+          #  if not comp:
+          #    comp = CompetitionService.create_imperium_ladder(tourn.ladder_room_name())
             
-            comp.tournament_id = tourn.id
-            db.session.commit()
-            msg.append(f"**In-game rooms:**")
-            for comp in tourn.competitions:
-              msg.append(f"**{comp.name}** in **{comp.league_name}** league")
+          #  comp.tournament_id = tourn.id
+          #  db.session.commit()
+          #  msg.append(f"**In-game rooms:**")
+          #  for comp in tourn.competitions:
+          #    msg.append(f"**{comp.name}** in **{comp.league_name}** league")
         
         if action == Tournament.SP_PHASE:
             msg = TournamentService.special_play_msg(tourn)
