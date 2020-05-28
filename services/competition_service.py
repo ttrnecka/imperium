@@ -75,7 +75,7 @@ class CompetitionService:
 
     @classmethod
     def create_imperium_comp(cls, name, competition_type=0, team_count=0):
-        CompetitionService.import_competitions()
+        # CompetitionService.import_competitions()
 
         comp = Competition.query.filter(func.lower(Competition.name) == func.lower(name)).one_or_none()
 
