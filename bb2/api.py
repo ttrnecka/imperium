@@ -1,5 +1,9 @@
 """BB2 api agent modul"""
 import requests
+TIMEOUT = 15
+
+class BB2APINotAvailable(Exception):
+  """Exception to raise for BB2API timeout issues"""
 
 class Agent:
     """BB2 api agent"""
@@ -52,4 +56,7 @@ class Agent:
         url = self.__class__.BASE_URL + method+"/"
         kwargs['key'] = self.api_key
         kwargs['order'] = 'CreationDate'
-        return requests.get(url=url, params=kwargs)
+        try: 
+          response = requests.get(url=url, params=kwargs, timeout=TIMEOUT)
+        except requests.exceptions.Timeout:
+          raise BB2APINotAvailable("Service down")
