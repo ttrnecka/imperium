@@ -209,6 +209,9 @@
           <div class="row">
             <div v-if="canEdit" class="col-lg-6">
               <div class="row mt-1 deck_header">
+                <div class="col-12">
+                  <h6>High Command (Coming Soon to the pitch near to you)</h6>
+                </div>
                 <div class="col-6">
                   <h6>Collection</h6>
                 </div>
@@ -225,14 +228,17 @@
             </div>
             <div :class="cardListClass">
               <div class="row mt-1 deck_header">
-                <div class="col-3">
+                <div class="col-4">
                   <h6>Deck {{deck_size}}/{{tournament.deck_limit}}</h6>
                 </div>
-                <div class="col-3 text-center">
-                  <h6>Value: {{ deck_value }}/{{ tournament.deck_value_limit }}</h6>
+                <div class="col-4 text-center">
+                  <h6>Value: {{ deck_value }}/{{ tournament.deck_value_limit }}({{ tournament.deck_value_target }})</h6>
                 </div>
-                <div class="col-3 text-center">
+                <div class="col-4 text-right">
                    <h6>Doubles: {{ deck_doubles_count }}</h6>
+                </div>
+                <div class="col-9">
+                  <h6>Conclave: {{conclave_text}}</h6>
                 </div>
                 <div class="col-3">
                   <div class="custom-control custom-checkbox mr-sm-2 text-right">
@@ -1069,6 +1075,43 @@ export default {
     },
     cardListClass() {
       return this.canEdit ? 'col-lg-6' : 'col-lg-12';
+    },
+    conclave_range() {
+      console.log('here');
+      let range = ['blessing3', 'blessing2', 'blessing1', 'curse1', 'curse2', 'curse3'].find((e) => (
+        this.tournament.conclave_ranges[e].start <= this.deck_value && this.tournament.conclave_ranges[e].stop >= this.deck_value
+      ));
+      console.log(range);
+      if (range === undefined) {
+        range = 'equilibrium';
+      }
+      return range;
+    },
+    conclave_text() {
+      let text;
+      switch (this.conclave_range) {
+        case 'blessing3':
+          text = '3 Blessing points';
+          break;
+        case 'blessing2':
+          text = '2 Blessing points';
+          break;
+        case 'blessing1':
+          text = '1 Blessing point';
+          break;
+        case 'curse3':
+          text = '3 Curse points';
+          break;
+        case 'curse2':
+          text = '2 Curse points';
+          break;
+        case 'curse1':
+          text = '1 Curse point';
+          break;
+        default:
+          text = 'Equilibrium';
+      }
+      return text;
     },
   },
   beforeMount() {

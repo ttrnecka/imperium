@@ -541,6 +541,8 @@ class TournamentTemplate(Base):
     deck_limit =  db.Column(db.Integer(), default=18, nullable=False)
     deck_value_limit =  db.Column(db.Integer(), default=150, nullable=False)
     prizes = db.Column(db.Text(),nullable=True)
+    deck_value_target =  db.Column(db.Integer(), default=100, nullable=False)
+    conclave_distance =  db.Column(db.Integer(), default=10, nullable=False)
 
 class TournamentAdmin(Base):
     __tablename__ = 'tournament_admins'

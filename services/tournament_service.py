@@ -74,6 +74,8 @@ class TournamentService:
             "Region Bias": tournament.region,
             "Deck Size Limit": tournament.deck_limit,
             "Deck Value Limit": tournament.deck_value_limit,
+            "Deck Value Target": tournament.deck_value_target,
+            "Conclave Distance": tournament.conclave_distance,
             "Tournament Admin": tournament.admin,
             "Tournament Sponsor": tournament.sponsor,
             "Sponsor Description": tournament.sponsor_description,
@@ -81,8 +83,6 @@ class TournamentService:
             "Prizes": tournament.prizes,
             "Unique Prize": tournament.unique_prize,
             "Banned Cards": tournament.banned_cards,
-            "Deck Value Target": tournament.deck_value_target,
-            "Conclave Distance": tournament.conclave_distance,
         }
 
     @classmethod
@@ -95,6 +95,8 @@ class TournamentService:
             "coach_limit":int(template["Coach Count Limit"]),
             "deck_limit":int(template["Deck Size Limit"]),
             "deck_value_limit":int(template["Deck Value Limit"]) if template["Deck Value Limit"] else 150,
+            "deck_value_target":int(template["Deck Value Target"]) if template["Deck Value Target"] else 100,
+            "conclave_distance":int(template["Conclave Distance"]) if template["Conclave Distance"] else 10,
             "prizes":template["Prizes"]
         }
 
@@ -629,6 +631,8 @@ class TournamentService:
                     Tournament.coach_limit == temp.coach_limit, \
                     Tournament.deck_limit == temp.deck_limit, \
                     Tournament.deck_value_limit == temp.deck_value_limit, \
+                    Tournament.deck_value_target == temp.deck_value_target, \
+                    Tournament.conclave_distance == temp.conclave_distance, \
                     Tournament.region == region
                 ).group_by(Tournament).having(func.count_(Tournament.tournament_signups) < Tournament.coach_limit+Tournament.reserve_limit).all()
                 # create new one if there is not
@@ -658,13 +662,15 @@ class TournamentService:
                 "Region Bias": region,
                 "Deck Size Limit": temp.deck_limit,
                 "Deck Value Limit": temp.deck_value_limit,
+                "Deck Value Target": temp.deck_value_target,
+                "Conclave Distance": temp.conclave_distance,
                 "Tournament Admin": "",
                 "Tournament Sponsor": "",
                 "Sponsor Description":"",
                 "Special Rules":"",
                 "Prizes": temp.prizes,
                 "Unique Prize": "",
-                "Conclave Triggers":"",
+                "Banned Cards": "",
             }
             new_tournaments[i] = list(temp.values())
         ImperiumSheetService.append_tournaments(new_tournaments)

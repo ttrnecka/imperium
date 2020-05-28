@@ -1,9 +1,9 @@
 Season 4
 Prod update:
 1. remove Conclave Triggers column from the prod Tournament tab
+2. add Target and Conclave Distance colums into Tournament and Template tab
 
 Tournament -
-            - deck will show what range you are in
             - inducemnt phase tells you how many blessing/curse points you have
             - blessing/curses rolled in inducement phase in the order
             - add feature to include staff from HC in the deck builder
@@ -56,6 +56,7 @@ No coding required on the above
 Conclave - scrub consecrations/corruptions from the code, DB and sheet (DONE)
 
 Tournament - add new Target value and create 6 ranges for blessings/curses that assign points
+           - deck will show what range you are in
 
 TODO FIXES
 Card removed from the deck - fix the name - add uuid to the log
