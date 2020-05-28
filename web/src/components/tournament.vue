@@ -38,9 +38,30 @@
                     <div class="col-sm-3"><b>Region</b>: {{ tournament.region }}</div>
                     <div class="col-sm-3"><b>Type</b>: {{ tournament.type }}</div>
                     <div class="col-sm-3"><b>Mode</b>: {{ tournament.mode }}</div>
-                    <div class="col-sm-3"><b>Deck Limits</b>: <span title="Card Limit">{{ tournament.deck_limit }}</span>
-                        / <span title="Value Limit">{{ tournament.deck_value_limit }}</span>
+                    <div class="col-sm-3"><b>Deck Limits</b>:
+                        <span title="Card Limit">{{ tournament.deck_limit }}</span>
+                        / <span title="Deck Value Target">{{ tournament.deck_value_target }}</span>
+                        / <span title="Deck Value Limit">{{ tournament.deck_value_limit }}</span>
                         </div>
+                </div>
+                <div class="row tournament_info_line">
+                    <div class="col-12"><b>Conclave Ranges</b>:</div>
+                </div>
+                <div class="row tournament_info_line">
+                    <div class="col-sm-2 col-4">{{ tournament.conclave_ranges.blessing3.start }} - {{ tournament.conclave_ranges.blessing3.stop }}</div>
+                    <div class="col-sm-10 col-8"><b>3 Blessing points</b></div>
+                    <div class="col-sm-2 col-4">{{ tournament.conclave_ranges.blessing2.start }} - {{ tournament.conclave_ranges.blessing2.stop }}</div>
+                    <div class="col-sm-10 col-8"><b>2 Blessing points</b></div>
+                    <div class="col-sm-2 col-4">{{ tournament.conclave_ranges.blessing1.start }} - {{ tournament.conclave_ranges.blessing1.stop }}</div>
+                    <div class="col-sm-10 col-8"><b>1 Blessing point</b></div>
+                    <div class="col-sm-2 col-4">{{ tournament.deck_value_target }}</div>
+                    <div class="col-sm-10 col-8"><b>Conclave equilibrium</b></div>
+                    <div class="col-sm-2 col-4">{{ tournament.conclave_ranges.curse1.start }} - {{ tournament.conclave_ranges.curse1.stop }}</div>
+                    <div class="col-sm-10 col-8"><b>1 Curse point</b></div>
+                    <div class="col-sm-2 col-4">{{ tournament.conclave_ranges.curse2.start }} - {{ tournament.conclave_ranges.curse2.stop }}</div>
+                    <div class="col-sm-10 col-8"><b>2 Curse points</b></div>
+                    <div class="col-sm-2 col-4">{{ tournament.conclave_ranges.curse3.start }} - {{ tournament.conclave_ranges.curse3.stop }}</div>
+                    <div class="col-sm-10 col-8"><b>3 Curse points</b></div>
                 </div>
                 <div class="row tournament_info_line">
                     <div class="col-sm-3"><b>Admin</b>: {{ tournament.admin }}</div>

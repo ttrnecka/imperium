@@ -2,19 +2,19 @@ Season 4
 Prod update:
 1. remove Conclave Triggers column from the prod Tournament tab
 
-Pre-Season Training cards - how to do this? One time cards with unique name and rarity that is not found in the packs?
-Z: new Training Subtype called Pre-season. Cards will be called "Pre-Season Block", "Pre-Season Dodge" etc to distinguish them. Starter (?) rarity so they don't appear in packs
-No coding required on the above
-
-Tournament - add new Target value and create 6 ranges for blessings/curses that assign points
+Tournament -
             - deck will show what range you are in
             - inducemnt phase tells you how many blessing/curse points you have
             - blessing/curses rolled in inducement phase in the order
-            - new blessings/curses will have to be imported
             - add feature to include staff from HC in the deck builder
             admincomp update - make the table updates not to remove/reinsert things
 
-Conclave - scrub consecrations/corruptions from the code, DB and sheet (DONE)
+Tournament Template - add ranges
+
+Deck - RRs are nto counted correctly when Motivatioal Speaker is disabled
+
+
+Conclave 
         - add new blessings/curses into DB/ pictures
         - remove obsolete blessings/curses
         achievements - change to curse/blessing points
@@ -47,6 +47,15 @@ Event keyword
 
 Late Starters
   - do you want to automate it? if so what is the idea? +5 coins for every week?
+
+S4 DONE
+Pre-Season Training cards - how to do this? One time cards with unique name and rarity that is not found in the packs?
+Z: new Training Subtype called Pre-season. Cards will be called "Pre-Season Block", "Pre-Season Dodge" etc to distinguish them. Starter (?) rarity so they don't appear in packs
+No coding required on the above
+
+Conclave - scrub consecrations/corruptions from the code, DB and sheet (DONE)
+
+Tournament - add new Target value and create 6 ranges for blessings/curses that assign points
 
 TODO FIXES
 Card removed from the deck - fix the name - add uuid to the log

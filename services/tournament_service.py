@@ -49,7 +49,9 @@ class TournamentService:
             "prizes":tournament["Prizes"],
             "unique_prize":tournament["Unique Prize"],
             "sponsor_description":tournament["Sponsor Description"],
-            "banned_cards":tournament["Banned Cards"]
+            "banned_cards":tournament["Banned Cards"],
+            "deck_value_target":int(tournament["Deck Value Target"]) if tournament["Deck Value Target"] else 100,
+            "conclave_distance":int(tournament["Conclave Distance"]) if tournament["Conclave Distance"] else 10,
         }
 
     @classmethod
@@ -78,7 +80,9 @@ class TournamentService:
             "Special Rules": tournament.special_rules,
             "Prizes": tournament.prizes,
             "Unique Prize": tournament.unique_prize,
-            "Banned Cards": tournament.banned_cards
+            "Banned Cards": tournament.banned_cards,
+            "Deck Value Target": tournament.deck_value_target,
+            "Conclave Distance": tournament.conclave_distance,
         }
 
     @classmethod

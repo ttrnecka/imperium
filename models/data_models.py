@@ -3,6 +3,7 @@ from .achievements import achievements_template
 import datetime
 import logging
 import json
+from collections import namedtuple
 from logging.handlers import RotatingFileHandler
 import os
 from enum import Enum
@@ -434,6 +435,9 @@ class TournamentSignups(Base):
     coach = db.relationship("Coach", backref=db.backref('tournament_signups', cascade="all, delete-orphan", lazy=False) ,foreign_keys=[coach_id], lazy='select')
     deck = db.relationship("Deck", backref=db.backref('tournament_signup',uselist=False), single_parent=True, cascade="all, delete-orphan", foreign_keys=[deck_id])
 
+ConclaveRanges = namedtuple('ConclaveRange',['blessing3','blessing2','blessing1','curse1','curse2','curse3'])
+Range = namedtuple('Range',['start','stop'])
+
 class Tournament(Base):
     __tablename__ = 'tournaments'
 
@@ -475,6 +479,8 @@ class Tournament(Base):
     phase = db.Column(db.String(255),nullable=False, default="deck_building")
     deck_value_limit =  db.Column(db.Integer(), default=150, nullable=False)
     banned_cards =  db.Column(db.Text(),nullable=True)
+    deck_value_target =  db.Column(db.Integer(), default=100, nullable=False)
+    conclave_distance =  db.Column(db.Integer(), default=10, nullable=False)
     
 
     coaches = db.relationship("Coach", secondary="tournaments_signups", backref=db.backref('tournaments', lazy="dynamic"), lazy="dynamic")
@@ -504,6 +510,26 @@ class Tournament(Base):
 
     def is_development(self):
         return self.type == "Development"
+
+    def conclave_ranges(self):
+      break1 = 0
+      break2 = self.deck_value_target - 2*self.conclave_distance
+      break3 = self.deck_value_target - 1*self.conclave_distance
+      break4 = self.deck_value_target
+      break5 = self.deck_value_target + 1*self.conclave_distance
+      break6 = self.deck_value_target + 2*self.conclave_distance
+      break7 = self.deck_value_limit
+      
+      ranges = ConclaveRanges(
+        Range(break1, break2 - 1),
+        Range(break2, break3 - 1),
+        Range(break3, break4 - 1),
+        Range(break4 + 1, break5),
+        Range(break5 + 1, break6),
+        Range(break6 + 1, break7),
+      )
+
+      return ranges
 
 class TournamentTemplate(Base):
     __tablename__ = 'tournament_templates'

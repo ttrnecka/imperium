@@ -530,9 +530,9 @@ export default {
       if (race === 'Afterlife United') {
         rrs = [3, 2, 2];
       }
-      const r1 = this.deck_cards.filter((c) => c.template.name === 'Inspirational Boss').length * rrs[0];
-      const r2 = this.deck_cards.filter((c) => c.template.name === 'Motivational Speaker').length * rrs[1];
-      const r3 = this.deck_cards.filter((c) => c.template.name === 'Clever Management').length * rrs[2];
+      const r1 = this.deck_cards.filter((c) => c.template.name === 'Inspirational Boss' && this.isEnabled(c)).length * rrs[0];
+      const r2 = this.deck_cards.filter((c) => c.template.name === 'Motivational Speaker' && this.isEnabled(c)).length * rrs[1];
+      const r3 = this.deck_cards.filter((c) => c.template.name === 'Clever Management' && this.isEnabled(c)).length * rrs[2];
       return this.deck_cards.filter((c) => c.template.name === 'Re-roll' && this.isEnabled(c)).length + r1 + r2 + r3;
     },
     cloneExtraCard(card) {

@@ -41,6 +41,7 @@ class TournamentSchema(ma.ModelSchema):
         model = Tournament
         exclude = ["coaches"]
     tournament_signups = ma.Nested(TournamentSignupSchema, many=True)
+    conclave_ranges = ma.Dict()
 
 class DusterSchema(ma.ModelSchema):
     class Meta:
