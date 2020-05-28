@@ -1,17 +1,44 @@
 Season 4
-Pre-Season Training cards - how to do this? One time cards with Unique name and Rarity that is not found in the packs
-Tournament - add new Target value and create 6 ranges for blessings that assign points
+Pre-Season Training cards - how to do this? One time cards with unique name and rarity that is not found in the packs?
+Tournament - add new Target value and create 6 ranges for blessings/curses that assign points
             - deck will show what range you are in
             - special play tells you how many blessing/curse points you have
             - blessing/curses rolled in inducement phase in the order
             - new blessings/curses will have to be imported
+            - add feature to include staff from HC in the deck builder
 
 Conclave - scrub consecrations/corruptions from the code, DB and sheet
-New Staff pack
-  - new card type ot part of deck
-  - apo and RR will remain in the deck
-  - cards with limited X use 
+        - add new blessings/curses into DB/ pictures
+        - remove obsolete blessings/curses
 
+New Staff pack
+  - new sub command/new probabilities
+  - new card type that is not part of deck
+  - apo and RR will remain in the  - new card type
+  - cards with limited X use
+  - need to display it as new type in the collection 
+
+HC
+ - starts with 1 slot
+ - level to X slots - what is the price per slot?, what is the cap?
+ - staff has limited use
+    deduct use after staff is included in tournamnet
+    add use after staff is removed from tournamnets (in deck building phase only obviously)
+    once staff is put into HC does it stay there until the end of the contract or can it be removed? (I would rather if they could not be removed)
+    once staff is use in first tournament card cannot be dusted anymore
+    you can use only subset of your staff in HC for given tournament - so only use 2 staff cards from 3 in the HC for a tournament for example
+ - one problem I foressee is that when you use up one of your staff cards it will occupy the HC slot until all the tournaments it is in ends, however it cannot be used in any new tournament
+   so for example if I have HC with 1 slot and put in a staff that has 3 uses and I use it in 3 tournaments I cannot use the card (and hence HC) in any further tournament until those 3 tournaments conclude and the staff leaves the HC slot
+   I am not sure it would be huge problem but it is something we should consider in the desing phase and not when it starts being a problem
+
+Event keyword
+  - ban event cards from Imperium tournaments
+  - do I keep the new Banned cards feature on top?
+  - I will really need to know more about the staff cards that help with Event cards
+
+Late Starters
+  - do you want to automate it? if so what is the idea? +5 coins for every week?
+  
 TODO FIXES
 Card removed from the deck - fix the name - add uuid to the log
 prevent double tournament start?

@@ -268,7 +268,7 @@ class Admin(ImperiumCog):
 
           #room setup
           if tourn.is_development():
-            CompetitionService.import_competitions()
+            # CompetitionService.import_competitions()
             comp = Competition.query.filter_by(name=tourn.ladder_room_name()).one_or_none()
             if not comp:
               comp = CompetitionService.create_imperium_ladder(tourn.ladder_room_name())
