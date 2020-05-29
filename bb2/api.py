@@ -1,6 +1,6 @@
 """BB2 api agent modul"""
 import requests
-TIMEOUT = 15
+TIMEOUT = 60
 
 class BB2APINotAvailable(Exception):
   """Exception to raise for BB2API timeout issues"""
