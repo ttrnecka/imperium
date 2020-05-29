@@ -24,7 +24,7 @@ achievements_template = {
     },
     'conclave': {
         "getcursed1": {
-            'desc': "Get cursed 1 time",
+            'desc': "Get 1 curse point",
             'completed': False,
             'award_text': "5 Coins",
             'award': 'grant,5',
@@ -32,7 +32,7 @@ achievements_template = {
             'target':1
         },
         "getcursed2": {
-            'desc': "Get cursed 10 times",
+            'desc': "Get 10 curse points",
             'completed': False,
             'award_text': "15 Coins",
             'award': 'grant,15',
@@ -40,7 +40,7 @@ achievements_template = {
             'target':10
         },
         "getcursed3": {
-            'desc': "Get cursed 30 times",
+            'desc': "Get 30 curse points",
             'completed': False,
             'award_text': "Booster Premium Pack",
             'award': 'grant,booster_premium',
@@ -48,7 +48,7 @@ achievements_template = {
             'target':30
         },
         "getblessed1": {
-            'desc': "Get blessed 1 time",
+            'desc': "Get 1 blessing point",
             'completed': False,
             'award_text': "5 Coins",
             'award': 'grant,5',
@@ -56,7 +56,7 @@ achievements_template = {
             'target':1
         },
         "getblessed2": {
-            'desc': "Get blessed 10 times",
+            'desc': "Get 10 blessing points",
             'completed': False,
             'award_text': "15 Coins",
             'award': 'grant,15',
@@ -64,7 +64,7 @@ achievements_template = {
             'target':10
         },
         "getblessed3": {
-            'desc': "Get blessed 30 times",
+            'desc': "Get 30 blessing points",
             'completed': False,
             'award_text': "Booster Premium Pack",
             'award': 'grant,booster_premium',

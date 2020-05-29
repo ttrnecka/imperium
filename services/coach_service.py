@@ -105,18 +105,18 @@ class CoachService:
         flag_modified(coach, "achievements")
     
     @classmethod
-    def increment_blessings(cls,coach):
+    def increment_blessings(cls,coach, value:int):
         for ach in ['getblessed1','getblessed2','getblessed3']:
-            coach.achievements['conclave'][ach]['best']+=1
+            coach.achievements['conclave'][ach]['best']+=value
             if cls.check_achievement(coach,["conclave",ach]):
                 coach.achievements['conclave'][ach]['completed'] = True
         flag_modified(coach, "achievements")
         db.session.commit()
 
     @classmethod
-    def increment_curses(cls,coach):
+    def increment_curses(cls,coach, value:int):
         for ach in ['getcursed1','getcursed2','getcursed3']:
-            coach.achievements['conclave'][ach]['best']+=1
+            coach.achievements['conclave'][ach]['best']+=value
             if cls.check_achievement(coach,["conclave",ach]):
                 coach.achievements['conclave'][ach]['completed'] = True
         flag_modified(coach, "achievements")

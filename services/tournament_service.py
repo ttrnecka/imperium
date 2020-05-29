@@ -2,6 +2,7 @@
 import itertools
 from datetime import date, timedelta
 import random
+import re
 
 from sqlalchemy import asc, func
 from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card, TournamentTemplate, TournamentAdmin
@@ -493,8 +494,7 @@ class TournamentService:
             msg.append(" ")
 
         msg.append("**Note**: No Inducement shopping in this phase")
-        msg.append("**Note 2**: Blessings & Curses are rolled AFTER the special plays")
-        msg.append("**Note 3**: Use !done to confirm you are done with the phase, use !left to see who is left")
+        msg.append("**Note 2**: Use !done to confirm you are done with the phase, use !left to see who is left")
         db.session.commit()
         return msg
             
@@ -502,22 +502,38 @@ class TournamentService:
     @classmethod
     def inducement_msg(cls, tournament):
         
-        msg = ["__**Inducement Phase**__:"," "]
+        msg = ["__**Inducement Phase**__:"]
         decks = []
         for signup in tournament.tournament_signups:
-            decks.append((signup.coach.mention(), DeckService.value(signup.deck)))
+            value = DeckService.value(signup.deck)
+            conclave_text = cls.conclave_text(tournament, value)
+            conclave_range = cls.conclave_range(tournament,value)
+            decks.append((signup.coach, value, conclave_text, conclave_range))
 
         sorted_decks = sorted(decks, key=lambda d: d[1])
 
-        highest_value = sorted_decks[-1][1]
+        target_value = tournament.deck_value_target
 
         msg.extend([" ", "__Order of Play__:", " "])
-
+        msg.append(f"**Target Value**: {target_value}")
+        msg.append(" ")
         for deck in sorted_decks:
-            if deck[1] < highest_value:
-                msg.append(f"{deck[0]} has **{highest_value - deck[1]}** points of inducements")
+            diff = target_value - deck[1]
+            value = diff if diff >= 0 else 0 
+            msg.append(f"{deck[0].mention()} has **{value}** points of inducements and {deck[2]} (deck value {deck[1]})")
         msg.append(" ")
         msg.append("**Note**: Use !done to confirm you are done with the phase, use !left to see who is left")
+        msg.append("**Note 2**: use !blessing and !curse to spend your points, it is not optional")
+
+        #update achievements
+        if not tournament.conclave_triggered:
+          for deck in sorted_decks:
+            match = re.search(r"(blessing|curse)(\d)",deck[3])
+            if match:
+              getattr(CoachService, f"increment_{match.groups()[0]}s")(deck[0], int(match.groups()[1]))
+          
+          tournament.conclave_triggered=True
+          db.session.commit()
 
         return msg
 
@@ -597,7 +613,29 @@ class TournamentService:
       result = cards_schema.dump(cards).data
       return result + extra_cards
 
+    @staticmethod
+    def conclave_range(tourn:Tournament, value:int):
+      ranges = ['blessing3', 'blessing2', 'blessing1', 'curse1', 'curse2', 'curse3']
+      rng = next((r for r in ranges if getattr(tourn.conclave_ranges(), r).start <= value and getattr(tourn.conclave_ranges(), r).stop >= value), None) 
+      
+      if not rng:
+        return 'equilibrium'
 
+      return rng
+  
+    @staticmethod
+    def conclave_text(tourn:Tournament, value:int):
+      rng = TournamentService.conclave_range(tourn, value)
+      switcher = {
+        'blessing3': '**3** Blessing points',
+        'blessing2': '**2** Blessing points',
+        'blessing1': '**1** Blessing point',
+        'curse3': '**3** Curse points',
+        'curse2': '**2** Curse points',
+        'curse1': '**1** Curse point',
+      }
+      return switcher.get(rng, "no Conclave points")
+ 
     @staticmethod
     def start_check(tourn):
         if not tourn.discord_channel:

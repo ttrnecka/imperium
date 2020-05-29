@@ -481,6 +481,7 @@ class Tournament(Base):
     banned_cards =  db.Column(db.Text(),nullable=True)
     deck_value_target =  db.Column(db.Integer(), default=100, nullable=False)
     conclave_distance =  db.Column(db.Integer(), default=10, nullable=False)
+    conclave_triggered = db.Column(db.Boolean(), nullable=False, default=False)
     
 
     coaches = db.relationship("Coach", secondary="tournaments_signups", backref=db.backref('tournaments', lazy="dynamic"), lazy="dynamic")
