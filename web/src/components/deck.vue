@@ -120,7 +120,7 @@
             {{tournament.special_rules}}
             </div>
             <div class="col-12" v-if="tournament.banned_cards!=''">
-            <h6>Banned Cards: {{tournament.banned_cards.replace(';', ', ')}}</h6>
+            <h6>Banned Cards: {{tournament.banned_cards.replace(/;/g, ', ')}}</h6>
             </div>
           </div>
           <div class="row mb-3">
