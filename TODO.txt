@@ -2,7 +2,6 @@ Season 4
 Prod update:
 1. remove Conclave Triggers column from the prod Tournament tab
 2. add Target and Conclave Distance colums into Tournament and Template tab
-3. run achievement_insert
 
 Tournament -
             - inducemnt phase tells you how many blessing/curse points you have

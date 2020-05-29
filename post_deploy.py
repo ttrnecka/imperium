@@ -12,7 +12,7 @@ print("Environment variables")
 print(os.environ)
 
 obsolete_files = [
-  "bot/command.py"
+  "bot/command.py", "services/conclave_service.py"
 ]
 print("Removing obsolete files")
 for ofile in obsolete_files:
@@ -23,6 +23,10 @@ print("Done")
 
 print("Upgrading DB models")
 upgrade(directory=os.path.join(ROOT,'migrations'))
+print("Done")
+
+print("Updating achievements")
+import achievements_insert
 print("Done")
 
 print("Restarting Bot")
