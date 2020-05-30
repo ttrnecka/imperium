@@ -42,9 +42,9 @@ class ImperiumCog(commands.Cog):
     await ctx.send(embed=embed)
 
   @staticmethod
-  async def send_message(channel, message_list):
+  async def send_message(channel, message_list, block=False):
     """Sends messages to channel"""
-    msg = LongMessage(channel)
+    msg = LongMessage(channel, block=block)
     for message in message_list:
         msg.add(message)
     await msg.send()

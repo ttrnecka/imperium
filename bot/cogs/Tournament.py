@@ -321,8 +321,7 @@ class Tournament(ImperiumCog):
         return
       
       if args[0] == "list":
-        msg = ["**Competitions:**"]
-        msg.append("```")
+        msg = []
         msg.append(
           '{:25s} | {:25} | {:25}'.format("League","Name","Type")
         )
@@ -332,8 +331,8 @@ class Tournament(ImperiumCog):
               '{:25s} | {:25} | {:25}'.format(comp.league_name,comp.name,comp.type_str())
           )
 
-        msg.append("```")
-        await ctx.send("\n".join(msg))
+        await self.send_message(ctx.channel, msg, block=True)
+        # await ctx.send("\n".join(msg))
         return
 
       if args[0] == "ticket":
