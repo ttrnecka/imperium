@@ -90,6 +90,7 @@ class TournamentService:
     def init_dict_from_tournament_template(cls, template):
         """import sheet tournament template line into dict to update the TournamentTemplate record"""
         return {
+            "template_id":int(template["Template ID"]),
             "active":int(template["Active"]),
             "type":template["Tournament Type"],
             "mode":template["Tournament Mode"],
@@ -175,47 +176,44 @@ class TournamentService:
     @classmethod
     def update_conclave(cls):
         """Updates conclave rules from sheet into DB"""
-        ConclaveRule.query.delete()
-        for rule in ImperiumSheetService.conclave_rules():
-            r_dict = cls.init_dict_from_conclave_rule(rule)
-            d_rule = ConclaveRule.query.filter_by(name=r_dict['name']).one_or_none()
-            if not d_rule:
-                d_rule = ConclaveRule()
-                db.session.add(d_rule)
-
-            d_rule.update(**r_dict)
-
-        db.session.commit()
+        cls.update_table(ConclaveRule,ImperiumSheetService.conclave_rules(),cls.init_dict_from_conclave_rule, 'name')
 
     @classmethod
     def update_templates(cls):
         """Updates tournament templates from sheet into DB"""
-        cls.update_table(TournamentTemplate,ImperiumSheetService.tournament_templates(),cls.init_dict_from_tournament_template)
+        cls.update_table(TournamentTemplate,ImperiumSheetService.tournament_templates(),cls.init_dict_from_tournament_template, 'template_id')
 
     @classmethod
     def update_admins(cls):
         """Updates admins from sheet into DB"""
-        cls.update_table(TournamentAdmin,ImperiumSheetService.admins(),cls.init_dict_from_tournament_admin)
+        cls.update_table(TournamentAdmin,ImperiumSheetService.admins(),cls.init_dict_from_tournament_admin, 'name')
 
     @classmethod
     def update_sponsors(cls):
         """Updates sponsors from sheet into DB"""
-        cls.update_table(TournamentSponsor,ImperiumSheetService.sponsors(),cls.init_dict_from_tournament_sponsor)
+        cls.update_table(TournamentSponsor,ImperiumSheetService.sponsors(),cls.init_dict_from_tournament_sponsor, 'name')
 
     @classmethod
     def update_rooms(cls):
         """Updates rooms from sheet into DB"""
-        cls.update_table(TournamentRoom,ImperiumSheetService.rooms(),cls.init_dict_from_tournament_room)
+        cls.update_table(TournamentRoom,ImperiumSheetService.rooms(),cls.init_dict_from_tournament_room, 'name')
         
     @classmethod
-    def update_table(cls, table, data, transfer_func):
-        table.query.delete()
+    def update_table(cls, table, data, transfer_func, idx_column):
+        idxs = []
         for template in data:
-            r_dict = transfer_func(template)
-            item = table()
-            db.session.add(item)
+            r_dict = r_dict = transfer_func(template)
+            idxs.append(r_dict[idx_column])
+            item = table.query.filter_by(**{f'{idx_column}':r_dict[idx_column]}).one_or_none()
+            if not item:
+                item = table()
+                db.session.add(item)
             item.update(**r_dict)
-
+        filters = [~getattr(table, idx_column).in_(idxs)]
+        delete = table.query.filter(*filters).all()
+        for item in delete:
+          db.session.delete(item)
+        
         db.session.commit()
 
     @classmethod

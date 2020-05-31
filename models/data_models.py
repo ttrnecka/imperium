@@ -535,6 +535,7 @@ class Tournament(Base):
 class TournamentTemplate(Base):
     __tablename__ = 'tournament_templates'
 
+    template_id = db.Column(db.Integer,nullable=False, index=True, unique=False)
     active = db.Column(db.Boolean(),nullable=False, default=True)
     type = db.Column(db.String(80),nullable=False)
     mode = db.Column(db.String(80),nullable=False)

@@ -3,9 +3,6 @@ Prod update:
 
 Tournament -
             - add feature to include staff from HC in the deck builder
-            admincomp update - make the table updates not to remove/reinsert things
-
-Deck - RRs are nto counted correctly when Motivatioal Speaker is disabled
 
 Conclave 
         - add new blessings/curses into DB/ pictures
@@ -51,6 +48,7 @@ Tournament - add new Target value and create 6 ranges for blessings/curses that 
            - deck will show what range you are in
            - inducemnt phase tells you how many blessing/curse points you have
            - blessing/curses rolled in inducement phase in the order
+           - admincomp update - make the table updates not to remove/reinsert things
 
 Tournament Template - add ranges
 
@@ -59,14 +57,9 @@ Conclave
 
 TODO FIXES
 Card removed from the deck - fix the name - add uuid to the log
-prevent double tournament start?
 skill picker
-dusting based on value?
-OT rules?
 store comp games in the competition folder based on the comp ID and not name
-Blessing/Curses orders
 negative valued cards should count as positive for the purpose of the migration pack
-make blessings/curses limited to avialable list + add command to rerol
 Skill override on wilcard cards
 disable skills on players
 
@@ -106,6 +99,7 @@ DONE schedule tournament auto check for every hour
 
 
 DONE
+Deck - RRs are nto counted correctly when Motivatioal Speaker is disabled
 allow tournaments to have banned card list - deck will not allow their use
 Multiskills like Need for Speed cannot go to the same player - COM logic needs to be included
 Leaderboard - timing when all coaches are loaded
