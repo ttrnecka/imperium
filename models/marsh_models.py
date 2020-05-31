@@ -5,24 +5,24 @@ from marshmallow_sqlalchemy import ModelSchema
 
 ma = Marshmallow()
 
-class TransactionSchema(ModelSchema):
+class TransactionSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Transaction
 
-class AccountSchema(ModelSchema):
+class AccountSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Account
     #transactions = ma.Nested(TransactionSchema, many=True)
     transactions = ma.Nested(TransactionSchema, many=True, attribute = 'last_transactions')
 
-class CardTemplateSchema(ModelSchema):
+class CardTemplateSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = CardTemplate
         exclude = ["cards"]
     date_modified = ma.String()
     date_created = ma.String()
 
-class CardSchema(ModelSchema):
+class CardSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Card
         exclude = ["decks", "coach"]
@@ -31,27 +31,29 @@ class CardSchema(ModelSchema):
     default_skills = ma.List(ma.String())
     coach_data = ma.Dict(attribute = 'coach_dict')
 
-class TournamentSignupSchema(ModelSchema):
+class TournamentSignupSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = TournamentSignups
     coach = ma.Integer(attribute = 'coach_id')
     deck = ma.Integer(attribute = 'deck_id')
 
-class TournamentSchema(ModelSchema):
+class TournamentSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Tournament
         exclude = ["coaches"]
     tournament_signups = ma.Nested(TournamentSignupSchema, many=True)
     conclave_ranges = ma.Dict()
 
-class DusterSchema(ModelSchema):
+class DusterSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Duster
+        include_relationships = True
 
-class CoachSchema(ModelSchema):
+class CoachSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Coach
         exclude = ["packs"]
+        include_relationships = True
     
     account = ma.Nested(AccountSchema)
     duster = ma.Nested(DusterSchema)
@@ -69,9 +71,10 @@ class SimpleCoachSchema(ma.Schema):
     class Meta:
         fields = ("id", "name", "short_name", "disc_id", "web_admin", "super_admin", "bb2_name")
 
-class DeckSchema(ModelSchema):
+class DeckSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Deck
+        include_relationships = True
     
     extra_cards = ma.Nested(CardSchema, many=True)
     unused_extra_cards = ma.Nested(CardSchema, many=True)
@@ -81,15 +84,17 @@ class DeckSchema(ModelSchema):
     deck_upgrade_cards = ma.Nested(CardSchema, many=True)
     disabled_cards = ma.List(ma.String)
 
-class CrackerCardTemplateSchema(ModelSchema):
+class CrackerCardTemplateSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = CrackerCardTemplate
         exclude = ["cards"]
+        include_relationships = True
     cyanide_player_type = ma.String()
 
-class CrackerCardSchema(ModelSchema):
+class CrackerCardSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = CrackerCard
+        include_relationships = True
     
     cracker_template = ma.Nested(CrackerCardTemplateSchema)
     coach = ma.String()
