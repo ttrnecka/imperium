@@ -6,15 +6,18 @@ import { BootstrapVue } from 'bootstrap-vue';
 import $ from 'jquery';
 import showdown from 'showdown';
 import VueMobileDetection from 'vue-mobile-detection';
+import { library, dom } from '@fortawesome/fontawesome-svg-core';
+import { fas } from '@fortawesome/free-solid-svg-icons';
 import App from './App.vue';
 import VueFlashMessage from './components/VueFlashMessage/index';
 
-// import 'bootstrap/dist/css/bootstrap.css';
 import './assets/scss/main.scss';
-import '@fortawesome/fontawesome-free/css/all.css';
-import '@fortawesome/fontawesome-free/js/all';
 import store from './store';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
+
+dom.watch();
+
+library.add(fas);
 
 Vue.use(VueAxios, axios);
 Vue.use(BootstrapVue);
