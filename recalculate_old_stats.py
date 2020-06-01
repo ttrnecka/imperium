@@ -4,7 +4,7 @@ import json
 import logging
 from logging.handlers import RotatingFileHandler
 
-import bb2
+import bb2_cyanide_api as bb2
 from web import db, app
 from models.data_models import Coach
 from models.marsh_models import leaderboard_coach_schema

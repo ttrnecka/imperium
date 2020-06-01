@@ -5,7 +5,7 @@ import functools, urllib
 import logging
 from threading import Timer
 from models.base_model import db
-from .adapter import adapter
+from bb2_cyanide_api import adapter
 
 logger = logging.getLogger('discord')
 

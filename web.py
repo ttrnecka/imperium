@@ -20,7 +20,7 @@ from misc.helpers import InvalidUsage, current_user
 from misc.decorators import authenticated
 from misc.admin import TournamentView, CoachView
 from misc.helpers2 import etagjsonify, cache, cache_header
-import bb2
+import bb2_cyanide_api as bb2
 
 os.environ["YOURAPPLICATION_SETTINGS"] = "config/config.py"
 
@@ -53,7 +53,7 @@ def create_app():
         WebHook(fapp.config['DISCORD_WEBHOOK_ADMIN']).send
     )
     Notificator('tournament').register_notifier(WebHook(fapp.config['DISCORD_WEBHOOK_TOURNAMENT']).send)
-    BB2Service.register_agent(bb2.api.Agent(fapp.config['BB2_API_KEY']))
+    BB2Service.register_agent(bb2.Agent(fapp.config['BB2_API_KEY']))
     return fapp
 
 app = create_app()

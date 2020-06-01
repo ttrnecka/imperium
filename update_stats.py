@@ -7,7 +7,7 @@ import datetime as DT
 
 from sqlalchemy.orm.attributes import flag_modified
 
-import bb2
+import bb2_cyanide_api as bb2
 from web import db, app
 from models.data_models import Coach
 from models.marsh_models import leaderboard_coach_schema
@@ -46,14 +46,14 @@ def main(argv):
 
     start_date = DT.date.today() - DT.timedelta(days=1)
 
-    agent = bb2.api.Agent(app.config['BB2_API_KEY'])
+    agent = bb2.Agent(app.config['BB2_API_KEY'])
 
     stats = st.get_stats(refresh)
 
     logger.info("Getting matches since %s", start_date)
 
     try:
-        data = agent.matches(start=start_date)
+        data = agent.matches(start=start_date, league=','.join(app.config['LEAGUES']))
     except Exception as exc:
         logger.error(exc)
         raise exc
@@ -102,7 +102,7 @@ def main(argv):
         logger.info("Processing stat calculation of match %s ", data['uuid'])
 
         # ignore concedes
-        if bb2.is_concede(data):
+        if bb2.match.is_concede(data):
             logger.info("Match %s is concede", data['uuid'])
             continue
 

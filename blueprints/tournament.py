@@ -7,7 +7,7 @@ from models.marsh_models import tournaments_schema, tournament_schema
 from misc.decorators import authenticated, webadmin, registered, superadmin
 from misc.helpers import InvalidUsage, current_coach
 from misc.stats import StatsHandler
-import bb2
+import bb2_cyanide_api as bb2
 
 from services import TournamentService, RegistrationError, TransactionService, TournamentError
 from services import Notificator

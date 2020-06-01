@@ -6,7 +6,7 @@ from misc.helpers import PackHelper
 from models.data_models import db, Transaction, Coach, Tournament, Competition, TournamentSignups
 from services import CoachService, TournamentService, CompetitionService, CardService, PackService
 from bot.base_cog import ImperiumCog
-from bb2.api import BB2APINotAvailable
+from bb2_cyanide_api.api import BB2APINotAvailable
 
 class Admin(ImperiumCog):
     def __init__(self, bot):

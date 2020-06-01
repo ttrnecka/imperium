@@ -14,3 +14,4 @@ flask-admin
 Pillow
 simplejson
 Flask-Caching
+bb2_cyanide_api
