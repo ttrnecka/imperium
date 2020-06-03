@@ -226,12 +226,15 @@ class Coach(Base):
     achievements = db.Column(TextPickleType(), nullable=True)
     free_packs = db.Column(db.Text(), nullable=False, default="")
 
+    high_command = db.relationship("HighCommand", backref=db.backref('coach'), cascade="all, delete-orphan",uselist=False)
+
     query_class = QueryWithSoftDelete
 
     def __init__(self,name="",disc_id=0):
         self.name = name
         self.disc_id = disc_id
         self.account = Account()
+        self.high_command = HighCommand()
         self.free_packs = "player"
         self.achievements = achievements_template
 
@@ -676,6 +679,12 @@ class Duster(Base):
 
     def __init__(self,status="OPEN"):
         self.status = status
+    
+class HighCommand(Base):
+    __tablename__ = 'high_commands'
+
+    coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False, unique=True) 
+    level = db.Column(db.Integer(),nullable=False, default=1)
     
 
 class CrackerCardTemplate(Base):

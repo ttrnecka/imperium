@@ -2,11 +2,12 @@ from flask import Blueprint, jsonify, abort, request
 from sqlalchemy.orm import raiseload, selectinload
 
 from models.data_models import db, Coach, TransactionError
-from models.marsh_models import coach_schema, coaches_schema, cards_schema
+from models.marsh_models import coach_schema, coaches_schema, cards_schema, high_command_schema
 from misc.decorators import authenticated, registered_with_inactive, webadmin
-from misc.helpers import InvalidUsage, current_user, owning_coach, CardHelper
+from misc.helpers import InvalidUsage, current_user, owning_coach, CardHelper, current_coach
 
 from services import CoachService
+import services.high_command_service as hc_service
 from misc.stats import StatsHandler
 from misc.helpers2 import current_season, etagjsonify, cache_header
 
@@ -109,4 +110,21 @@ def update_coach(coach_id):
     coach.bb2_name = bb2_name
     db.session.commit()
     result = coach_schema.dump(coach)
+    return jsonify(result.data)
+
+
+@authenticated
+@coach.route("/<int:coach_id>/high_command", methods=["POST"])
+def level_hc(coach_id):
+    """get coach with detailed info"""
+    coach = Coach.query.get(coach_id)
+    if coach is None:
+        abort(404)
+    if coach != current_coach():
+      raise InvalidUsage("Unauthorized access!!!!", status_code=403)
+    try:
+      hc_service.level(coach)
+      result = high_command_schema.dump(coach.high_command)
+    except (TransactionError, hc_service.HighCommandError) as exc:
+      raise InvalidUsage(str(exc), status_code=403)
     return jsonify(result.data)
