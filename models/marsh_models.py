@@ -1,6 +1,6 @@
 from flask_marshmallow import Marshmallow
 from .data_models import Transaction, Account, Card, Coach, Tournament, TournamentSignups, Duster, Deck, CrackerCard, CrackerCardTemplate, HighCommand
-from .data_models import CardTemplate
+from .data_models import CardTemplate, HighCommandSquad
 from marshmallow_sqlalchemy import ModelSchema
 
 ma = Marshmallow()
@@ -12,6 +12,12 @@ class TransactionSchema(ma.SQLAlchemyAutoSchema):
 class HighCommandSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = HighCommand
+
+class HighCommandSquadSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = HighCommandSquad
+        include_relationships = True
+    level = ma.Integer()
 
 class AccountSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
@@ -88,6 +94,7 @@ class DeckSchema(ma.SQLAlchemyAutoSchema):
     injury_map = ma.Dict()
     deck_upgrade_cards = ma.Nested(CardSchema, many=True)
     disabled_cards = ma.List(ma.String)
+    squad = ma.Nested(HighCommandSquadSchema, many=False)
 
 class CrackerCardTemplateSchema(ma.SQLAlchemyAutoSchema):
     class Meta:

@@ -16,8 +16,7 @@ New Staff pack
   - need to display it as new type in the collection 
 
 HC
- - starts with 1 slot
- - level to X slots - what is the price per slot?, what is the cap?
+ - frontend view and level ability
  - staff has limited use
     deduct use after staff is included in tournamnet
     add use after staff is removed from tournamnets (in deck building phase only obviously)
@@ -54,6 +53,10 @@ Tournament Template - add ranges
 
 Conclave 
         achievements - change to curse/blessing points
+
+HC
+ - starts with 1 slot
+ - level to X slots - what is the price per slot?, what is the cap?
 
 TODO FIXES
 Card removed from the deck - fix the name - add uuid to the log

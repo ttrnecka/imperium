@@ -6,7 +6,7 @@ import re
 
 from sqlalchemy import asc, func
 from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card, TournamentTemplate, TournamentAdmin
-from models.data_models import TournamentSponsor, TournamentRoom, ConclaveRule, Competition
+from models.data_models import TournamentSponsor, TournamentRoom, ConclaveRule, Competition, HighCommandSquad
 from models.base_model import db
 from models.marsh_models import cards_schema
 from misc import KEYWORDS
@@ -320,6 +320,12 @@ class TournamentService:
             # deck
             deck = Deck(team_name="", mixed_team="", tournament_signup=signup)
             db.session.add(deck)
+
+            # high command
+            hc = HighCommandSquad()
+            hc.command = coach.high_command
+            hc.deck = deck
+            db.session.add(hc)
 
             coach.make_transaction(tran)
             if tournament.fee > 0:

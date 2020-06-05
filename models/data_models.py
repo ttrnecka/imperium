@@ -685,7 +685,26 @@ class HighCommand(Base):
 
     coach_id = db.Column(db.Integer, db.ForeignKey('coaches.id'), nullable=False, unique=True) 
     level = db.Column(db.Integer(),nullable=False, default=1)
-    
+
+    squads = db.relationship('HighCommandSquad', backref=db.backref('command', lazy=True), cascade="all, delete-orphan", lazy="selectin")
+
+squad_card_table = db.Table('squad_cards', Base.metadata,
+    db.Column('squad_id', db.Integer, db.ForeignKey('high_command_squads.id')),
+    db.Column('card_id', db.Integer, db.ForeignKey('cards.id'))
+)
+
+class HighCommandSquad(Base):
+    __tablename__ = 'high_command_squads'
+
+    cards = db.relationship("Card", secondary=squad_card_table, backref=db.backref('squads', lazy="dynamic"), lazy="dynamic")
+    high_command_id = db.Column(db.Integer, db.ForeignKey('high_commands.id'), nullable=False, unique=False)
+    deck_id = db.Column(db.Integer, db.ForeignKey('decks.id'), nullable=False, unique=False)
+
+    deck = db.relationship("Deck", backref=db.backref('squad', uselist=False,cascade="all, delete-orphan"))
+
+    @property
+    def level(self):
+      return self.command.level
 
 class CrackerCardTemplate(Base):
     __tablename__ = 'cracker_card_templates'
