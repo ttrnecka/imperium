@@ -402,12 +402,13 @@ class TournamentService:
         cards = list(itertools.chain.from_iterable(cards_list))
 
         for card in cards:
-            if card.get('one_time_use'):
+            # if card has limited uses, they have been used up and the card is not in any other squad
+            if not (card.permanent() or card.uses_left()) and len(card.squads) < 2:
                 coach_mention = card.coach.mention()
                 db.session.delete(card)
                 db.session.commit()
                 Notificator("bank").notify(
-                    f'Card {card.get("name")} removed from {coach_mention} collection - one time use.'
+                    f'Card {card.get("name")} removed from {coach_mention} collection - used {card.get("number_of_uses")} times'
                 )
 
     @classmethod

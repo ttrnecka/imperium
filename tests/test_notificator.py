@@ -31,19 +31,19 @@ class TestNotificationRegister(unittest.TestCase):
 class TestNotificator(unittest.TestCase):
 
     def test_notificator_initiation(self):
-        notificator = services.Notificator("bank")
-        self.assertEqual(notificator.descriptor, "bank", "Notificator has bank descriptor")
+        notificator = services.Notificator("bank1")
+        self.assertEqual(notificator.descriptor, "bank1", "Notificator has bank descriptor")
         self.assertEqual(notificator.notificators, [], "Notificator has empty list of notificators")
-        self.assertEqual(services.NotificationRegister.lookup("bank"),notificator,"Notificator register itself in the notification register")
+        self.assertEqual(services.NotificationRegister.lookup("bank1"),notificator,"Notificator register itself in the notification register")
 
     def test_notificator_registration(self):
-        notificator = services.Notificator("bank")
+        notificator = services.Notificator("bank2")
         notificator.register_notifier(mocked_notifier)
         self.assertEqual(notificator.notificators, [mocked_notifier], "Notificator list of notificators now contains mocked_notifier")
 
     def test_notify(self):
         noti = mock.MagicMock()
-        notificator = services.Notificator("bank")
+        notificator = services.Notificator("bank3")
         notificator.register_notifier(noti)
         notificator.notify("message_sent")
         noti.assert_called_once_with("message_sent")

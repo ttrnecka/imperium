@@ -61,6 +61,7 @@ class CardTemplate(Base):
     TYPE_TRAINING = "Training"
     TYPE_SP = "Special Play"
     TYPE_STAFF = "Staff"
+    TYPE_HC = "High Command"
     RARITY_LEGEND = "Legendary"
     RARITY_UNIQUE = "Unique"
     RARITY_INDUCEMENT = "Inducement"
@@ -86,7 +87,8 @@ class CardTemplate(Base):
     skill_access = db.Column(db.String(20))
     multiplier = db.Column(db.Integer(), nullable=False, default=1)
     starter_multiplier = db.Column(db.Integer(), nullable=False, default=0)
-    one_time_use = db.Column(db.Boolean(), default=False, nullable=False)
+    # one_time_use = db.Column(db.Boolean(), default=False, nullable=False)
+    number_of_uses = db.Column(db.Integer(), nullable=False, default=0)
     position = db.Column(db.String(50), nullable=False)
 
     cards = db.relationship('Card', backref=db.backref('template', lazy="selectin"), cascade="all, delete-orphan",lazy=True)
@@ -108,6 +110,7 @@ class Card(Base):
     subtype = db.Column(db.String(30), nullable=False)
     notes = db.Column(db.String(255))
     value = db.Column(db.Integer, nullable=False, default=1)
+    uses = db.Column(db.Integer, nullable=False, default=0)
     deck_type = db.Column(db.String(255), nullable=False, default="base")
 
     pack_id = db.Column(db.Integer, db.ForeignKey('packs.id'), nullable=False)
@@ -182,7 +185,21 @@ class Card(Base):
       if self.pack and self.pack.coach:
         return { 'id': self.pack.coach_id, 'name': self.pack.coach.short_name(), 'bb2_name': self.pack.coach.bb2_name }
       return { 'id': None, 'name': None }
-      
+
+    def increment_use(self):
+      self.uses += 1
+      return self.uses
+    
+    def increment_use(self):
+      self.uses -= 1
+      return self.uses
+
+    def uses_left(self):
+      return self.get('number_of_uses') - self.uses
+
+    def permanent(self):
+      return self.get('number_of_uses') == 0
+
     @classmethod
     def from_template(cls, template):
         model = cls()

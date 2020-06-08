@@ -11,7 +11,7 @@ from .card_service import CardService
 from .coach_service import CoachService
 from .transaction_service import TransactionService
 from .imperium_sheet_service import ImperiumSheetService
-from .notification_service import Notificator
+from .notification_service import Notificator, NotificationRegister
 from .tournament_service import RegistrationError, TournamentService, TournamentError
 from .bb2_service import BB2Service
 from .web_hook_service import WebHook
