@@ -99,7 +99,12 @@ class CardTemplate(Base):
     def __repr__(self):
         return f'<CardTemplate {self.id}. {self.name}, rarity: {self.rarity}, type: {self.card_type}>'
 
+class CardError(Exception):
+  pass
+
 class Card(Base):
+    CARD_USED_UP = "Card {} has already been used {} times"
+
     __tablename__ = 'cards'
 
     name = db.Column(db.String(80), nullable=False, index=True)
@@ -187,10 +192,13 @@ class Card(Base):
       return { 'id': None, 'name': None }
 
     def increment_use(self):
+       # check if card has free usage
+      if self.uses_left() <= 0:
+        raise CardError(self.CARD_USED_UP.format(self.template.name, self.template.number_of_uses))
       self.uses += 1
       return self.uses
     
-    def increment_use(self):
+    def decrement_use(self):
       self.uses -= 1
       return self.uses
 
@@ -531,6 +539,9 @@ class Tournament(Base):
 
     def is_development(self):
         return self.type == "Development"
+
+    def is_imperium(self):
+        return self.type == "Imperium"
 
     def conclave_ranges(self):
       break1 = 0

@@ -193,6 +193,7 @@ class DeckService:
                     tmp_card.assigned_to_array[deck.id] = []
                     flag_modified(tmp_card, "assigned_to_array")
                     deck.cards.append(tmp_card)
+                    tmp_card.increment_use()
                     db.session.commit()
             else:
                 raise DeckError("Card not found")
@@ -233,6 +234,7 @@ class DeckService:
                     tmp_card.assigned_to_array[deck.id] = []
                     flag_modified(tmp_card, "assigned_to_array")
                     deck.cards.remove(tmp_card)
+                    tmp_card.decrement_use()
                     db.session.commit()
                 else:
                     raise DeckError("Card is not in the deck")
@@ -431,10 +433,17 @@ class DeckService:
     def is_banned(deck, card):
       if isinstance(card, dict):
         name = card['template']['name']
+        desc = card['template']['description']
       else:
         name = card.template.name
+        desc = card.template.description
 
       if name in deck.tournament_signup.tournament.banned_cards.split(";"):
+        return True
+
+      # imp tournaments cannot use Event cards
+      if deck.tournament_signup.tournament.is_imperium() and \
+            KEYWORDS(desc).is_event():
         return True
       
       return False

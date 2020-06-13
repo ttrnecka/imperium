@@ -3,6 +3,7 @@
 from models.data_models import Coach, Transaction, Tournament, Card, CardTemplate
 from models.base_model import db
 from .notification_service import Notificator
+from .deck_service import DeckService
 
 class HighCommandError(Exception):
     """Exception used for High Commands Errors"""
@@ -15,6 +16,7 @@ CANNOT_EDIT_ERROR = "Cannot edit High Command Squad in this phase!"
 INVALID_CARD_ERROR = "Card is not of a valid type for HighCommand!"
 SQUAD_FULL_ERROR = "High Command Squad is full!"
 CARD_NOT_FOUND = "Card {} not found in the High Command Squad!"
+BANNED_CARD = "Card is banned in the tournament!"
 
 HC_PRICES = [
   10,20,30,40,50,60
@@ -50,16 +52,20 @@ def add_card_to_squad(squad, card):
   can_edit_squad(squad)
   valid_hc_card(card)
 
-  # check if card has free usage
+  # check if it is banned
+  if DeckService.is_banned(squad.deck, card):
+    raise HighCommandSquadError(BANNED_CARD)
 
   # check if squad has free slot
   if squad.level == len(squad.cards):
-     HighCommandSquadError(SQUAD_FULL_ERROR)
+     raise HighCommandSquadError(SQUAD_FULL_ERROR)
 
   # add the card to squad
   squad.cards.append(card)
 
   # increase card usage
+  card.increment_use()
+  db.session.commit()
 
 def remove_card_from_squad(squad, card):
   can_edit_squad(squad)
@@ -72,5 +78,6 @@ def remove_card_from_squad(squad, card):
   squad.cards.remove(card)
 
   # revert usage
+  card.decrement_use()
   db.session.commit()
 

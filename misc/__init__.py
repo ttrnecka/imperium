@@ -18,6 +18,7 @@ class KEYWORDS:
   IMMUNE    = "Immune"
   ARENA     = "Arena"
   ANNOUNCE  = "Announce"
+  EVENT = "Event"
 
   def __init__(self, text):
     self.text = text
@@ -33,3 +34,6 @@ class KEYWORDS:
 
   def is_randomise(self):
     return self.RANDOMISE in imperium_keywords(self.text)
+
+  def is_event(self):
+    return self.EVENT in imperium_keywords(self.text)

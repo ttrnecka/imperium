@@ -36,6 +36,8 @@ class DusterService:
         """Check if `card` can be dusted and dust it, raise error otherwise"""
         if card.in_development_deck or card.in_imperium_deck:
             raise DustingError("Cannot dust card that is used in the deck!!!")
+        if not card.permanent() and card.uses > 0:
+            raise DustingError("Cannot dust limited use card that was already used!!!")
         if card.coach.id != coach.id:
             raise DustingError("Coach ID mismatch!!!")
         duster = cls.get_duster(coach)
