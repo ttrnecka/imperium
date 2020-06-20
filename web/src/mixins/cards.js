@@ -199,7 +199,7 @@ const Cards = {
       if (card.template.card_type === 'Player') {
         return this.skills_for_player(card);
       }
-      if (['Special Play', 'Staff', 'Upgrade', 'Reaction'].includes(card.template.card_type)) {
+      if (['Special Play', 'Staff', 'Upgrade', 'Reaction', 'High Command'].includes(card.template.card_type)) {
         return this.skills_for_special_and_staff(card);
       }
       const skills = this.skill_names_for(card);
@@ -398,6 +398,12 @@ const Cards = {
           skills = [card.template.name];
       }
       return skills;
+    },
+    max_uses(card) {
+      if (card.template.number_of_uses === 0) {
+        return '∞';
+      }
+      return card.template.number_of_uses;
     },
     dust(method, card) {
       let path;

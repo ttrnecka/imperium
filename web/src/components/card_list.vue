@@ -30,6 +30,7 @@
                 <th v-if="should_diplay('ShortSubtype')" class="d-none d-sm-table-cell" title="Subtype">
                   S
                 </th>
+                <th v-if="should_diplay('Uses') && !duster">Uses</th>
                 <th v-if="quantity" class="d-none d-sm-table-cell">
                   Quantity
                 </th>
@@ -64,6 +65,7 @@
                   <td v-if="should_diplay('ShortSubtype')" class="d-none d-sm-table-cell" :title="card.template.subtype">
                     {{ card.template.subtype.match(/\b(\w)/g).join('') }}
                   </td>
+                  <td v-if="should_diplay('Uses') && !duster">{{ `${card.uses}/${max_uses(card)}` }} </td>
                   <td v-if="quantity">{{ card.quantity }}</td>
                   <td v-if="duster" class="text-right">
                     <button v-if="is_in_duster(card)" :disabled="processing"
@@ -161,13 +163,13 @@ export default {
     type_list: {
       type: Array,
       default() {
-        return ['Player', 'Training', 'Special Play', 'Reaction', 'Staff', 'Upgrade'];
+        return ['Player', 'Training', 'Special Play', 'Reaction', 'Staff', 'High Command', 'Upgrade'];
       },
     },
     column_list: {
       type: Array,
       default() {
-        return ['Lock', 'Rarity', 'Value', 'Name', 'Skills', 'Race', 'Subtype'];
+        return ['Lock', 'Rarity', 'Value', 'Name', 'Skills', 'Race', 'Uses', 'Subtype'];
       },
     },
     // if provided for deck list purposes
@@ -191,13 +193,14 @@ export default {
       const newCollection = {};
       const sorted = this.sortedCardsWithoutQuantity(filter);
       for (let i = 0, len = sorted.length; i < len; i += 1) {
-        const { name } = sorted[i].template;
-        if (Object.prototype.hasOwnProperty.call(newCollection, name)) {
-          newCollection[name].quantity += 1;
+        const { name, uses } = sorted[i].template;
+        const tag = name + uses;
+        if (Object.prototype.hasOwnProperty.call(newCollection, tag)) {
+          newCollection[tag].quantity += 1;
         } else {
-          newCollection[name] = Object.assign({}, sorted[i]);
+          newCollection[tag] = Object.assign({}, sorted[i]);
           // newCollection[name].card = sorted[i];
-          newCollection[name].quantity = 1;
+          newCollection[tag].quantity = 1;
         }
       }
       return newCollection;

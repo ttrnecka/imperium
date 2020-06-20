@@ -1,6 +1,7 @@
 Season 4
 Prod update:
   Rename One time use to Number Of Uses
+  TYPE_HC - change appropriatelly
 
   For cards display number of uses left in the collection
 Tournament -
@@ -11,9 +12,6 @@ Conclave
         - remove obsolete blessings/curses
 
 New Staff pack
-  - new sub command/new probabilities
-  - new card type that is not part of deck
-  - apo and RR will remain in the  - new card type
   - need to display it as new type in the collection 
 
 HC
@@ -64,6 +62,12 @@ HC
 
 Event keyword
   - ban event cards from Imperium tournaments
+
+New Staff pack
+  - new sub command/new probabilities
+  - new card type that is not part of deck
+  - apo and RR will remain in the  - new card type
+
 
 VERY HIGH
 add deck templates

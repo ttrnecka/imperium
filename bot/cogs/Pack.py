@@ -9,8 +9,8 @@ from bot.base_cog import ImperiumCog
 
 from misc.helpers import PackHelper
 
-GEN_PACKS = ["player", "training", "booster", "special"]
-GEN_PACKS_TMP = ["player", "training", "booster", "special", "skill", "coaching", "positional", "legendary","brawl"]
+GEN_PACKS = ["player", "training", "booster", "special","hc"]
+GEN_PACKS_TMP = ["player", "training", "booster", "special", "skill", "coaching", "positional", "legendary","brawl","hc"]
 GEN_QUALITY = ["premium", "budget"]
 
 def gen_help():
@@ -42,6 +42,12 @@ def gen_help():
     msg += "Available only by using Drills\n"
     msg += "Rarity: Common or higher\n"
     msg += "Command: !genpack special\n \n"
+
+    msg += "= High Command pack =\n"
+    msg += "Content: 3 high command type cards\n"
+    msg += f"Price: {PackService.PACK_PRICES['hc']} coins. "
+    msg += "Rarity: Common or higher\n"
+    msg += "Command: !genpack hc\n \n"
 
     msg += "= Player pack =\n"
     msg += "Content: 3 player type cards\n"
@@ -89,6 +95,11 @@ def gentemp_help():
     msg += "Rarity: Common+\n"
     msg += "Command: !genpacktemp special\n \n"
 
+    msg += "= High Command pack =\n"
+    msg += "Content: 3 high command type cards\n"
+    msg += "Rarity: Common+\n"
+    msg += "Command: !genpacktemp hc\n \n"
+
     msg += "= Player pack =\n"
     msg += "Content: 3 player type cards\n"
     msg += "Rarity: Rare+\n"
@@ -119,10 +130,10 @@ def check_gentemp_command(pack_type, subtype):
     if pack_type not in GEN_PACKS_TMP:
         return False
     # skill/coaching/special/booster without quality
-    if not subtype and pack_type not in ["skill", "coaching", "special", "booster", "training", "brawl"]:
+    if not subtype and pack_type not in ["skill", "coaching", "special", "booster", "training", "brawl", "hc"]:
         return False
     # skill/coaching/special takes not other parameter
-    if subtype and pack_type in ["skill", "coaching", "special", "training", "brawl"]:
+    if subtype and pack_type in ["skill", "coaching", "special", "training", "brawl", "hc"]:
         return False
     # booster with allowed quality
     if subtype and pack_type == "booster" and subtype not in GEN_QUALITY:
@@ -138,10 +149,10 @@ def check_gen_command(pack_type, subtype):
     if pack_type not in GEN_PACKS:
         return False
     # training/booster/special without quality
-    if not subtype and pack_type not in ["training", "booster", "special"]:
+    if not subtype and pack_type not in ["training", "booster", "special", "hc"]:
         return False
     # training/special takes not other parameter
-    if subtype and pack_type in ["training", "special"]:
+    if subtype and pack_type in ["training", "special", "hc"]:
         return False
     # booster with allowed quality
     if subtype and pack_type == "booster" and subtype not in GEN_QUALITY:
@@ -169,14 +180,14 @@ class Pack(ImperiumCog):
 
         if pack_type in ["player", "positional", "legendary"]:
             pack = PackService.generate(pack_type, team=subtype)
-        elif pack_type in ["training", "special", "skill", "coaching", "brawl"]:
+        elif pack_type in ["training", "special", "skill", "coaching", "brawl","hc"]:
             pack = PackService.generate(pack_type)
         elif pack_type == "booster":
             pack_type = "booster_budget" if not subtype else f"booster_{subtype}"
             pack = PackService.generate(pack_type)
 
         title = f"**Temporary {PackService.description(pack)}**"
-        description = "**Note**: This is one time pack for Special Play or Inducement purposes only!!!"
+        description = "**Note**: This is one time pack only!!!"
         pieces = PackHelper.format_pack_to_pieces(pack.cards)
         efs = []
         efs.append({
@@ -214,7 +225,7 @@ class Pack(ImperiumCog):
         if pack_type == "player":
           first = True if pp_count == 0 else False
           pack = PackService.generate(pack_type, team=subtype, first=first, coach=coach)
-        elif pack_type == "training" or pack_type == "special":
+        elif pack_type in ["training","special", "hc"]:
           pack = PackService.generate(pack_type, coach=coach)
         elif pack_type == "booster":
           pack_type = "booster_budget" if not subtype else f"booster_{subtype}"
