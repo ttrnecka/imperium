@@ -15,6 +15,7 @@ from models.data_models import Coach, Tournament
 from models.marsh_models import ma, coach_schema
 from services import Notificator
 from services import BB2Service, WebHook
+from services.high_command_service import HC_PRICES
 from misc.stats import StatsHandler
 from misc.helpers import InvalidUsage, current_user
 from misc.decorators import authenticated
@@ -99,11 +100,11 @@ def bb2_names():
     bb2_names = sorted(list(StatsHandler().get_stats()['coaches'].keys()))
     return etagjsonify(names=bb2_names)
     
-@app.route("/seasons")
+@app.route("/config")
 @cache_header(3600)
 def seasons():
-    """return  seasons"""
-    return etagjsonify(seasons=app.config['SEASONS'])
+    """return  config"""
+    return etagjsonify(seasons=app.config['SEASONS'], high_command_prices = HC_PRICES)
 
 # BB teams
 @app.route("/teams/<teamname>", methods=["GET"])

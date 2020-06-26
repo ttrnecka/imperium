@@ -126,8 +126,8 @@ class PackService:
     ]
 
     HC_COMBOS = [
-        {"roll":0.4, "rarities":["Rare", "Common", "Common"]},
-        {"roll":0.6, "rarities":["Rare", "Rare", "Common"]},
+        {"roll":0.45, "rarities":["Rare", "Common", "Common"]},
+        {"roll":0.65, "rarities":["Rare", "Rare", "Common"]},
         {"roll":0.8, "rarities":["Epic", "Common", "Common"]},
         {"roll":0.89, "rarities":["Rare", "Rare", "Rare"]},
         {"roll":0.98, "rarities":["Epic", "Rare", "Common"]},

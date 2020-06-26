@@ -13,6 +13,7 @@ export default new Vuex.Store({
     season: 3,
     seasons: [
     ],
+    high_command_prices: [],
   },
   mutations: {
     storeTournaments(state, tournaments) {
@@ -26,6 +27,9 @@ export default new Vuex.Store({
     },
     storeBBNames(state, bb2Names) {
       state.bb2Names = bb2Names;
+    },
+    storeHC(state, prices) {
+      state.high_command_prices = prices;
     },
     storeSeasons(state, seasons) {
       state.seasons = seasons.reverse().map((s) => ({ value: s, text: `SEASON ${s}` }));
@@ -71,11 +75,12 @@ export default new Vuex.Store({
           commit('storeBBNames', res.data.names);
         });
     },
-    getSeasons({ commit }) {
-      const path = '/seasons';
+    getConfig({ commit }) {
+      const path = '/config';
       return Vue.axios.get(path)
         .then((res) => {
           commit('storeSeasons', res.data.seasons);
+          commit('storeHC', res.data.high_command_prices);
         });
     },
     getMe({ commit }) {

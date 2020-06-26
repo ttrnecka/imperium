@@ -29,7 +29,7 @@
               <li class="nav-item">
                 <a class="nav-link" id="info-tab" data-toggle="tab" href="#coach_info"
                   role="tab" aria-controls="coach_info" aria-selected="true">
-                  {{ selectedCoach.short_name}}'s Info
+                  Info
                 </a>
               </li>
               <li v-if="is_owner(selectedCoach)" class="nav-item">
@@ -86,6 +86,11 @@
                           <small class="text-muted">
                             {{ getFreePacks(selectedCoach) }}
                           </small>
+                        </h5>
+                    </div>
+                    <div class="col-12">
+                        <h5 class="coach_info">
+                          High Command Level: {{ selectedCoach.high_command.level }}<button :disabled="processing" v-if="!hc_level_maxed && is_owner(selectedCoach)" type="button" @click="upgradeHC()" class="btn col-12 mt-1 btn-primary">Upgrade for {{ high_command_upgrade_price }} coins</button>
                         </h5>
                     </div>
                     <div class="tab-content show col-12"
@@ -449,6 +454,9 @@ export default {
         achievements: {},
         stats: {},
         free_packs: '',
+        high_command: {
+          level: 0,
+        },
       },
     };
   },
@@ -611,6 +619,27 @@ export default {
       };
       return jdate.toLocaleDateString('default', options);
     },
+    upgradeHC() {
+      const path = `/coaches/${this.selectedCoach.id}/high_command`;
+      const price = this.high_command_upgrade_price;
+      this.processing = true;
+      this.axios.post(path)
+        .then((res) => {
+          this.flash(`High Command upgraded to level ${res.data.level}`, 'success', { timeout: 3000 });
+          this.selectedCoach.high_command = res.data;
+          this.selectedCoach.account.amount -= price;
+        })
+        .catch((error) => {
+          if (error.response) {
+            this.flash(error.response.data.message, 'error', { timeout: 3000 });
+          } else {
+            console.error(error);
+          }
+        })
+        .then(() => {
+          this.processing = false;
+        });
+    },
   },
   computed: {
     orderedCoaches() {
@@ -629,8 +658,17 @@ export default {
         this.$store.commit('updateSeason', value);
       },
     },
+    hc_level_maxed() {
+      return this.selectedCoach.high_command.level >= this.max_high_command_level;
+    },
+    max_high_command_level() {
+      return this.high_command_prices.length + 1;
+    },
+    high_command_upgrade_price() {
+      return this.high_command_prices[this.selectedCoach.high_command.level - 1];
+    },
     ...mapState([
-      'user', 'coaches', 'tournaments', 'bb2Names', 'initial_load', 'seasons',
+      'user', 'coaches', 'tournaments', 'bb2Names', 'initial_load', 'seasons', 'high_command_prices',
     ]),
     ...mapGetters([
       'loggedCoach', 'is_webadmin', 'is_loggedcoach', 'is_duster', 'is_duster_full', 'is_duster_open', 'duster_type', 'is_owner',
