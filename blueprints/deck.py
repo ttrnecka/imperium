@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, abort, request
 
 import functools
 
-from models.data_models import db, Tournament, Deck
+from models.data_models import db, Tournament, Deck, CardError
 from models.marsh_models import deck_schema
 from misc.decorators import authenticated
 from misc.helpers import InvalidUsage, current_coach
@@ -49,7 +49,7 @@ def deck_response_deco(func):
         can_edit_deck(deck)
         try:
           deck = func(deck)
-        except (DeckError) as exc:
+        except (DeckError, CardError) as exc:
           raise InvalidUsage(str(exc), status_code=403)
         return deck_response(deck)
     return wrapper_deck_response

@@ -1,6 +1,6 @@
 Season 4
 Prod update:
-  Rename One time use to Number Of Uses
+  Rename One time use to Number Of Uses in the sheet
   TYPE_HC - change appropriatelly
 
   For cards display number of uses left in the collection
@@ -15,7 +15,6 @@ New Staff pack
   - need to display it as new type in the collection 
 
 HC
- - frontend view and level ability
  - staff has limited use
     you can use only subset of your staff in HC for given tournament - so only use 2 staff cards from 3 in the HC for a tournament for example
 
@@ -54,6 +53,7 @@ Conclave
 HC
  - starts with 1 slot
  - level to X slots - what is the price per slot?, what is the cap?
+ - frontend view and level ability
  - staff has limited use
     deduct use after staff is included in tournamnet
     add use after staff is removed from tournamnets (in deck building phase only obviously)

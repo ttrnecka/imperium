@@ -193,7 +193,7 @@ class Card(Base):
 
     def increment_use(self):
        # check if card has free usage
-      if self.uses_left() <= 0:
+      if not self.permanent and self.uses_left() <= 0:
         raise CardError(self.CARD_USED_UP.format(self.template.name, self.template.number_of_uses))
       self.uses += 1
       return self.uses

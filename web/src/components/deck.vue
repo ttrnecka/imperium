@@ -1077,11 +1077,9 @@ export default {
       return this.canEdit ? 'col-lg-6' : 'col-lg-12';
     },
     conclave_range() {
-      console.log('here');
       let range = ['blessing3', 'blessing2', 'blessing1', 'curse1', 'curse2', 'curse3'].find((e) => (
         this.tournament.conclave_ranges[e].start <= this.deck_value && this.tournament.conclave_ranges[e].stop >= this.deck_value
       ));
-      console.log(range);
       if (range === undefined) {
         range = 'equilibrium';
       }
