@@ -204,53 +204,66 @@
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-          <div class="row">
-            <div v-if="canEdit" class="col-lg-6">
-              <div class="row mt-1 deck_header">
-                <div class="col-12">
-                  <h6>High Command (Coming Soon to the pitch near to you)</h6>
+              <div class="card">
+                <div class="card-header" :id="'deck_builder'+id">
+                  <h6 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapsebuilder'+id" aria-expanded="true" aria-controls="collapselog">
+                      Deck Builder
+                    </button>
+                  </h6>
                 </div>
-                <div class="col-6">
-                  <h6>Collection</h6>
-                </div>
-                <div class="col-6">
-                  <div class="custom-control custom-checkbox mr-sm-2 text-right">
-                    <input type="checkbox" class="custom-control-input" :id="'sptoggle'+id" v-model="starter">
-                    <label class="custom-control-label" :for="'sptoggle'+id">Toggle Starter Pack</label>
+                <div :id="'collapsebuilder'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
+                  <div class="card-body">
+                    <div class="row">
+                      <div v-if="canEdit" class="col-lg-6">
+                        <div class="row mt-1 deck_header">
+                          <div class="col-12">
+                            <h6>High Command (Coming Soon to the pitch near to you)</h6>
+                          </div>
+                          <div class="col-6">
+                            <h6>Collection</h6>
+                          </div>
+                          <div class="col-6">
+                            <div class="custom-control custom-checkbox mr-sm-2 text-right">
+                              <input type="checkbox" class="custom-control-input" :id="'sptoggle'+id" v-model="starter">
+                              <label class="custom-control-label" :for="'sptoggle'+id">Toggle Starter Pack</label>
+                            </div>
+                          </div>
+                        </div>
+                        <card-list id="accordionCardsCollection" :cards="collection_cards" :selected_team="selected_team" :owner="coach"
+                            :starter="starter" :quantity="false" :type_list="deck_card_types" :column_list="collection_colums"
+                            @card-click="addToDeck"></card-list>
+                      </div>
+                      <div :class="cardListClass">
+                        <div class="row mt-1 deck_header">
+                          <div class="col-4">
+                            <h6>Deck {{deck_size}}/{{tournament.deck_limit}}</h6>
+                          </div>
+                          <div class="col-4 text-center">
+                            <h6>Value: {{ deck_value }}/{{ tournament.deck_value_limit }}({{ tournament.deck_value_target }})</h6>
+                          </div>
+                          <div class="col-4 text-right">
+                            <h6>Doubles: {{ deck_doubles_count }}</h6>
+                          </div>
+                          <div class="col-9">
+                            <h6>Conclave: {{conclave_text}}</h6>
+                          </div>
+                          <div class="col-3">
+                            <div class="custom-control custom-checkbox mr-sm-2 text-right">
+                              <input type="checkbox" class="custom-control-input" :id="'raritytoggle'+id" v-model="rarity_order">
+                              <label class="custom-control-label" :for="'raritytoggle'+id">Rarity order</label>
+                            </div>
+                          </div>
+                        </div>
+                        <card-list id="accordionCardsDeck" :cards="deck_cards" :selected_team="selected_team" :owner="coach"
+                            :starter="starter" :quantity="false" :type_list="deck_card_types" :column_list="collection_colums"
+                            @card-click="removeFromDeck" @card-assign="assignCard" :rarity_sort="rarity_order" :deck="deck" :edit="canEdit"
+                            @update-deck="updateDeck" @card-disable="disableCard" @card-enable="enableCard" @card-unskill="unskillCard" ></card-list>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <card-list id="accordionCardsCollection" :cards="collection_cards" :selected_team="selected_team" :owner="coach"
-                  :starter="starter" :quantity="false" :type_list="deck_card_types" :column_list="collection_colums"
-                  @card-click="addToDeck"></card-list>
-            </div>
-            <div :class="cardListClass">
-              <div class="row mt-1 deck_header">
-                <div class="col-4">
-                  <h6>Deck {{deck_size}}/{{tournament.deck_limit}}</h6>
-                </div>
-                <div class="col-4 text-center">
-                  <h6>Value: {{ deck_value }}/{{ tournament.deck_value_limit }}({{ tournament.deck_value_target }})</h6>
-                </div>
-                <div class="col-4 text-right">
-                   <h6>Doubles: {{ deck_doubles_count }}</h6>
-                </div>
-                <div class="col-9">
-                  <h6>Conclave: {{conclave_text}}</h6>
-                </div>
-                <div class="col-3">
-                  <div class="custom-control custom-checkbox mr-sm-2 text-right">
-                    <input type="checkbox" class="custom-control-input" :id="'raritytoggle'+id" v-model="rarity_order">
-                    <label class="custom-control-label" :for="'raritytoggle'+id">Rarity order</label>
-                  </div>
-                </div>
-              </div>
-              <card-list id="accordionCardsDeck" :cards="deck_cards" :selected_team="selected_team" :owner="coach"
-                  :starter="starter" :quantity="false" :type_list="deck_card_types" :column_list="collection_colums"
-                  @card-click="removeFromDeck" @card-assign="assignCard" :rarity_sort="rarity_order" :deck="deck" :edit="canEdit"
-                  @update-deck="updateDeck" @card-disable="disableCard" @card-enable="enableCard" @card-unskill="unskillCard" ></card-list>
             </div>
           </div>
         </div>
