@@ -10,6 +10,7 @@ number of uses - check if cards is not used in any other tournament (test it whe
 
 Tournament -
   - add feature to include staff from HC in the deck builder
+  update deck reset to clear squad as well
 
 Conclave 
   - add new blessings/curses into DB/ pictures

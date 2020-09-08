@@ -205,6 +205,56 @@
                 </div>
               </div>
               <div class="card">
+                <div class="card-header" :id="'hc'+id">
+                  <h6 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapsehc'+id" aria-expanded="true" aria-controls="collapsehc">
+                      High Command
+                    </button>
+                  </h6>
+                </div>
+                <div :id="'collapsehc'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
+                  <div class="card-body">
+                    <div class="row">
+                      <div v-if="canEdit" class="col-lg-6">
+                        <div class="row mt-1 deck_header">
+                          <div class="col-6">
+                            <h6>High Command Staff</h6>
+                          </div>
+                          <div class="col-6">
+                            <div class="custom-control custom-checkbox mr-sm-2 text-right">
+                              <input type="checkbox" class="custom-control-input" :id="'sptoggle'+id" v-model="starter">
+                              <label class="custom-control-label" :for="'sptoggle'+id">Toggle Starter Pack</label>
+                            </div>
+                          </div>
+                        </div>
+                        <card-list id="accordionHCCollection" :cards="collection_cards" :selected_team="selected_team" :owner="coach"
+                            :starter="starter" :quantity="false" :type_list="hc_card_types" :column_list="collection_colums"
+                            @card-click="addToSquad"></card-list>
+                      </div>
+                      <div :class="cardListClass">
+                        <div class="row mt-1 deck_header">
+                          <div class="col-4">
+                            <h6>Squad {{squad_size}}/{{deck.squad.level}}</h6>
+                          </div>
+                          <div class="col text-center">
+                          </div>
+                          <div class="col-4">
+                            <div class="custom-control custom-checkbox mr-sm-2 text-right">
+                              <input type="checkbox" class="custom-control-input" :id="'raritytoggle'+id" v-model="rarity_order">
+                              <label class="custom-control-label" :for="'raritytoggle'+id">Rarity order</label>
+                            </div>
+                          </div>
+                        </div>
+                        <card-list id="accordionHCDeck" :cards="deck_cards" :selected_team="selected_team" :owner="coach"
+                            :starter="starter" :quantity="false" :type_list="hc_card_types" :column_list="collection_colums"
+                            @card-click="removeFromSquad" :rarity_sort="rarity_order" :deck="deck" :edit="canEdit"
+                            @update-deck="updateDeck" @card-disable="disableCard" @card-enable="enableCard"></card-list>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
                 <div class="card-header" :id="'deck_builder'+id">
                   <h6 class="mb-0">
                     <button class="btn btn-link" data-toggle="collapse" :data-target="'#collapsebuilder'+id" aria-expanded="true" aria-controls="collapselog">
@@ -218,7 +268,7 @@
                       <div v-if="canEdit" class="col-lg-6">
                         <div class="row mt-1 deck_header">
                           <div class="col-12">
-                            <h6>High Command (Coming Soon to the pitch near to you)</h6>
+                            <h6>Coach</h6>
                           </div>
                           <div class="col-6">
                             <h6>Collection</h6>
@@ -299,6 +349,10 @@ export default {
         search_timeout: null,
         id: null,
         log: '',
+        squad: {
+          level: 0,
+          cards: [],
+        },
       },
       team: {},
       team_check: {
@@ -323,16 +377,13 @@ export default {
         blood_bowl: 'Blood Bowl',
       },
       deck_card_types: ['Player', 'Training', 'Special Play', 'Staff'],
+      hc_card_types: ['High Command'],
       collection_colums: ['Rarity', 'Value', 'Name', 'Skills', 'ShortSubtype'],
     };
   },
   methods: {
-    canAddToDeck(card) {
-      if (!this.is_owner) {
-        return false;
-      }
-      if (this.locked) {
-        this.flash('Deck is locked!', 'info', { timeout: 3000 });
+    canAdd(card) {
+      if (!this.isEditable()) {
         return false;
       }
       if (this.processing === true) {
@@ -344,6 +395,13 @@ export default {
         return false;
       }
 
+      if (this.selected_team === 'All') {
+        this.flash('Cannot add card - team not selected!', 'error', { timeout: 3000 });
+        return false;
+      }
+      return true;
+    },
+    canAddToDeck(card) {
       // check limits if not added by extra cards interface
       if ((card.deck_type !== 'extra' && card.deck_type !== 'extra_inducement')) {
         // ignore first SP card
@@ -359,18 +417,21 @@ export default {
         }
       }
 
-      if (this.selected_team === 'All') {
-        this.flash('Cannot add card - team not selected!', 'error', { timeout: 3000 });
-        return false;
-      }
       if (this.deck_player_size >= 16 && card.template.card_type === 'Player') {
         this.flash('Cannot add card - 16 Player cards are already in the deck!', 'error', { timeout: 3000 });
         return false;
       }
       return true;
     },
+    canAddToSquad() {
+      if (this.squad_size === this.deck.squad.level) {
+        this.flash('Cannot add card - squad limit reached!', 'error', { timeout: 3000 });
+        return false;
+      }
+      return true;
+    },
     addToDeck(card) {
-      if (!this.canAddToDeck(card)) {
+      if (!this.canAdd(card) || !this.canAddToDeck(card)) {
         return;
       }
       this.addCard(card);
@@ -380,6 +441,18 @@ export default {
         return;
       }
       this.removeCard(card);
+    },
+    addToSquad(card) {
+      if (!this.canAdd(card) || !this.canAddToSquad()) {
+        return;
+      }
+      this.addSquadCard(card);
+    },
+    removeFromSquad(card) {
+      if (!this.isEditable()) {
+        return;
+      }
+      this.removeSquadCard(card);
     },
     async_error(error) {
       if (error.response) {
@@ -699,6 +772,25 @@ export default {
         });
     },
 
+    addSquadCard(card) {
+      const path = `/decks/${this.deck_id}/addsquadcard`;
+      this.processing = true;
+      const processingMsg = this.flash('Processing...', 'info');
+      this.axios.post(path, card)
+        .then((res) => {
+          const msg = 'Squad Card added!';
+          this.flash(msg, 'success', { timeout: 1000 });
+          this.deck = res.data;
+          const check = (this.development) ? 'in_development_deck' : 'in_imperium_deck';
+          card[check] = true;
+        })
+        .catch(this.async_error)
+        .then(() => {
+          processingMsg.destroy();
+          this.processing = false;
+        });
+    },
+
     assignCard(card, idx) {
       if (!this.isEditable()) {
         return;
@@ -794,6 +886,25 @@ export default {
           }
           this.removeAllInjuries(card);
           this.unskillCard(card);
+        })
+        .catch(this.async_error)
+        .then(() => {
+          processingMsg.destroy();
+          this.processing = false;
+        });
+    },
+    removeSquadCard(card) {
+      const path = `/decks/${this.deck_id}/removesquadcard`;
+      this.processing = true;
+      const processingMsg = this.flash('Processing...', 'info');
+      this.axios.post(path, card)
+        .then((res) => {
+          const msg = 'Squad Card removed!';
+          this.flash(msg, 'success', { timeout: 1000 });
+          this.deck = res.data;
+          if (card.id && card.deck_type !== 'extra' && card.deck_type !== 'extra_inducement') {
+            this.clearCard(card);
+          }
         })
         .catch(this.async_error)
         .then(() => {
@@ -996,6 +1107,10 @@ export default {
       return this.deck.cards;
     },
 
+    user_squad_cards() {
+      return this.deck.squad.cards;
+    },
+
     assignable_deck_player_cards() {
       return this.deck_player_cards.filter((e) => !['Legendary', 'Inducement', 'Unique', 'Blessed', 'Cursed'].includes(e.template.rarity));
     },
@@ -1028,6 +1143,10 @@ export default {
       const specialPlays = this.user_special_plays.length;
       const deduct = (specialPlays > 0) ? 1 : 0;
       return this.user_deck_cards.length - deduct;
+    },
+
+    squad_size() {
+      return this.user_squad_cards.length;
     },
 
     extra_card_placeholder() {
