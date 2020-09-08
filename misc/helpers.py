@@ -190,6 +190,8 @@ def current_user():
 
 def current_coach():
     """Returns current coach or None"""
+    if current_user() is None:
+      return None
     return Coach.query.options(
         raiseload(Coach.cards), raiseload(Coach.packs)
     ).filter_by(disc_id=current_user()['id']).one_or_none()

@@ -1,15 +1,22 @@
 """Coach service helpers"""
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import event
-
+from datetime import datetime
 from models.data_models import Coach, Deck, Tournament, Card, Transaction, Pack
 from models.base_model import db
 from .pack_service import PackService
 from .deck_service import DeckService
 from .notification_service import Notificator
+from misc.helpers2 import datetime_start
 
 class CoachService:
     """CoachService helpers namespace"""
+
+    @staticmethod
+    def late_join_bonus(startdate: datetime) -> int:
+      tdiff = datetime.now() - startdate
+      coins = 5 * (tdiff.days // 7)
+      return coins
 
     @staticmethod
     def discord_user_to_coach(discord_user):
@@ -20,6 +27,10 @@ class CoachService:
         pack = PackService.new_starter_pack(coach = coach)
         tran = Transaction(pack=pack, price=pack.price, description=PackService.description(pack))
         coach.make_transaction(tran)
+        bonus = CoachService.late_join_bonus(datetime_start())
+        if bonus > 0:
+          tran = Transaction(description="Latejoiner bonus", price=-1*bonus)
+          coach.make_transaction(tran)
         return coach
 
     @staticmethod

@@ -2,24 +2,23 @@ Season 4
 Prod update:
   Rename One time use to Number Of Uses in the sheet
   TYPE_HC - change appropriatelly
+  Add SEASON_START_DATE to prod
+  hc_init(???)
 
-  For cards display number of uses left in the collection
+Card -
+number of uses - check if cards is not used in any other tournament (test it when you have the squads in the deck)
+
 Tournament -
-            - add feature to include staff from HC in the deck builder
+  - add feature to include staff from HC in the deck builder
 
 Conclave 
-        - add new blessings/curses into DB/ pictures
-        - remove obsolete blessings/curses
-
-New Staff pack
-  - need to display it as new type in the collection 
+  - add new blessings/curses into DB/ pictures
+  - remove obsolete blessings/curses
 
 HC
  - staff has limited use
     you can use only subset of your staff in HC for given tournament - so only use 2 staff cards from 3 in the HC for a tournament for example
 
-Event keyword
-  - I will really need to know more about the staff cards that help with Event cards
 
 Late Starters
   - do you want to automate it? if so what is the idea? +5 coins for every week?
@@ -28,11 +27,11 @@ TODO FIXES
 Card removed from the deck - fix the name - add uuid to the log
 skill picker
 store comp games in the competition folder based on the comp ID and not name
-negative valued cards should count as positive for the purpose of the migration pack
 Skill override on wilcard cards
 disable skills on players
 
 S4 DONE
+For cards display number of uses left in the collection
 Pre-Season Training cards - how to do this? One time cards with unique name and rarity that is not found in the packs?
 Z: new Training Subtype called Pre-season. Cards will be called "Pre-Season Block", "Pre-Season Dodge" etc to distinguish them. Starter (?) rarity so they don't appear in packs
 No coding required on the above
@@ -59,6 +58,7 @@ HC
     add use after staff is removed from tournamnets (in deck building phase only obviously)
     once staff is use in first tournament card cannot be dusted anymore
     HC cards should act as normal card - for example be announced
+    HC cards are displayed in the collection
 
 Event keyword
   - ban event cards from Imperium tournaments
@@ -68,23 +68,9 @@ New Staff pack
   - new card type that is not part of deck
   - apo and RR will remain in the  - new card type
 
+Migration
+- negative valued cards should count as positive for the purpose of the migration pack
 
-VERY HIGH
-add deck templates
-Hidden quests
-    automated 
-        - collect all legends from given base race
-
-
-MEDIUM
-
-backend validation for decks
-
-LOW:
-randmon errorDetachedInstanceError: Parent instance <Pack at 0x7f1edee8ba20> is not bound to a Session; lazy load operation of attribute 'cards' cannot proceed (Background on this error at: http://sqlalche.me/e/bhk3)
-
-VERY LOW:
-test code
 
 Season 3
 DONE python3.7 -m pip install discord.py --upgrade --user

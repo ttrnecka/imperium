@@ -176,7 +176,7 @@ export default {
     },
     canAdd(card) {
       // check value
-      if (this.pack_value + card.template.value > this.max_value) {
+      if (this.pack_value + Math.abs(card.template.value) > this.max_value) {
         this.flash(`Cannot add card. Max value limit is ${this.max_value}!`, 'error', { timeout: 3000 });
         return false;
       }

@@ -1,4 +1,9 @@
-from config.config import SEASONS
+from config.config import SEASONS, SEASON_START_DATE
+from datetime import datetime as dt, timedelta
+from json import dumps
+from flask import request, jsonify
+from flask_caching import Cache
+from functools import wraps
 
 def current_season():
     """Returns current season"""
@@ -8,12 +13,8 @@ def past_season():
     """Returns current season"""
     return SEASONS[-2]
 
-
-from datetime import datetime as dt, timedelta
-from json import dumps
-from flask import request, jsonify
-from flask_caching import Cache
-from functools import wraps
+def datetime_start():
+  return dt.strptime(SEASON_START_DATE,'%Y-%m-%d')
 
 def etagjsonify(*args, **kwargs):
     response = jsonify(*args, **kwargs)

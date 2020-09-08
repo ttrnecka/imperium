@@ -402,8 +402,8 @@ class TournamentService:
         cards = list(itertools.chain.from_iterable(cards_list))
 
         for card in cards:
-            # if card has limited uses, they have been used up and the card is not in any other squad
-            if not (card.permanent() or card.uses_left()) and len(card.squads) < 2:
+            # if card has limited uses, they have been used up and the card is not in any other squad or deck
+            if not (card.permanent() or card.uses_left()) and len(card.squads) < 2 and card.decks.count() < 2:
                 coach_mention = card.coach.mention()
                 db.session.delete(card)
                 db.session.commit()
