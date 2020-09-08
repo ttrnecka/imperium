@@ -20,9 +20,6 @@ HC
     you can use only subset of your staff in HC for given tournament - so only use 2 staff cards from 3 in the HC for a tournament for example
 
 
-Late Starters
-  - do you want to automate it? if so what is the idea? +5 coins for every week?
-
 TODO FIXES
 Card removed from the deck - fix the name - add uuid to the log
 skill picker
@@ -71,6 +68,9 @@ New Staff pack
 Migration
 - negative valued cards should count as positive for the purpose of the migration pack
 
+
+Late Starters
+  - bank is 10 + X*5 coins where X is number of week since the start of the season
 
 Season 3
 DONE python3.7 -m pip install discord.py --upgrade --user

@@ -19,6 +19,13 @@ class CoachService:
       return coins
 
     @staticmethod
+    def award_bonus(coach):
+      bonus = CoachService.late_join_bonus(datetime_start())
+      if bonus > 0:
+        tran = Transaction(description="Latejoiner bonus", price=-1*bonus)
+        coach.make_transaction(tran)
+
+    @staticmethod
     def discord_user_to_coach(discord_user):
         return Coach.get_by_discord_id(discord_user.id)
     @staticmethod
@@ -27,10 +34,7 @@ class CoachService:
         pack = PackService.new_starter_pack(coach = coach)
         tran = Transaction(pack=pack, price=pack.price, description=PackService.description(pack))
         coach.make_transaction(tran)
-        bonus = CoachService.late_join_bonus(datetime_start())
-        if bonus > 0:
-          tran = Transaction(description="Latejoiner bonus", price=-1*bonus)
-          coach.make_transaction(tran)
+        CoachService.award_bonus(coach)
         return coach
 
     @staticmethod
@@ -75,6 +79,9 @@ class CoachService:
         reason = "Account activation - Starter Pack"
         tran = Transaction(pack=pack, description=reason, price=0)
         coach.make_transaction(tran)
+
+        #late joiner bonus
+        CoachService.award_bonus(coach)
 
         coach.account.reset()
         db.session.commit()
