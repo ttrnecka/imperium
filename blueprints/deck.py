@@ -8,6 +8,7 @@ from misc.decorators import authenticated
 from misc.helpers import InvalidUsage, current_coach
 
 from services import DeckService, DeckError
+import services.high_command_service as hcs
 
 deck = Blueprint('decks', __name__)
 
@@ -49,7 +50,7 @@ def deck_response_deco(func):
         can_edit_deck(deck)
         try:
           deck = func(deck)
-        except (DeckError, CardError) as exc:
+        except (DeckError, CardError, hcs.HighCommandSquadError) as exc:
           raise InvalidUsage(str(exc), status_code=403)
         return deck_response(deck)
     return wrapper_deck_response
@@ -100,6 +101,12 @@ def addcard_deck(deck):
     """Adds cards to deck"""
     return DeckService.addcard(deck, request.get_json())
 
+@deck.route("/<int:deck_id>/addsquadcard", methods=["POST"])
+@deck_response_deco
+def addsquadcard_deck(deck):
+    """Adds squad cards to deck high command squad"""
+    return DeckService.addcard_to_squad(deck, request.get_json())
+
 @deck.route("/<int:deck_id>/assign", methods=["POST"])
 @deck_response_deco
 def assigncard_deck(deck):
@@ -135,6 +142,12 @@ def removecardextra_deck(deck):
 def removecard_deck(deck):
     """Removes cards from deck"""
     return DeckService.removecard(deck, request.get_json())
+
+@deck.route("/<int:deck_id>/removesquadcard", methods=["POST"])
+@deck_response_deco
+def removesquadcard_deck(deck):
+    """Removes squad cards from deck high command"""
+    return DeckService.removecard_from_squad(deck.squad, request.get_json())
 
 @deck.route("/<int:deck_id>/commit", methods=["GET"])
 @deck_response_deco

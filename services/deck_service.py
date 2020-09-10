@@ -13,6 +13,7 @@ from misc.helpers import CardHelper
 
 from .card_service import CardService, GUARDS
 from .notification_service import Notificator
+import services.high_command_service as hcs
 
 class DeckService:
     """DeckService namespace"""
@@ -220,6 +221,25 @@ class DeckService:
         return deck
 
     @classmethod
+    def addcard_to_squad(cls, deck, card):
+      card = Card.query.get(card["id"])
+      # check if it is banned
+      if DeckService.is_banned(deck, card):
+        raise DeckError("Card is banned in the tournament!")
+
+      if card.duster is not None:
+        raise DeckError("Cannot add card - card is flagged for dusting!")
+
+      hcs.add_card_to_squad(deck.squad, card)
+      return deck
+
+    @classmethod
+    def removecard_from_squad(cls, deck, card):
+      card = Card.query.get(card["id"])
+      hcs.remove_card_from_squad(deck.squad, card)
+      return deck
+
+    @classmethod
     def removecard(cls, deck, card):
         """Removes `card` from `deck` """
         if card["id"]:
@@ -305,6 +325,10 @@ class DeckService:
         for card in deck.cards.all() + deck.extra_cards:
             card = card_schema.dump(card).data
             cls.removecard(deck,card)
+        # reset squad
+        for card in deck.squad.cards.all():
+            card = card_schema.dump(card).data
+            cls.removecard_from_squad(deck,card)
         return deck
 
     @classmethod

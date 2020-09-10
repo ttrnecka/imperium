@@ -227,7 +227,7 @@
                             </div>
                           </div>
                         </div>
-                        <card-list id="accordionHCCollection" :cards="collection_cards" :selected_team="selected_team" :owner="coach"
+                        <card-list id="accordionHCCollection" :cards="unused_user_squad_cards" :selected_team="selected_team" :owner="coach"
                             :starter="starter" :quantity="false" :type_list="hc_card_types" :column_list="collection_colums"
                             @card-click="addToSquad"></card-list>
                       </div>
@@ -236,7 +236,11 @@
                           <div class="col-4">
                             <h6>Squad {{squad_size}}/{{deck.squad.level}}</h6>
                           </div>
-                          <div class="col text-center">
+                          <div class="col text-right">
+                            <h6>Value: {{ deck_value }}/{{ tournament.deck_value_limit }}({{ tournament.deck_value_target }})</h6>
+                          </div>
+                          <div class="col-8">
+                            <h6>Conclave: {{conclave_text}}</h6>
                           </div>
                           <div class="col-4">
                             <div class="custom-control custom-checkbox mr-sm-2 text-right">
@@ -245,7 +249,7 @@
                             </div>
                           </div>
                         </div>
-                        <card-list id="accordionHCDeck" :cards="deck_cards" :selected_team="selected_team" :owner="coach"
+                        <card-list id="accordionHCDeck" :cards="user_squad_cards" :selected_team="selected_team" :owner="coach"
                             :starter="starter" :quantity="false" :type_list="hc_card_types" :column_list="collection_colums"
                             @card-click="removeFromSquad" :rarity_sort="rarity_order" :deck="deck" :edit="canEdit"
                             @update-deck="updateDeck" @card-disable="disableCard" @card-enable="enableCard"></card-list>
@@ -423,9 +427,13 @@ export default {
       }
       return true;
     },
-    canAddToSquad() {
+    canAddToSquad(card) {
       if (this.squad_size === this.deck.squad.level) {
         this.flash('Cannot add card - squad limit reached!', 'error', { timeout: 3000 });
+        return false;
+      }
+      if (this.deck_value + card.template.value > this.tournament.deck_value_limit) {
+        this.flash('Cannot add card - deck value limit reached!', 'error', { timeout: 3000 });
         return false;
       }
       return true;
@@ -443,7 +451,7 @@ export default {
       this.removeCard(card);
     },
     addToSquad(card) {
-      if (!this.canAdd(card) || !this.canAddToSquad()) {
+      if (!this.canAdd(card) || !this.canAddToSquad(card)) {
         return;
       }
       this.addSquadCard(card);
@@ -825,7 +833,7 @@ export default {
         this.assignCard(c);
       });
 
-      if (card.assigned_to_array[this.deck.id].length !== 0) {
+      if (card.assigned_to_array[this.deck.id] !== undefined && card.assigned_to_array[this.deck.id].length !== 0) {
         card.assigned_to_array[this.deck.id] = [];
         this.assignCard(card);
       }
@@ -1119,6 +1127,10 @@ export default {
       return this.deck_cards.filter((e) => e.template.card_type === 'Player');
     },
 
+    coach_hc_cards() {
+      return this.coach.cards.filter((e) => e.template.card_type === 'High Command');
+    },
+
     deck_player_size() {
       return this.deck_size_for('Player');
     },
@@ -1131,6 +1143,10 @@ export default {
     // user collection + extra cards
     collection_cards() {
       return this.coach.cards.concat(this.deck.unused_extra_cards).filter(this.isNotInDeck);
+    },
+
+    unused_user_squad_cards() {
+      return this.coach_hc_cards.filter(({ id: id1 }) => !this.user_squad_cards.some(({ id: id2 }) => id1 === id2));
     },
 
     // special cards in deck that belong to user
@@ -1194,7 +1210,8 @@ export default {
     },
     deck_value() {
       const value = this.user_deck_cards.reduce((total, e) => total + e.template.value, 0);
-      return value + this.tier_tax;
+      const squadValue = this.user_squad_cards.reduce((total, e) => total + e.template.value, 0);
+      return value + squadValue + this.tier_tax;
     },
     has_deck_upgrade() {
       return this.deck_upgrades.length > 0;

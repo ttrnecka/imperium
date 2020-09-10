@@ -5,21 +5,10 @@ Prod update:
   Add SEASON_START_DATE to prod
   hc_init(???)
 
-Card -
-number of uses - check if cards is not used in any other tournament (test it when you have the squads in the deck)
-
-Tournament -
-  - add feature to include staff from HC in the deck builder
-  update deck reset to clear squad as well
 
 Conclave 
   - add new blessings/curses into DB/ pictures
   - remove obsolete blessings/curses
-
-HC
- - staff has limited use
-    you can use only subset of your staff in HC for given tournament - so only use 2 staff cards from 3 in the HC for a tournament for example
-
 
 TODO FIXES
 Card removed from the deck - fix the name - add uuid to the log
@@ -34,6 +23,10 @@ Pre-Season Training cards - how to do this? One time cards with unique name and 
 Z: new Training Subtype called Pre-season. Cards will be called "Pre-Season Block", "Pre-Season Dodge" etc to distinguish them. Starter (?) rarity so they don't appear in packs
 No coding required on the above
 
+
+Card -
+number of uses - check if cards is not used in any other tournament (test it when you have the squads in the deck)
+
 Conclave - scrub consecrations/corruptions from the code, DB and sheet (DONE)
 
 Tournament - add new Target value and create 6 ranges for blessings/curses that assign points
@@ -41,6 +34,9 @@ Tournament - add new Target value and create 6 ranges for blessings/curses that 
            - inducemnt phase tells you how many blessing/curse points you have
            - blessing/curses rolled in inducement phase in the order
            - admincomp update - make the table updates not to remove/reinsert things
+           - add feature to include staff from HC in the deck builder
+          - HC is included in the value - frontned
+          - update deck reset to clear squad as well
 
 Tournament Template - add ranges
 
@@ -57,6 +53,8 @@ HC
     once staff is use in first tournament card cannot be dusted anymore
     HC cards should act as normal card - for example be announced
     HC cards are displayed in the collection
+     - staff has limited use
+    you can use only subset of your staff in HC for given tournament - so only use 2 staff cards from 3 in the HC for a tournament for example
 
 Event keyword
   - ban event cards from Imperium tournaments

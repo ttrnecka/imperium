@@ -13,12 +13,6 @@ class HighCommandSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = HighCommand
 
-class HighCommandSquadSchema(ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = HighCommandSquad
-        include_relationships = True
-    level = ma.Integer()
-
 class AccountSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
         model = Account
@@ -40,6 +34,13 @@ class CardSchema(ma.SQLAlchemyAutoSchema):
     template = ma.Nested(CardTemplateSchema)
     default_skills = ma.List(ma.String())
     coach_data = ma.Dict(attribute = 'coach_dict')
+
+class HighCommandSquadSchema(ma.SQLAlchemyAutoSchema):
+    class Meta:
+        model = HighCommandSquad
+        include_relationships = True
+    level = ma.Integer()
+    cards = ma.Nested(CardSchema, many=True)
 
 class TournamentSignupSchema(ma.SQLAlchemyAutoSchema):
     class Meta:
