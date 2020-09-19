@@ -1,19 +1,26 @@
 Season 4
 Prod update:
   Rename One time use to Number Of Uses in the sheet
-  TYPE_HC - change appropriatelly
-  Add SEASON_START_DATE to prod
-  hc_init(???)
+  hc_init
 
+Season 3
+python3.8 -m pip install discord.py --upgrade --user
+Rename One time use to Number Of Uses in the sheet
+Update the conclave tab
+Import new blessings/curses
+Remove old blessing curses
+achievement_insert
 
-Conclave 
-  - add new blessings/curses into DB/ pictures
-  - remove obsolete blessings/curses
+AFTER GREEN LIGHT
+season_reset
+update config.py (with season old seasons)
+restart bot/web
+run update_stats
+
 
 TODO FIXES
 Card removed from the deck - fix the name - add uuid to the log
 skill picker
-store comp games in the competition folder based on the comp ID and not name
 Skill override on wilcard cards
 disable skills on players
 
@@ -22,6 +29,7 @@ For cards display number of uses left in the collection
 Pre-Season Training cards - how to do this? One time cards with unique name and rarity that is not found in the packs?
 Z: new Training Subtype called Pre-season. Cards will be called "Pre-Season Block", "Pre-Season Dodge" etc to distinguish them. Starter (?) rarity so they don't appear in packs
 No coding required on the above
+store comp games in the competition folder based on the comp ID and not name
 
 
 Card -

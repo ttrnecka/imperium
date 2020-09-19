@@ -859,9 +859,9 @@ def log_deck_committed(target, value, oldvalue, initiator):
 
 @event.listens_for(Deck.cards, 'append', propagate=True)
 def log_deck_cards_append(target, value, initiator):
-    target.to_log(f"{date_now()}: Card {value.name} added to the deck")
+    target.to_log(f"{date_now()}: Card {value.template.name} added to the deck")
 
 @event.listens_for(Deck.cards, 'remove', propagate=True)
 def log_deck_cards_remove(target, value, initiator):
-    target.to_log(f"{date_now()}: Card {value.name} removed from the deck")
+    target.to_log(f"{date_now()}: Card {value.template.name} removed from the deck")
 

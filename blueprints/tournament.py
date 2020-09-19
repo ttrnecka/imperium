@@ -39,7 +39,7 @@ def get_tournament_leaderboard(tournament_id):
     matches = []
     st = StatsHandler()
     for comp in tourn.competitions:
-      folder = st.competition_folder(comp.name)
+      folder = st.competition_folder(comp.comp_id)
       if os.path.isdir(folder):
         matchfiles = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
 

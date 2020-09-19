@@ -62,8 +62,8 @@ def main(argv):
 
         match = bb2.Match(data)
 
-        st.create_folder(st.competition_folder(match.competition()))
-        st.write_file(os.path.join(st.competition_folder(match.competition()), match.uuid()), data)
+        st.create_folder(st.competition_folder(match.competition_id()))
+        st.write_file(os.path.join(st.competition_folder(match.competition_id()), match.uuid()), data)
 
         if data['uuid'] in stats['matchfiles']:
             continue
