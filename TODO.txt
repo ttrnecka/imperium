@@ -19,7 +19,6 @@ run update_stats
 
 
 TODO FIXES
-Card removed from the deck - fix the name - add uuid to the log
 skill picker
 Skill override on wilcard cards
 disable skills on players
@@ -30,7 +29,7 @@ Pre-Season Training cards - how to do this? One time cards with unique name and 
 Z: new Training Subtype called Pre-season. Cards will be called "Pre-Season Block", "Pre-Season Dodge" etc to distinguish them. Starter (?) rarity so they don't appear in packs
 No coding required on the above
 store comp games in the competition folder based on the comp ID and not name
-
+Card removed from the deck - fix the name
 
 Card -
 number of uses - check if cards is not used in any other tournament (test it when you have the squads in the deck)
