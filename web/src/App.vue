@@ -51,6 +51,7 @@ export default {
     signedCallback(coach) {
       this.user.coach = coach;
       this.getCoaches();
+      this.$store.commit('toggleRefresh');
     },
     ...mapActions([
       'getCoaches', 'getTournaments', 'getBBNames', 'getMe', 'getConfig',

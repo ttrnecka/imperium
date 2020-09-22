@@ -80,10 +80,11 @@ class CoachService:
         tran = Transaction(pack=pack, description=reason, price=0)
         coach.make_transaction(tran)
 
+        coach.account.reset()
+        db.session.commit()
         #late joiner bonus
         CoachService.award_bonus(coach)
-
-        coach.account.reset()
+        coach.high_command.reset()
         db.session.commit()
         return True
 

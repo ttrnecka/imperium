@@ -716,6 +716,11 @@ class HighCommand(Base):
 
     squads = db.relationship('HighCommandSquad', backref=db.backref('command', lazy=True), cascade="all, delete-orphan", lazy="selectin")
 
+    def reset(self):
+      self.level = 1
+      self.squads = []
+
+
 squad_card_table = db.Table('squad_cards', Base.metadata,
     db.Column('squad_id', db.Integer, db.ForeignKey('high_command_squads.id')),
     db.Column('card_id', db.Integer, db.ForeignKey('cards.id'))

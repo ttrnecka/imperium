@@ -10,6 +10,7 @@ export default new Vuex.Store({
     tournaments: [],
     bb2Names: [],
     initial_load: false,
+    refresh: false,
     season: 3,
     seasons: [
     ],
@@ -37,6 +38,9 @@ export default new Vuex.Store({
     },
     initially_loaded(state) {
       state.initial_load = true;
+    },
+    toggleRefresh(state) {
+      state.refresh = !state.refresh;
     },
     updateTournament(state, tourn) {
       const idx = state.tournaments.findIndex((x) => x.id === parseInt(tourn.id, 10));

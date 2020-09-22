@@ -668,7 +668,7 @@ export default {
       return this.high_command_prices[this.selectedCoach.high_command.level - 1];
     },
     ...mapState([
-      'user', 'coaches', 'tournaments', 'bb2Names', 'initial_load', 'seasons', 'high_command_prices',
+      'user', 'coaches', 'tournaments', 'bb2Names', 'initial_load', 'seasons', 'high_command_prices', 'refresh',
     ]),
     ...mapGetters([
       'loggedCoach', 'is_webadmin', 'is_loggedcoach', 'is_duster', 'is_duster_full', 'is_duster_open', 'duster_type', 'is_owner',
@@ -680,6 +680,12 @@ export default {
         this.init();
       }
     },
+    refresh: function (newValue, oldValue) {
+      if (newValue !== oldValue) {
+        this.init();
+      }
+    },
+
   },
   mounted() {
     if (this.initial_load) {

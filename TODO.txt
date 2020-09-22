@@ -1,15 +1,11 @@
 Season 4
 Prod update:
   Rename One time use to Number Of Uses in the sheet
+  update sheet with new cards
+  update sheet with conclave
+  Import new blessings/curses
+  Remove old blessing curses
   hc_init
-
-Season 3
-python3.8 -m pip install discord.py --upgrade --user
-Rename One time use to Number Of Uses in the sheet
-Update the conclave tab
-Import new blessings/curses
-Remove old blessing curses
-achievement_insert
 
 AFTER GREEN LIGHT
 season_reset

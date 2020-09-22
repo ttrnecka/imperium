@@ -14,7 +14,7 @@ from misc.helpers2 import current_season, etagjsonify, cache_header
 coach = Blueprint('coaches', __name__)
 
 @coach.route('', methods=["GET"])
-@cache_header(300)
+#@cache_header(300)
 def get_coaches():
     """returns all coaches as json"""
     all_coaches = Coach.query.options(raiseload(Coach.cards), raiseload(Coach.packs)).all()
