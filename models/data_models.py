@@ -260,7 +260,7 @@ class Coach(Base):
         self.disc_id = disc_id
         self.account = Account()
         self.high_command = HighCommand()
-        self.free_packs = "player"
+        self.free_packs = "player,player"
         self.achievements = achievements_template
 
     def __repr__(self):
@@ -271,7 +271,7 @@ class Coach(Base):
 
     def activate(self):
         self.deleted = False
-        self.free_packs = "player"
+        self.free_packs = "player,player"
 
     def short_name(self):
         return self.name[:-5]
