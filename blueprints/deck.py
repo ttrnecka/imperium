@@ -147,7 +147,7 @@ def removecard_deck(deck):
 @deck_response_deco
 def removesquadcard_deck(deck):
     """Removes squad cards from deck high command"""
-    return DeckService.removecard_from_squad(deck.squad, request.get_json())
+    return DeckService.removecard_from_squad(deck, request.get_json())
 
 @deck.route("/<int:deck_id>/commit", methods=["GET"])
 @deck_response_deco

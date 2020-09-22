@@ -217,8 +217,11 @@
                     <div class="row">
                       <div v-if="canEdit" class="col-lg-6">
                         <div class="row mt-1 deck_header">
+                          <div class="col-12">
+                            <h6>High Command</h6>
+                          </div>
                           <div class="col-6">
-                            <h6>High Command Staff</h6>
+                            <h6>Staff</h6>
                           </div>
                           <div class="col-6">
                             <div class="custom-control custom-checkbox mr-sm-2 text-right">
@@ -266,7 +269,7 @@
                     </button>
                   </h6>
                 </div>
-                <div :id="'collapsebuilder'+id" class="collapse hide" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
+                <div :id="'collapsebuilder'+id" class="collapse show" aria-labelledby="log'" :data-parent="'#extraCardsAccordion'+id">
                   <div class="card-body">
                     <div class="row">
                       <div v-if="canEdit" class="col-lg-6">
