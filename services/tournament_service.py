@@ -608,6 +608,7 @@ class TournamentService:
     @staticmethod
     def cards(tourn):
       cards = list(itertools.chain.from_iterable([ts.deck.cards for ts in tourn.tournament_signups]))
+      hc_cards = list(itertools.chain.from_iterable([ts.deck.squad.cards for ts in tourn.tournament_signups]))
       extra_cards = []
       for ts in tourn.tournament_signups:
         for c in ts.deck.extra_cards:
@@ -618,7 +619,8 @@ class TournamentService:
           }
           extra_cards.append(c)
       result = cards_schema.dump(cards).data
-      return result + extra_cards
+      hc_result = cards_schema.dump(hc_cards).data
+      return result + extra_cards + hc_result
 
     @staticmethod
     def conclave_range(tourn:Tournament, value:int):
