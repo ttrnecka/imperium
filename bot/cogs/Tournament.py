@@ -16,13 +16,13 @@ class Tournament(ImperiumCog):
         self._last_member = None
 
     async def conclave(self, ctype, level, ctx):
-      rule1 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
+      rule1 = random.choice(getattr(ConclaveRule,f'{ctype}s')(level))
       rule2 = None
 
       if ctype == "blessing":
-        rule2 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
+        rule2 = random.choice(getattr(ConclaveRule,f'{ctype}s')(level))
         while rule1.same_class(rule2):
-          rule2 = random.choice(getattr(ConclaveRule,f'{ctype}s')())
+          rule2 = random.choice(getattr(ConclaveRule,f'{ctype}s')(level))
 
       r1_file = rule1.img(level)
       files = []

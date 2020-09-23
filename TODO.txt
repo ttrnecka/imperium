@@ -9,7 +9,7 @@ Prod update:
 
 AFTER GREEN LIGHT
 season_reset
-update config.py (with season old seasons)
+update config.py (with season old seasons and new season date)
 restart bot/web
 run update_stats
 

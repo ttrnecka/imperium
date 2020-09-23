@@ -657,16 +657,19 @@ class ConclaveRule(Base):
     notes = db.Column(db.Text(), nullable=False)
 
     @classmethod
-    def blessings(cls):
-        return cls._get_type("Blessing")
+    def blessings(cls, level=None):
+        return cls._get_type("Blessing", level)
 
     @classmethod
-    def curses(cls):
-        return cls._get_type("Curse")
+    def curses(cls, level=None):
+        return cls._get_type("Curse", level)
 
     @classmethod
-    def _get_type(cls,cr_type):
-        return cls.query.filter_by(type=cr_type).all()
+    def _get_type(cls,cr_type, level=None):
+        rules = cls.query.filter_by(type=cr_type).all()
+        if level:
+          rules = [con for con in rules if getattr(con,f"level{level}_description")]
+        return rules
 
     def same_class(self,rule):
         """Returns true if self is same class as the provided rule"""
