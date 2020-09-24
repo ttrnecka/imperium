@@ -2,18 +2,20 @@ Season 4
 Prod update:
   Rename One time use to Number Of Uses in the sheet DONE
   update sheet with new cards and check new cards (type)
-  update sheet with conclave
-  Import new blessings/curses pictures
-  Remove old blessing curses pictures
-  push code to master
-  hc_init
+  update sheet with conclave DONE
+  Import new blessings/curses pictures DONE
+  Remove old blessing curses pictures DONE
+  push code to master DONE
+  hc_init DONE
 
 AFTER GREEN LIGHT
 season_reset
 update config.py (with season old seasons and new season date)
 restart bot/web
 run update_stats
-
+update sheet with tournament templates
+run admincomp update
+run admincard update
 
 TODO FIXES
 skill picker
