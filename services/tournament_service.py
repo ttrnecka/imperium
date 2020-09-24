@@ -202,7 +202,7 @@ class TournamentService:
     def update_table(cls, table, data, transfer_func, idx_column):
         idxs = []
         for template in data:
-            r_dict = r_dict = transfer_func(template)
+            r_dict = transfer_func(template)
             idxs.append(r_dict[idx_column])
             item = table.query.filter_by(**{f'{idx_column}':r_dict[idx_column]}).one_or_none()
             if not item:

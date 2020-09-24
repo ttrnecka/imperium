@@ -1,10 +1,11 @@
 Season 4
 Prod update:
-  Rename One time use to Number Of Uses in the sheet
-  update sheet with new cards
+  Rename One time use to Number Of Uses in the sheet DONE
+  update sheet with new cards and check new cards (type)
   update sheet with conclave
-  Import new blessings/curses
-  Remove old blessing curses
+  Import new blessings/curses pictures
+  Remove old blessing curses pictures
+  push code to master
   hc_init
 
 AFTER GREEN LIGHT
