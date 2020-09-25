@@ -457,7 +457,7 @@ class TournamentService:
             # Announce cards
             announce1 = [card for card in signup.deck.cards if KEYWORDS(card.template.description).is_announce()]
             announce2 = [card for card in signup.deck.extra_cards if KEYWORDS(card.get('template').get('description')).is_announce()]
-            announce3 = [card for card in signup.deck.squad.cards if KEYWORDS(card.get('template').get('description')).is_announce()]
+            announce3 = [card for card in signup.deck.squad.cards if KEYWORDS(card.template.description).is_announce()]
             announce = announce1 + announce2 + announce3
             
             if announce:
