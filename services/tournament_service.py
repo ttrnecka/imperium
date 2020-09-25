@@ -366,10 +366,12 @@ class TournamentService:
 
         try:
             for card in signups[0].deck.cards:
-                if tournament.type == "Development":
-                    card.in_development_deck = False
-                else:
-                    card.in_imperium_deck = False
+              if refund:
+                card.decrement_use()
+              if tournament.type == "Development":
+                  card.in_development_deck = False
+              else:
+                  card.in_imperium_deck = False
 
             db.session.delete(signups[0])
 
