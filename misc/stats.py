@@ -23,7 +23,7 @@ class StatsHandler:
     return os.path.join(self.stat_folder(), "matches")
 
   def competition_folder(self, competition):
-    return os.path.join(self.stat_folder(), "matches", "".join(x for x in competition if x.isalnum()))
+    return os.path.join(self.stat_folder(), "matches", competition)
 
   def get_stats(self, fresh=False):
       """pulls data from stats file"""
