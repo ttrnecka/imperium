@@ -216,6 +216,7 @@ describe('Cards Mixin assigned_cards', () => {
     wrapper.vm.cards = [
       card1, card2, card3,
     ]
+    wrapper.vm.external_cards = []
     wrapper.vm.deck = {
       id: 1
     }
