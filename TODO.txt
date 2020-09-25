@@ -1,21 +1,24 @@
+TODO
+HC cards can be assignable
+
 Season 4
 Prod update:
   Rename One time use to Number Of Uses in the sheet DONE
-  update sheet with new cards and check new cards (type)
   update sheet with conclave DONE
   Import new blessings/curses pictures DONE
   Remove old blessing curses pictures DONE
   push code to master DONE
   hc_init DONE
+  update sheet with new cards and check new cards (type) DONE
 
 AFTER GREEN LIGHT
-season_reset
-update config.py (with season old seasons and new season date)
-restart bot/web
-run update_stats
-update sheet with tournament templates
-run admincomp update
-run admincard update
+season_reset DONE
+update config.py (with season old seasons and new season date) DONE
+restart bot/web DONE
+run update_stats DONE
+update sheet with tournament templates and tournaments DONE
+run admincomp update  DONE
+run admincard update DONE
 
 TODO FIXES
 skill picker

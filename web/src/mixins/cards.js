@@ -394,6 +394,21 @@ const Cards = {
         case 'Mutant Roshi\'s Scare School':
           skills = [];
           break;
+        case 'Pre-Season Block':
+          skills = ['Block'];
+          break;
+        case 'Pre-Season Dodge':
+          skills = ['Dodge'];
+          break;
+        case 'Pre-Season Guard':
+          skills = ['Guard'];
+          break;
+        case 'Pre-Season Mighty Blow':
+          skills = ['Mighty Blow'];
+          break;
+        case 'Pre-Season Tackle':
+          skills = ['Tackle'];
+          break;
         default:
           skills = [card.template.name];
       }
