@@ -355,7 +355,7 @@ class DeckService:
     @classmethod
     def assigned_cards(cls, deck):
         """Returns all cards that are assigned"""
-        assigned_cards = [card for card in deck.cards if card.assigned_to_array[str(deck.id)]]
+        assigned_cards = [card for card in (deck.cards + deck.squad.cards) if card.assigned_to_array[str(deck.id)]]
         assigned_extra_cards = [card for card in deck.extra_cards if card['assigned_to_array'][str(deck.id)]]
         return assigned_cards, assigned_extra_cards
 

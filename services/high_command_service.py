@@ -3,6 +3,7 @@
 from models.data_models import Coach, Transaction, Tournament, Card, CardTemplate
 from models.base_model import db
 from .notification_service import Notificator
+from sqlalchemy.orm.attributes import flag_modified
 
 class HighCommandError(Exception):
     """Exception used for High Commands Errors"""
@@ -61,6 +62,8 @@ def add_card_to_squad(squad, card):
     raise HighCommandSquadError(ALREADY_IN_SQUAD)
   # add the card to squad
   squad.cards.append(card)
+  card.assigned_to_array[squad.deck.id] = []
+  flag_modified(card, "assigned_to_array")
 
   # increase card usage
   card.increment_use()
@@ -75,7 +78,8 @@ def remove_card_from_squad(squad, card):
     raise HighCommandSquadError(CARD_NOT_FOUND.format(card.template.name))
 
   squad.cards.remove(card)
-
+  card.assigned_to_array[squad.deck.id] = []
+  flag_modified(card, "assigned_to_array")
   # revert usage
   card.decrement_use()
   db.session.commit()

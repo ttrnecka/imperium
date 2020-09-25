@@ -202,6 +202,16 @@ class CardService:
           skills = ["Block", "Sure Hands"]
       elif name in ["Bodyguard","Hired Muscle","Personal Army","Mutant Roshi's Scare School"]:
           skills = []
+      elif name == "Pre-Season Block":
+          skills = ["Block"]
+      elif name == "Pre-Season Dodge":
+          skills = ["Dodge"]
+      elif name == "Pre-Season Guard":
+          skills = ["Guard"]
+      elif name == "Pre-Season Mighty Blow":
+          skills = ["Mighty Blow"]
+      elif name == "Pre-Season Tackle":
+          skills = ["Tackle"]
       else:
           skills = [name]
       if api_format:

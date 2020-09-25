@@ -493,7 +493,7 @@ const Cards = {
       return [];
     },
     assigned_cards(card) {
-      return this.cards.filter((c) => this.get_card_assignment(c).includes(this.card_id_or_uuid(card)));
+      return this.cards.concat(this.external_cards).filter((c) => this.get_card_assignment(c).includes(this.card_id_or_uuid(card)));
     },
   },
   computed: {

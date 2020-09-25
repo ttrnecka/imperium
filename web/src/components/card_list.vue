@@ -135,6 +135,7 @@ export default {
   props: {
     id: String,
     cards: Array,
+    external_cards: Array,
     selected_team: {
       type: String,
       default: 'All',
@@ -288,7 +289,7 @@ export default {
 
     is_guarded(card) {
       if (card.template.card_type !== 'Player') { return false; }
-      const assignedCards = this.cards.filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
+      const assignedCards = this.cards.concat(this.external_cards).filter((c) => this.get_card_assignment(c).includes(String(this.card_id_or_uuid(card))));
       if (assignedCards.find((c) => this.guards.includes(c.template.name)) !== undefined) { return true; }
       return false;
     },
@@ -386,15 +387,18 @@ export default {
       return (Object.keys(this.deck).length !== 0);
     },
     assignable_player_cards() {
-      return this.player_cards.filter((e) => !['Legendary', 'Inducement', 'Unique', 'Blessed', 'Cursed'].includes(e.template.rarity) || this.nonassignable_exceptions.includes(e.template.name));
+      return this.player_cards.concat(this.external_player_cards).filter((e) => !['Legendary', 'Inducement', 'Unique', 'Blessed', 'Cursed'].includes(e.template.rarity) || this.nonassignable_exceptions.includes(e.template.name));
     },
 
     immunable_player_cards() {
-      return this.player_cards.filter((e) => !['Inducement', 'Blessed', 'Cursed'].includes(e.template.rarity) || this.nonassignable_exceptions.includes(e.template.name));
+      return this.player_cards.concat(this.external_player_cards).filter((e) => !['Inducement', 'Blessed', 'Cursed'].includes(e.template.rarity) || this.nonassignable_exceptions.includes(e.template.name));
     },
 
     player_cards() {
       return this.cards.filter((e) => e.template.card_type === 'Player');
+    },
+    external_player_cards() {
+      return this.external_cards.filter((e) => e.template.card_type === 'Player');
     },
     canEdit() {
       return (this.is_loggedcoach(this.owner.short_name) && this.edit);
