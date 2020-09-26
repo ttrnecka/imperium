@@ -185,7 +185,7 @@ class Tournament(ImperiumCog):
       deck = [ts.deck for ts in tourn.tournament_signups if ts.coach == me]
       if not deck:
         raise Exception(f"#{me.short_name()} is not signed into the tournament. Nice try!")
-      focus = deck[0].focus()
+      focus = DeckService.focus(deck[0])
 
       await ctx.send(f"Deck focus is {', '.join(focus)}")
 
