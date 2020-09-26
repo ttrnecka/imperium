@@ -1,6 +1,7 @@
 """DeckService helper module"""
 import uuid
 from itertools import chain
+from collections import Counter
 from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import event
 
@@ -393,9 +394,24 @@ class DeckService:
         return legends
 
     @classmethod
+    def focus(cls, deck):
+      skills = []
+      for player_card in cls.players(deck):
+        skills.extend(cls.skills_for(deck, player_card))
+      
+      counts = Counter(skills)
+      most_common_counts = counts.most_common()
+      maxi = most_common_counts[0][1]
+      mc = []
+      for el in most_common_counts:
+        if el[1] == maxi:
+          mc.append(el[0])
+      return mc
+
+    @classmethod
     def value(cls, deck):
         team = next((t for t in MIXED_TEAMS if t['name'] == deck.mixed_team), {'tier_tax':0})
-        return sum(c.template.value for c in deck.cards) + team['tier_tax']
+        return sum(c.template.value for c in deck.cards) + team['tier_tax'] + sum(c.template.value for c in deck.squad.cards)
 
     @staticmethod
     def assignable_players(deck):

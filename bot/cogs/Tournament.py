@@ -5,7 +5,7 @@ from sqlalchemy import func
 from discord.ext import commands
 from models.data_models import db, Tournament as Tourn, ConclaveRule, TournamentSignups, Transaction, Competition
 from misc.helpers import image_merge, represents_int
-from services import TournamentService, CoachService, CompetitionService, CompetitionError, CardService
+from services import TournamentService, CoachService, CompetitionService, CompetitionError, CardService, DeckService
 from bot.base_cog import ImperiumCog
 from bot.helpers import sign, resign
 from bot.actions.special_play import get_coach_deck_for_room_or_raise
@@ -176,6 +176,18 @@ class Tournament(ImperiumCog):
       else:
           msg = "No deck found!"
       await ctx.send(msg)
+
+    @commands.command()
+    async def focus(self, ctx):
+      """Reviews your deck and tells what the deck focus is"""
+      me = CoachService.discord_user_to_coach(ctx.author)
+      tourn = TournamentService.get_tournament_using_room(ctx.channel.name)
+      deck = [ts.deck for ts in tourn.tournament_signups if ts.coach == me]
+      if not deck:
+        raise Exception(f"#{me.short_name()} is not signed into the tournament. Nice try!")
+      focus = deck[0].focus()
+
+      await ctx.send(f"Deck focus is {', '.join(focus)}")
 
     @commands.command()
     async def complist(self, ctx, *args):

@@ -132,6 +132,11 @@
             </div>
           </div>
           <div class="row">
+            <div class="col">
+              <h6>Focus: {{focus}}</h6>
+            </div>
+          </div>
+          <div class="row">
             <div :id="'extraCardsAccordion'+id" class="col-12 mb-3 mt-3">
               <div class="card" v-if="is_owner">
                 <div class="card-header" :id="'extraCards'+id">
@@ -331,6 +336,29 @@
 <script>
 import Cards from '@/mixins/cards';
 import cardList from '@/components/card_list.vue';
+
+function modeArray(array) {
+  if (array.length === 0) return [];
+  const modeMap = {};
+  let maxCount = 1;
+  let modes = [];
+
+  for (let i = 0; i < array.length; i += 1) {
+    const el = array[i];
+
+    if (modeMap[el] === undefined) modeMap[el] = 1;
+    else modeMap[el] += 1;
+
+    if (modeMap[el] > maxCount) {
+      modes = [el];
+      maxCount = modeMap[el];
+    } else if (modeMap[el] === maxCount) {
+      modes.push(el);
+      maxCount = modeMap[el];
+    }
+  }
+  return modes;
+}
 
 export default {
   name: 'deck',
@@ -1194,6 +1222,14 @@ export default {
     },
     locked() {
       return this.tournament.phase === 'locked' || this.tournament.phase === 'blood_bowl';
+    },
+    focus() {
+      let skills = [];
+      this.deck_player_cards.forEach((pc) => {
+        skills = skills.concat(this.skill_names_for_player_card(pc).concat(this.assigned_skills(pc)));
+      });
+      const modes = modeArray(skills);
+      return modes.join(', ');
     },
     sorted_roster() {
       if ('roster' in this.team) {
