@@ -257,7 +257,7 @@
                             </div>
                           </div>
                         </div>
-                        <card-list id="accordionHCDeck" :cards="user_squad_cards" :external_cards="deck_cards" :selected_team="selected_team" :owner="coach"
+                        <card-list id="accordionHCDeck" :cards="squad_cards" :external_cards="deck_cards" :selected_team="selected_team" :owner="coach"
                             :starter="starter" :quantity="false" :type_list="hc_card_types" :column_list="collection_colums"
                             @card-click="removeFromSquad" :rarity_sort="rarity_order" :deck="deck" :edit="canEdit" @card-assign="assignCard"
                             @update-deck="updateDeck" @card-disable="disableCard" @card-enable="enableCard"></card-list>
@@ -317,7 +317,7 @@
                             </div>
                           </div>
                         </div>
-                        <card-list id="accordionCardsDeck" :cards="deck_cards" :external_cards="user_squad_cards" :selected_team="selected_team" :owner="coach"
+                        <card-list id="accordionCardsDeck" :cards="deck_cards" :external_cards="squad_cards" :selected_team="selected_team" :owner="coach"
                             :starter="starter" :quantity="false" :type_list="deck_card_types" :column_list="collection_colums"
                             @card-click="removeFromDeck" @card-assign="assignCard" :rarity_sort="rarity_order" :deck="deck" :edit="canEdit"
                             @update-deck="updateDeck" @card-disable="disableCard" @card-enable="enableCard" @card-unskill="unskillCard" ></card-list>
@@ -1147,7 +1147,11 @@ export default {
     },
 
     user_squad_cards() {
-      return this.deck.squad.cards.concat(this.deck.extra_cards);
+      return this.deck.squad.cards;
+    },
+
+    squad_cards() {
+      return this.user_squad_cards.concat(this.deck.extra_cards.filter((e) => e.template.card_type === 'High Command'));
     },
 
     assignable_deck_player_cards() {
