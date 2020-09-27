@@ -13,7 +13,7 @@ class HighCommandSquadError(HighCommandError):
 
 MAX_LEVEL_ERROR = "Max High Command level reached!"
 CANNOT_EDIT_ERROR = "Cannot edit High Command Squad in this phase!"
-INVALID_CARD_ERROR = "Card is not of a valid type for HighCommand!"
+INVALID_CARD_ERROR = "Invalid action!"
 SQUAD_FULL_ERROR = "High Command Squad is full!"
 CARD_NOT_FOUND = "Card {} not found in the High Command Squad!"
 BANNED_CARD = "Card is banned in the tournament!"

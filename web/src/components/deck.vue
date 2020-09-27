@@ -1147,7 +1147,7 @@ export default {
     },
 
     user_squad_cards() {
-      return this.deck.squad.cards;
+      return this.deck.squad.cards.concat(this.deck.extra_cards);
     },
 
     assignable_deck_player_cards() {

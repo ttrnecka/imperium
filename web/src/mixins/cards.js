@@ -295,7 +295,7 @@ const Cards = {
       return matches.map((s) => this.injury_to_api_injury(s));
     },
     skills_for_special_and_staff(card) {
-      if (!['Special Play', 'Staff', 'Upgrade', 'Reaction'].includes(card.template.card_type)) {
+      if (!['Special Play', 'Staff', 'Upgrade', 'Reaction', 'High Command'].includes(card.template.card_type)) {
         return card.template.name;
       }
       const str = card.template.description;
