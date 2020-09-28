@@ -6,7 +6,7 @@ app = create_app()
 app.app_context().push()
 
 
-coaches = Coach.query.all()
+coaches = Coach.query.with_deleted().all()
 
 for coach in coaches:
   if not coach.high_command:
