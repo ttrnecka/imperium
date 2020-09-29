@@ -528,8 +528,11 @@ class TournamentService:
         msg.append(" ")
         for deck in sorted_decks:
             diff = target_value - deck[1]
-            value = diff if diff >= 0 else 0 
-            msg.append(f"{deck[0].mention()} has **{value}** points of inducements and {deck[2]} (deck value {deck[1]})")
+            value = diff if diff >= 0 else 0
+            ind_text = ""
+            if tournament.is_development():
+              ind_text = f"**{value}** points of inducements and "
+            msg.append(f"{deck[0].mention()} has {ind_text}{deck[2]} (deck value {deck[1]})")
         msg.append(" ")
         msg.append("**Note**: Use !done to confirm you are done with the phase, use !left to see who is left")
         msg.append("**Note 2**: use !blessing and !curse to spend your points, it is not optional")
