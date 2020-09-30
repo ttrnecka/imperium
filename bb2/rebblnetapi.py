@@ -158,6 +158,8 @@ class Api:
 
         headers = self._headers()
         headers['content-type'] = 'application/json'
+        logger.info("Creating competion:")
+        logger.info(data)
         r = requests.post(f"{self.api_url}/api/competition", data=json.dumps(data), headers=headers)
         self.check_response(r)
         return r.json()
