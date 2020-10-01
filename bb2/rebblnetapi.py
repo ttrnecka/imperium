@@ -177,8 +177,6 @@ class Api:
                   if res and res.get('Message'):
                     message = res.get('Message')
                 if message:
-                  if message in ["SYSTEM : An identical ticket has already been granted"]:
-                    return
                   raise SighanideError(message)
                 else:
                   logger.error(response.text)
