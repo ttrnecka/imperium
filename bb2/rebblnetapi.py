@@ -170,10 +170,21 @@ class Api:
     def check_response(cls, response):
         if response.status_code != 200:
             try:
-                logger.error(response.text)
                 data = response.json()
-                raise SighanideError(data['message'])
+                message = data.get('message')
+                if not message:
+                  res = data.get('CallResult')
+                  if res and res.get('Message'):
+                    message = res.get('Message')
+                if message:
+                  if message in ["SYSTEM : An identical ticket has already been granted"]:
+                    return
+                  raise SighanideError(message)
+                else:
+                  logger.error(response.text)
+                  raise SighanideError("API is down or returned unexpected data")
             except json.decoder.JSONDecodeError as e:
+                logger.error(response.text)
                 logger.error(str(e))
-                raise SighanideError("API is down")
+                raise SighanideError("API is down or returned unexpected data")
 
