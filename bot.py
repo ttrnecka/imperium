@@ -29,10 +29,10 @@ async def on_message(message):
     ctx = await bot.get_context(message)
     await bot.invoke(ctx)
 
-#@bot.event
-#async def on_reaction_add(reaction, user):
-#  if reaction.emoji =='🗑️':
-#    print("DELETE THIS")
+@bot.event
+async def on_reaction_add(reaction, user):
+  if reaction.emoji =='🗑️':
+    await reaction.message.delete()
 
 @bot.event
 async def on_ready():

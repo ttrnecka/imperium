@@ -131,6 +131,8 @@ class Api:
 
         headers = self._headers()
         headers['content-type'] = 'application/json'
+        logger.info("Sending ticket:")
+        logger.info(data)
         r = self.http.post(f"{self.api_url}/api/ticket", data=json.dumps(data), headers=headers)
         self.check_response(r)
         return r.json()
