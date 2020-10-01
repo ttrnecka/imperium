@@ -170,6 +170,7 @@ class Api:
     def check_response(cls, response):
         if response.status_code != 200:
             try:
+                logger.error(response.text)
                 data = response.json()
                 raise SighanideError(data['message'])
             except json.decoder.JSONDecodeError as e:
