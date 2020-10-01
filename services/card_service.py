@@ -107,7 +107,7 @@ class CardService:
         db.session.commit()
 
     @classmethod
-    def builtin_skills_for(cls, card):
+    def builtin_skills_for(cls, card, api_format=True):
         c = CardHelper.card_fix(card)
         if c.get('rarity') in [CardTemplate.RARITY_UNIQUE,CardTemplate.RARITY_LEGEND,CardTemplate.RARITY_INDUCEMENT, CardTemplate.RARITY_BLESSED, CardTemplate.RARITY_CURSED]:
             string = c.get('description')
@@ -118,7 +118,10 @@ class CardService:
         # pro elf extra case
         if "Pro Elf" in string:
           skills.remove("Pro")
-        return [stat_name_map.get(skill,skill) for skill in skills]
+        skills = [stat_name_map.get(skill,skill) for skill in skills]
+        if api_format:
+          return [skill_to_api_skill(match) for match in skills]
+        return skills
 
     @staticmethod
     def mutation_allowed(card):
