@@ -45,6 +45,7 @@ export default {
       this.currentStep += 1;
       if (this.stepsComplete) {
         this.$emit('confirmation-success');
+        this.timeout = setTimeout(() => this.reset(), 1000);
       } else {
         this.$emit('confirmation-incremented');
         this.timeout = setTimeout(() => this.reset(), 3000);

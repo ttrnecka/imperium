@@ -90,7 +90,11 @@
                     </div>
                     <div class="col-12">
                         <h5 class="coach_info">
-                          High Command Level: {{ selectedCoach.high_command.level }}<button :disabled="processing" v-if="!hc_level_maxed && is_owner(selectedCoach)" type="button" @click="upgradeHC()" class="btn col-12 mt-1 btn-primary">Upgrade for {{ high_command_upgrade_price }} coins</button>
+                          High Command Level: {{ selectedCoach.high_command.level }}
+                          <confirmation-button class="col-12 mt-1" v-if="!hc_level_maxed && is_owner(selectedCoach)"
+                            :messages="['Upgrade for ' + high_command_upgrade_price +' coins','Are you sure?','Processing']"
+                            v-on:confirmation-success="upgradeHC()"
+                            ></confirmation-button>
                         </h5>
                     </div>
                     <div class="tab-content show col-12"
@@ -425,6 +429,7 @@ import { mapState, mapGetters } from 'vuex';
 import Cards from '@/mixins/cards';
 import tournament from '@/components/tournament.vue';
 import imperiumAchievement from '@/components/achievement.vue';
+import confirmationButton from '@/components/confirmation-button.vue';
 import cardList from '@/components/card_list.vue';
 
 export default {
@@ -434,6 +439,7 @@ export default {
     tournament,
     imperiumAchievement,
     cardList,
+    'confirmation-button': confirmationButton,
   },
   data() {
     return {
