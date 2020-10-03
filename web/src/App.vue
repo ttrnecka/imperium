@@ -5,6 +5,7 @@
       <flash-message transitionIn="animated swing" class="flashpool"></flash-message>
       <component v-bind:is="currentTabComponent" class="tab"></component>
       <signup-modal ref="signupModal"></signup-modal>
+      <skill-picker></skill-picker>
     </div><!-- /.container -->
   </div>
 </template>
@@ -18,6 +19,7 @@ import imperiumNavbar from './components/nav_bar.vue';
 import coachContent from './components/coach_content.vue';
 import tournamentContent from './components/tournament_content.vue';
 import leaderboardContent from './components/leaderboard_content.vue';
+import skillPicker from './components/skill_picker.vue';
 
 export default {
   name: 'App',
@@ -33,6 +35,7 @@ export default {
     coachContent,
     tournamentContent,
     leaderboardContent,
+    skillPicker,
   },
   methods: {
     setMenu(value) {
