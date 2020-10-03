@@ -2,7 +2,7 @@
 import os
 import discord
 from discord.ext import commands
-from bot.helpers import logger
+from bot.helpers import logger, ImperiumHelpCommand, wastebasket_emoji
 from misc.helpers import PackHelper
 from misc.helpers2 import current_season
 from web import app
@@ -11,7 +11,7 @@ app.app_context().push()
 intents = discord.Intents.default()
 intents.members = True
 
-bot = commands.Bot(command_prefix='!', case_insensitive=True, intents=intents)
+bot = commands.Bot(command_prefix='!', case_insensitive=True, intents=intents, help_command=ImperiumHelpCommand())
 
 ROOT = os.path.dirname(__file__)
 
@@ -34,7 +34,12 @@ async def on_message(message):
 
 @bot.event
 async def on_reaction_add(reaction, user):
-  if reaction.emoji =='🗑️':
+  # ignore own reactions
+  if user == bot.user:
+    return
+  # wastebasket handling
+  wb_reaction = next((r for r in reaction.message.reactions if r.emoji == wastebasket_emoji and r.count>1), None)
+  if reaction.emoji == wastebasket_emoji and wb_reaction:
     await reaction.message.delete()
 
 @bot.event

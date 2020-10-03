@@ -2,6 +2,7 @@
 import os
 import logging
 import discord
+from discord.ext.commands import DefaultHelpCommand, HelpCommand
 from logging.handlers import RotatingFileHandler
 from models.data_models import Tournament, Coach
 from services import TournamentService
@@ -16,6 +17,8 @@ handler = RotatingFileHandler(
 )
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
+
+wastebasket_emoji = '🗑️'
 
 class LongMessage:
     """Class to handle long message sending in chunks"""
@@ -118,3 +121,11 @@ async def coach_unique(name, ctx):
       await ctx.send(emsg)
       return None
   return coaches[0]
+
+class ImperiumHelpCommand(DefaultHelpCommand):
+  async def send_pages(self):
+    """A helper utility to send the page output from :attr:`paginator` to the destination."""
+    destination = self.get_destination()
+    for page in self.paginator.pages:
+        msg = await destination.send(page)
+        await msg.add_reaction(wastebasket_emoji)
