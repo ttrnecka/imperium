@@ -8,7 +8,10 @@ from misc.helpers2 import current_season
 from web import app
 app.app_context().push()
 
-bot = commands.Bot(command_prefix='!', case_insensitive=True)
+intents = discord.Intents.default()
+intents.members = True
+
+bot = commands.Bot(command_prefix='!', case_insensitive=True, intents=intents)
 
 ROOT = os.path.dirname(__file__)
 
