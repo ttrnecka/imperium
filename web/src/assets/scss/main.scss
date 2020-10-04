@@ -257,6 +257,17 @@ img.skill_icon {
   height: 28px !important;
   border-radius: 5px;
 }
+
+img.skill_icon_picker {
+  border-radius: 5px;
+}
+
+img.skill_icon_picker:hover {
+  border-color:purple;
+  cursor: pointer;
+  transform: scale(1.2);
+}
+
 img {
   .darkmode & {
     filter: brightness(0.8);

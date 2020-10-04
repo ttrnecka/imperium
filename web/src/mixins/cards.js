@@ -206,11 +206,11 @@ const Cards = {
       const imgs = skills.map((s) => this.imgs_for_skill(s, double));
       return imgs.join('');
     },
-    imgs_for_skill(skill, double = false) {
+    imgs_for_skill(skill, double = false, klas = 'skill_icon') {
       const name = this.skill_to_api_skill(skill);
       const url = 'https://cdn2.rebbl.net/images/skills/';
       const doubleClass = double ? 'skill_double' : 'skill_single';
-      return `<img class="skill_icon "${doubleClass}" src="${url + name}.png" title="${skill}"></img>`;
+      return `<img class="${klas} ${doubleClass}" src="${url + name}.png" title="${skill}"></img>`;
     },
     skill_to_api_skill(skill) {
       let name;
