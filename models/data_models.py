@@ -311,7 +311,7 @@ class Coach(Base):
     def make_transaction(self,transaction, commit=True):
         # do nothing
         if self.account.amount < transaction.price:
-            raise TransactionError("Insuficient Funds")
+            raise TransactionError("Insufficient Funds")
         if transaction.confirmed:
             raise TransactionError("Double processing of transaction")
 

@@ -17,7 +17,7 @@ class Admin(ImperiumCog):
       """checks if it is admin channel"""
       if dchannel.name is not None and dchannel.name == "admin-channel":
           return True
-      raise Exception(f"Insuficient rights")
+      raise Exception(f"Insufficient rights")
 
     def coach_collection_msg(self, coach):
       """Creates message out of coaches collection"""
