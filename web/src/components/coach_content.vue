@@ -447,7 +447,7 @@ export default {
       search_timeout: null,
       selected_team: 'All',
       processing: false,
-      starter: true,
+      starter: false,
       selectedCoach: {
         short_name: '',
         account: {
