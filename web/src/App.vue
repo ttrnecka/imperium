@@ -5,7 +5,7 @@
       <flash-message transitionIn="animated swing" class="flashpool"></flash-message>
       <component v-bind:is="currentTabComponent" class="tab"></component>
       <signup-modal ref="signupModal"></signup-modal>
-      <skill-picker></skill-picker>
+      <skill-picker ref="skillPickerComponent"></skill-picker>
     </div><!-- /.container -->
   </div>
 </template>

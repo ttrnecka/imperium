@@ -83,6 +83,7 @@
                       <template v-if="canEdit && isDeck">
                         <b-button class="m-1" v-if="isEnabled(card)" variant="danger" @click="$emit('card-disable', card)">Disable</b-button>
                         <b-button class="m-1" v-else variant="success" @click="$emit('card-enable', card)">Enable</b-button>
+                        <b-button class="m-1" variant="success" @click="$emit('card-addskill', card)">Skill</b-button>
                         <b-button class="m-1" variant="info" @click="$emit('card-unskill', card)">Unskill</b-button>
                       </template>
                     </b-popover>

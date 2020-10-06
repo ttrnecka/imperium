@@ -165,12 +165,16 @@
                 </div>
             </div>
         </div>
+        <!--
         <deck v-if="show_deck" :coach="selected.coach" :tournament="tournament" :deck_id="selected.deck_id" :is_owner="is_owner(selected.coach)"></deck>
+        -->
+        <deck-b v-if="show_deck" :coach="selected.coach" :tournament="tournament" :deck_id="selected.deck_id" :is_owner="is_owner(selected.coach)"></deck-b>
     </div>
 </template>
 <script>
 import { mapGetters, mapMutations } from 'vuex';
-import deck from './deck.vue';
+// import deck from './deck.vue';
+import deckB from './deck_b.vue';
 import confirmationButton from './confirmation-button.vue';
 import Cards from '../mixins/cards';
 
@@ -178,7 +182,8 @@ export default {
   name: 'tournament',
   mixins: [Cards],
   components: {
-    deck: deck,
+    // deck: deck,
+    'deck-b': deckB,
     'confirmation-button': confirmationButton,
   },
   data() {

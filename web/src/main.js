@@ -36,6 +36,11 @@ Vue.mixin({
       markdown: new showdown.Converter(),
     };
   },
+  methods: {
+    skillPicker() {
+      return this.$root.$children[0].$refs.skillPickerComponent;
+    },
+  },
 });
 
 new Vue({
