@@ -365,6 +365,7 @@ class TournamentService:
                 f"Coach {coach.short_name()} is not registered to {tournament.name}!!!")
 
         try:
+            # collection cards
             for card in signups[0].deck.cards:
               if refund:
                 card.decrement_use()
@@ -372,7 +373,10 @@ class TournamentService:
                   card.in_development_deck = False
               else:
                   card.in_imperium_deck = False
-
+            # squad cards
+            if refund:
+              for card in signups[0].deck.squad.cards:
+                card.decrement_use()
             db.session.delete(signups[0])
 
             if refund:
