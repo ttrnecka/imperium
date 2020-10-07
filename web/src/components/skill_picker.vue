@@ -38,6 +38,8 @@ export default {
           return 'Strength';
         case 'M':
           return 'Mutation';
+        case 'F':
+          return 'Statistic';
         default:
           return '';
       }
