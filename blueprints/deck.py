@@ -131,6 +131,13 @@ def addcardextra_deck(deck):
     """Adds extra card to deck"""
     return DeckService.addextracard(deck, request.get_json()['name'])
 
+@deck.route("/<int:deck_id>/addcard/extra_to_player", methods=["POST"])
+@deck_response_deco
+def addcardextra_to_player_deck(deck):
+    """Adds extra card to deck"""
+    data = request.get_json()
+    return DeckService.addextracard_to_player(deck, data['name'], data['player_card'])
+
 @deck.route("/<int:deck_id>/removecard/extra", methods=["POST"])
 @deck_response_deco
 def removecardextra_deck(deck):

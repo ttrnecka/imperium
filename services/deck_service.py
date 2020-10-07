@@ -79,26 +79,50 @@ class DeckService:
         card = CardService.get_card_by_name(name.strip())
 
         if card:
-            tmp_card = Card.from_template(card)
-            # remove the card from session
-            db.session.expunge(tmp_card)
-            # cards added in inducement phase can count towards double
-            if deck.tournament_signup.tournament.phase == Tournament.PHASES[3]:
-                tmp_card.deck_type = "extra_inducement"
-            # any other type is ignored
-            else:
-                tmp_card.deck_type = "extra"
-            tmp_card.assigned_to_array = {}
-            tmp_card.uuid = str(uuid.uuid4())
-            card_dump=card_schema.dump(tmp_card).data
-            deck.unused_extra_cards.append(card_dump)
-            flag_modified(deck, "unused_extra_cards")
-            deck.to_log(f"{date_now()}: Extra Card {tmp_card.template.name} inserted into the collection")
-            db.session.commit()
+            card_dump = cls.addcardtocollection(deck, card)
             return cls.addcard(deck, card_dump)
             #return deck
         else:
             raise DeckError(f"Card {name} does not exist")
+    
+    @classmethod
+    def addextracard_to_player(cls, deck, name, player_card):
+      """Adds extra card defined by `name` to `deck` and assigns it directly to player"""
+      card = CardService.get_card_by_name(name.strip())
+
+      if card:
+          card_dump = cls.addcardtocollection(deck, card)
+          uuid = CardService.card_id_or_uuid(player_card)
+          cls.addcard(deck, card_dump)
+          card_dump['assigned_to_array'][str(deck.id)] = [uuid]
+          try:
+            cls.assigncard(deck,card_dump)
+          except Exception as e:
+            cls.removeextracard(deck,card_dump)
+            raise e
+          return deck
+      else:
+          raise DeckError(f"Card {name} does not exist")
+    
+    @classmethod
+    def addcardtocollection(cls, deck,card):
+      tmp_card = Card.from_template(card)
+      # remove the card from session
+      db.session.expunge(tmp_card)
+      # cards added in inducement phase can count towards double
+      if deck.tournament_signup.tournament.phase == Tournament.PHASES[3]:
+          tmp_card.deck_type = "extra_inducement"
+      # any other type is ignored
+      else:
+          tmp_card.deck_type = "extra"
+      tmp_card.assigned_to_array = {}
+      tmp_card.uuid = str(uuid.uuid4())
+      card_dump=card_schema.dump(tmp_card).data
+      deck.unused_extra_cards.append(card_dump)
+      flag_modified(deck, "unused_extra_cards")
+      deck.to_log(f"{date_now()}: Extra Card {tmp_card.template.name} inserted into the collection")
+      db.session.commit()
+      return card_dump
 
     @classmethod
     def removeextracard(cls, deck, card):
