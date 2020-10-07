@@ -396,7 +396,7 @@ class DeckService:
     @classmethod
     def focus(cls, deck):
       skills = []
-      for player_card in cls.players(deck):
+      for player_card in cls.all_players(deck):
         skills.extend(cls.skills_for(deck, player_card))
       
       counts = Counter(skills)

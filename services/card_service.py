@@ -201,6 +201,8 @@ class CardService:
           skills = ["Side Step"]
       elif name == "Crowd Pleaser":
           skills = ["Frenzy","Juggernaut"]
+      elif name == "I Like Big Boots":
+          skills = ["Dirty Player","Sneaky Git"]
       elif name == "Designated Ball Carrier":
           skills = ["Block", "Sure Hands"]
       elif name in ["Bodyguard","Hired Muscle","Personal Army","Mutant Roshi's Scare School"]:
@@ -324,6 +326,7 @@ class CardService:
         return [skill_to_api_skill(match) for match in matches]
       return matches
 
+    @staticmethod
     def valid_skill_combination(skill_list1, skill_list2):
       """Returns True if the skills in both list can coexists"""
       if len(skill_list1+skill_list2) > 6:

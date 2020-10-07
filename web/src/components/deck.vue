@@ -989,17 +989,21 @@ export default {
     debounceUpdateName(val) {
       if (this.search_timeout) clearTimeout(this.search_timeout);
       const that = this;
+      this.processing = true;
       this.search_timeout = setTimeout(() => {
         that.deck.team_name = val;
         that.updateDeck();
+        that.processing = false;
       }, 1000);
     },
     debounceUpdateComment(val) {
       if (this.search_timeout) clearTimeout(this.search_timeout);
       const that = this;
+      this.processing = true;
       this.search_timeout = setTimeout(() => {
         that.deck.comment = val;
         that.updateDeck();
+        that.processing = false;
       }, 1000);
     },
     modal() {

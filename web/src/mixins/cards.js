@@ -385,6 +385,9 @@ const Cards = {
         case 'Crowd Pleaser':
           skills = ['Frenzy', 'Juggernaut'];
           break;
+        case 'I Like Big Boots':
+          skills = ['Dirty Player', 'Sneaky Git'];
+          break;
         case 'Designated Ball Carrier':
           skills = ['Block', 'SureHands'];
           break;
