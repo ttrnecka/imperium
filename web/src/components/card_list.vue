@@ -110,6 +110,8 @@
                         <injury-picker v-else v-on:injured="addInjury(card,$event)"></injury-picker>
                       </template>
                     </td>
+                    <td class="d-table-cell d-sm-none">
+                    </td>
                     <td><div class="float-right"><b>Doubles:</b> {{doubles_count(card)}}</div></td>
                   </tr>
                 </template>
