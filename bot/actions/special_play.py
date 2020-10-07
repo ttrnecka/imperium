@@ -40,7 +40,6 @@ def randomize_packs(decks, packs):
 
           idx = None
           if selected:
-            existing_skills = DeckService.skills_for(deck, selected)
             # get player index in the deck
             idx = sorted_player_cards.index(selected) + 1
             if isinstance(selected, dict):

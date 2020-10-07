@@ -326,6 +326,7 @@ class CardService:
         return [skill_to_api_skill(match) for match in matches]
       return matches
 
+    @staticmethod
     def valid_skill_combination(skill_list1, skill_list2):
       """Returns True if the skills in both list can coexists"""
       if len(skill_list1+skill_list2) > 6:
