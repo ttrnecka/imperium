@@ -201,6 +201,8 @@ class CardService:
           skills = ["Side Step"]
       elif name == "Crowd Pleaser":
           skills = ["Frenzy","Juggernaut"]
+      elif name == "I Like Big Boots":
+          skills = ["Dirty Player","Sneaky Git"]
       elif name == "Designated Ball Carrier":
           skills = ["Block", "Sure Hands"]
       elif name in ["Bodyguard","Hired Muscle","Personal Army","Mutant Roshi's Scare School"]:
