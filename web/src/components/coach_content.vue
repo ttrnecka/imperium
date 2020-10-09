@@ -193,9 +193,15 @@
                     <button v-if="is_duster_full" :disabled="processing" type="button"
                       class="btn btn-info" @click="dust_commit()">Commit</button>
                   </div>
+                  <div class="col-12">
+                    <div class="custom-control custom-checkbox text-right mt-2">
+                      <input type="checkbox" class="custom-control-input" :id="'racetoggle_dusting'" v-model="race_order">
+                      <label class="custom-control-label" :for="'racetoggle_dusting'">Race/positional order</label>
+                    </div>
+                  </div>
                 </div>
                 <card-list id="accordionCardsDusting" :cards="selectedCoach.cards" :owner="selectedCoach"
-                  :starter="false" :duster="true"></card-list>
+                  :starter="false" :duster="true" :race_sort="race_order"></card-list>
               </div>
             </div>
             <div class="tab-pane fade" id="coach_achievements"
@@ -447,6 +453,7 @@ export default {
       search_timeout: null,
       selected_team: 'All',
       processing: false,
+      race_order: false,
       starter: false,
       selectedCoach: {
         short_name: '',
