@@ -124,5 +124,16 @@ class SpecialPlays(ImperiumCog):
         data = getattr(special_play, inspect.currentframe().f_code.co_name)()
         await self.send_embed(data, ctx)
 
+    @commands.command()
+    async def CommentatorsCurse(self, ctx):
+        """The most powerful force in the known universe… joins your team! Add a Human Ogre or Ogre Ogre called
+           Biff Bobbord to your team and grant him +ST, +AG, Break Tackle, Piling On, Juggernaut and Block. 
+           All teams at the tournament (including your own) then roll a D6. On a result of 1-2, they must roll a Level 1
+           Curse for their team. If all teams succeed their 3+ roll, you must instead roll a Level 2 curse
+           for your own team."""
+        me = CoachService.discord_user_to_coach(ctx.author)
+        data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
+        await self.send_embed(data, ctx)
+
 def setup(bot):
     bot.add_cog(SpecialPlays(bot))

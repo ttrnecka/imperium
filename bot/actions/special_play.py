@@ -416,3 +416,55 @@ def ReturnOfTheKing():
         ],
         'rolls': result
     }
+
+@remove_session
+def CommentatorsCurse(room, caller: Coach):
+    tourn = TournamentService.get_tournament_using_room(room)
+    coaches = TournamentService.coaches_for(tourn)
+
+    if not caller in coaches:
+        raise f"#{caller.short_name()} is not signed into the tournament"
+
+    title = 'Commentator\'s Curse'
+    description = ""
+    coaches.remove(caller)
+
+    caller_curse2 = True
+    efs = []
+    for coach in coaches:
+        result = dice.dice(6,1)[0]
+        if result < 3:
+            caller_curse2 = False
+            value = f'{coach.mention()} rolls !curse 1.'
+        else:
+            value = f'{coach.mention()} remains uncursed.'
+        
+        efs.append({
+            'name': f':game_die: : {result}',
+            'value': value,
+            'inline': True,
+        })
+
+    result = dice.dice(6,1)[0]
+    if result < 3:
+        caller_curse2 = False
+        value = f'{caller.mention()} rolls !curse 1.'
+    else:
+        v = 1
+        if caller_curse2:
+            v = 2
+        value = f'{coach.mention()} rolls !curse {v}'
+
+    efs.append({
+        'name': f':game_die: : {result}',
+        'value': value,
+        'inline': False,
+    })
+
+    return {
+        'embed_title': title,
+        'embed_desc': description,
+        'thumbnail_url': 'https://cdn2.rebbl.net/images/cards/dice_small.png',
+        'embed_fields': efs,
+        'rolls': result
+    }
