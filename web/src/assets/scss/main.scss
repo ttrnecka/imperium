@@ -346,3 +346,15 @@ animation: ShinyDeck 5s ease infinite;
   50%{background-position:100% 48%}
   100%{background-position:0% 53%}
 }
+
+.custom-control.custom-checkbox{padding-left: 0;}
+
+label.custom-control-label {
+  position: relative;
+  padding-right: 1.5rem;
+}
+
+label.custom-control-label::before, label.custom-control-label::after{
+  right: 0;
+  left: auto;
+}

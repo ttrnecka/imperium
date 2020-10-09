@@ -223,7 +223,7 @@
                       <h6>Staff</h6>
                     </div>
                     <div class="col-6">
-                      <div class="custom-control custom-checkbox mr-sm-2 text-right">
+                      <div class="custom-control custom-checkbox text-right">
                         <input type="checkbox" class="custom-control-input" :id="'sptoggle'+id" v-model="starter">
                         <label class="custom-control-label" :for="'sptoggle'+id">Toggle Starter Pack</label>
                       </div>
@@ -273,14 +273,20 @@
               <div class="row">
                 <div v-if="canEdit" class="col-lg-6">
                   <div class="row mt-1 deck_header">
-                    <div class="col-12">
+                    <div class="col-6">
                       <h6>Coach</h6>
+                    </div>
+                    <div class="col-6">
+                      <div class="custom-control custom-checkbox text-right">
+                        <input type="checkbox" class="custom-control-input" :id="'racetoggle'+id" v-model="race_order">
+                        <label class="custom-control-label" :for="'racetoggle'+id">Race/positional order</label>
+                      </div>
                     </div>
                     <div class="col-6">
                       <h6>Collection</h6>
                     </div>
                     <div class="col-6">
-                      <div class="custom-control custom-checkbox mr-sm-2 text-right">
+                      <div class="custom-control custom-checkbox text-right">
                         <input type="checkbox" class="custom-control-input" :id="'sptoggle'+id" v-model="starter">
                         <label class="custom-control-label" :for="'sptoggle'+id">Toggle Starter Pack</label>
                       </div>
@@ -288,7 +294,7 @@
                   </div>
                   <card-list id="accordionCardsCollection" :cards="collection_cards" :selected_team="selected_team" :owner="coach"
                       :starter="starter" :quantity="false" :type_list="deck_card_types" :column_list="collection_colums"
-                      @card-click="addToDeck"></card-list>
+                      @card-click="addToDeck" :rarity_sort="rarity_order" :race_sort="race_order"></card-list>
                 </div>
                 <div :class="cardListClass">
                   <div class="row mt-1 deck_header">
@@ -305,7 +311,7 @@
                       <h6>Conclave: {{conclave_text}}</h6>
                     </div>
                     <div class="col-3">
-                      <div class="custom-control custom-checkbox mr-sm-2 text-right">
+                      <div class="custom-control custom-checkbox text-right">
                         <input type="checkbox" class="custom-control-input" :id="'raritytoggle'+id" v-model="rarity_order">
                         <label class="custom-control-label" :for="'raritytoggle'+id">Rarity order</label>
                       </div>
@@ -364,6 +370,7 @@ export default {
       selected_team: 'All',
       starter: true,
       rarity_order: true,
+      race_order: false,
       extra_card: '',
       deck: {
         cards: [],

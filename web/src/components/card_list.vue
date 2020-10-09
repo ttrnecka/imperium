@@ -152,6 +152,10 @@ export default {
       type: Boolean,
       default: true,
     },
+    race_sort: {
+      type: Boolean,
+      default: false,
+    },
     quantity: {
       type: Boolean,
       default: false,
@@ -228,16 +232,26 @@ export default {
       return this.sortedCards(tmCards);
     },
     sortedCards(cards) {
-      if (this.rarity_sort === false) {
-        return cards;
-      }
       const order = this.rarityorder;
       const that = this;
-      function compare(a, b) {
+      let scards = cards.slice();
+      const raritycmp = function (a, b) {
         return (order[a.template.rarity] - order[b.template.rarity])
           || a.template.name.localeCompare(b.template.name) || that.card_id_or_uuid(a).localeCompare(that.card_id_or_uuid(b));
+      };
+
+      const racecmp = function (a, b) {
+        return a.template.race.localeCompare(b.template.race) || a.template.position.localeCompare(b.template.position) || a.template.name.localeCompare(b.template.name) || that.card_id_or_uuid(a).localeCompare(that.card_id_or_uuid(b));
+      };
+
+      if (this.rarity_sort === true) {
+        scards = scards.slice().sort(raritycmp);
       }
-      return cards.slice().sort(compare);
+
+      if (this.race_sort === true) {
+        scards = scards.slice().sort(racecmp);
+      }
+      return scards;
     },
     rarityclass(card) {
       let klass;
