@@ -35,6 +35,16 @@ class SpecialPlays(ImperiumCog):
         await self.send_embed(data, ctx)
 
     @commands.command()
+    async def Gnomercy(self, ctx):
+        """**Target** a Halfling or a Gnoblar present in the tournament and grant two +ST stat-ups to it. 
+           Roll a D3. On a result of 1, grant the targeted player +AG, Leap and Sure Feet. On a result of 2, 
+           grant the targeted player Block, Tackle and Mighty Blow. On a result of 3, grant the targeted player 
+           Wrestle, Tackle and Strip Ball."""
+        
+        data = getattr(special_play, inspect.currentframe().f_code.co_name)()
+        await self.send_embed(data, ctx)
+
+    @commands.command()
     async def EverythingMustGo(self, ctx):
         """Roll a D6. Each team in the tournament must apply that many -AV injuries to their own team. 
         Each coach may choose which of their own players will be affected, but no player may take more 

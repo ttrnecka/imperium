@@ -114,6 +114,32 @@ def TailsNeverFails():
         'rolls': result
     }
 
+def Gnomercy():
+    result = dice.dice(1,3)
+    title = "Gnomercy"
+    description = ""
+    
+    if result[0] == 1:
+        value = "AG+, Leap and Sure Feet"
+    if result[0] == 2:
+        value = "Block, Tackle and Mighty Blow"
+    if result[0] == 3:
+        value = "Wrestle, Tackle and Strip Ball"
+
+    ef1 = {
+        'name': f':game_die: : {result[0]}',
+        'value': f'Assign {value} to the **targeted** halfling/gnoblar',
+        'inline': False,
+    }
+
+    return {
+        'embed_title': title,
+        'embed_desc': description,
+        'thumbnail_url': 'https://cdn2.rebbl.net/images/skills/Stunty.png',
+        'embed_fields': [ ef1 ],
+        'rolls': result
+    }
+
 def EverythingMustGo():
     result = dice.dice(6,1)
     title = 'Everything must go!'
