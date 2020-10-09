@@ -453,7 +453,7 @@ def CommentatorsCurse(room, caller: Coach):
         v = 1
         if caller_curse2:
             v = 2
-        value = f'{coach.mention()} rolls !curse {v}'
+        value = f'{caller.mention()} rolls !curse {v}'
 
     efs.append({
         'name': f':game_die: : {result}',
