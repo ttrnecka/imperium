@@ -242,7 +242,12 @@ class PackService:
     @classmethod
     def team_by_code(cls, code):
         """returns mixed team by its code"""
-        return next(t for t in cls.MIXED_TEAMS if t["code"] == code)
+        return next((t for t in cls.MIXED_TEAMS if t["code"] == code), None)
+
+    @classmethod
+    def team_by_name(cls, name):
+        """returns mixed team by its code"""
+        return next((t for t in cls.MIXED_TEAMS if t["name"] == name), None)
 
     @classmethod
     def team_codes(cls):

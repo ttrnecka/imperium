@@ -127,6 +127,14 @@ class SpecialPlays(ImperiumCog):
         await self.send_embed(data, ctx)
 
     @commands.command()
+    async def CoMLegendBuilder(self, ctx):
+        """Roll a dice to select a random rookie player from your roster. Open a Temporary Legend Pack for your chosen mixed team and apply all possible
+           skills and injuries from the Legend to the chosen rookie player."""
+        me = CoachService.discord_user_to_coach(ctx.author)
+        data = getattr(special_play, inspect.currentframe().f_code.co_name)(ctx.channel.name, me)
+        await self.send_embed(data, ctx)
+
+    @commands.command()
     async def ReturnOfTheKing(self, ctx):
         """Add a Bretonnian Blitzer named Arthur to your team and give him the Sure Hands skill. Roll a D6.
            On a result of 1-3, give the Blitzer +AG. On a result of 4-5, give the Blitzer +ST. On a result of 6, 

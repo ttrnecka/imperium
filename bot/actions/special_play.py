@@ -494,3 +494,38 @@ def CommentatorsCurse(room, caller: Coach):
         'embed_fields': efs,
         'rolls': result
     }
+
+@remove_session
+def CoMLegendBuilder(room, caller: Coach):
+    deck = get_coach_deck_for_room_or_raise(room, caller)
+    team = PackService.team_by_name(deck.mixed_team)
+    if not team:
+      raise Exception("No mixed race seleted!")
+    title = 'Coach-o-Matic Legend Builder'
+    description = "Build your own legend made easy"
+    with db.session.no_autoflush:
+      pack = PackService.generate('legendary',team=team['code'])
+      message = PackHelper.format_pack(pack.cards, show_hidden=True)
+      efs = [{
+          'name': 'Legendary Pack',
+          'value': message,
+          'inline': False,
+      }]
+      rookies = DeckService.rookies(deck)
+      if rookies:
+        rookie = random.choice(rookies).template.name
+      else:
+        rookie = "No rookie player on the team"
+      efs.append({
+        'name': 'Target player',
+        'value': rookie,
+        'inline': False,
+      })
+
+    return {
+        'embed_title': title,
+        'embed_desc': description,
+        'thumbnail_url': 'https://cdn2.rebbl.net/images/sponsors/goblinbambling.png',
+        'embed_fields': efs,
+        'rolls': pack
+    }

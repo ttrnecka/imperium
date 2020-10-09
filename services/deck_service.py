@@ -447,6 +447,10 @@ class DeckService:
     def players(deck):
       return [card for card in deck.cards if card.template.card_type == CardTemplate.TYPE_PLAYER]
 
+    @classmethod
+    def rookies(cls, deck):
+      return [player for player in cls.players(deck) if len(cls.skills_for(deck, player)) == 0]
+
     @staticmethod
     def extra_players(deck):
       return [card for card in deck.extra_cards if card['template']['card_type'] == CardTemplate.TYPE_PLAYER]
