@@ -424,6 +424,15 @@ const Cards = {
       }
       return card.template.number_of_uses;
     },
+    has_uses_left(card) {
+      if (card.template.number_of_uses === 0) {
+        return true;
+      }
+      if (card.template.number_of_uses > card.uses) {
+        return true;
+      }
+      return false;
+    },
     dust(method, card) {
       let path;
       if (card) {

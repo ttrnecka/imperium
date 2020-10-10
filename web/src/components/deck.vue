@@ -1198,11 +1198,11 @@ export default {
 
     // user collection + extra cards
     collection_cards() {
-      return this.coach.cards.concat(this.deck.unused_extra_cards).filter(this.isNotInDeck);
+      return this.coach.cards.concat(this.deck.unused_extra_cards).filter(this.isNotInDeck).filter(this.has_uses_left);
     },
 
     unused_user_squad_cards() {
-      return this.coach_hc_cards.filter(({ id: id1 }) => !this.user_squad_cards.some(({ id: id2 }) => id1 === id2));
+      return this.coach_hc_cards.filter(({ id: id1 }) => !this.user_squad_cards.some(({ id: id2 }) => id1 === id2)).filter(this.has_uses_left);
     },
 
     // special cards in deck that belong to user
