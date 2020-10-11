@@ -450,6 +450,7 @@ export default {
   data() {
     return {
       coach_filter: '',
+      firstLoad: false,
       search_timeout: null,
       selected_team: 'All',
       processing: false,
@@ -614,12 +615,18 @@ export default {
     selectCoach() {
       const c = this.loggedCoach;
       if (c && c.deleted === false) {
-        this.getCoach(this.loggedCoach.id);
+        if (!this.firstLoad) {
+          this.firstLoad = true;
+          this.selectedCoach = this.loggedCoach;
+        } else {
+          this.getCoach(this.loggedCoach.id);
+        }
       } else if (this.coaches.length > 0) {
         this.getCoach(this.coaches[0].id);
       }
     },
     init() {
+      console.log("init");
       this.selectCoach();
       this.$nextTick(() => {
         this.$('[data-toggle="popover"]').popover();
