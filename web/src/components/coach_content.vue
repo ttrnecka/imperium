@@ -626,7 +626,6 @@ export default {
       }
     },
     init() {
-      console.log("init");
       this.selectCoach();
       this.$nextTick(() => {
         this.$('[data-toggle="popover"]').popover();
