@@ -9,6 +9,7 @@ from flask_fontawesome import FontAwesome
 from flask_migrate import Migrate
 from sqlalchemy.orm import selectinload
 from flask_admin import Admin
+from flask_compress import Compress
 
 from models.base_model import db
 from models.data_models import Coach, Tournament
@@ -25,6 +26,8 @@ import bb2_cyanide_api as bb2
 
 os.environ["YOURAPPLICATION_SETTINGS"] = "config/config.py"
 
+compress = Compress()
+
 def create_app():
     """return initialized flask app"""
     fapp = Flask(__name__)
@@ -33,6 +36,7 @@ def create_app():
     fapp.config.from_envvar('YOURAPPLICATION_SETTINGS')
     db.init_app(fapp)
     ma.init_app(fapp)
+    compress.init_app(fapp)
     FontAwesome(fapp)
     fapp.register_blueprint(auth.auth)
     fapp.register_blueprint(coach.coach, url_prefix='/coaches')

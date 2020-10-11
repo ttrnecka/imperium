@@ -11,6 +11,7 @@ requests-oauthlib==1.2.0
 requests
 flask-fontawesome
 flask-admin
+flask-compress
 Pillow
 simplejson
 Flask-Caching
