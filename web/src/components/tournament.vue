@@ -520,7 +520,12 @@ export default {
     showDeck(coach) {
       const signup = this.tournament.tournament_signups.find((ts) => ts.coach === coach.id);
       this.selected.deck_id = signup.deck;
-      this.selected.coach = coach;
+      // this is workaround if we user is openign their own deck, use the user collection instead of coach array
+      if (this.user.coach.id === coach.id) {
+        this.selected.coach = user.coach;
+      } else {
+        this.selected.coach = coach;
+      }
       this.show_deck = true;
     },
     payout(card) {
