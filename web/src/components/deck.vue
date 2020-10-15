@@ -58,6 +58,7 @@
                 </div>
                 <div class="col-sm-4"><b>Assistant Coaches:</b> {{team.team.assistantcoaches}}</div>
                 <div class="col-sm-4"><b>Cheerleaders:</b> {{team.team.cheerleaders}}</div>
+                <div class="col-sm-4"><b>Fan Factor:</b> {{team.team.popularity}}</div>
                 <div class="col-sm-4"><b>Stadium Enhancement:</b> {{stadium_enhacement(team.team)}}</div>
                 <div class="col-sm-4"><b>Cash:</b> {{team.team.cash}}</div>
               </div>
