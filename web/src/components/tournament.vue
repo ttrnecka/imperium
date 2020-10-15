@@ -522,7 +522,7 @@ export default {
       this.selected.deck_id = signup.deck;
       // this is workaround if we user is openign their own deck, use the user collection instead of coach array
       if (this.user.coach.id === coach.id) {
-        this.selected.coach = user.coach;
+        this.selected.coach = this.user.coach;
       } else {
         this.selected.coach = coach;
       }
