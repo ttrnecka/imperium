@@ -548,6 +548,24 @@ export default {
       if (card.template.name === 'Strife Insurance') {
         return (stats.opponentinflictedcasualties - stats.opponentinflicteddead) * 2 + (stats.opponentinflicteddead * 5);
       }
+      if (card.template.name === 'Junior Investment Banker') {
+        return 5;
+      }
+      if (card.template.name === 'Senior Investment Banker') {
+        return 10;
+      }
+      if (card.template.name === 'Investment Partner') {
+        return 15;
+      }
+      if (card.template.name === 'CabalVision Executive') {
+        return 20;
+      }
+      if (card.template.name === 'Cheere Khan') {
+        return 15;
+      }
+      if (card.template.name === 'Sam Allyerdice') {
+        return 15;
+      }
       return 0;
     },
     ...mapMutations([
