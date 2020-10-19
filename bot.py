@@ -37,9 +37,9 @@ async def on_reaction_add(reaction, user):
   # ignore own reactions
   if user == bot.user:
     return
-  # wastebasket handling
-  wb_reaction = next((r for r in reaction.message.reactions if r.emoji == wastebasket_emoji and r.count>1), None)
-  if reaction.emoji == wastebasket_emoji and wb_reaction:
+  # wastebasket handling if the wastbasked was created by bot
+  users = await reaction.users().flatten()
+  if reaction.emoji == wastebasket_emoji and bot.user in users:
     await reaction.message.delete()
 
 @bot.event
