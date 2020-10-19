@@ -476,10 +476,10 @@ def CommentatorsCurse(room, caller: Coach):
         caller_curse2 = False
         value = f'{caller.mention()} rolls !curse 1.'
     else:
-        v = 1
         if caller_curse2:
-            v = 2
-        value = f'{caller.mention()} rolls !curse {v}'
+            value = f'{caller.mention()} rolls !curse 2'
+        else:
+          value = f'{caller.mention()} remains uncursed.'
 
     efs.append({
         'name': f':game_die: : {result}',
