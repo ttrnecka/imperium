@@ -405,7 +405,10 @@ class TournamentService:
     @classmethod
     def release_one_time_cards(cls, tournament):
         cards_list = [ts.deck.cards for ts in tournament.tournament_signups]
+        hc_cards_list = [ts.deck.squad.cards for ts in tournament.tournament_signups]
         cards = list(itertools.chain.from_iterable(cards_list))
+        hc_cards = list(itertools.chain.from_iterable(hc_cards_list))
+        cards.extend(hc_cards)
 
         for card in cards:
             # if card has limited uses, they have been used up and the card is not in any other squad or deck
