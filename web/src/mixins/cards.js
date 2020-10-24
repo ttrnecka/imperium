@@ -378,6 +378,7 @@ const Cards = {
           skills = ['PilingOn', 'JumpUp', 'Dauntless'];
           break;
         case 'Training Wildcard':
+        case 'Focused Training':
           skills = ['MVPCondition2'];
           break;
         case 'Sidestep':
