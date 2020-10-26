@@ -65,7 +65,7 @@
                   <td v-if="should_diplay('ShortSubtype')" class="d-none d-sm-table-cell" :title="card.template.subtype">
                     {{ card.template.subtype.match(/\b(\w)/g).join('') }}
                   </td>
-                  <td v-if="should_diplay('Uses') && !duster">{{ `${card.uses}/${max_uses(card)}` }} </td>
+                  <td v-if="should_diplay('Uses') && !duster">{{ `${current_uses(card)}/${max_uses(card)}` }} </td>
                   <td v-if="quantity">{{ card.quantity }}</td>
                   <td v-if="duster" class="text-right">
                     <button v-if="is_in_duster(card)" :disabled="processing"

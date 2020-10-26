@@ -425,6 +425,12 @@ const Cards = {
       }
       return card.template.number_of_uses;
     },
+    current_uses(card) {
+      if (card.uses == null) {
+        return 0;
+      }
+      return card.uses;
+    },
     has_uses_left(card) {
       if (card.template.number_of_uses === 0) {
         return true;
