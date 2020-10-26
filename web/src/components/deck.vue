@@ -413,7 +413,7 @@ export default {
       },
       deck_card_types: ['Player', 'Training', 'Special Play', 'Staff'],
       hc_card_types: ['High Command'],
-      collection_colums: ['Rarity', 'Value', 'Name', 'Skills', 'ShortSubtype'],
+      collection_colums: ['Rarity', 'Value', 'Name', 'Skills', 'ShortSubtype', 'Uses'],
     };
   },
   methods: {

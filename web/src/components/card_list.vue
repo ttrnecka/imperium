@@ -79,7 +79,7 @@
                     <div :id="'player'+card_id_or_uuid(card)" class="float-right"><i class="fas fa-cog fa-2x"></i></div>
                     <b-popover :target="'player'+card_id_or_uuid(card)" triggers="hover" placement="left">
                       <template v-slot:title>{{ card.template.name }} ({{card.template.subtype}})</template>
-                      <span v-html="markdown.makeHtml(card.template.description)"></span>
+                      <span v-html="markdown.makeHtml(card.template.description +'\n \n **Race**: ' + card.template.race)"></span>
                       <template v-if="canEdit && isDeck">
                         <b-button class="m-1" v-if="isEnabled(card)" variant="danger" @click="$emit('card-disable', card)">Disable</b-button>
                         <b-button class="m-1" v-else variant="success" @click="$emit('card-enable', card)">Enable</b-button>
