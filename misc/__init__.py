@@ -18,6 +18,7 @@ class KEYWORDS:
   IMMUNE    = "Immune"
   ARENA     = "Arena"
   ANNOUNCE  = "Announce"
+  NO_COPY   = "NoCopy"
   EVENT = "Event"
 
   def __init__(self, text):
@@ -37,3 +38,6 @@ class KEYWORDS:
 
   def is_event(self):
     return self.EVENT in imperium_keywords(self.text)
+  
+  def is_no_copy(self):
+    return self.NO_COPY in imperium_keywords(self.text)

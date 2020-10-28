@@ -3,10 +3,11 @@ import itertools
 from datetime import date, timedelta
 import random
 import re
+import statistics
 
 from sqlalchemy import asc, func
 from models.data_models import Tournament, TournamentSignups, Transaction, Deck, Coach, Card, TournamentTemplate, TournamentAdmin
-from models.data_models import TournamentSponsor, TournamentRoom, ConclaveRule, Competition, HighCommandSquad
+from models.data_models import TournamentSponsor, TournamentRoom, ConclaveRule, Competition, HighCommandSquad, CardTemplate
 from models.base_model import db
 from models.marsh_models import cards_schema
 from misc import KEYWORDS
@@ -639,6 +640,56 @@ class TournamentService:
             extra_cards.append(c)
       result = cards_schema.dump(cards).data
       return result + extra_cards
+
+    @staticmethod
+    def hc_cards(tourn):
+      return [card for card in TournamentService.cards(tourn) if card.template.type == CardTemplate.TYPE_HC]
+
+    @staticmethod
+    def class_clown(tourn):
+        non_clown = list(filter(lambda c: not KEYWORDS(c.template.description).is_no_copy(), TournamentService.hc_cards(tourn)))
+        sort_hc = sorted(non_clown, key=lambda card: card.template.value)
+        if not sort_hc:
+            return None
+        min_value = sort_hc[0].template.value
+        clown_options = []
+        for c in sort_hc:
+            if c.template.value == min_value:
+                clown_options.append(c)
+            else:
+                break
+        return clown_options
+
+    @staticmethod
+    def impressive_impersonator(tourn):
+        non_clown = list(filter(lambda c: not KEYWORDS(c.template.description).is_no_copy(), TournamentService.hc_cards(tourn)))
+        sort_hc = sorted(non_clown, key=lambda card: card.template.value, reverse=True)
+        if not sort_hc:
+            return None
+        max_value = sort_hc[0].template.value
+        clown_options = []
+        for c in sort_hc:
+            if c.template.value == max_value:
+                clown_options.append(c)
+            else:
+                break
+        return clown_options
+
+    @staticmethod
+    def modest_mime(tourn):
+        non_clown = list(filter(lambda c: not KEYWORDS(c.template.description).is_no_copy(), TournamentService.hc_cards(tourn)))
+        sort_hc = sorted(non_clown, key=lambda card: card.template.value)
+        if not sort_hc:
+            return None
+        values = [card.template.value for card in sort_hc]
+        median_value = statistics.median(values)
+        clown_options = []
+        for c in sort_hc:
+            if c.template.value == median_value:
+                clown_options.append(c)
+            else:
+                break
+        return clown_options
 
     @staticmethod
     def conclave_range(tourn:Tournament, value:int):
