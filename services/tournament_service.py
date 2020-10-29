@@ -501,7 +501,10 @@ class TournamentService:
                         name = card['template']['name']
                     if name in clown_cards:
                         ccs = getattr(cls,name.lower().replace(" ","_"))(tournament)
-                        msg.append(f"It resolves to: **{', '.join([c['template']['name'] for c in ccs])}**")
+                        if ccs:
+                          msg.append(f"It resolves to: **{', '.join([c['template']['name'] for c in ccs])}**")
+                        else:
+                          msg.append(f"**Card could not be resolved, sorry**")
         
         msg.extend([" ", "__Order of Play__:", " "])
 
