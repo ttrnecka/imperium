@@ -37,6 +37,8 @@ stat_name_map = {
     "+AV": 'Armour Up!',
 }
 
+clown_cards = ["Class Clown","Modest Mime","Impressive Impersonator"]
+
 nonassignable_exceptions = [
   "Brock Ferth", "Snotty", 'Arthur 1-3', 'Arthur 4-5', 'Arthur 6',
 ]

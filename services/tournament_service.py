@@ -16,6 +16,7 @@ from .imperium_sheet_service import ImperiumSheetService
 from .deck_service import DeckService
 from .coach_service import CoachService
 from .competition_service import CompetitionService, CompetitionError
+from .card_service import clown_cards
 
 class RegistrationError(Exception):
     """Exception to raise for tournament registration issues"""
@@ -493,9 +494,15 @@ class TournamentService:
                     if isinstance(card, Card):
                         msg.append(f"{coach} announces **{card.get('name')}**:")
                         msg.append(card.get('description'))
+                        if card.get('name') in clown_cards:
+                            ccs = getattr(cls,card.get('name').lower().replace(" ","_"))()
+                            msg.append(f"It resolves to: {', '.join([c.get('name') c in css])}")
                     else:
                         msg.append(f"{coach} announces **{card['template'].get('name')}**:")
                         msg.append(card['template'].get('description'))
+                        if card['template']['name'] in clown_cards:
+                            ccs = getattr(cls,card['template']['name'].lower().replace(" ","_"))()
+                            msg.append(f"It resolves to: {', '.join([c['template']['name'] c in css])}")
         
         msg.extend([" ", "__Order of Play__:", " "])
 
@@ -663,7 +670,7 @@ class TournamentService:
     @staticmethod
     def impressive_impersonator(tourn):
         non_clown = list(filter(lambda c: not KEYWORDS(c['template']['description']).is_no_copy(), TournamentService.hc_cards(tourn)))
-        sort_hc = sorted(non_clown, key=lambda card: card['template']['value'] reverse=True)
+        sort_hc = sorted(non_clown, key=lambda card: card['template']['value'], reverse=True)
         if not sort_hc:
             return None
         max_value = sort_hc[0]['template']['value']
