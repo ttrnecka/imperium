@@ -643,18 +643,18 @@ class TournamentService:
 
     @staticmethod
     def hc_cards(tourn):
-      return [card for card in TournamentService.cards(tourn) if card.template.type == CardTemplate.TYPE_HC]
+      return [card for card in TournamentService.cards(tourn) if card['template']['type'] == CardTemplate.TYPE_HC]
 
     @staticmethod
     def class_clown(tourn):
-        non_clown = list(filter(lambda c: not KEYWORDS(c.template.description).is_no_copy(), TournamentService.hc_cards(tourn)))
-        sort_hc = sorted(non_clown, key=lambda card: card.template.value)
+        non_clown = list(filter(lambda c: not KEYWORDS(c['template']['description']).is_no_copy(), TournamentService.hc_cards(tourn)))
+        sort_hc = sorted(non_clown, key=lambda card: card['template']['value'])
         if not sort_hc:
             return None
-        min_value = sort_hc[0].template.value
+        min_value = sort_hc[0]['template']['value']
         clown_options = []
         for c in sort_hc:
-            if c.template.value == min_value:
+            if c['template']['value'] == min_value:
                 clown_options.append(c)
             else:
                 break
@@ -662,14 +662,14 @@ class TournamentService:
 
     @staticmethod
     def impressive_impersonator(tourn):
-        non_clown = list(filter(lambda c: not KEYWORDS(c.template.description).is_no_copy(), TournamentService.hc_cards(tourn)))
-        sort_hc = sorted(non_clown, key=lambda card: card.template.value, reverse=True)
+        non_clown = list(filter(lambda c: not KEYWORDS(c['template']['description']).is_no_copy(), TournamentService.hc_cards(tourn)))
+        sort_hc = sorted(non_clown, key=lambda card: card['template']['value'] reverse=True)
         if not sort_hc:
             return None
-        max_value = sort_hc[0].template.value
+        max_value = sort_hc[0]['template']['value']
         clown_options = []
         for c in sort_hc:
-            if c.template.value == max_value:
+            if c['template']['value'] == max_value:
                 clown_options.append(c)
             else:
                 break
@@ -677,18 +677,23 @@ class TournamentService:
 
     @staticmethod
     def modest_mime(tourn):
-        non_clown = list(filter(lambda c: not KEYWORDS(c.template.description).is_no_copy(), TournamentService.hc_cards(tourn)))
-        sort_hc = sorted(non_clown, key=lambda card: card.template.value)
+        non_clown = list(filter(lambda c: not KEYWORDS(c['template']['description']).is_no_copy(), TournamentService.hc_cards(tourn)))
+        sort_hc = sorted(non_clown, key=lambda card: card['template']['value'])
         if not sort_hc:
             return None
-        values = [card.template.value for card in sort_hc]
+        values = [card['template']['value'] for card in sort_hc]
         median_value = statistics.median(values)
-        clown_options = []
-        for c in sort_hc:
-            if c.template.value == median_value:
-                clown_options.append(c)
-            else:
-                break
+        clown_options = [card for card in sort_hc if card['template']['value'] == median_value]
+        # if there is no clown card with the media value we need to pick those with the nearest values from both sides of the median
+        if not clown_options:
+            left_value = None
+            right_value = None
+            for i, c in enumerate(sort_hc):
+                if c['template']['value'] > median_value:
+                    left_value = sort_hc[i-1]['template']['value']
+                    right_value = c['template']['value']
+                    break
+        clown_options = [card for card in sort_hc if card['template']['value'] in [left_value, right_value]]
         return clown_options
 
     @staticmethod
