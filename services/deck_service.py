@@ -249,6 +249,8 @@ class DeckService:
     def addcard_to_squad(cls, deck, card):
       card = Card.query.get(card["id"])
       # check if it is banned
+      if not card:
+        raise DeckError(f"Card with {card['id']} id was not found!")
       if DeckService.is_banned(deck, card):
         raise DeckError("Card is banned in the tournament!")
 
