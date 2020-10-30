@@ -514,6 +514,10 @@ export default {
           this.selected_team = (this.deck.mixed_team === '') ? 'All' : this.deck.mixed_team;
           this.modalShow = true;
         })
+        .catch((error) => {
+          this.$parent.$emit('deckClosed');
+          throw error;
+        })
         .catch(this.async_error)
         .then(() => {
           processingMsg.destroy();
