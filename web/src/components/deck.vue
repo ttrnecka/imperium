@@ -1017,15 +1017,11 @@ export default {
         });
     },
     debounceUpdateName(val) {
-      if (this.search_timeout) {
-        clearTimeout(this.search_timeout);
-        console.log('cancel timeout');
-      }
+      if (this.search_timeout) clearTimeout(this.search_timeout);
       const that = this;
       this.processing = true;
       this.deck.team_name = val;
       this.search_timeout = setTimeout(() => {
-        console.log('calling api');
         that.updateDeck(false);
         that.processing = false;
       }, 1000);
