@@ -988,7 +988,7 @@ export default {
       const ccard = this.coach.cards.find((c) => c.id === card.id);
       ccard[check] = false;
     },
-    updateDeck() {
+    updateDeck(refresh = true) {
       if (!this.isEditable()) {
         return;
       }
@@ -1006,7 +1006,9 @@ export default {
         .then((res) => {
           // let msg = "Deck saved!";
           // this.flash(msg, 'success',{timeout: 3000});
-          this.deck = res.data;
+          if (refresh) {
+            this.deck = res.data;
+          }
         })
         .catch(this.async_error)
         .then(() => {
@@ -1015,12 +1017,16 @@ export default {
         });
     },
     debounceUpdateName(val) {
-      if (this.search_timeout) clearTimeout(this.search_timeout);
+      if (this.search_timeout) {
+        clearTimeout(this.search_timeout);
+        console.log('cancel timeout');
+      }
       const that = this;
       this.processing = true;
+      this.deck.team_name = val;
       this.search_timeout = setTimeout(() => {
-        that.deck.team_name = val;
-        that.updateDeck();
+        console.log('calling api');
+        that.updateDeck(false);
         that.processing = false;
       }, 1000);
     },
@@ -1028,9 +1034,9 @@ export default {
       if (this.search_timeout) clearTimeout(this.search_timeout);
       const that = this;
       this.processing = true;
+      this.deck.comment = val;
       this.search_timeout = setTimeout(() => {
-        that.deck.comment = val;
-        that.updateDeck();
+        that.updateDeck(false);
         that.processing = false;
       }, 1000);
     },
