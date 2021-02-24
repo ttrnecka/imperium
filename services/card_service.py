@@ -120,6 +120,9 @@ class CardService:
         # pro elf extra case
         if "Pro Elf" in string:
           skills.remove("Pro")
+        # Goblin Bombardier extra case
+        if "Goblin Bombardier" in string:
+          skills.remove("Bombardier")
         skills = [stat_name_map.get(skill,skill) for skill in skills]
         if api_format:
           return [skill_to_api_skill(match) for match in skills]
